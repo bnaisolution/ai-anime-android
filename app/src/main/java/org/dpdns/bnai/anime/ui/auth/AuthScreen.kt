@@ -19,13 +19,10 @@ fun AuthScreen(navController: NavController) {
     val api = RetrofitClient.create(tm)
     val vm = remember { AuthViewModel(api, tm) }
     val state by vm.authState.collectAsState()
-
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
-    LaunchedEffect(state) {
-        if (state is Resource.Success) navController.navigate("studio") { popUpTo("auth") { inclusive = true } }
-    }
+    LaunchedEffect(state) { if (state is Resource.Success) navController.navigate("studio") { popUpTo("auth") { inclusive = true } } }
 
     Column(modifier = Modifier.fillMaxSize().padding(24.dp), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
         Text("AI Anime Studio", style = MaterialTheme.typography.headlineLarge, color = MaterialTheme.colorScheme.primary)
@@ -35,8 +32,7 @@ fun AuthScreen(navController: NavController) {
         OutlinedTextField(value = password, onValueChange = { password = it }, label = { Text("Password") }, visualTransformation = PasswordVisualTransformation(), modifier = Modifier.fillMaxWidth())
         Spacer(modifier = Modifier.height(24.dp))
         Button(onClick = { vm.login(email, password) }, modifier = Modifier.fillMaxWidth().height(50.dp)) {
-            if (state is Resource.Loading) CircularProgressIndicator(color = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(24.dp))
-            else Text("Login")
+            if (state is Resource.Loading) CircularProgressIndicator(color = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(24.dp)) else Text("Login")
         }
         if (state is Resource.Error) {
             Spacer(modifier = Modifier.height(16.dp))
