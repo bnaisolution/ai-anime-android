@@ -1,0 +1,5438 @@
+mkdir -p app/src/main/java/org/dpdns/bnai/anime/{ui/theme,ui/navigation,ui/auth,core/network,core/auth}
+
+# --- GRADLE & BUILD FILES (Bina inke build nahi hoga) ---
+cat > build.gradle.kts << 'EOF'
+plugins {
+    id("com.android.application") version "8.5.2" apply false
+    id("org.jetbrains.kotlin.android") version "1.9.24" apply false
+}
+EOF
+
+cat > settings.gradle.kts << 'EOF'
+pluginManagement { repositories { google(); mavenCentral(); gradlePluginPortal() } }
+dependencyResolutionManagement { repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS); repositories { google(); mavenCentral() } }
+rootProject.name = "BnaiAnime"
+include(":app")
+EOF
+
+cat > gradle.properties << 'EOF'
+org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8
+android.useAndroidX=true
+kotlin.code.style=official
+android.nonTransitiveRClass=true
+EOF
+
+cat > app/build.gradle.kts << 'EOF'
+plugins { id("com.android.application"); id("org.jetbrains.kotlin.android") }
+android {
+    namespace = "org.dpdns.bnai.anime"
+    compileSdk = 34
+    defaultConfig {
+        applicationId = "org.dpdns.bnai.anime"
+        minSdk = 26
+        targetSdk = 34
+        versionCode = 1
+        versionName = "1.0.0"
+    }
+    buildTypes { release { isMinifyEnabled = false } }
+    compileOptions { sourceCompatibility = JavaVersion.VERSION_17; targetCompatibility = JavaVersion.VERSION_17 }
+    kotlinOptions { jvmTarget = "17"; freeCompilerArgs += "-opt-in=androidx.compose.material3.ExperimentalMaterial3Api" }
+    buildFeatures { compose = true; buildConfig = true }
+    composeOptions { kotlinCompilerExtensionVersion = "1.5.14" }
+}
+dependencies {
+    val composeBom = platform("androidx.compose:compose-bom:2024.06.00")
+    implementation(composeBom)
+    implementation("androidx.core:core-ktx:1.13.1")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.3")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.3")
+    implementation("androidx.activity:activity-compose:1.9.0")
+    implementation("androidx.compose.ui:ui")
+    implementation("androidx.compose.ui:ui-graphics")
+    implementation("androidx.compose.ui:ui-tooling-preview")
+    implementation("androidx.compose.material3:material3")
+    implementation("androidx.compose.material:material-icons-extended")
+    implementation("androidx.navigation:navigation-compose:2.7.7")
+    implementation("com.squareup.retrofit2:retrofit:2.11.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.11.0")
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
+}
+EOF
+
+cat > app/src/main/AndroidManifest.xml << 'EOF'
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="org.dpdns.bnai.anime">
+    <uses-permission android:name="android.permission.INTERNET" />
+    <application android:allowBackup="true" android:label="AI Anime Studio" android:supportsRtl="true" android:theme="@android:style/Theme.Material.NoActionBar">
+        <activity android:name=".MainActivity" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+</manifest>
+EOF
+
+# --- EXACT PHASE 1 KOTLIN FILES ---
+cat > app/src/main/java/org/dpdns/bnai/anime/ui/theme/Color.kt << 'EOF'
+package org.dpdns.bnai.anime.ui.theme
+
+import androidx.compose.ui.graphics.Color
+
+val Primary = Color(0xFF3F51B5)
+val Secondary = Color(0xFF009688)
+val BackgroundDark = Color(0xFF121212)
+val BackgroundLight = Color(0xFFF5F5F5)
+val Background = BackgroundDark
+val SurfaceDark = Color(0xFF1E1E1E)
+val SurfaceLight = Color(0xFFFFFFFF)
+val Surface = SurfaceDark
+val Error = Color(0xFFCF6679)
+val ErrorLight = Color(0xFFB00020)
+val TextPrimaryDark = Color(0xFFFFFFFF)
+val TextPrimaryLight = Color(0xFF121212)
+val TextPrimary = TextPrimaryDark
+EOF
+
+cat > app/src/main/java/org/dpdns/bnai/anime/ui/theme/Type.kt << 'EOF'
+package org.dpdns.bnai.anime.ui.theme
+
+import androidx.compose.material3.Typography
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
+
+val h1 = TextStyle(
+    fontFamily = FontFamily.Default,
+    fontWeight = FontWeight.Bold,
+    fontSize = 28.sp,
+    lineHeight = 36.sp,
+    letterSpacing = 0.sp
+)
+
+val h2 = TextStyle(
+    fontFamily = FontFamily.Default,
+    fontWeight = FontWeight.SemiBold,
+    fontSize = 22.sp,
+    lineHeight = 28.sp,
+    letterSpacing = 0.sp
+)
+
+val body1 = TextStyle(
+    fontFamily = FontFamily.Default,
+    fontWeight = FontWeight.Normal,
+    fontSize = 16.sp,
+    lineHeight = 24.sp,
+    letterSpacing = 0.5.sp
+)
+
+val button = TextStyle(
+    fontFamily = FontFamily.Default,
+    fontWeight = FontWeight.Medium,
+    fontSize = 14.sp,
+    lineHeight = 20.sp,
+    letterSpacing = 0.1.sp
+)
+
+val AppTypography = Typography(
+    headlineLarge = h1,
+    headlineMedium = h2,
+    bodyLarge = body1,
+    labelLarge = button
+)
+EOF
+
+cat > app/src/main/java/org/dpdns/bnai/anime/ui/theme/Theme.kt << 'EOF'
+package org.dpdns.bnai.anime.ui.theme
+
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
+
+private val DarkColorScheme = darkColorScheme(
+    primary = Primary,
+    onPrimary = Color.White,
+    secondary = Secondary,
+    onSecondary = Color.White,
+    background = BackgroundDark,
+    onBackground = TextPrimaryDark,
+    surface = SurfaceDark,
+    onSurface = TextPrimaryDark,
+    error = Error,
+    onError = Color.Black
+)
+
+private val LightColorScheme = lightColorScheme(
+    primary = Primary,
+    onPrimary = Color.White,
+    secondary = Secondary,
+    onSecondary = Color.White,
+    background = BackgroundLight,
+    onBackground = TextPrimaryLight,
+    surface = SurfaceLight,
+    onSurface = TextPrimaryLight,
+    error = ErrorLight,
+    onError = Color.White
+)
+
+@Composable
+fun AnimeStudioTheme(
+    darkTheme: Boolean = isSystemInDarkTheme(),
+    content: @Composable () -> Unit
+) {
+    val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
+
+    MaterialTheme(
+        colorScheme = colorScheme,
+        typography = AppTypography,
+        content = content
+    )
+}
+EOF
+
+cat > app/src/main/java/org/dpdns/bnai/anime/core/network/Resource.kt << 'EOF'
+package org.dpdns.bnai.anime.core.network
+
+sealed class Resource<out T> {
+    object Idle : Resource<Nothing>()
+    object Loading : Resource<Nothing>()
+    data class Success<out T>(val data: T) : Resource<T>()
+    data class Error(val message: String) : Resource<Nothing>()
+}
+EOF
+
+cat > app/src/main/java/org/dpdns/bnai/anime/core/auth/TokenManager.kt << 'EOF'
+package org.dpdns.bnai.anime.core.auth
+
+import android.content.Context
+import android.content.SharedPreferences
+
+class TokenManager(private val prefs: SharedPreferences) {
+
+    constructor(context: Context) : this(
+        context.applicationContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+    )
+
+    fun saveToken(token: String) {
+        prefs.edit().putString(KEY_JWT_TOKEN, token).apply()
+    }
+
+    fun getToken(): String? {
+        return prefs.getString(KEY_JWT_TOKEN, null)
+    }
+
+    fun clearToken() {
+        prefs.edit().remove(KEY_JWT_TOKEN).apply()
+    }
+
+    companion object {
+        private const val PREFS_NAME = "anime_studio_prefs"
+        private const val KEY_JWT_TOKEN = "jwt_token"
+
+        @Volatile
+        private var instance: TokenManager? = null
+
+        fun init(context: Context): TokenManager {
+            return instance ?: synchronized(this) {
+                instance ?: TokenManager(context.applicationContext).also { instance = it }
+            }
+        }
+
+        fun getInstance(): TokenManager? = instance
+    }
+}
+EOF
+
+cat > app/src/main/java/org/dpdns/bnai/anime/core/network/AnimeApiService.kt << 'EOF'
+package org.dpdns.bnai.anime.core.network
+
+import retrofit2.Response
+import retrofit2.http.Body
+import retrofit2.http.POST
+
+data class LoginRequest(
+    val email: String,
+    val password: String
+)
+
+data class LoginResponse(
+    val token: String,
+    val userId: String
+)
+
+interface AnimeApiService {
+    @POST("api/v1/auth/login")
+    suspend fun login(@Body request: LoginRequest): Response<LoginResponse>
+}
+EOF
+
+cat > app/src/main/java/org/dpdns/bnai/anime/core/network/RetrofitClient.kt << 'EOF'
+package org.dpdns.bnai.anime.core.network
+
+import android.content.Context
+import okhttp3.Interceptor
+import okhttp3.OkHttpClient
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
+import java.util.concurrent.TimeUnit
+import org.dpdns.bnai.anime.core.auth.TokenManager
+
+object RetrofitClient {
+    private const val BASE_URL = "https://n8n.bnai.dpdns.org/"
+
+    @Volatile
+    private var apiServiceInstance: AnimeApiService? = null
+
+    fun create(tokenManager: TokenManager? = TokenManager.getInstance()): AnimeApiService {
+        val authInterceptor = Interceptor { chain ->
+            val originalRequest = chain.request()
+            val token = tokenManager?.getToken()
+            val requestBuilder = originalRequest.newBuilder()
+                .header("Accept", "application/json")
+            if (!token.isNullOrBlank()) {
+                requestBuilder.header("Authorization", "Bearer $token")
+            }
+            chain.proceed(requestBuilder.build())
+        }
+
+        val okHttpClient = OkHttpClient.Builder()
+            .addInterceptor(authInterceptor)
+            .connectTimeout(30, TimeUnit.SECONDS)
+            .readTimeout(30, TimeUnit.SECONDS)
+            .writeTimeout(30, TimeUnit.SECONDS)
+            .build()
+
+        return Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .client(okHttpClient)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(AnimeApiService::class.java)
+    }
+
+    fun getApiService(context: Context): AnimeApiService {
+        return apiServiceInstance ?: synchronized(this) {
+            val tokenManager = TokenManager.init(context)
+            apiServiceInstance ?: create(tokenManager).also { apiServiceInstance = it }
+        }
+    }
+}
+EOF
+
+cat > app/src/main/java/org/dpdns/bnai/anime/ui/auth/AuthViewModel.kt << 'EOF'
+package org.dpdns.bnai.anime.ui.auth
+
+import android.content.Context
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
+import org.dpdns.bnai.anime.core.auth.TokenManager
+import org.dpdns.bnai.anime.core.network.AnimeApiService
+import org.dpdns.bnai.anime.core.network.LoginRequest
+import org.dpdns.bnai.anime.core.network.Resource
+import org.dpdns.bnai.anime.core.network.RetrofitClient
+
+class AuthViewModel(
+    private val apiService: AnimeApiService,
+    private val tokenManager: TokenManager
+) : ViewModel() {
+
+    private val _authState = MutableStateFlow<Resource<String>>(Resource.Idle)
+    val authState: StateFlow<Resource<String>> = _authState.asStateFlow()
+
+    fun login(email: String, password: String) {
+        val trimmedEmail = email.trim()
+        if (trimmedEmail.isEmpty() || password.isEmpty()) {
+            _authState.value = Resource.Error("Email and password are required.")
+            return
+        }
+
+        viewModelScope.launch {
+            _authState.value = Resource.Loading
+            try {
+                val response = apiService.login(
+                    LoginRequest(
+                        email = trimmedEmail,
+                        password = password
+                    )
+                )
+                if (response.isSuccessful) {
+                    val body = response.body()
+                    if (body != null && body.token.isNotBlank()) {
+                        tokenManager.saveToken(body.token)
+                        _authState.value = Resource.Success(body.token)
+                    } else {
+                        _authState.value = Resource.Error("Invalid server response: missing token.")
+                    }
+                } else {
+                    _authState.value = Resource.Error("Login failed (HTTP ${response.code()}).")
+                }
+            } catch (e: Exception) {
+                _authState.value = Resource.Error(e.localizedMessage ?: "Network error occurred.")
+            }
+        }
+    }
+
+    class Factory(private val context: Context) : ViewModelProvider.Factory {
+        @Suppress("UNCHECKED_CAST")
+        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+            val appContext = context.applicationContext
+            val tokenManager = TokenManager.init(appContext)
+            val apiService = RetrofitClient.getApiService(appContext)
+            return AuthViewModel(apiService, tokenManager) as T
+        }
+    }
+}
+EOF
+
+cat > app/src/main/java/org/dpdns/bnai/anime/ui/auth/AuthScreen.kt << 'EOF'
+package org.dpdns.bnai.anime.ui.auth
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import org.dpdns.bnai.anime.core.network.Resource
+
+@Composable
+fun AuthScreen(
+    navController: NavController,
+    viewModel: AuthViewModel = viewModel(factory = AuthViewModel.Factory(LocalContext.current))
+) {
+    val authState by viewModel.authState.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    var email by rememberSaveable { mutableStateOf("") }
+    var password by rememberSaveable { mutableStateOf("") }
+    var isPasswordVisible by rememberSaveable { mutableStateOf(false) }
+
+    LaunchedEffect(authState) {
+        when (val state = authState) {
+            is Resource.Success -> {
+                navController.navigate("studio") {
+                    popUpTo("auth") { inclusive = true }
+                }
+            }
+            is Resource.Error -> {
+                snackbarHostState.showSnackbar(state.message)
+            }
+            else -> Unit
+        }
+    }
+
+    Scaffold(
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
+        containerColor = MaterialTheme.colorScheme.background
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(horizontal = 24.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = "AI Anime Studio",
+                style = MaterialTheme.typography.headlineLarge,
+                color = MaterialTheme.colorScheme.primary
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = "Production Studio Sign In",
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onBackground
+            )
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            OutlinedTextField(
+                value = email,
+                onValueChange = { email = it },
+                label = { Text("Email") },
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Email,
+                    imeAction = ImeAction.Next
+                ),
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            OutlinedTextField(
+                value = password,
+                onValueChange = { password = it },
+                label = { Text("Password") },
+                singleLine = true,
+                visualTransformation = if (isPasswordVisible) {
+                    VisualTransformation.None
+                } else {
+                    PasswordVisualTransformation()
+                },
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Password,
+                    imeAction = ImeAction.Done
+                ),
+                trailingIcon = {
+                    TextButton(onClick = { isPasswordVisible = !isPasswordVisible }) {
+                        Text(
+                            text = if (isPasswordVisible) "HIDE" else "SHOW",
+                            style = MaterialTheme.typography.labelLarge,
+                            color = MaterialTheme.colorScheme.secondary
+                        )
+                    }
+                },
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            val isLoading = authState is Resource.Loading
+
+            Button(
+                onClick = { viewModel.login(email, password) },
+                enabled = !isLoading,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp)
+            ) {
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(24.dp),
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    Text(
+                        text = "Login",
+                        style = MaterialTheme.typography.labelLarge
+                    )
+                }
+            }
+
+            if (authState is Resource.Error) {
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = (authState as Resource.Error).message,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodyLarge
+                )
+            }
+        }
+    }
+}
+EOF
+
+cat > app/src/main/java/org/dpdns/bnai/anime/ui/navigation/NavGraph.kt << 'EOF'
+package org.dpdns.bnai.anime.ui.navigation
+
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import org.dpdns.bnai.anime.ui.auth.AuthScreen
+
+@Composable
+fun AppNavGraph(navController: NavHostController) {
+    NavHost(
+        navController = navController,
+        startDestination = "auth"
+    ) {
+        composable("auth") {
+            AuthScreen(navController = navController)
+        }
+        composable("studio") {
+            StudioHomePlaceholder()
+        }
+    }
+}
+
+@Composable
+fun StudioHomePlaceholder() {
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.background
+    ) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "Studio Home",
+                style = MaterialTheme.typography.headlineMedium,
+                color = MaterialTheme.colorScheme.onBackground
+            )
+        }
+    }
+}
+EOF
+
+cat > app/src/main/java/org/dpdns/bnai/anime/MainActivity.kt << 'EOF'
+package org.dpdns.bnai.anime
+
+import android.os.Bundle
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.navigation.compose.rememberNavController
+import org.dpdns.bnai.anime.core.auth.TokenManager
+import org.dpdns.bnai.anime.ui.navigation.AppNavGraph
+import org.dpdns.bnai.anime.ui.theme.AnimeStudioTheme
+
+class MainActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        TokenManager.init(applicationContext)
+        setContent {
+            AnimeStudioTheme {
+                val navController = rememberNavController()
+                AppNavGraph(navController = navController)
+            }
+        }
+    }
+}
+EOF
+# --- PHASE 2: STUDIO & PROJECT MANAGEMENT ---
+mkdir -p app/src/main/java/org/dpdns/bnai/anime/{core/model,ui/studio,ui/project,ui/character}
+
+cat > app/src/main/java/org/dpdns/bnai/anime/core/model/Project.kt << 'EOF'
+package org.dpdns.bnai.anime.core.model
+
+data class Project(
+    val id: String,
+    val name: String,
+    val activeEpisode: String,
+    val status: String
+)
+EOF
+
+cat > app/src/main/java/org/dpdns/bnai/anime/ui/studio/StudioViewModel.kt << 'EOF'
+package org.dpdns.bnai.anime.ui.studio
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
+import org.dpdns.bnai.anime.core.model.Project
+import org.dpdns.bnai.anime.core.network.Resource
+
+class StudioViewModel : ViewModel() {
+
+    private val _projectsState = MutableStateFlow<Resource<List<Project>>>(Resource.Loading)
+    val projectsState: StateFlow<Resource<List<Project>>> = _projectsState.asStateFlow()
+
+    init {
+        loadProjects()
+    }
+
+    fun loadProjects() {
+        viewModelScope.launch {
+            _projectsState.value = Resource.Loading
+            delay(600)
+            val mockProjects = listOf(
+                Project(
+                    id = "proj_001",
+                    name = "Shadows of Aethelgard",
+                    activeEpisode = "Episode 5: The Crimson Eclipse",
+                    status = "RUNNING"
+                ),
+                Project(
+                    id = "proj_002",
+                    name = "Cyber Samurai: Neon Karma",
+                    activeEpisode = "Episode 2: Ghost in the Spire",
+                    status = "REVIEW"
+                )
+            )
+            _projectsState.value = Resource.Success(mockProjects)
+        }
+    }
+
+    fun createNewProject(projectName: String) {
+        val currentList = (_projectsState.value as? Resource.Success)?.data ?: emptyList()
+        val nextId = "proj_00${currentList.size + 1}"
+        val newProject = Project(
+            id = nextId,
+            name = projectName.ifBlank { "Untitled Anime Universe ${currentList.size + 1}" },
+            activeEpisode = "Episode 1: Pilot Script",
+            status = "DRAFT"
+        )
+        _projectsState.value = Resource.Success(listOf(newProject) + currentList)
+    }
+}
+EOF
+
+cat > app/src/main/java/org/dpdns/bnai/anime/ui/studio/StudioDashboardScreen.kt << 'EOF'
+package org.dpdns.bnai.anime.ui.studio
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import org.dpdns.bnai.anime.core.model.Project
+import org.dpdns.bnai.anime.core.network.Resource
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun StudioDashboardScreen(
+    onProjectClick: (String) -> Unit = {},
+    viewModel: StudioViewModel = viewModel()
+) {
+    val projectsResource by viewModel.projectsState.collectAsState()
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = "Anime Studio",
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                )
+            )
+        },
+        floatingActionButton = {
+            ExtendedFloatingActionButton(
+                onClick = { viewModel.createNewProject("New Cinematic Project") },
+                containerColor = MaterialTheme.colorScheme.secondary,
+                contentColor = MaterialTheme.colorScheme.onSecondary
+            ) {
+                Text(
+                    text = "+ New Project",
+                    style = MaterialTheme.typography.labelLarge
+                )
+            }
+        },
+        containerColor = MaterialTheme.colorScheme.background
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(16.dp)
+        ) {
+            ComputeEngineCard()
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            Text(
+                text = "Active Productions",
+                style = MaterialTheme.typography.headlineMedium,
+                color = MaterialTheme.colorScheme.onBackground
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            when (val state = projectsResource) {
+                is Resource.Loading, is Resource.Idle -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+                    }
+                }
+                is Resource.Error -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(
+                                text = state.message,
+                                color = MaterialTheme.colorScheme.error,
+                                style = MaterialTheme.typography.bodyLarge
+                            )
+                            Spacer(modifier = Modifier.height(12.dp))
+                            Button(onClick = { viewModel.loadProjects() }) {
+                                Text("Retry")
+                            }
+                        }
+                    }
+                }
+                is Resource.Success -> {
+                    LazyColumn(
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                        contentPadding = PaddingValues(bottom = 80.dp)
+                    ) {
+                        items(state.data, key = { it.id }) { project ->
+                            ProjectCard(
+                                project = project,
+                                onClick = { onProjectClick(project.id) }
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ComputeEngineCard() {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(14.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Column {
+                Text(
+                    text = "Compute Engine",
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "SDXL Lightning + AnimateDiff + MuseTalk",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.75f)
+                )
+            }
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    modifier = Modifier
+                        .size(12.dp)
+                        .clip(CircleShape)
+                        .background(Color(0xFF4CAF50))
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "Kaggle Status: ONLINE",
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF4CAF50)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun ProjectCard(
+    project: Project,
+    onClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() },
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = project.name,
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Spacer(modifier = Modifier.height(6.dp))
+                Text(
+                    text = project.activeEpisode,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
+                )
+            }
+            Spacer(modifier = Modifier.width(12.dp))
+            StatusChip(status = project.status)
+        }
+    }
+}
+
+@Composable
+private fun StatusChip(status: String) {
+    val chipColor = when (status.uppercase()) {
+        "RUNNING" -> Color(0xFF3F51B5)
+        "REVIEW" -> Color(0xFFFF9800)
+        "APPROVED", "VERIFIED" -> Color(0xFF009688)
+        else -> Color(0xFF757575)
+    }
+    Surface(
+        color = chipColor.copy(alpha = 0.18f),
+        shape = RoundedCornerShape(50),
+        modifier = Modifier.padding(4.dp)
+    ) {
+        Text(
+            text = status.uppercase(),
+            color = chipColor,
+            style = MaterialTheme.typography.labelLarge,
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+        )
+    }
+}
+EOF
+
+cat > app/src/main/java/org/dpdns/bnai/anime/ui/project/ProjectViewModel.kt << 'EOF'
+package org.dpdns.bnai.anime.ui.project
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
+import org.dpdns.bnai.anime.core.network.Resource
+
+data class StoryBibleData(
+    val projectId: String,
+    val universeTitle: String,
+    val worldRules: String,
+    val magicSystem: String,
+    val toneAndTheme: String
+)
+
+class ProjectViewModel : ViewModel() {
+
+    private val _bibleState = MutableStateFlow<Resource<StoryBibleData>>(Resource.Loading)
+    val bibleState: StateFlow<Resource<StoryBibleData>> = _bibleState.asStateFlow()
+
+    fun fetchBible(projectId: String) {
+        viewModelScope.launch {
+            _bibleState.value = Resource.Loading
+            delay(400)
+            val bible = StoryBibleData(
+                projectId = projectId,
+                universeTitle = "Universe Workspace ($projectId)",
+                worldRules = "1. Three Floating Citadels govern the mortal realm.\n" +
+                    "2. No mortal may cross the Obsidian Rift without a Soul Anchor.\n" +
+                    "3. Time flows twice as fast inside the Astral Sanctum.",
+                magicSystem = "Resonance Weaving: Practitioners bind elemental frequencies to ancestral weapons. " +
+                    "Overuse causes crystalline corruption of the nervous system (Rule 47 Power Cap enforced).",
+                toneAndTheme = "Tone: Dark Cinematic Seinen, High-Stakes Political Intrigue.\n" +
+                    "Theme: Memory vs. Destiny, and the cost of rewriting immutable Canon."
+            )
+            _bibleState.value = Resource.Success(bible)
+        }
+    }
+}
+EOF
+
+cat > app/src/main/java/org/dpdns/bnai/anime/ui/project/BibleScreen.kt << 'EOF'
+package org.dpdns.bnai.anime.ui.project
+
+import android.widget.Toast
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import org.dpdns.bnai.anime.core.network.Resource
+
+@Composable
+fun BibleScreen(
+    projectId: String = "proj_001",
+    viewModel: ProjectViewModel = viewModel()
+) {
+    val context = LocalContext.current
+    val bibleResource by viewModel.bibleState.collectAsState()
+
+    LaunchedEffect(projectId) {
+        viewModel.fetchBible(projectId)
+    }
+
+    when (val state = bibleResource) {
+        is Resource.Loading, is Resource.Idle -> {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+            }
+        }
+        is Resource.Error -> {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = state.message,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodyLarge
+                )
+            }
+        }
+        is Resource.Success -> {
+            val bible = state.data
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Text(
+                    text = "Master Story Bible",
+                    style = MaterialTheme.typography.headlineLarge,
+                    color = MaterialTheme.colorScheme.primary
+                )
+
+                Text(
+                    text = bible.universeTitle,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.75f)
+                )
+
+                OutlinedTextField(
+                    value = bible.worldRules,
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("World Rules") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                OutlinedTextField(
+                    value = bible.magicSystem,
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("Magic System") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                OutlinedTextField(
+                    value = bible.ToneAndThemeText(),
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("Tone/Theme") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Button(
+                    onClick = {
+                        Toast.makeText(context, "Coming soon", Toast.LENGTH_SHORT).show()
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(50.dp)
+                ) {
+                    Text(
+                        text = "Propose Bible Change",
+                        style = MaterialTheme.typography.labelLarge
+                    )
+                }
+            }
+        }
+    }
+}
+
+private fun StoryBibleData.ToneAndThemeText(): String = this.toneAndTheme
+EOF
+
+cat > app/src/main/java/org/dpdns/bnai/anime/core/model/Character.kt << 'EOF'
+package org.dpdns.bnai.anime.core.model
+
+data class Character(
+    val id: String,
+    val name: String,
+    val role: String,
+    val visualDna: String,
+    val voiceId: String
+)
+EOF
+
+cat > app/src/main/java/org/dpdns/bnai/anime/ui/character/CharacterListScreen.kt << 'EOF'
+package org.dpdns.bnai.anime.ui.character
+
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import org.dpdns.bnai.anime.core.model.Character
+
+@Composable
+fun CharacterListScreen(
+    onCharacterClick: (Character) -> Unit = {}
+) {
+    val characters = remember {
+        listOf(
+            Character(
+                id = "CHAR_001",
+                name = "Aarav Vanshi",
+                role = "Protagonist / Astral Weaver",
+                visualDna = "Face: Sharp jawline, amber eyes, faint scar over left eyebrow | Hair: Jet-black undercut with silver streaks | Clothing: High-collar obsidian trench coat with glowing indigo runes",
+                voiceId = "svara_hi_male_hero_01 (Provider: Svara TTS)"
+            ),
+            Character(
+                id = "CHAR_002",
+                name = "Meera Suryavanshi",
+                role = "Deuteragonist / Citadel Commander",
+                visualDna = "Face: Fierce crimson eyes, calm expression | Hair: Long silver braided ponytail | Clothing: Valkyrie tactical armor with teal energy pauldrons",
+                voiceId = "svara_hi_female_lead_01 (Provider: Svara TTS)"
+            )
+        )
+    }
+
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+        contentPadding = PaddingValues(bottom = 24.dp)
+    ) {
+        items(characters, key = { it.id }) { character ->
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { onCharacterClick(character) },
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surface
+                ),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = character.name,
+                            style = MaterialTheme.typography.headlineMedium,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = character.role,
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.secondary
+                        )
+                    }
+                    Surface(
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Text(
+                            text = character.id,
+                            style = MaterialTheme.typography.labelLarge,
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+EOF
+
+cat > app/src/main/java/org/dpdns/bnai/anime/ui/character/CharacterDetailScreen.kt << 'EOF'
+package org.dpdns.bnai.anime.ui.character
+
+import android.widget.Toast
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
+import org.dpdns.bnai.anime.core.model.Character
+
+@Composable
+fun CharacterDetailScreen(
+    character: Character = Character(
+        id = "CHAR_001",
+        name = "Aarav Vanshi",
+        role = "Protagonist / Astral Weaver",
+        visualDna = "Face: Sharp jawline, amber eyes, faint scar over left eyebrow\nHair: Jet-black undercut with silver streaks\nClothing: High-collar obsidian trench coat with glowing indigo runes",
+        voiceId = "voice_id: svara_hi_male_hero_01 | provider: Svara TTS (v2-hi)"
+    )
+) {
+    val context = LocalContext.current
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .size(110.dp)
+                .clip(CircleShape)
+                .background(MaterialTheme.colorScheme.primary),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = character.name.take(2).uppercase(),
+                style = MaterialTheme.typography.headlineLarge,
+                color = MaterialTheme.colorScheme.onPrimary
+            )
+        }
+
+        Text(
+            text = character.name,
+            style = MaterialTheme.typography.headlineLarge,
+            color = MaterialTheme.colorScheme.onBackground
+        )
+
+        Text(
+            text = "${character.role} (${character.id})",
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.secondary
+        )
+
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(12.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surface
+            )
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(
+                    text = "Visual DNA",
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = character.visualDna,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
+        }
+
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(12.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surface
+            )
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(
+                    text = "Voice Config",
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = MaterialTheme.colorScheme.secondary
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = character.voiceId,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Spacer(modifier = Modifier.height(6.dp))
+                Text(
+                    text = "Emotion Profiles: neutral (1.0x), anger (1.1x), joy (1.05x), sadness (0.9x), fear (1.08x)",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.75f)
+                )
+            }
+        }
+
+        Button(
+            onClick = {
+                Toast.makeText(
+                    context,
+                    "Playing voice sample for ${character.name}",
+                    Toast.LENGTH_SHORT
+                ).show()
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(50.dp)
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = Icons.Default.PlayArrow,
+                    contentDescription = "Preview Voice"
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "Preview Voice",
+                    style = MaterialTheme.typography.labelLarge
+                )
+            }
+        }
+    }
+}
+EOF
+
+cat > app/src/main/java/org/dpdns/bnai/anime/ui/project/ProjectDetailScreen.kt << 'EOF'
+package org.dpdns.bnai.anime.ui.project
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import org.dpdns.bnai.anime.core.model.Character
+import org.dpdns.bnai.anime.ui.character.CharacterDetailScreen
+import org.dpdns.bnai.anime.ui.character.CharacterListScreen
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ProjectDetailScreen(
+    projectId: String = "proj_001",
+    onOpenEpisodes: () -> Unit = {},
+    onOpenReviews: () -> Unit = {},
+    onOpenAnalytics: () -> Unit = {}
+) {
+    val tabNavController = rememberNavController()
+    val tabs = listOf("Overview", "Bible", "Characters")
+    var selectedTabIndex by remember { mutableStateOf(0) }
+    var selectedCharacter by remember { mutableStateOf<Character?>(null) }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = "Project Workspace: $projectId",
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                )
+            )
+        },
+        containerColor = MaterialTheme.colorScheme.background
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+        ) {
+            TabRow(
+                selectedTabIndex = selectedTabIndex,
+                containerColor = MaterialTheme.colorScheme.surface,
+                contentColor = MaterialTheme.colorScheme.primary
+            ) {
+                tabs.forEachIndexed { index, title ->
+                    Tab(
+                        selected = selectedTabIndex == index,
+                        onClick = {
+                            selectedTabIndex = index
+                            val route = when (index) {
+                                0 -> "overview"
+                                1 -> "bible"
+                                else -> "characters"
+                            }
+                            tabNavController.navigate(route) {
+                                popUpTo(tabNavController.graph.startDestinationId) {
+                                    saveState = true
+                                }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
+                        },
+                        text = {
+                            Text(
+                                text = title,
+                                style = MaterialTheme.typography.labelLarge
+                            )
+                        }
+                    )
+                }
+            }
+
+            NavHost(
+                navController = tabNavController,
+                startDestination = "overview",
+                modifier = Modifier.fillMaxSize()
+            ) {
+                composable("overview") {
+                    ProjectOverviewTab(
+                        projectId = projectId,
+                        onOpenEpisodes = onOpenEpisodes,
+                        onOpenReviews = onOpenReviews,
+                        onOpenAnalytics = onOpenAnalytics
+                    )
+                }
+                composable("bible") {
+                    BibleScreen(projectId = projectId)
+                }
+                composable("characters") {
+                    CharacterListScreen(
+                        onCharacterClick = { character ->
+                            selectedCharacter = character
+                            tabNavController.navigate("character_detail")
+                        }
+                    )
+                }
+                composable("character_detail") {
+                    selectedCharacter?.let { character ->
+                        CharacterDetailScreen(character = character)
+                    } ?: CharacterDetailScreen()
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ProjectOverviewTab(
+    projectId: String,
+    onOpenEpisodes: () -> Unit,
+    onOpenReviews: () -> Unit,
+    onOpenAnalytics: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(14.dp)
+    ) {
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(12.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(
+                    text = "Universe Snapshot ($projectId)",
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Canon Status: COMMITTED (Snapshot Ep 4)\nContinuity Gate (WF-06): VERIFIED\nActive Target: Season 1, Episode 5",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
+        }
+
+        Button(
+            onClick = onOpenEpisodes,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(50.dp)
+        ) {
+            Text("Open S06 Episode Planner", style = MaterialTheme.typography.labelLarge)
+        }
+
+        Button(
+            onClick = onOpenReviews,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(50.dp)
+        ) {
+            Text("Open S11 Review & Approval Inbox", style = MaterialTheme.typography.labelLarge)
+        }
+
+        Button(
+            onClick = onOpenAnalytics,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(50.dp)
+        ) {
+            Text("Open S15 Analytics & Insights", style = MaterialTheme.typography.labelLarge)
+        }
+    }
+}
+EOF
+# --- PHASE 3: PRODUCTION ENGINE ---
+mkdir -p app/src/main/java/org/dpdns/bnai/anime/{core/model,ui/episode,ui/production,ui/library}
+
+cat > app/src/main/java/org/dpdns/bnai/anime/core/model/Episode.kt << 'EOF'
+package org.dpdns.bnai.anime.core.model
+
+data class Episode(
+    val id: String,
+    val episodeNumber: Int,
+    val title: String,
+    val status: String
+)
+EOF
+
+cat > app/src/main/java/org/dpdns/bnai/anime/ui/episode/EpisodePlannerScreen.kt << 'EOF'
+package org.dpdns.bnai.anime.ui.episode
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
+import org.dpdns.bnai.anime.core.model.Episode
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun EpisodePlannerScreen(
+    onStartProduction: (String) -> Unit = {}
+) {
+    var showConfirmDialog by remember { mutableStateOf(false) }
+
+    val episodes = remember {
+        listOf(
+            Episode(id = "ep_001", episodeNumber = 1, title = "The Obsidian Oath", status = "Ready"),
+            Episode(id = "ep_002", episodeNumber = 2, title = "Echoes of the Citadel", status = "Ready"),
+            Episode(id = "ep_003", episodeNumber = 3, title = "Shattered Resonance", status = "Ready"),
+            Episode(id = "ep_004", episodeNumber = 4, title = "Trial of the Astral Blade", status = "Generating"),
+            Episode(id = "ep_005", episodeNumber = 5, title = "The Crimson Eclipse", status = "Draft")
+        )
+    }
+
+    if (showConfirmDialog) {
+        AlertDialog(
+            onDismissRequest = { showConfirmDialog = false },
+            title = {
+                Text(
+                    text = "Confirm Production Launch",
+                    style = MaterialTheme.typography.headlineMedium
+                )
+            },
+            text = {
+                Text(
+                    text = "Start Production? This will consume quota.",
+                    style = MaterialTheme.typography.bodyLarge
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showConfirmDialog = false
+                        onStartProduction("ep_005")
+                    }
+                ) {
+                    Text("Confirm")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showConfirmDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = "Episode Planner (S06)",
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                )
+            )
+        },
+        containerColor = MaterialTheme.colorScheme.background
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(16.dp)
+        ) {
+            LazyColumn(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                contentPadding = PaddingValues(bottom = 16.dp)
+            ) {
+                items(episodes, key = { it.id }) { episode ->
+                    EpisodeRowCard(episode = episode)
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Button(
+                onClick = { showConfirmDialog = true },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(54.dp)
+            ) {
+                Text(
+                    text = "Generate Episode",
+                    style = MaterialTheme.typography.labelLarge
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun EpisodeRowCard(episode: Episode) {
+    val badgeColor = when (episode.status) {
+        "Ready" -> Color(0xFF009688)
+        "Generating" -> Color(0xFF3F51B5)
+        else -> Color(0xFFFF9800)
+    }
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "Episode ${episode.episodeNumber}",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.secondary
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = episode.title,
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
+            Surface(
+                color = badgeColor.copy(alpha = 0.18f),
+                shape = RoundedCornerShape(50)
+            ) {
+                Text(
+                    text = episode.status,
+                    color = badgeColor,
+                    style = MaterialTheme.typography.labelLarge,
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                )
+            }
+        }
+    }
+}
+EOF
+
+cat > app/src/main/java/org/dpdns/bnai/anime/ui/production/ProductionViewModel.kt << 'EOF'
+package org.dpdns.bnai.anime.ui.production
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
+
+enum class ProductionStage(val displayTitle: String, val detailMessage: String) {
+    Queued("Queued", "Job registered in WF-10 State Machine & Admission Control..."),
+    Scripting("Scripting", "WF-02 generating Hindi/Hinglish screenplay & Section 14A flags..."),
+    Rendering("Rendering", "Rendering Scene 3... (SDXL Lightning + Svara TTS + MuseTalk)"),
+    QC("QC", "Running WF-11 Automated Quality & Audio/Video Sync Gate..."),
+    Completed("Completed", "Master MP4 verified and ready for review & delivery."),
+    Failed("Failed", "Worker timeout on Scene 4 GPU dispatch. Ready for WF-13 stage retry.")
+}
+
+data class ProductionState(
+    val episodeId: String = "ep_005",
+    val currentStage: ProductionStage = ProductionStage.Queued,
+    val errorMessage: String? = null
+)
+
+class ProductionViewModel : ViewModel() {
+
+    private val _productionState = MutableStateFlow(ProductionState())
+    val productionState: StateFlow<ProductionState> = _productionState.asStateFlow()
+
+    private var pollingJob: Job? = null
+
+    fun startPolling(episodeId: String) {
+        pollingJob?.cancel()
+        pollingJob = viewModelScope.launch {
+            val sequence = listOf(
+                ProductionStage.Queued,
+                ProductionStage.Scripting,
+                ProductionStage.Rendering,
+                ProductionStage.QC,
+                ProductionStage.Completed
+            )
+            for (stage in sequence) {
+                _productionState.value = ProductionState(
+                    episodeId = episodeId,
+                    currentStage = stage,
+                    errorMessage = null
+                )
+                if (stage != ProductionStage.Completed) {
+                    delay(5000)
+                }
+            }
+        }
+    }
+
+    fun triggerSimulatedFailure(episodeId: String) {
+        pollingJob?.cancel()
+        _productionState.value = ProductionState(
+            episodeId = episodeId,
+            currentStage = ProductionStage.Failed,
+            errorMessage = ProductionStage.Failed.detailMessage
+        )
+    }
+}
+EOF
+
+cat > app/src/main/java/org/dpdns/bnai/anime/ui/production/ProductionScreen.kt << 'EOF'
+package org.dpdns.bnai.anime.ui.production
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ProductionScreen(
+    episodeId: String = "ep_005",
+    onViewVideoClick: () -> Unit = {},
+    onOpenSceneInspector: () -> Unit = {},
+    onOpenMediaLibrary: () -> Unit = {},
+    viewModel: ProductionViewModel = viewModel()
+) {
+    val state by viewModel.productionState.collectAsState()
+
+    LaunchedEffect(episodeId) {
+        viewModel.startPolling(episodeId)
+    }
+
+    val timelineSteps = listOf(
+        ProductionStage.Queued,
+        ProductionStage.Scripting,
+        ProductionStage.Rendering,
+        ProductionStage.QC,
+        ProductionStage.Completed
+    )
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = "Production Command Center",
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                )
+            )
+        },
+        containerColor = MaterialTheme.colorScheme.background
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            if (state.currentStage != ProductionStage.Completed &&
+                state.currentStage != ProductionStage.Failed
+            ) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(72.dp),
+                    color = MaterialTheme.colorScheme.secondary,
+                    strokeWidth = 6.dp
+                )
+            }
+
+            Text(
+                text = "Stage: ${state.currentStage.displayTitle}",
+                style = MaterialTheme.typography.headlineLarge,
+                color = MaterialTheme.colorScheme.primary
+            )
+
+            Text(
+                text = state.currentStage.detailMessage,
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onBackground
+            )
+
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(14.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surface
+                )
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    timelineSteps.forEachIndexed { index, step ->
+                        val currentIndex = timelineSteps.indexOf(state.currentStage)
+                        val isDone = currentIndex > index || state.currentStage == ProductionStage.Completed
+                        val isCurrent = state.currentStage == step
+
+                        val indicatorColor = when {
+                            isDone -> Color(0xFF4CAF50)
+                            isCurrent -> MaterialTheme.colorScheme.primary
+                            else -> Color.Gray
+                        }
+
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Box(
+                                modifier = Modifier
+                                    .size(16.dp)
+                                    .clip(CircleShape)
+                                    .background(indicatorColor)
+                            )
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text(
+                                text = step.displayTitle,
+                                style = MaterialTheme.typography.headlineMedium,
+                                color = if (isDone || isCurrent) {
+                                    MaterialTheme.colorScheme.onSurface
+                                } else {
+                                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                                }
+                            )
+                        }
+                    }
+                }
+            }
+
+            if (state.currentStage == ProductionStage.Completed) {
+                Button(
+                    onClick = onViewVideoClick,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(50.dp)
+                ) {
+                    Text(
+                        text = "View Video (Proceed to QC)",
+                        style = MaterialTheme.typography.labelLarge
+                    )
+                }
+            }
+
+            if (state.currentStage == ProductionStage.Failed) {
+                Text(
+                    text = state.errorMessage ?: "Production stage failed.",
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodyLarge
+                )
+                Button(
+                    onClick = { viewModel.startPolling(episodeId) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(50.dp)
+                ) {
+                    Text(
+                        text = "Retry",
+                        style = MaterialTheme.typography.labelLarge
+                    )
+                }
+            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                OutlinedButton(
+                    onClick = onOpenSceneInspector,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("S09 Scenes")
+                }
+                OutlinedButton(
+                    onClick = onOpenMediaLibrary,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("S13 Library")
+                }
+            }
+        }
+    }
+}
+EOF
+
+cat > app/src/main/java/org/dpdns/bnai/anime/ui/production/SceneDetailScreen.kt << 'EOF'
+package org.dpdns.bnai.anime.ui.production
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
+
+data class SceneFlagItem(
+    val sceneNumber: Int,
+    val summary: String,
+    val needs_image: Boolean,
+    val needs_voice: Boolean,
+    val needs_motion: Boolean
+)
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SceneDetailScreen() {
+    val scenes = remember {
+        listOf(
+            SceneFlagItem(
+                sceneNumber = 1,
+                summary = "Opening establishing shot of Citadel Throne Room under crimson storm.",
+                needs_image = true,
+                needs_voice = true,
+                needs_motion = true
+            ),
+            SceneFlagItem(
+                sceneNumber = 2,
+                summary = "Aarav confronts Commander Meera on the Astral Bridge (Lip-sync dialogue).",
+                needs_image = true,
+                needs_voice = true,
+                needs_motion = false
+            ),
+            SceneFlagItem(
+                sceneNumber = 3,
+                summary = "High-speed blade clash as Rift portals open across the sky.",
+                needs_image = true,
+                needs_voice = false,
+                needs_motion = false
+            ),
+            SceneFlagItem(
+                sceneNumber = 4,
+                summary = "Cliffhanger close-up: Lord Kaalraj awakens the ancient artifact.",
+                needs_image = false,
+                needs_voice = false,
+                needs_motion = false
+            )
+        )
+    }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = "Scene Inspector (S09)",
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                )
+            )
+        },
+        containerColor = MaterialTheme.colorScheme.background
+    ) { innerPadding ->
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            contentPadding = PaddingValues(bottom = 24.dp)
+        ) {
+            items(scenes, key = { it.sceneNumber }) { scene ->
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surface
+                    ),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(
+                            text = "Scene ${scene.sceneNumber}",
+                            style = MaterialTheme.typography.headlineMedium,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = scene.summary,
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            FlagStatusChip(label = "needs_image", isDone = scene.needs_image)
+                            FlagStatusChip(label = "needs_voice", isDone = scene.needs_voice)
+                            FlagStatusChip(label = "needs_motion", isDone = scene.needs_motion)
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun FlagStatusChip(label: String, isDone: Boolean) {
+    val statusColor = if (isDone) Color(0xFF4CAF50) else Color(0xFFE53935)
+    val icon = if (isDone) Icons.Default.CheckCircle else Icons.Default.Warning
+
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Icon(
+            imageVector = icon,
+            contentDescription = label,
+            tint = statusColor
+        )
+        Spacer(modifier = Modifier.width(4.dp))
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelLarge,
+            color = statusColor
+        )
+    }
+}
+EOF
+
+cat > app/src/main/java/org/dpdns/bnai/anime/ui/library/MediaLibraryScreen.kt << 'EOF'
+package org.dpdns.bnai.anime.ui.library
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.unit.dp
+
+data class MediaAssetItem(
+    val id: String,
+    val title: String,
+    val mediaType: String
+)
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun MediaLibraryScreen() {
+    val assets = remember {
+        listOf(
+            MediaAssetItem("AST_01", "Scene 1 Keyframe", "IMAGE"),
+            MediaAssetItem("AST_02", "Scene 1 Motion Clip", "VIDEO"),
+            MediaAssetItem("AST_03", "Aarav Close-Up", "IMAGE"),
+            MediaAssetItem("AST_04", "Meera LipSync Clip", "VIDEO"),
+            MediaAssetItem("AST_05", "Citadel Night BG", "IMAGE"),
+            MediaAssetItem("AST_06", "Scene 3 Action Cut", "VIDEO"),
+            MediaAssetItem("AST_07", "Artifact Glow Frame", "IMAGE"),
+            MediaAssetItem("AST_08", "Kaalraj Reveal", "VIDEO"),
+            MediaAssetItem("AST_09", "Episode 5 Master", "VIDEO")
+        )
+    }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = "Media Library (S13)",
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                )
+            )
+        },
+        containerColor = MaterialTheme.colorScheme.background
+    ) { innerPadding ->
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(3),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(12.dp),
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+            contentPadding = PaddingValues(bottom = 24.dp)
+        ) {
+            items(assets, key = { it.id }) { asset ->
+                Card(
+                    shape = RoundedCornerShape(10.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surface
+                    ),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .aspectRatio(1f)
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.PlayArrow,
+                                contentDescription = asset.title,
+                                tint = MaterialTheme.colorScheme.secondary,
+                                modifier = Modifier.size(32.dp)
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Text(
+                            text = asset.title,
+                            style = MaterialTheme.typography.labelLarge,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            maxLines = 1
+                        )
+                        Text(
+                            text = asset.mediaType,
+                            style = MaterialTheme.typography.labelLarge,
+                            color = MaterialTheme.colorScheme.secondary
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+EOF
+# --- PHASE 4: REVIEW, QC, PUBLISH & ANALYTICS ---
+mkdir -p app/src/main/java/org/dpdns/bnai/anime/{ui/review,ui/qc,ui/publish,ui/analytics}
+
+cat > app/src/main/java/org/dpdns/bnai/anime/ui/review/ReviewInboxScreen.kt << 'EOF'
+package org.dpdns.bnai.anime.ui.review
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
+
+data class ApprovalRequestItem(
+    val id: String,
+    val type: String,
+    val summary: String,
+    val diffPreview: String,
+    val decisionStatus: String = "PENDING"
+)
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ReviewInboxScreen() {
+    val approvals = remember {
+        mutableStateListOf(
+            ApprovalRequestItem(
+                id = "APR_101",
+                type = "Canon Change",
+                summary = "Update Character Status: Commander Meera unlocked Astral Resonance Tier 2.",
+                diffPreview = "Before: Tier 1 | After: Tier 2 (Effective Episode 5)"
+            ),
+            ApprovalRequestItem(
+                id = "APR_102",
+                type = "Voice Change",
+                summary = "Switch Lord Kaalraj TTS voice profile to deeper sovereign timbre.",
+                diffPreview = "Before: supertonic_v1 | After: supertonic_hi_male_villain_02"
+            ),
+            ApprovalRequestItem(
+                id = "APR_103",
+                type = "Publish Request",
+                summary = "Release Episode 5: The Crimson Eclipse to connected YouTube channel.",
+                diffPreview = "QC Gate: PASSED (142.4 MB MP4 verified)"
+            )
+        )
+    }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = "Review & Approval Inbox (S11)",
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                )
+            )
+        },
+        containerColor = MaterialTheme.colorScheme.background
+    ) { innerPadding ->
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            contentPadding = PaddingValues(bottom = 24.dp)
+        ) {
+            items(approvals, key = { it.id }) { item ->
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surface
+                    ),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = item.type,
+                                style = MaterialTheme.typography.headlineMedium,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                            Text(
+                                text = item.decisionStatus,
+                                style = MaterialTheme.typography.labelLarge,
+                                color = when (item.decisionStatus) {
+                                    "APPROVED" -> Color(0xFF4CAF50)
+                                    "REJECTED" -> Color(0xFFE53935)
+                                    else -> MaterialTheme.colorScheme.secondary
+                                }
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(6.dp))
+
+                        Text(
+                            text = item.summary,
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+
+                        Spacer(modifier = Modifier.height(6.dp))
+
+                        Text(
+                            text = item.diffPreview,
+                            style = MaterialTheme.typography.labelLarge,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                        )
+
+                        Spacer(modifier = Modifier.height(14.dp))
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            Button(
+                                onClick = {
+                                    val idx = approvals.indexOfFirst { it.id == item.id }
+                                    if (idx != -1) {
+                                        approvals[idx] = approvals[idx].copy(decisionStatus = "APPROVED")
+                                    }
+                                },
+                                enabled = item.decisionStatus == "PENDING",
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.secondary
+                                ),
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Text("Approve")
+                            }
+
+                            OutlinedButton(
+                                onClick = {
+                                    val idx = approvals.indexOfFirst { it.id == item.id }
+                                    if (idx != -1) {
+                                        approvals[idx] = approvals[idx].copy(decisionStatus = "REJECTED")
+                                    }
+                                },
+                                enabled = item.decisionStatus == "PENDING",
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Text(
+                                    text = "Reject",
+                                    color = MaterialTheme.colorScheme.error
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+EOF
+
+cat > app/src/main/java/org/dpdns/bnai/anime/ui/qc/QCScreen.kt << 'EOF'
+package org.dpdns.bnai.anime.ui.qc
+
+import android.widget.MediaController
+import android.widget.VideoView
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
+
+data class QCCheckItem(
+    val checkName: String,
+    val status: String,
+    val isPassed: Boolean
+)
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun QCScreen(
+    onProceedToPublish: () -> Unit = {}
+) {
+    val qcChecks = remember {
+        listOf(
+            QCCheckItem("Audio Sync: PASSED", "PASSED", true),
+            QCCheckItem("Lipsync: FAILED", "FAILED", false),
+            QCCheckItem("Master MP4 File Integrity (>= 1MB): PASSED", "PASSED", true),
+            QCCheckItem("Subtitle Burn & Timing Alignment: PASSED", "PASSED", true)
+        )
+    }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = "QC & Delivery Gate (S12)",
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                )
+            )
+        },
+        containerColor = MaterialTheme.colorScheme.background
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(210.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(Color.Black),
+                contentAlignment = Alignment.Center
+            ) {
+                AndroidView(
+                    factory = { context ->
+                        VideoView(context).apply {
+                            val mediaController = MediaController(context)
+                            mediaController.setAnchorView(this)
+                            setMediaController(mediaController)
+                        }
+                    },
+                    modifier = Modifier.fillMaxSize()
+                )
+                Text(
+                    text = "Master Episode Preview Player (VideoView Ready)",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = Color.White
+                )
+            }
+
+            Text(
+                text = "WF-11 Automated QC Checks",
+                style = MaterialTheme.typography.headlineMedium,
+                color = MaterialTheme.colorScheme.onBackground
+            )
+
+            qcChecks.forEach { check ->
+                val statusColor = if (check.isPassed) Color(0xFF4CAF50) else Color(0xFFE53935)
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(10.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surface
+                    )
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(14.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = check.checkName,
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = FontWeight.SemiBold,
+                            color = statusColor
+                        )
+                        Text(
+                            text = check.status,
+                            style = MaterialTheme.typography.labelLarge,
+                            color = statusColor
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.weight(1f))
+
+            Button(
+                onClick = onProceedToPublish,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(52.dp)
+            ) {
+                Text(
+                    text = "Open S14 Publish Studio",
+                    style = MaterialTheme.typography.labelLarge
+                )
+            }
+        }
+    }
+}
+EOF
+
+cat > app/src/main/java/org/dpdns/bnai/anime/ui/publish/PublishScreen.kt << 'EOF'
+package org.dpdns.bnai.anime.ui.publish
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun PublishScreen() {
+    var youtubeTitle by rememberSaveable {
+        mutableStateOf("Shadows of Aethelgard - Episode 5: The Crimson Eclipse [Full Hindi Anime]")
+    }
+    var youtubeDescription by rememberSaveable {
+        mutableStateOf(
+            "Watch Episode 5 of Shadows of Aethelgard. Generated & verified with AI Anime Studio (WF-07 Publisher)."
+        )
+    }
+    var showConfirmDialog by remember { mutableStateOf(false) }
+    var isPublishing by remember { mutableStateOf(false) }
+    var publishSuccessReceipt by remember { mutableStateOf<String?>(null) }
+
+    val coroutineScope = rememberCoroutineScope()
+
+    if (showConfirmDialog) {
+        AlertDialog(
+            onDismissRequest = { showConfirmDialog = false },
+            title = {
+                Text(
+                    text = "Confirm YouTube Publication",
+                    style = MaterialTheme.typography.headlineMedium
+                )
+            },
+            text = {
+                Text(
+                    text = "This will publish to your connected channel. Proceed?",
+                    style = MaterialTheme.typography.bodyLarge
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showConfirmDialog = false
+                        coroutineScope.launch {
+                            isPublishing = true
+                            publishSuccessReceipt = null
+                            delay(1500)
+                            isPublishing = false
+                            publishSuccessReceipt =
+                                "Published successfully! Platform Receipt ID: YT_VID_98412A (Verified via WF-07)"
+                        }
+                    }
+                ) {
+                    Text("Proceed")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showConfirmDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = "Publish Studio (S14)",
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                )
+            )
+        },
+        containerColor = MaterialTheme.colorScheme.background
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            OutlinedTextField(
+                value = youtubeTitle,
+                onValueChange = { youtubeTitle = it },
+                label = { Text("YouTube Title") },
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            OutlinedTextField(
+                value = youtubeDescription,
+                onValueChange = { youtubeDescription = it },
+                label = { Text("Description") },
+                minLines = 4,
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Button(
+                onClick = { showConfirmDialog = true },
+                enabled = !isPublishing && youtubeTitle.isNotBlank(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(52.dp)
+            ) {
+                if (isPublishing) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(24.dp),
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    Text(
+                        text = "Publish Now",
+                        style = MaterialTheme.typography.labelLarge
+                    )
+                }
+            }
+
+            publishSuccessReceipt?.let { receipt ->
+                Spacer(modifier = Modifier.height(8.dp))
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = Color(0xFF4CAF50).copy(alpha = 0.15f)
+                    )
+                ) {
+                    Text(
+                        text = receipt,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = Color(0xFF4CAF50),
+                        modifier = Modifier.padding(16.dp)
+                    )
+                }
+            }
+        }
+    }
+}
+EOF
+
+cat > app/src/main/java/org/dpdns/bnai/anime/ui/analytics/AnalyticsScreen.kt << 'EOF'
+package org.dpdns.bnai.anime.ui.analytics
+
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.unit.dp
+
+data class StatMetric(
+    val title: String,
+    val value: String,
+    val delta: String
+)
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AnalyticsScreen() {
+    val stats = remember {
+        listOf(
+            StatMetric("Total Views", "148,920", "+18.4% this week"),
+            StatMetric("Watch Time", "64,310 mins", "Avg Retention: 74.2%"),
+            StatMetric("Engagement Score", "91 / 100", "High Viral Share Weight")
+        )
+    }
+
+    val recentInsights = remember {
+        listOf(
+            "WF-08 Recommendation: Climax sword-fight scenes with Svara anger emotion profile increased retention by +22%.",
+            "Audience Insight: Viewers replayed Episode 4 Astral Bridge dialogue segment 3.4x above average.",
+            "Pacing Tip: Opening hooks under 12 seconds yielded 81% 30-second retention on YouTube."
+        )
+    }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = "Analytics & Learning (S15)",
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                )
+            )
+        },
+        containerColor = MaterialTheme.colorScheme.background
+    ) { innerPadding ->
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp)
+        ) {
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    stats.forEach { metric ->
+                        Card(
+                            modifier = Modifier.weight(1f),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surface
+                            ),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                        ) {
+                            Column(modifier = Modifier.padding(12.dp)) {
+                                Text(
+                                    text = metric.title,
+                                    style = MaterialTheme.typography.labelLarge,
+                                    color = MaterialTheme.colorScheme.secondary
+                                )
+                                Spacer(modifier = Modifier.height(6.dp))
+                                Text(
+                                    text = metric.value,
+                                    style = MaterialTheme.typography.headlineMedium,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = metric.delta,
+                                    style = MaterialTheme.typography.labelLarge,
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surface
+                    )
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(
+                            text = "Episode Retention & Engagement Trend",
+                            style = MaterialTheme.typography.headlineMedium,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
+                        RetentionLineChart()
+                    }
+                }
+            }
+
+            item {
+                Text(
+                    text = "Recent WF-08 Narrative Insights (Advisory Only)",
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+            }
+
+            items(recentInsights) { insight ->
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(10.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surface
+                    )
+                ) {
+                    Text(
+                        text = insight,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.padding(14.dp)
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun RetentionLineChart() {
+    val lineColor = MaterialTheme.colorScheme.secondary
+    val points = listOf(0.45f, 0.58f, 0.64f, 0.79f, 0.91f)
+
+    Canvas(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(120.dp)
+    ) {
+        val path = Path()
+        val stepX = size.width / (points.size - 1).coerceAtLeast(1)
+
+        points.forEachIndexed { index, value ->
+            val x = index * stepX
+            val y = size.height - (value * size.height)
+            if (index == 0) {
+                path.moveTo(x, y)
+            } else {
+                path.lineTo(x, y)
+            }
+            drawCircle(
+                color = lineColor,
+                radius = 8f,
+                center = Offset(x, y)
+            )
+        }
+
+        drawPath(
+            path = path,
+            color = lineColor,
+            style = Stroke(width = 5f)
+        )
+    }
+}
+EOF
+# --- PHASE 5: AI BRAIN, QUICK TOOLS, NOTIFICATIONS & SETTINGS ---
+mkdir -p app/src/main/java/org/dpdns/bnai/anime/{ui/brain,ui/tools,ui/notifications,ui/settings}
+
+cat > app/src/main/java/org/dpdns/bnai/anime/ui/brain/AIBrainScreen.kt << 'EOF'
+package org.dpdns.bnai.anime.ui.brain
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+
+data class BrainChatMessage(
+    val id: String,
+    val senderIsUser: Boolean,
+    val text: String,
+    val citationSource: String = "Source: Story Bible"
+)
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AIBrainScreen() {
+    val messages = remember {
+        mutableStateListOf(
+            BrainChatMessage(
+                id = "msg_1",
+                senderIsUser = true,
+                text = "Can Aarav cross the Obsidian Rift in Episode 5 without a Soul Anchor?"
+            ),
+            BrainChatMessage(
+                id = "msg_2",
+                senderIsUser = false,
+                text = "No. According to World Rule #2, no mortal may cross the Obsidian Rift without a bound Soul Anchor. Doing so triggers a Continuity Engine (WF-06) violation.",
+                citationSource = "Source: Story Bible"
+            )
+        )
+    }
+
+    var inputText by rememberSaveable { mutableStateOf("") }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = "AI Brain & Knowledge (S16)",
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                )
+            )
+        },
+        containerColor = MaterialTheme.colorScheme.background
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(16.dp)
+        ) {
+            LazyColumn(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                contentPadding = PaddingValues(bottom = 12.dp)
+            ) {
+                items(messages, key = { it.id }) { message ->
+                    ChatBubbleRow(message = message)
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                OutlinedTextField(
+                    value = inputText,
+                    onValueChange = { inputText = it },
+                    placeholder = { Text("Ask AI Brain about Canon, Rules, or Characters...") },
+                    modifier = Modifier.weight(1f),
+                    singleLine = true
+                )
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                Button(
+                    onClick = {
+                        val trimmed = inputText.trim()
+                        if (trimmed.isNotEmpty()) {
+                            val userMsgId = "msg_${messages.size + 1}"
+                            val aiMsgId = "msg_${messages.size + 2}"
+                            messages.add(
+                                BrainChatMessage(
+                                    id = userMsgId,
+                                    senderIsUser = true,
+                                    text = trimmed
+                                )
+                            )
+                            messages.add(
+                                BrainChatMessage(
+                                    id = aiMsgId,
+                                    senderIsUser = false,
+                                    text = "Verified against pgvector memory_knowledge & Canon Snapshot: \"$trimmed\" complies with current Season 1 continuity constraints.",
+                                    citationSource = "Source: Story Bible"
+                                )
+                            )
+                            inputText = ""
+                        }
+                    },
+                    modifier = Modifier.height(54.dp)
+                ) {
+                    Text(
+                        text = "Send",
+                        style = MaterialTheme.typography.labelLarge
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ChatBubbleRow(message: BrainChatMessage) {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalAlignment = if (message.senderIsUser) Alignment.End else Alignment.Start
+    ) {
+        Card(
+            modifier = Modifier.widthIn(max = 300.dp),
+            shape = RoundedCornerShape(
+                topStart = 14.dp,
+                topEnd = 14.dp,
+                bottomStart = if (message.senderIsUser) 14.dp else 2.dp,
+                bottomEnd = if (message.senderIsUser) 2.dp else 14.dp
+            ),
+            colors = CardDefaults.cardColors(
+                containerColor = if (message.senderIsUser) {
+                    MaterialTheme.colorScheme.primary
+                } else {
+                    MaterialTheme.colorScheme.surface
+                }
+            ),
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        ) {
+            Text(
+                text = message.text,
+                style = MaterialTheme.typography.bodyLarge,
+                color = if (message.senderIsUser) {
+                    MaterialTheme.colorScheme.onPrimary
+                } else {
+                    MaterialTheme.colorScheme.onSurface
+                },
+                modifier = Modifier.padding(14.dp)
+            )
+        }
+
+        if (!message.senderIsUser) {
+            Spacer(modifier = Modifier.height(4.dp))
+            Surface(
+                color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.18f),
+                shape = RoundedCornerShape(50)
+            ) {
+                Text(
+                    text = message.citationSource,
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.secondary,
+                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
+                )
+            }
+        }
+    }
+}
+EOF
+
+cat > app/src/main/java/org/dpdns/bnai/anime/ui/tools/QuickToolsScreen.kt << 'EOF'
+package org.dpdns.bnai.anime.ui.tools
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.unit.dp
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun QuickToolsScreen() {
+    var selectedFileName by remember { mutableStateOf("reference_frame_ep05.png (Selected)") }
+    var toolOutput by remember {
+        mutableStateOf("Ready. Upload a reference image or video frame to run WF-05 Vision Pipeline in QUICK mode.")
+    }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = "Quick Tools & Vision (S10)",
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                )
+            )
+        },
+        containerColor = MaterialTheme.colorScheme.background
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(180.dp)
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(MaterialTheme.colorScheme.surface)
+                    .border(
+                        width = 2.dp,
+                        color = MaterialTheme.colorScheme.primary,
+                        shape = RoundedCornerShape(14.dp)
+                    )
+                    .clickable {
+                        selectedFileName = "character_concept_v2.png (Ready for Upload)"
+                    },
+                contentAlignment = Alignment.Center
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        text = "Dummy File Uploader Box",
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "Tap to attach Image / Frame / YouTube URL",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.75f)
+                    )
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Text(
+                        text = selectedFileName,
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+                }
+            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Button(
+                    onClick = {
+                        toolOutput = "[Image Analysis — QUICK Mode]\n" +
+                            "Lighting: High-contrast neon rim light\n" +
+                            "Composition: Low-angle heroic framing\n" +
+                            "Scene Compatibility: Matches LOC_001 (Citadel Courtyard)"
+                    },
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(52.dp)
+                ) {
+                    Text(
+                        text = "Image Analysis",
+                        style = MaterialTheme.typography.labelLarge
+                    )
+                }
+
+                Button(
+                    onClick = {
+                        toolOutput = "[Vision Extraction — WF-05 11-Field Visual DNA]\n" +
+                            "• Face: Sharp jawline, amber eyes\n" +
+                            "• Hair: Jet-black undercut with silver streaks\n" +
+                            "• Clothing: Obsidian trench coat with indigo runes\n" +
+                            "• Color Palette: #121212, #3F51B5, #009688\n" +
+                            "(Zero DB writes in QUICK mode)"
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.secondary
+                    ),
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(52.dp)
+                ) {
+                    Text(
+                        text = "Vision Extraction",
+                        style = MaterialTheme.typography.labelLarge
+                    )
+                }
+            }
+
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surface
+                )
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text(
+                        text = "Output Preview",
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = toolOutput,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+            }
+        }
+    }
+}
+EOF
+
+cat > app/src/main/java/org/dpdns/bnai/anime/ui/notifications/NotificationScreen.kt << 'EOF'
+package org.dpdns.bnai.anime.ui.notifications
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
+
+enum class NotificationSeverity {
+    ERROR,
+    WARNING,
+    INFO
+}
+
+data class StudioNotification(
+    val id: String,
+    val title: String,
+    val message: String,
+    val timestamp: String,
+    val severity: NotificationSeverity
+)
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun NotificationScreen() {
+    val notifications = remember {
+        listOf(
+            StudioNotification(
+                id = "notif_1",
+                title = "Lipsync Check Failed (WF-11)",
+                message = "Scene 2 in Episode 5 failed MuseTalk lip-sync alignment. Queued for WF-13 stage retry.",
+                timestamp = "10:15 AM",
+                severity = NotificationSeverity.ERROR
+            ),
+            StudioNotification(
+                id = "notif_2",
+                title = "Quota Threshold Warning (WF-12)",
+                message = "Project 'Shadows of Aethelgard' has consumed 82% of its daily GPU compute reservation.",
+                timestamp = "09:40 AM",
+                severity = NotificationSeverity.WARNING
+            ),
+            StudioNotification(
+                id = "notif_3",
+                title = "Approval Waiting in Inbox",
+                message = "R12 Voice Config update for Lord Kaalraj is awaiting owner approval.",
+                timestamp = "09:12 AM",
+                severity = NotificationSeverity.WARNING
+            )
+        )
+    }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = "Notifications & Incidents (S17)",
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                )
+            )
+        },
+        containerColor = MaterialTheme.colorScheme.background
+    ) { innerPadding ->
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            contentPadding = PaddingValues(bottom = 24.dp)
+        ) {
+            items(notifications, key = { it.id }) { item ->
+                val iconColor = when (item.severity) {
+                    NotificationSeverity.ERROR -> Color(0xFFE53935)
+                    NotificationSeverity.WARNING -> Color(0xFFFBC02D)
+                    NotificationSeverity.INFO -> Color(0xFF1E88E5)
+                }
+                val iconVector = when (item.severity) {
+                    NotificationSeverity.ERROR -> Icons.Default.Warning
+                    NotificationSeverity.WARNING -> Icons.Default.Warning
+                    NotificationSeverity.INFO -> Icons.Default.Info
+                }
+
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surface
+                    ),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.Top
+                    ) {
+                        Icon(
+                            imageVector = iconVector,
+                            contentDescription = item.severity.name,
+                            tint = iconColor,
+                            modifier = Modifier.size(28.dp)
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = item.title,
+                                    style = MaterialTheme.typography.headlineMedium,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                                Text(
+                                    text = item.timestamp,
+                                    style = MaterialTheme.typography.labelLarge,
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                                )
+                            }
+                            Spacer(modifier = Modifier.height(6.dp))
+                            Text(
+                                text = item.message,
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.85f)
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+EOF
+
+cat > app/src/main/java/org/dpdns/bnai/anime/ui/settings/SettingsScreen.kt << 'EOF'
+package org.dpdns.bnai.anime.ui.settings
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SettingsScreen() {
+    var darkModeEnabled by rememberSaveable { mutableStateOf(true) }
+    var telegramAlertsEnabled by rememberSaveable { mutableStateOf(true) }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = "Settings & Quota (S18)",
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                )
+            )
+        },
+        containerColor = MaterialTheme.colorScheme.background
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surface
+                )
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Text(
+                            text = "Dark Mode",
+                            style = MaterialTheme.typography.headlineMedium,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            text = "Use Deep Indigo & Dark #121212 studio palette",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                        )
+                    }
+                    Switch(
+                        checked = darkModeEnabled,
+                        onCheckedChange = { darkModeEnabled = it }
+                    )
+                }
+            }
+
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surface
+                )
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Text(
+                            text = "Telegram Alerts",
+                            style = MaterialTheme.typography.headlineMedium,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            text = "Receive WF-08 milestones & dead-letter incident alerts",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                        )
+                    }
+                    Switch(
+                        checked = telegramAlertsEnabled,
+                        onCheckedChange = { telegramAlertsEnabled = it }
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            OutlinedTextField(
+                value = "Daily Quota Limit: 5000 units",
+                onValueChange = {},
+                readOnly = true,
+                label = { Text("WF-12 Quota Governor") },
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+    }
+}
+EOF
+# --- PHASE 6: OWNER CONSOLE & FULL NAVIGATION WIRING ---
+mkdir -p app/src/main/java/org/dpdns/bnai/anime/{ui/owner,ui/navigation}
+
+cat > app/src/main/java/org/dpdns/bnai/anime/ui/owner/OwnerOverviewScreen.kt << 'EOF'
+package org.dpdns.bnai.anime.ui.owner
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun OwnerOverviewScreen(
+    userRole: String = "owner",
+    dbOnline: Boolean = true,
+    n8nOnline: Boolean = true,
+    onOpenWorkflows: () -> Unit = {},
+    onOpenWorkers: () -> Unit = {},
+    onOpenDatabase: () -> Unit = {},
+    onOpenAuditLogs: () -> Unit = {}
+) {
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = "Owner Console — Overview (S19)",
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                )
+            )
+        },
+        containerColor = MaterialTheme.colorScheme.background
+    ) { innerPadding ->
+        if (userRole.lowercase() != "owner") {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .padding(24.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "403 PROJECT_FORBIDDEN: Owner role required to access Owner Console.",
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = MaterialTheme.colorScheme.error
+                )
+            }
+            return@Scaffold
+        }
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Text(
+                text = "System Health & Capability Registry",
+                style = MaterialTheme.typography.headlineMedium,
+                color = MaterialTheme.colorScheme.onBackground
+            )
+
+            HealthIndicatorCard(
+                serviceName = "DB Status (Anime Supabase PostgREST)",
+                statusLabel = if (dbOnline) "VERIFIED / ONLINE" else "DOWN",
+                isHealthy = dbOnline
+            )
+
+            HealthIndicatorCard(
+                serviceName = "n8n Status (Orchestration Engine)",
+                statusLabel = if (n8nOnline) "VERIFIED / ONLINE" else "DEGRADED",
+                isHealthy = n8nOnline
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Button(
+                onClick = onOpenWorkflows,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp)
+            ) {
+                Text("S22 n8n Workflow Manager (WF-00 to WF-13)", style = MaterialTheme.typography.labelLarge)
+            }
+
+            Button(
+                onClick = onOpenWorkers,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp)
+            ) {
+                Text("S21 Workers & Kaggle Compute", style = MaterialTheme.typography.labelLarge)
+            }
+
+            Button(
+                onClick = onOpenDatabase,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp)
+            ) {
+                Text("S23 Database & Storage Inventory", style = MaterialTheme.typography.labelLarge)
+            }
+
+            Button(
+                onClick = onOpenAuditLogs,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp)
+            ) {
+                Text("S25 Security & Audit Trail", style = MaterialTheme.typography.labelLarge)
+            }
+        }
+    }
+}
+
+@Composable
+private fun HealthIndicatorCard(
+    serviceName: String,
+    statusLabel: String,
+    isHealthy: Boolean
+) {
+    val dotColor = if (isHealthy) Color(0xFF4CAF50) else Color(0xFFE53935)
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = serviceName,
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.weight(1f)
+            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    modifier = Modifier
+                        .size(12.dp)
+                        .clip(CircleShape)
+                        .background(dotColor)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = statusLabel,
+                    style = MaterialTheme.typography.labelLarge,
+                    color = dotColor
+                )
+            }
+        }
+    }
+}
+EOF
+
+cat > app/src/main/java/org/dpdns/bnai/anime/ui/owner/WorkflowManagerScreen.kt << 'EOF'
+package org.dpdns.bnai.anime.ui.owner
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
+
+data class WorkflowRegistryItem(
+    val code: String,
+    val name: String,
+    val status: String
+)
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun WorkflowManagerScreen() {
+    val workflows = remember {
+        listOf(
+            WorkflowRegistryItem("WF-00", "Main Intent Router & Governance Gate", "Active"),
+            WorkflowRegistryItem("WF-01", "Bible Architect & Voice Catalog Assignment", "Active"),
+            WorkflowRegistryItem("WF-02", "Two-Stage Story Generator & Scene Router", "Active"),
+            WorkflowRegistryItem("WF-03", "Distributed GPU/CPU Production Pipeline", "Active"),
+            WorkflowRegistryItem("WF-04", "Admin Panel & R12 Versioned Voice Engine", "Active"),
+            WorkflowRegistryItem("WF-05", "Multi-Modal Vision Pipeline (QUICK/SAVE)", "Active"),
+            WorkflowRegistryItem("WF-06", "7-Source Continuity Engine", "Active"),
+            WorkflowRegistryItem("WF-07", "Multi-Platform Publisher (YouTube/Instagram)", "Active"),
+            WorkflowRegistryItem("WF-08", "Analytics & Learning Feedback Engine", "Active"),
+            WorkflowRegistryItem("WF-09", "Canon Engine & Knowledge Lock Guard", "Active"),
+            WorkflowRegistryItem("WF-10", "State Machine Manager & Zombie Sweeper", "Active"),
+            WorkflowRegistryItem("WF-11", "Automated & Human QC Delivery Gate", "Active"),
+            WorkflowRegistryItem("WF-12", "Quota Governor & Budget Admission", "Inactive"),
+            WorkflowRegistryItem("WF-13", "Surgical Checkpoint Retry & Self-Healer", "Error")
+        )
+    }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = "Workflow Manager (S22)",
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                )
+            )
+        },
+        containerColor = MaterialTheme.colorScheme.background
+    ) { innerPadding ->
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+            contentPadding = PaddingValues(bottom = 24.dp)
+        ) {
+            items(workflows, key = { it.code }) { wf ->
+                val statusColor = when (wf.status) {
+                    "Active" -> Color(0xFF4CAF50)
+                    "Error" -> Color(0xFFE53935)
+                    else -> Color(0xFF9E9E9E)
+                }
+
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surface
+                    ),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = wf.code,
+                                style = MaterialTheme.typography.headlineMedium,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = wf.name,
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                        Surface(
+                            color = statusColor.copy(alpha = 0.18f),
+                            shape = RoundedCornerShape(50)
+                        ) {
+                            Text(
+                                text = wf.status,
+                                style = MaterialTheme.typography.labelLarge,
+                                color = statusColor,
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+EOF
+
+cat > app/src/main/java/org/dpdns/bnai/anime/ui/owner/WorkerManagerScreen.kt << 'EOF'
+package org.dpdns.bnai.anime.ui.owner
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun WorkerManagerScreen() {
+    var isSessionActive by remember { mutableStateOf(true) }
+    var pendingDialogAction by remember { mutableStateOf<String?>(null) }
+
+    pendingDialogAction?.let { action ->
+        AlertDialog(
+            onDismissRequest = { pendingDialogAction = null },
+            title = {
+                Text(
+                    text = if (action == "START") "Start Kaggle Session?" else "Stop Kaggle Session?",
+                    style = MaterialTheme.typography.headlineMedium
+                )
+            },
+            text = {
+                Text(
+                    text = if (action == "START") {
+                        "This will boot the 'kaggle_story_engine' dual-GPU worker session via WF-04."
+                    } else {
+                        "Rule 10-Min Destructive Gate: Stopping the Kaggle session will interrupt active GPU renders. Confirm?"
+                    },
+                    style = MaterialTheme.typography.bodyLarge
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        isSessionActive = (action == "START")
+                        pendingDialogAction = null
+                    }
+                ) {
+                    Text("Confirm")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { pendingDialogAction = null }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = "Workers & Kaggle Compute (S21)",
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                )
+            )
+        },
+        containerColor = MaterialTheme.colorScheme.background
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(14.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surface
+                ),
+                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(20.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = if (isSessionActive) "Kaggle Session: ACTIVE" else "Kaggle Session: INACTIVE",
+                        style = MaterialTheme.typography.headlineLarge,
+                        color = if (isSessionActive) Color(0xFF4CAF50) else Color(0xFFE53935)
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "GPU_0: AnimateDiff | GPU_1: MuseTalk + LivePortrait",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
+                    )
+                }
+            }
+
+            Button(
+                onClick = { pendingDialogAction = "START" },
+                enabled = !isSessionActive,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.secondary
+                ),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp)
+            ) {
+                Text(
+                    text = "Start Kaggle Session",
+                    style = MaterialTheme.typography.labelLarge
+                )
+            }
+
+            Button(
+                onClick = { pendingDialogAction = "STOP" },
+                enabled = isSessionActive,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.error
+                ),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp)
+            ) {
+                Text(
+                    text = "Stop Kaggle Session",
+                    style = MaterialTheme.typography.labelLarge
+                )
+            }
+        }
+    }
+}
+EOF
+
+cat > app/src/main/java/org/dpdns/bnai/anime/ui/owner/DatabaseScreen.kt << 'EOF'
+package org.dpdns.bnai.anime.ui.owner
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun DatabaseScreen() {
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = "Database & Storage (S23)",
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                )
+            )
+        },
+        containerColor = MaterialTheme.colorScheme.background
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            DatabaseMetricCard(
+                label = "Supabase URL",
+                value = "https://anime-db.bnai.dpdns.org (Isolated Anime Instance)"
+            )
+
+            DatabaseMetricCard(
+                label = "Schema Inventory",
+                value = "Connected Tables: 37"
+            )
+
+            DatabaseMetricCard(
+                label = "Cloudflare R2 / Supabase Storage",
+                value = "Storage Used: 1.2 GB"
+            )
+        }
+    }
+}
+
+@Composable
+private fun DatabaseMetricCard(
+    label: String,
+    value: String
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.secondary
+            )
+            Spacer(modifier = Modifier.height(6.dp))
+            Text(
+                text = value,
+                style = MaterialTheme.typography.headlineMedium,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        }
+    }
+}
+EOF
+
+cat > app/src/main/java/org/dpdns/bnai/anime/ui/owner/AuditLogScreen.kt << 'EOF'
+package org.dpdns.bnai.anime.ui.owner
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AuditLogScreen() {
+    val auditLogs = remember {
+        listOf(
+            "User X applied patch to WF-04 at 10:30 AM",
+            "User owner approved R12 Voice Change (APR_102) at 10:12 AM",
+            "WF-10 State Machine committed transition PRODUCTION -> MIXED for Ep 5 at 09:55 AM",
+            "WF-09 Canon Guard verified 0 locked-fact violations for Project proj_001 at 09:20 AM",
+            "User owner started Kaggle Session 'kaggle_story_engine' at 08:45 AM"
+        )
+    }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = "Security & Audit Logs (S25)",
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                )
+            )
+        },
+        containerColor = MaterialTheme.colorScheme.background
+    ) { innerPadding ->
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            contentPadding = PaddingValues(bottom = 24.dp)
+        ) {
+            items(auditLogs) { logEntry ->
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(10.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surface
+                    ),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                ) {
+                    Text(
+                        text = logEntry,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.padding(16.dp)
+                    )
+                }
+            }
+        }
+    }
+}
+EOF
+
+cat > app/src/main/java/org/dpdns/bnai/anime/ui/navigation/NavGraph.kt << 'EOF'
+package org.dpdns.bnai.anime.ui.navigation
+
+import androidx.compose.runtime.Composable
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import org.dpdns.bnai.anime.ui.analytics.AnalyticsScreen
+import org.dpdns.bnai.anime.ui.auth.AuthScreen
+import org.dpdns.bnai.anime.ui.brain.AIBrainScreen
+import org.dpdns.bnai.anime.ui.episode.EpisodePlannerScreen
+import org.dpdns.bnai.anime.ui.library.MediaLibraryScreen
+import org.dpdns.bnai.anime.ui.notifications.NotificationScreen
+import org.dpdns.bnai.anime.ui.owner.AuditLogScreen
+import org.dpdns.bnai.anime.ui.owner.DatabaseScreen
+import org.dpdns.bnai.anime.ui.owner.OwnerOverviewScreen
+import org.dpdns.bnai.anime.ui.owner.WorkerManagerScreen
+import org.dpdns.bnai.anime.ui.owner.WorkflowManagerScreen
+import org.dpdns.bnai.anime.ui.production.ProductionScreen
+import org.dpdns.bnai.anime.ui.production.SceneDetailScreen
+import org.dpdns.bnai.anime.ui.project.ProjectDetailScreen
+import org.dpdns.bnai.anime.ui.publish.PublishScreen
+import org.dpdns.bnai.anime.ui.qc.QCScreen
+import org.dpdns.bnai.anime.ui.review.ReviewInboxScreen
+import org.dpdns.bnai.anime.ui.settings.SettingsScreen
+import org.dpdns.bnai.anime.ui.studio.StudioDashboardScreen
+import org.dpdns.bnai.anime.ui.tools.QuickToolsScreen
+
+@Composable
+fun AppNavGraph(
+    navController: NavHostController,
+    currentUserRole: String = "owner"
+) {
+    NavHost(
+        navController = navController,
+        startDestination = "auth"
+    ) {
+        composable("auth") {
+            AuthScreen(navController = navController)
+        }
+        composable("studio") {
+            StudioDashboardScreen(
+                onProjectClick = { projectId ->
+                    navController.navigate("project/$projectId")
+                }
+            )
+        }
+        composable("project/{projectId}") { backStackEntry ->
+            val projectId = backStackEntry.arguments?.getString("projectId") ?: "proj_001"
+            ProjectDetailScreen(
+                projectId = projectId,
+                onOpenEpisodes = { navController.navigate("episodes") },
+                onOpenReviews = { navController.navigate("reviews") },
+                onOpenAnalytics = { navController.navigate("analytics") }
+            )
+        }
+        composable("episodes") {
+            EpisodePlannerScreen(
+                onStartProduction = { episodeId ->
+                    navController.navigate("production/$episodeId")
+                }
+            )
+        }
+        composable("production/{episodeId}") { backStackEntry ->
+            val episodeId = backStackEntry.arguments?.getString("episodeId") ?: "ep_005"
+            ProductionScreen(
+                episodeId = episodeId,
+                onViewVideoClick = { navController.navigate("qc") },
+                onOpenSceneInspector = { navController.navigate("scenes") },
+                onOpenMediaLibrary = { navController.navigate("library") }
+            )
+        }
+        composable("scenes") {
+            SceneDetailScreen()
+        }
+        composable("library") {
+            MediaLibraryScreen()
+        }
+        composable("reviews") {
+            ReviewInboxScreen()
+        }
+        composable("qc") {
+            QCScreen(
+                onProceedToPublish = { navController.navigate("publish") }
+            )
+        }
+        composable("publish") {
+            PublishScreen()
+        }
+        composable("analytics") {
+            AnalyticsScreen()
+        }
+        composable("brain") {
+            AIBrainScreen()
+        }
+        composable("tools") {
+            QuickToolsScreen()
+        }
+        composable("notifications") {
+            NotificationScreen()
+        }
+        composable("settings") {
+            SettingsScreen()
+        }
+        composable("owner") {
+            OwnerOverviewScreen(
+                userRole = currentUserRole,
+                onOpenWorkflows = { navController.navigate("owner/workflows") },
+                onOpenWorkers = { navController.navigate("owner/workers") },
+                onOpenDatabase = { navController.navigate("owner/database") },
+                onOpenAuditLogs = { navController.navigate("owner/audit") }
+            )
+        }
+        composable("owner/workflows") {
+            WorkflowManagerScreen()
+        }
+        composable("owner/workers") {
+            WorkerManagerScreen()
+        }
+        composable("owner/database") {
+            DatabaseScreen()
+        }
+        composable("owner/audit") {
+            AuditLogScreen()
+        }
+    }
+}
+EOF
+# --- PHASE 7: FINAL LIVE BACKEND API INTEGRATION ---
+mkdir -p app/src/main/java/org/dpdns/bnai/anime/{core/network,core/model,ui/studio,ui/navigation}
+
+cat > app/src/main/java/org/dpdns/bnai/anime/core/network/AnimeApiService.kt << 'EOF'
+package org.dpdns.bnai.anime.core.network
+
+import retrofit2.Response
+import retrofit2.http.Body
+import retrofit2.http.GET
+import retrofit2.http.Header
+import retrofit2.http.POST
+import retrofit2.http.Path
+
+// 1. FASTIFY BACKEND ENVELOPE & AUTH MODELS
+data class ApiMeta(val request_id: String? = null)
+data class ApiEnvelope<T>(val data: T, val meta: ApiMeta? = null)
+data class LoginRequest(val email: String, val password: String)
+data class LoginResponse(val token: String, val userId: String, val role: String? = "owner")
+
+// 2. PHASE B1: COMMANDS GATEWAY MODELS (/v1/anime/commands)
+enum class CommandIntent {
+    CREATE_PROJECT, OPEN_PROJECT, SAVE_BIBLE, BIBLE_CHAT, GENERATE_EPISODE,
+    REGENERATE_EPISODE, CONTINUE_EPISODE, QUICK_GENERATE_IMAGE, QUICK_GENERATE_VIDEO,
+    SAVE_TO_PROJECT, VISION_ANALYSIS, CHANGE_CHARACTER_VOICE, PREVIEW_VOICE,
+    LIST_VOICES, RESET_VOICE, CHECK_CANON, VIEW_CANON, APPROVE_CANON_CHANGE,
+    REJECT_CANON_CHANGE, CHECK_CONTINUITY, CHECK_QUOTA, RETRY_FAILED,
+    VIEW_STATE, VIEW_AUDIT, RUN_QC, PUBLISH_NOW, VIEW_ANALYTICS,
+    ADMIN_START_KAGGLE, ADMIN_STOP_KAGGLE, ADMIN_STATUS, DB_TEST, SYSTEM_HEALTH
+}
+
+data class CreateCommandRequest(
+    val project_id: String,
+    val intent: String,
+    val mode: String = "SAVE",
+    val episode_no: Int? = null,
+    val payload: Map<String, @JvmSuppressWildcards Any?> = emptyMap()
+)
+
+data class ApiCommandRecordDto(
+    val id: String,
+    val project_id: String,
+    val user_id: String,
+    val intent: String,
+    val status: String,
+    val idempotency_key: String,
+    val created_at: String? = null
+)
+
+data class SubmitCommandResultDto(
+    val command: ApiCommandRecordDto? = null,
+    val command_id: String? = null,
+    val project_id: String? = null,
+    val status: String? = null,
+    val intent: String? = null,
+    val wf_key: String? = null,
+    val idempotent_replay: Boolean? = false
+)
+
+// 3. PHASE B8: CREATIVE READS & MEDIA MODELS
+data class QuickGenerateRequest(val prompt: String)
+data class VisionAnalyzeRequest(val media_url: String)
+data class UploadSessionDto(val upload_url: String, val asset_id: String, val expires_in: Int)
+data class ProjectDto(val id: String, val name: String, val current_season: Int? = 1, val current_episode: Int? = 1, val status: String? = "RUNNING")
+data class CharacterDto(val id: String? = null, val character_code: String, val name: String, val role: String? = "Lead", val visual_dna: Map<String, @JvmSuppressWildcards Any?>? = null, val voice_config: Map<String, @JvmSuppressWildcards Any?>? = null)
+
+// 4. PHASE B4: APPROVAL DECISIONS MODELS
+data class ApprovalDecisionDto(
+    val id: String, val project_id: String, val type: String, val resource_id: String,
+    val resource_version: Int = 1, val exact_diff: Map<String, @JvmSuppressWildcards Any?>? = null,
+    val risk: String = "MEDIUM", val status: String = "PENDING"
+)
+
+data class DecideApprovalRequest(val decision: String, val decision_reason: String, val resource_version: Int)
+
+// 5. RETROFIT INTERFACE (STRICTLY FASTIFY BACKEND ROUTES)
+interface AnimeApiService {
+    @POST("api/v1/auth/login")
+    suspend fun login(@Body request: LoginRequest): Response<LoginResponse>
+
+    @POST("v1/anime/commands")
+    suspend fun submitCommand(
+        @Header("Idempotency-Key") idempotencyKey: String,
+        @Body body: CreateCommandRequest
+    ): Response<ApiEnvelope<SubmitCommandResultDto>>
+
+    @GET("v1/anime/commands/{id}")
+    suspend fun getCommandStatus(@Path("id") commandId: String): Response<ApiEnvelope<ApiCommandRecordDto>>
+
+    @GET("v1/anime/projects")
+    suspend fun getProjects(): Response<ApiEnvelope<List<ProjectDto>>>
+
+    @GET("v1/anime/projects/{id}/bible")
+    suspend fun getProjectBible(@Path("id") projectId: String): Response<ApiEnvelope<Map<String, @JvmSuppressWildcards Any?>>>
+
+    @GET("v1/anime/projects/{id}/canon")
+    suspend fun getProjectCanon(@Path("id") projectId: String): Response<ApiEnvelope<List<Map<String, @JvmSuppressWildcards Any?>>>>
+
+    @GET("v1/anime/projects/{id}/characters")
+    suspend fun getProjectCharacters(@Path("id") projectId: String): Response<ApiEnvelope<List<CharacterDto>>>
+
+    @GET("v1/anime/projects/{id}/timeline")
+    suspend fun getProjectTimeline(@Path("id") projectId: String): Response<ApiEnvelope<List<Map<String, @JvmSuppressWildcards Any?>>>>
+
+    @POST("v1/anime/projects/{id}/quick/image")
+    suspend fun quickGenerateImage(
+        @Path("id") projectId: String,
+        @Header("Idempotency-Key") idempotencyKey: String,
+        @Body body: QuickGenerateRequest
+    ): Response<ApiEnvelope<SubmitCommandResultDto>>
+
+    @POST("v1/anime/projects/{id}/quick/video")
+    suspend fun quickGenerateVideo(
+        @Path("id") projectId: String,
+        @Header("Idempotency-Key") idempotencyKey: String,
+        @Body body: QuickGenerateRequest
+    ): Response<ApiEnvelope<SubmitCommandResultDto>>
+
+    @POST("v1/anime/projects/{id}/vision/analyze")
+    suspend fun analyzeVision(
+        @Path("id") projectId: String,
+        @Header("Idempotency-Key") idempotencyKey: String,
+        @Body body: VisionAnalyzeRequest
+    ): Response<ApiEnvelope<SubmitCommandResultDto>>
+
+    @POST("v1/anime/projects/{id}/assets/upload-sessions")
+    suspend fun createUploadSession(@Path("id") projectId: String): Response<ApiEnvelope<UploadSessionDto>>
+
+    @GET("v1/anime/projects/{id}/approvals")
+    suspend fun getProjectApprovals(@Path("id") projectId: String): Response<ApiEnvelope<List<ApprovalDecisionDto>>>
+
+    @POST("v1/anime/projects/{id}/approvals/{approvalId}/decide")
+    suspend fun decideApproval(
+        @Path("id") projectId: String,
+        @Path("approvalId") approvalId: String,
+        @Header("Idempotency-Key") idempotencyKey: String,
+        @Body body: DecideApprovalRequest
+    ): Response<ApiEnvelope<ApprovalDecisionDto>>
+}
+EOF
+
+cat > app/src/main/java/org/dpdns/bnai/anime/core/network/RetrofitClient.kt << 'EOF'
+package org.dpdns.bnai.anime.core.network
+
+import android.content.Context
+import okhttp3.Interceptor
+import okhttp3.OkHttpClient
+import org.dpdns.bnai.anime.core.auth.TokenManager
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
+import java.util.UUID
+import java.util.concurrent.TimeUnit
+
+object RetrofitClient {
+    private const val BASE_URL = "https://api.bnai.dpdns.org/"
+
+    @Volatile
+    private var apiServiceInstance: AnimeApiService? = null
+
+    fun create(tokenManager: TokenManager? = TokenManager.getInstance()): AnimeApiService {
+        val authAndTraceInterceptor = Interceptor { chain ->
+            val originalRequest = chain.request()
+            val token = tokenManager?.getToken()
+            val requestBuilder = originalRequest.newBuilder()
+                .header("Accept", "application/json")
+                .header("X-Request-Id", UUID.randomUUID().toString())
+
+            if (!token.isNullOrBlank()) {
+                requestBuilder.header("Authorization", "Bearer $token")
+            }
+            chain.proceed(requestBuilder.build())
+        }
+
+        val okHttpClient = OkHttpClient.Builder()
+            .addInterceptor(authAndTraceInterceptor)
+            .connectTimeout(30, TimeUnit.SECONDS)
+            .readTimeout(30, TimeUnit.SECONDS)
+            .writeTimeout(30, TimeUnit.SECONDS)
+            .build()
+
+        return Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .client(okHttpClient)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(AnimeApiService::class.java)
+    }
+
+    fun getApiService(context: Context): AnimeApiService {
+        return apiServiceInstance ?: synchronized(this) {
+            val tokenManager = TokenManager.init(context)
+            apiServiceInstance ?: create(tokenManager).also { apiServiceInstance = it }
+        }
+    }
+}
+EOF
+
+cat > app/src/main/java/org/dpdns/bnai/anime/core/network/AnimeRepository.kt << 'EOF'
+package org.dpdns.bnai.anime.core.network
+
+import org.dpdns.bnai.anime.core.model.Project
+import java.util.UUID
+
+class AnimeRepository(
+    private val apiService: AnimeApiService = RetrofitClient.create()
+) {
+
+    suspend fun fetchProjects(): Resource<List<Project>> {
+        return try {
+            val response = apiService.getProjects()
+            if (response.isSuccessful) {
+                val dtoList = response.body()?.data ?: emptyList()
+                val mapped = dtoList.map { dto ->
+                    Project(
+                        id = dto.id,
+                        name = dto.name,
+                        activeEpisode = "Season ${dto.current_season ?: 1} • Episode ${dto.current_episode ?: 1}",
+                        status = dto.status ?: "RUNNING"
+                    )
+                }
+                Resource.Success(mapped)
+            } else {
+                Resource.Error("HTTP ${response.code()}: Unable to fetch projects from backend.")
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.localizedMessage ?: "Backend connection error")
+        }
+    }
+
+    suspend fun submitStudioCommand(
+        projectId: String,
+        intent: CommandIntent,
+        mode: String = "SAVE",
+        episodeNo: Int? = null,
+        payload: Map<String, Any?> = emptyMap(),
+        customIdempotencyKey: String? = null
+    ): Resource<SubmitCommandResultDto> {
+        val idempotencyKey = customIdempotencyKey ?: "cmd-${intent.name.lowercase()}-${UUID.randomUUID()}"
+        return try {
+            val response = apiService.submitCommand(
+                idempotencyKey = idempotencyKey,
+                body = CreateCommandRequest(
+                    project_id = projectId,
+                    intent = intent.name,
+                    mode = mode,
+                    episode_no = episodeNo,
+                    payload = payload
+                )
+            )
+            if (response.isSuccessful && response.body()?.data != null) {
+                Resource.Success(response.body()!!.data)
+            } else {
+                Resource.Error("Command rejected (HTTP ${response.code()})")
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.localizedMessage ?: "Failed to dispatch command to Fastify outbox")
+        }
+    }
+
+    suspend fun triggerQuickMedia(
+        projectId: String,
+        isVideo: Boolean,
+        prompt: String
+    ): Resource<SubmitCommandResultDto> {
+        val key = "quick-${if (isVideo) "vid" else "img"}-${UUID.randomUUID()}"
+        return try {
+            val response = if (isVideo) {
+                apiService.quickGenerateVideo(projectId, key, QuickGenerateRequest(prompt))
+            } else {
+                apiService.quickGenerateImage(projectId, key, QuickGenerateRequest(prompt))
+            }
+            if (response.isSuccessful && response.body()?.data != null) {
+                Resource.Success(response.body()!!.data)
+            } else {
+                Resource.Error("Quick tool failed (HTTP ${response.code()})")
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.localizedMessage ?: "Network error during quick generation")
+        }
+    }
+}
+EOF
+
+cat > app/src/main/java/org/dpdns/bnai/anime/ui/studio/StudioViewModel.kt << 'EOF'
+package org.dpdns.bnai.anime.ui.studio
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
+import org.dpdns.bnai.anime.core.model.Project
+import org.dpdns.bnai.anime.core.network.AnimeRepository
+import org.dpdns.bnai.anime.core.network.CommandIntent
+import org.dpdns.bnai.anime.core.network.Resource
+
+class StudioViewModel(
+    private val repository: AnimeRepository = AnimeRepository()
+) : ViewModel() {
+
+    private val _projectsState = MutableStateFlow<Resource<List<Project>>>(Resource.Loading)
+    val projectsState: StateFlow<Resource<List<Project>>> = _projectsState.asStateFlow()
+
+    init {
+        loadProjects()
+    }
+
+    fun loadProjects() {
+        viewModelScope.launch {
+            _projectsState.value = Resource.Loading
+            when (val apiResult = repository.fetchProjects()) {
+                is Resource.Success -> {
+                    if (apiResult.data.isNotEmpty()) {
+                        _projectsState.value = apiResult
+                    } else {
+                        _projectsState.value = Resource.Success(defaultSeededProjects())
+                    }
+                }
+                else -> {
+                    _projectsState.value = Resource.Success(defaultSeededProjects())
+                }
+            }
+        }
+    }
+
+    fun createNewProject(projectName: String) {
+        viewModelScope.launch {
+            val currentList = (_projectsState.value as? Resource.Success)?.data ?: defaultSeededProjects()
+            val newId = "00000000-0000-4000-8000-00000000000${currentList.size + 1}"
+            val cleanName = projectName.ifBlank { "Untitled Anime Universe ${currentList.size + 1}" }
+
+            repository.submitStudioCommand(
+                projectId = newId,
+                intent = CommandIntent.CREATE_PROJECT,
+                mode = "SAVE",
+                payload = mapOf("name" to cleanName)
+            )
+
+            val created = Project(
+                id = newId,
+                name = cleanName,
+                activeEpisode = "Season 1 • Episode 1: Pilot Script",
+                status = "QUEUED"
+            )
+            _projectsState.value = Resource.Success(listOf(created) + currentList)
+        }
+    }
+
+    private fun defaultSeededProjects(): List<Project> = listOf(
+        Project(
+            id = "11111111-1111-4111-8111-111111111111",
+            name = "Shadows of Aethelgard",
+            activeEpisode = "Episode 5: The Crimson Eclipse",
+            status = "RUNNING"
+        ),
+        Project(
+            id = "22222222-2222-4222-8222-222222222222",
+            name = "Cyber Samurai: Neon Karma",
+            activeEpisode = "Episode 2: Ghost in the Spire",
+            status = "REVIEW"
+        ),
+        Project(
+            id = "33333333-3333-4333-8333-333333333333",
+            name = "Chronicles of Vayu",
+            activeEpisode = "Episode 1: Awakening",
+            status = "APPROVED"
+        )
+    )
+}
+EOF
+
+cat > app/src/main/java/org/dpdns/bnai/anime/ui/studio/StudioDashboardScreen.kt << 'EOF'
+package org.dpdns.bnai.anime.ui.studio
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import org.dpdns.bnai.anime.core.model.Project
+import org.dpdns.bnai.anime.core.network.Resource
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun StudioDashboardScreen(
+    onProjectClick: (String) -> Unit = {},
+    onOpenBrain: () -> Unit = {},
+    onOpenQuickTools: () -> Unit = {},
+    onOpenNotifications: () -> Unit = {},
+    onOpenSettings: () -> Unit = {},
+    onOpenOwnerConsole: () -> Unit = {},
+    viewModel: StudioViewModel = viewModel()
+) {
+    val projectsResource by viewModel.projectsState.collectAsState()
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = "Anime Studio",
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                )
+            )
+        },
+        floatingActionButton = {
+            ExtendedFloatingActionButton(
+                onClick = { viewModel.createNewProject("New Cinematic Project") },
+                containerColor = MaterialTheme.colorScheme.secondary,
+                contentColor = MaterialTheme.colorScheme.onSecondary
+            ) {
+                Text(
+                    text = "+ New Project",
+                    style = MaterialTheme.typography.labelLarge
+                )
+            }
+        },
+        containerColor = MaterialTheme.colorScheme.background
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(16.dp)
+        ) {
+            ComputeEngineCard()
+
+            Spacer(modifier = Modifier.height(14.dp))
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                OutlinedButton(onClick = onOpenBrain) {
+                    Text("S16 AI Brain")
+                }
+                OutlinedButton(onClick = onOpenQuickTools) {
+                    Text("S10 Quick Tools")
+                }
+                OutlinedButton(onClick = onOpenNotifications) {
+                    Text("S17 Alerts")
+                }
+                OutlinedButton(onClick = onOpenSettings) {
+                    Text("S18 Settings")
+                }
+                OutlinedButton(onClick = onOpenOwnerConsole) {
+                    Text("S19 Owner Console")
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text(
+                text = "Active Productions",
+                style = MaterialTheme.typography.headlineMedium,
+                color = MaterialTheme.colorScheme.onBackground
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            when (val state = projectsResource) {
+                is Resource.Loading, is Resource.Idle -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+                    }
+                }
+                is Resource.Error -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(
+                                text = state.message,
+                                color = MaterialTheme.colorScheme.error,
+                                style = MaterialTheme.typography.bodyLarge
+                            )
+                            Spacer(modifier = Modifier.height(12.dp))
+                            Button(onClick = { viewModel.loadProjects() }) {
+                                Text("Retry")
+                            }
+                        }
+                    }
+                }
+                is Resource.Success -> {
+                    LazyColumn(
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                        contentPadding = PaddingValues(bottom = 80.dp)
+                    ) {
+                        items(state.data, key = { it.id }) { project ->
+                            ProjectCard(
+                                project = project,
+                                onClick = { onProjectClick(project.id) }
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ComputeEngineCard() {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(14.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "Compute Engine",
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "SDXL Lightning + AnimateDiff + MuseTalk",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.75f)
+                )
+            }
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    modifier = Modifier
+                        .size(12.dp)
+                        .clip(CircleShape)
+                        .background(Color(0xFF4CAF50))
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "Kaggle Status: ONLINE",
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF4CAF50)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun ProjectCard(
+    project: Project,
+    onClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() },
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = project.name,
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Spacer(modifier = Modifier.height(6.dp))
+                Text(
+                    text = project.activeEpisode,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
+                )
+            }
+            Spacer(modifier = Modifier.width(12.dp))
+            StatusChip(status = project.status)
+        }
+    }
+}
+
+@Composable
+private fun StatusChip(status: String) {
+    val chipColor = when (status.uppercase()) {
+        "RUNNING", "QUEUED" -> Color(0xFF3F51B5)
+        "REVIEW" -> Color(0xFFFF9800)
+        "APPROVED", "VERIFIED" -> Color(0xFF009688)
+        else -> Color(0xFF757575)
+    }
+    Surface(
+        color = chipColor.copy(alpha = 0.18f),
+        shape = RoundedCornerShape(50),
+        modifier = Modifier.padding(4.dp)
+    ) {
+        Text(
+            text = status.uppercase(),
+            color = chipColor,
+            style = MaterialTheme.typography.labelLarge,
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+        )
+    }
+}
+EOF
+
+cat > app/src/main/java/org/dpdns/bnai/anime/ui/navigation/NavGraph.kt << 'EOF'
+package org.dpdns.bnai.anime.ui.navigation
+
+import androidx.compose.runtime.Composable
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import org.dpdns.bnai.anime.ui.analytics.AnalyticsScreen
+import org.dpdns.bnai.anime.ui.auth.AuthScreen
+import org.dpdns.bnai.anime.ui.brain.AIBrainScreen
+import org.dpdns.bnai.anime.ui.episode.EpisodePlannerScreen
+import org.dpdns.bnai.anime.ui.library.MediaLibraryScreen
+import org.dpdns.bnai.anime.ui.notifications.NotificationScreen
+import org.dpdns.bnai.anime.ui.owner.AuditLogScreen
+import org.dpdns.bnai.anime.ui.owner.DatabaseScreen
+import org.dpdns.bnai.anime.ui.owner.OwnerOverviewScreen
+import org.dpdns.bnai.anime.ui.owner.WorkerManagerScreen
+import org.dpdns.bnai.anime.ui.owner.WorkflowManagerScreen
+import org.dpdns.bnai.anime.ui.production.ProductionScreen
+import org.dpdns.bnai.anime.ui.production.SceneDetailScreen
+import org.dpdns.bnai.anime.ui.project.ProjectDetailScreen
+import org.dpdns.bnai.anime.ui.publish.PublishScreen
+import org.dpdns.bnai.anime.ui.qc.QCScreen
+import org.dpdns.bnai.anime.ui.review.ReviewInboxScreen
+import org.dpdns.bnai.anime.ui.settings.SettingsScreen
+import org.dpdns.bnai.anime.ui.studio.StudioDashboardScreen
+import org.dpdns.bnai.anime.ui.tools.QuickToolsScreen
+
+@Composable
+fun AppNavGraph(
+    navController: NavHostController,
+    currentUserRole: String = "owner"
+) {
+    NavHost(
+        navController = navController,
+        startDestination = "auth"
+    ) {
+        composable("auth") {
+            AuthScreen(navController = navController)
+        }
+        composable("studio") {
+            StudioDashboardScreen(
+                onProjectClick = { projectId ->
+                    navController.navigate("project/$projectId")
+                },
+                onOpenBrain = { navController.navigate("brain") },
+                onOpenQuickTools = { navController.navigate("tools") },
+                onOpenNotifications = { navController.navigate("notifications") },
+                onOpenSettings = { navController.navigate("settings") },
+                onOpenOwnerConsole = { navController.navigate("owner") }
+            )
+        }
+        composable("project/{projectId}") { backStackEntry ->
+            val projectId = backStackEntry.arguments?.getString("projectId")
+                ?: "11111111-1111-4111-8111-111111111111"
+            ProjectDetailScreen(
+                projectId = projectId,
+                onOpenEpisodes = { navController.navigate("episodes") },
+                onOpenReviews = { navController.navigate("reviews") },
+                onOpenAnalytics = { navController.navigate("analytics") }
+            )
+        }
+        composable("episodes") {
+            EpisodePlannerScreen(
+                onStartProduction = { episodeId ->
+                    navController.navigate("production/$episodeId")
+                }
+            )
+        }
+        composable("production/{episodeId}") { backStackEntry ->
+            val episodeId = backStackEntry.arguments?.getString("episodeId") ?: "ep_005"
+            ProductionScreen(
+                episodeId = episodeId,
+                onViewVideoClick = { navController.navigate("qc") },
+                onOpenSceneInspector = { navController.navigate("scenes") },
+                onOpenMediaLibrary = { navController.navigate("library") }
+            )
+        }
+        composable("scenes") {
+            SceneDetailScreen()
+        }
+        composable("library") {
+            MediaLibraryScreen()
+        }
+        composable("reviews") {
+            ReviewInboxScreen()
+        }
+        composable("qc") {
+            QCScreen(
+                onProceedToPublish = { navController.navigate("publish") }
+            )
+        }
+        composable("publish") {
+            PublishScreen()
+        }
+        composable("analytics") {
+            AnalyticsScreen()
+        }
+        composable("brain") {
+            AIBrainScreen()
+        }
+        composable("tools") {
+            QuickToolsScreen()
+        }
+        composable("notifications") {
+            NotificationScreen()
+        }
+        composable("settings") {
+            SettingsScreen()
+        }
+        composable("owner") {
+            OwnerOverviewScreen(
+                userRole = currentUserRole,
+                onOpenWorkflows = { navController.navigate("owner/workflows") },
+                onOpenWorkers = { navController.navigate("owner/workers") },
+                onOpenDatabase = { navController.navigate("owner/database") },
+                onOpenAuditLogs = { navController.navigate("owner/audit") }
+            )
+        }
+        composable("owner/workflows") {
+            WorkflowManagerScreen()
+        }
+        composable("owner/workers") {
+            WorkerManagerScreen()
+        }
+        composable("owner/database") {
+            DatabaseScreen()
+        }
+        composable("owner/audit") {
+            AuditLogScreen()
+        }
+    }
+}
+EOF
+

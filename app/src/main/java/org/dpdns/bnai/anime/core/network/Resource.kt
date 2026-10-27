@@ -1,4 +1,5 @@
 package org.dpdns.bnai.anime.core.network
+
 sealed class Resource<out T> {
     object Idle : Resource<Nothing>()
     object Loading : Resource<Nothing>()
