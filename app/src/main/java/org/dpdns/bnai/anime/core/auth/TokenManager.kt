@@ -6,10 +6,6 @@ class TokenManager(private val prefs: SharedPreferences) {
     fun getToken(): String? = prefs.getString("jwt_token", null)
     companion object {
         @Volatile private var instance: TokenManager? = null
-        fun init(context: Context): TokenManager {
-            return instance ?: synchronized(this) {
-                instance ?: TokenManager(context.applicationContext.getSharedPreferences("anime_prefs", Context.MODE_PRIVATE)).also { instance = it }
-            }
-        }
+        fun init(context: Context): TokenManager = instance ?: synchronized(this) { instance ?: TokenManager(context.applicationContext.getSharedPreferences("anime_prefs", Context.MODE_PRIVATE)).also { instance = it } }
     }
 }

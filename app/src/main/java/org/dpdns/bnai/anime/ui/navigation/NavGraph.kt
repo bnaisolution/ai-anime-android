@@ -18,14 +18,13 @@ import org.dpdns.bnai.anime.ui.tools.QuickToolsScreen
 import org.dpdns.bnai.anime.ui.notifications.NotificationScreen
 import org.dpdns.bnai.anime.ui.settings.SettingsScreen
 import org.dpdns.bnai.anime.ui.owner.OwnerOverviewScreen
-
 @Composable
 fun AppNavGraph(navController: NavHostController) {
     NavHost(navController = navController, startDestination = "auth") {
         composable("auth") { AuthScreen(navController) }
         composable("studio") { StudioDashboardScreen(onProjectClick = { id -> navController.navigate("project/$id") }) }
         composable("project/{id}") { ProjectDetailScreen(id = it.arguments?.getString("id") ?: "") }
-        composable("episodes") { EpisodePlannerScreen() }
+        composable("episodes") { EpisodePlannerScreen(onStartProduction = { id -> navController.navigate("production/$id") }) }
         composable("production/{id}") { ProductionScreen(id = it.arguments?.getString("id") ?: "") }
         composable("library") { MediaLibraryScreen() }
         composable("reviews") { ReviewInboxScreen() }

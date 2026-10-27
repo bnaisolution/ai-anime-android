@@ -14,10 +14,8 @@ class AuthViewModel(private val api: AnimeApiService, private val tokenManager: 
             _authState.value = Resource.Loading
             try {
                 val res = api.login(LoginRequest(email, password))
-                if (res.isSuccessful && res.body() != null) {
-                    tokenManager.saveToken(res.body()!!.token)
-                    _authState.value = Resource.Success(res.body()!!.token)
-                } else { _authState.value = Resource.Error("Login failed: HTTP ${res.code()}") }
+                if (res.isSuccessful && res.body() != null) { tokenManager.saveToken(res.body()!!.token); _authState.value = Resource.Success(res.body()!!.token) }
+                else { _authState.value = Resource.Error("Login failed: HTTP ${res.code()}") }
             } catch (e: Exception) { _authState.value = Resource.Error(e.message ?: "Network error") }
         }
     }
