@@ -44,7 +44,7 @@ data class DecideApprovalRequest(val decision: String, val reason: String, val r
 data class HealthResponseDto(val ok: Boolean = false, val db: String? = null, val version: String? = null)
 
 interface AnimeApiService {
-    @POST("api/auth/login")
+    @POST("api/v1/auth/login")
     suspend fun login(@Body request: LoginRequest): Response<LoginResponse>
     @POST("api/ai/chat")
     suspend fun chatWithAi(@Body request: AiChatRequest): Response<AiChatResponse>
