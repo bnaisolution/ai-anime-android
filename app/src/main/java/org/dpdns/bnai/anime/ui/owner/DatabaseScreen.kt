@@ -2,94 +2,73 @@ package org.dpdns.bnai.anime.ui.owner
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
+import org.dpdns.bnai.anime.core.network.AnimeRepository
+import org.dpdns.bnai.anime.core.network.HealthResponseDto
+import org.dpdns.bnai.anime.core.network.Resource
+import org.dpdns.bnai.anime.ui.components.ResourceStateBox
+import org.dpdns.bnai.anime.ui.components.StatusBadge
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DatabaseScreen() {
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = "Database & Storage (S23)",
-                        style = MaterialTheme.typography.headlineMedium,
-                        color = MaterialTheme.colorScheme.onPrimary
-                    )
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary
-                )
-            )
-        },
-        containerColor = MaterialTheme.colorScheme.background
-    ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            DatabaseMetricCard(
-                label = "Supabase URL",
-                value = "https://anime-db.bnai.dpdns.org (Isolated Anime Instance)"
-            )
+    val repository = remember { AnimeRepository() }
+    val scope = rememberCoroutineScope()
+    var healthState by remember {
+        mutableStateOf<Resource<HealthResponseDto>>(Resource.Loading)
+    }
 
-            DatabaseMetricCard(
-                label = "Schema Inventory",
-                value = "Connected Tables: 37"
-            )
-
-            DatabaseMetricCard(
-                label = "Cloudflare R2 / Supabase Storage",
-                value = "Storage Used: 1.2 GB"
-            )
+    fun load() {
+        scope.launch {
+            healthState = Resource.Loading
+            healthState = repository.fetchHealthDetail()
         }
     }
-}
 
-@Composable
-private fun DatabaseMetricCard(
-    label: String,
-    value: String
-) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    LaunchedEffect(Unit) { load() }
+
+    Column(
+        modifier = Modifier.fillMaxSize().padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(
-                text = label,
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.secondary
-            )
-            Spacer(modifier = Modifier.height(6.dp))
-            Text(
-                text = value,
-                style = MaterialTheme.typography.headlineMedium,
-                color = MaterialTheme.colorScheme.onSurface
-            )
+        Text("Database Connectivity Status", style = MaterialTheme.typography.headlineLarge)
+        Text(
+            "Android is strictly isolated from direct Supabase access and queries health exclusively through Fastify (/v1/anime/health)."
+        )
+        ResourceStateBox(resource = healthState, onRetry = { load() }) { health ->
+            Card(modifier = Modifier.fillMaxWidth()) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            "Anime PostgreSQL Probe",
+                            style = MaterialTheme.typography.headlineMedium
+                        )
+                        StatusBadge(health.db ?: if (health.ok) "UP" else "DOWN")
+                    }
+                    Text("Backend Service Version: ${health.version ?: "N/A"}")
+                }
+            }
         }
     }
 }

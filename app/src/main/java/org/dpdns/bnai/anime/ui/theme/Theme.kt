@@ -16,8 +16,8 @@ private val DarkColorScheme = darkColorScheme(
     onBackground = TextPrimaryDark,
     surface = SurfaceDark,
     onSurface = TextPrimaryDark,
-    error = Error,
-    onError = Color.Black
+    error = ErrorColor,
+    onError = Color.White
 )
 
 private val LightColorScheme = lightColorScheme(
@@ -29,7 +29,7 @@ private val LightColorScheme = lightColorScheme(
     onBackground = TextPrimaryLight,
     surface = SurfaceLight,
     onSurface = TextPrimaryLight,
-    error = ErrorLight,
+    error = ErrorColor,
     onError = Color.White
 )
 
@@ -38,10 +38,8 @@ fun AnimeStudioTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit
 ) {
-    val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
-
     MaterialTheme(
-        colorScheme = colorScheme,
+        colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme,
         typography = AppTypography,
         content = content
     )

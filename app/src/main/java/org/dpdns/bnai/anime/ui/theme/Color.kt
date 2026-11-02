@@ -2,16 +2,14 @@ package org.dpdns.bnai.anime.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val Primary = Color(0xFF3F51B5)
-val Secondary = Color(0xFF009688)
-val BackgroundDark = Color(0xFF121212)
-val BackgroundLight = Color(0xFFF5F5F5)
-val Background = BackgroundDark
-val SurfaceDark = Color(0xFF1E1E1E)
+val Primary = Color(0xFF10A37F)
+val Secondary = Color(0xFF3B82F6)
+val BackgroundDark = Color(0xFF0F1115)
+val BackgroundLight = Color(0xFFF7F7F8)
+val SurfaceDark = Color(0xFF181B22)
 val SurfaceLight = Color(0xFFFFFFFF)
-val Surface = SurfaceDark
-val Error = Color(0xFFCF6679)
-val ErrorLight = Color(0xFFB00020)
-val TextPrimaryDark = Color(0xFFFFFFFF)
-val TextPrimaryLight = Color(0xFF121212)
-val TextPrimary = TextPrimaryDark
+val ErrorColor = Color(0xFFEF4444)
+val WarningColor = Color(0xFFF59E0B)
+val SuccessColor = Color(0xFF10B981)
+val TextPrimaryDark = Color(0xFFECECF1)
+val TextPrimaryLight = Color(0xFF111827)

@@ -36,6 +36,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import org.dpdns.bnai.anime.core.auth.TokenManager
 import org.dpdns.bnai.anime.core.network.Resource
 
 @Composable
@@ -44,11 +45,23 @@ fun AuthScreen(
     viewModel: AuthViewModel = viewModel(factory = AuthViewModel.Factory(LocalContext.current))
 ) {
     val authState by viewModel.authState.collectAsState()
+    val tokenManager = remember { TokenManager.getInstance() }
+    val expiredMsg by (
+        tokenManager?.sessionExpiredMessage?.collectAsState()
+            ?: remember { mutableStateOf(null) }
+    )
     val snackbarHostState = remember { SnackbarHostState() }
 
     var email by rememberSaveable { mutableStateOf("") }
     var password by rememberSaveable { mutableStateOf("") }
     var isPasswordVisible by rememberSaveable { mutableStateOf(false) }
+
+    LaunchedEffect(expiredMsg) {
+        expiredMsg?.let {
+            snackbarHostState.showSnackbar(it)
+            tokenManager?.consumeSessionExpiredMessage()
+        }
+    }
 
     LaunchedEffect(authState) {
         when (val state = authState) {
@@ -57,17 +70,12 @@ fun AuthScreen(
                     popUpTo("auth") { inclusive = true }
                 }
             }
-            is Resource.Error -> {
-                snackbarHostState.showSnackbar(state.message)
-            }
+            is Resource.Error -> snackbarHostState.showSnackbar(state.message)
             else -> Unit
         }
     }
 
-    Scaffold(
-        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
-        containerColor = MaterialTheme.colorScheme.background
-    ) { innerPadding ->
+    Scaffold(snackbarHost = { SnackbarHost(hostState = snackbarHostState) }) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -77,20 +85,13 @@ fun AuthScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "AI Anime Studio",
+                "AI Cinematic Anime Engine",
                 style = MaterialTheme.typography.headlineLarge,
                 color = MaterialTheme.colorScheme.primary
             )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(
-                text = "Production Studio Sign In",
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onBackground
-            )
-
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(6.dp))
+            Text("Standalone Anime Production Studio", style = MaterialTheme.typography.bodyLarge)
+            Spacer(modifier = Modifier.height(24.dp))
 
             OutlinedTextField(
                 value = email,
@@ -103,67 +104,38 @@ fun AuthScreen(
                 ),
                 modifier = Modifier.fillMaxWidth()
             )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
+            Spacer(modifier = Modifier.height(12.dp))
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
                 label = { Text("Password") },
                 singleLine = true,
-                visualTransformation = if (isPasswordVisible) {
-                    VisualTransformation.None
-                } else {
-                    PasswordVisualTransformation()
-                },
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Password,
-                    imeAction = ImeAction.Done
-                ),
+                visualTransformation = if (isPasswordVisible)
+                    VisualTransformation.None else PasswordVisualTransformation(),
                 trailingIcon = {
                     TextButton(onClick = { isPasswordVisible = !isPasswordVisible }) {
-                        Text(
-                            text = if (isPasswordVisible) "HIDE" else "SHOW",
-                            style = MaterialTheme.typography.labelLarge,
-                            color = MaterialTheme.colorScheme.secondary
-                        )
+                        Text(if (isPasswordVisible) "Hide" else "Show")
                     }
                 },
                 modifier = Modifier.fillMaxWidth()
             )
-
             Spacer(modifier = Modifier.height(24.dp))
 
             val isLoading = authState is Resource.Loading
-
             Button(
                 onClick = { viewModel.login(email, password) },
                 enabled = !isLoading,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp)
+                modifier = Modifier.fillMaxWidth().height(50.dp)
             ) {
                 if (isLoading) {
                     CircularProgressIndicator(
-                        modifier = Modifier.size(24.dp),
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        strokeWidth = 2.dp
+                        modifier = Modifier.size(22.dp),
+                        strokeWidth = 2.dp,
+                        color = MaterialTheme.colorScheme.onPrimary
                     )
                 } else {
-                    Text(
-                        text = "Login",
-                        style = MaterialTheme.typography.labelLarge
-                    )
+                    Text("Sign In")
                 }
-            }
-
-            if (authState is Resource.Error) {
-                Spacer(modifier = Modifier.height(16.dp))
-                Text(
-                    text = (authState as Resource.Error).message,
-                    color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodyLarge
-                )
             }
         }
     }

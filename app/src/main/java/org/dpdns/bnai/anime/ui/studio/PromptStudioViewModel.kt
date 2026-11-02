@@ -29,7 +29,7 @@ class PromptStudioViewModel : ViewModel() {
     }
 
     fun loadPrompts() {
-        val projectId = TokenManager.getInstance()?.getActiveProjectId()
+        val projectId = TokenManager.getInstance()?.getActiveProjectId()?.ifBlank { null }
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true, statusMessage = null)
             try {
@@ -41,12 +41,13 @@ class PromptStudioViewModel : ViewModel() {
                         isLoading = false,
                         prompts = list,
                         selectedPrompt = active,
-                        selectedVisualMedium = active?.visual_medium ?: _uiState.value.selectedVisualMedium
+                        selectedVisualMedium = active?.visual_medium
+                            ?: _uiState.value.selectedVisualMedium
                     )
                 } else {
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
-                        statusMessage = "Failed to load prompts (${res.code()})"
+                        statusMessage = "Failed to load prompts (HTTP ${res.code()})"
                     )
                 }
             } catch (e: Exception) {
@@ -70,32 +71,28 @@ class PromptStudioViewModel : ViewModel() {
     }
 
     fun createAndActivatePrompt(title: String, promptText: String) {
-        val projectId = TokenManager.getInstance()?.getActiveProjectId()
+        if (title.isBlank() || promptText.isBlank()) return
+        val projectId = TokenManager.getInstance()?.getActiveProjectId()?.ifBlank { null }
         val medium = _uiState.value.selectedVisualMedium
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true, statusMessage = null)
             try {
                 val req = CreateSystemPromptRequest(
-                    project_id = projectId,
-                    title = title.trim(),
-                    visual_medium = medium,
-                    prompt_text = promptText.trim(),
-                    set_active = true
+                    projectId, title.trim(), medium, promptText.trim(), true
                 )
                 val res = api.createSystemPrompt(req)
-                if (res.isSuccessful && res.body()?.data != null) {
-                    val created = res.body()!!.data
-                    val updatedList = listOf(created) + _uiState.value.prompts
+                val created = res.body()?.data
+                if (res.isSuccessful && created != null) {
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
-                        prompts = updatedList,
+                        prompts = listOf(created) + _uiState.value.prompts,
                         selectedPrompt = created,
                         statusMessage = "Saved & Activated: ${created.title}"
                     )
                 } else {
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
-                        statusMessage = "Save failed (${res.code()})"
+                        statusMessage = "Save failed (HTTP ${res.code()})"
                     )
                 }
             } catch (e: Exception) {

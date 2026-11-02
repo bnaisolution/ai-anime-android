@@ -1,205 +1,111 @@
 package org.dpdns.bnai.anime.ui.production
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import org.dpdns.bnai.anime.ui.components.StatusBadge
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProductionScreen(
-    episodeId: String = "ep_005",
+    episodeId: String = "",
     onViewVideoClick: () -> Unit = {},
     onOpenSceneInspector: () -> Unit = {},
     onOpenMediaLibrary: () -> Unit = {},
     viewModel: ProductionViewModel = viewModel()
 ) {
     val state by viewModel.productionState.collectAsState()
+    val lifecycleOwner = LocalLifecycleOwner.current
+    var pollTrigger by remember { mutableStateOf(0) }
 
-    LaunchedEffect(episodeId) {
-        viewModel.startPolling(episodeId)
+    // Patch 1: Lifecycle-aware polling — pauses in background
+    LaunchedEffect(episodeId, pollTrigger, lifecycleOwner) {
+        lifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            viewModel.pollWhileStarted(episodeId)
+        }
     }
 
-    val timelineSteps = listOf(
-        ProductionStage.Queued,
-        ProductionStage.Scripting,
-        ProductionStage.Rendering,
-        ProductionStage.QC,
-        ProductionStage.Completed
-    )
+    Column(
+        modifier = Modifier.fillMaxSize().padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text("Production Command Center (WF-03)", style = MaterialTheme.typography.headlineLarge)
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = "Production Command Center",
-                        style = MaterialTheme.typography.headlineMedium,
-                        color = MaterialTheme.colorScheme.onPrimary
-                    )
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary
-                )
-            )
-        },
-        containerColor = MaterialTheme.colorScheme.background
-    ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+        Card(modifier = Modifier.fillMaxWidth()) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                Text("Target Command / Job ID: ${episodeId.ifBlank { "Latest Project Job" }}")
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Text("Live Status:", style = MaterialTheme.typography.headlineMedium)
+                    StatusBadge(state.backendStatus)
+                }
+                if (state.isPolling) {
+                    LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+                    Text("Polling backend every 4s (pauses automatically in background)...")
+                }
+                state.errorMessage?.let { err ->
+                    Text(err, color = MaterialTheme.colorScheme.error)
+                }
+            }
+        }
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            if (state.currentStage != ProductionStage.Completed &&
-                state.currentStage != ProductionStage.Failed
-            ) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(72.dp),
-                    color = MaterialTheme.colorScheme.secondary,
-                    strokeWidth = 6.dp
-                )
-            }
+            Button(
+                onClick = { pollTrigger++ },
+                modifier = Modifier.weight(1f)
+            ) { Text("Refresh / Retry Poll") }
 
-            Text(
-                text = "Stage: ${state.currentStage.displayTitle}",
-                style = MaterialTheme.typography.headlineLarge,
-                color = MaterialTheme.colorScheme.primary
-            )
+            OutlinedButton(
+                onClick = onOpenSceneInspector,
+                modifier = Modifier.weight(1f)
+            ) { Text("Scene Inspector") }
+        }
 
-            Text(
-                text = state.currentStage.detailMessage,
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onBackground
-            )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            OutlinedButton(
+                onClick = onOpenMediaLibrary,
+                modifier = Modifier.weight(1f)
+            ) { Text("Media Library") }
 
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(14.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surface
-                )
-            ) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    timelineSteps.forEachIndexed { index, step ->
-                        val currentIndex = timelineSteps.indexOf(state.currentStage)
-                        val isDone = currentIndex > index || state.currentStage == ProductionStage.Completed
-                        val isCurrent = state.currentStage == step
-
-                        val indicatorColor = when {
-                            isDone -> Color(0xFF4CAF50)
-                            isCurrent -> MaterialTheme.colorScheme.primary
-                            else -> Color.Gray
-                        }
-
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Box(
-                                modifier = Modifier
-                                    .size(16.dp)
-                                    .clip(CircleShape)
-                                    .background(indicatorColor)
-                            )
-                            Spacer(modifier = Modifier.width(12.dp))
-                            Text(
-                                text = step.displayTitle,
-                                style = MaterialTheme.typography.headlineMedium,
-                                color = if (isDone || isCurrent) {
-                                    MaterialTheme.colorScheme.onSurface
-                                } else {
-                                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-                                }
-                            )
-                        }
-                    }
-                }
-            }
-
-            if (state.currentStage == ProductionStage.Completed) {
-                Button(
-                    onClick = onViewVideoClick,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(50.dp)
-                ) {
-                    Text(
-                        text = "View Video (Proceed to QC)",
-                        style = MaterialTheme.typography.labelLarge
-                    )
-                }
-            }
-
-            if (state.currentStage == ProductionStage.Failed) {
-                Text(
-                    text = state.errorMessage ?: "Production stage failed.",
-                    color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodyLarge
-                )
-                Button(
-                    onClick = { viewModel.startPolling(episodeId) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(50.dp)
-                ) {
-                    Text(
-                        text = "Retry",
-                        style = MaterialTheme.typography.labelLarge
-                    )
-                }
-            }
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                OutlinedButton(
-                    onClick = onOpenSceneInspector,
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Text("S09 Scenes")
-                }
-                OutlinedButton(
-                    onClick = onOpenMediaLibrary,
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Text("S13 Library")
-                }
-            }
+            Button(
+                onClick = onViewVideoClick,
+                modifier = Modifier.weight(1f)
+            ) { Text("QC & Approvals") }
         }
     }
 }

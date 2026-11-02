@@ -4,5 +4,7 @@ data class Episode(
     val id: String,
     val episodeNumber: Int,
     val title: String,
-    val status: String
+    val status: String,
+    val synopsis: String? = null,
+    val updatedAt: String? = null
 )

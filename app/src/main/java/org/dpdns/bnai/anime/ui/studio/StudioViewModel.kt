@@ -1,4 +1,5 @@
 package org.dpdns.bnai.anime.ui.studio
+
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -6,36 +7,101 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import org.dpdns.bnai.anime.core.auth.TokenManager
+import org.dpdns.bnai.anime.core.model.Episode
 import org.dpdns.bnai.anime.core.model.Project
 import org.dpdns.bnai.anime.core.network.AnimeRepository
 import org.dpdns.bnai.anime.core.network.CommandIntent
 import org.dpdns.bnai.anime.core.network.Resource
-class StudioViewModel(private val repository: AnimeRepository = AnimeRepository()) : ViewModel() {
+
+data class HomeSummaryUi(
+    val activeProjectId: String = "",
+    val recentEpisodes: List<Episode> = emptyList(),
+    val pendingApprovalsCount: Int = 0,
+    val activeProductionStatus: String = "IDLE",
+    val createStatusMessage: String? = null
+)
+
+class StudioViewModel(
+    private val repository: AnimeRepository = AnimeRepository()
+) : ViewModel() {
+
     private val _projectsState = MutableStateFlow<Resource<List<Project>>>(Resource.Loading)
     val projectsState: StateFlow<Resource<List<Project>>> = _projectsState.asStateFlow()
-    init { loadProjects() }
+
+    private val _homeSummary = MutableStateFlow(HomeSummaryUi())
+    val homeSummary: StateFlow<HomeSummaryUi> = _homeSummary.asStateFlow()
+
+    init {
+        loadProjects()
+    }
+
     fun loadProjects() {
         viewModelScope.launch {
             _projectsState.value = Resource.Loading
-            when (val apiResult = repository.fetchProjects()) {
-                is Resource.Success -> { if (apiResult.data.isNotEmpty()) _projectsState.value = apiResult else _projectsState.value = Resource.Success(defaultSeededProjects()) }
-                else -> _projectsState.value = Resource.Success(defaultSeededProjects())
+            val res = repository.fetchProjects()
+            _projectsState.value = res
+            if (res is Resource.Success && res.data.isNotEmpty()) {
+                val activeId = repository.currentProjectId().ifBlank { res.data.first().id }
+                loadProjectHomeMetrics(activeId)
             }
         }
     }
-    fun createNewProject(projectName: String) {
+
+    fun selectProject(projectId: String) {
+        TokenManager.getInstance()?.saveActiveProjectId(projectId)
+        loadProjectHomeMetrics(projectId)
+    }
+
+    fun loadProjectHomeMetrics(projectId: String) {
+        if (projectId.isBlank()) return
         viewModelScope.launch {
-            val currentList = (_projectsState.value as? Resource.Success)?.data ?: defaultSeededProjects()
-            val targetProjectId = currentList.firstOrNull()?.id ?: repository.currentProjectId()
-            val cleanName = projectName.ifBlank { "Untitled Anime Universe ${currentList.size + 1}" }
-            repository.submitStudioCommand(targetProjectId, CommandIntent.CREATE_PROJECT, "SAVE", payload = mapOf("name" to cleanName))
-            val created = Project(targetProjectId, cleanName, "Season 1 • Episode 1: Pilot Script", "QUEUED")
-            TokenManager.getInstance()?.saveActiveProjectId(targetProjectId)
-            _projectsState.value = Resource.Success(listOf(created) + currentList)
+            val episodesRes = repository.fetchEpisodes(projectId)
+            val approvalsRes = repository.fetchApprovals(projectId)
+            val jobsRes = repository.fetchJobs(projectId)
+
+            val recentEps = (episodesRes as? Resource.Success)?.data?.take(4).orEmpty()
+            val pendingCount = (approvalsRes as? Resource.Success)?.data?.count {
+                it.status == null || it.status.equals("PENDING", ignoreCase = true)
+            } ?: 0
+            val latestJobState = (jobsRes as? Resource.Success)?.data?.firstOrNull()?.status ?: "IDLE"
+
+            _homeSummary.value = _homeSummary.value.copy(
+                activeProjectId = projectId,
+                recentEpisodes = recentEps,
+                pendingApprovalsCount = pendingCount,
+                activeProductionStatus = latestJobState
+            )
         }
     }
-    private fun defaultSeededProjects(): List<Project> = listOf(
-        Project("11111111-1111-1111-1111-111111111111", "Shadows of Aethelgard", "Episode 5: The Crimson Eclipse", "RUNNING"),
-        Project("22222222-2222-4222-8222-222222222222", "Cyber Samurai: Neon Karma", "Episode 2: Ghost in the Spire", "REVIEW")
-    )
+
+    fun createNewProject(projectName: String) {
+        val cleanName = projectName.trim()
+        if (cleanName.isBlank()) return
+        viewModelScope.launch {
+            val baseProjectId = repository.currentProjectId().ifBlank {
+                "00000000-0000-0000-0000-000000000000"
+            }
+            when (
+                val cmd = repository.submitStudioCommand(
+                    projectId = baseProjectId,
+                    intent = CommandIntent.CREATE_PROJECT,
+                    mode = "SAVE",
+                    payload = mapOf("name" to cleanName)
+                )
+            ) {
+                is Resource.Success -> {
+                    _homeSummary.value = _homeSummary.value.copy(
+                        createStatusMessage = "Create Project command dispatched (${cmd.data.status ?: "QUEUED"})"
+                    )
+                    loadProjects()
+                }
+                is Resource.Error -> {
+                    _homeSummary.value = _homeSummary.value.copy(
+                        createStatusMessage = "Create failed: ${cmd.message}"
+                    )
+                }
+                else -> Unit
+            }
+        }
+    }
 }

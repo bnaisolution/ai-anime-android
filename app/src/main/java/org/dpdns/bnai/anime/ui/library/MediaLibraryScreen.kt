@@ -1,130 +1,113 @@
 package org.dpdns.bnai.anime.ui.library
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
+import org.dpdns.bnai.anime.core.network.AnimeRepository
+import org.dpdns.bnai.anime.core.network.Resource
+import org.dpdns.bnai.anime.core.network.SceneDto
+import org.dpdns.bnai.anime.ui.components.ResourceStateBox
+import org.dpdns.bnai.anime.ui.components.StatusBadge
 
-data class MediaAssetItem(
-    val id: String,
-    val title: String,
-    val mediaType: String
-)
-
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MediaLibraryScreen() {
-    val assets = remember {
-        listOf(
-            MediaAssetItem("AST_01", "Scene 1 Keyframe", "IMAGE"),
-            MediaAssetItem("AST_02", "Scene 1 Motion Clip", "VIDEO"),
-            MediaAssetItem("AST_03", "Aarav Close-Up", "IMAGE"),
-            MediaAssetItem("AST_04", "Meera LipSync Clip", "VIDEO"),
-            MediaAssetItem("AST_05", "Citadel Night BG", "IMAGE"),
-            MediaAssetItem("AST_06", "Scene 3 Action Cut", "VIDEO"),
-            MediaAssetItem("AST_07", "Artifact Glow Frame", "IMAGE"),
-            MediaAssetItem("AST_08", "Kaalraj Reveal", "VIDEO"),
-            MediaAssetItem("AST_09", "Episode 5 Master", "VIDEO")
-        )
+    val repository = remember { AnimeRepository() }
+    val scope = rememberCoroutineScope()
+    var episodeNo by remember { mutableStateOf(1) }
+    var scenesState by remember {
+        mutableStateOf<Resource<List<SceneDto>>>(Resource.Loading)
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = "Media Library (S13)",
-                        style = MaterialTheme.typography.headlineMedium,
-                        color = MaterialTheme.colorScheme.onPrimary
-                    )
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary
-                )
-            )
-        },
-        containerColor = MaterialTheme.colorScheme.background
-    ) { innerPadding ->
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(3),
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .padding(12.dp),
-            horizontalArrangement = Arrangement.spacedBy(10.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
-            contentPadding = PaddingValues(bottom = 24.dp)
+    fun load() {
+        scope.launch {
+            scenesState = Resource.Loading
+            scenesState = repository.fetchScenes(repository.currentProjectId(), episodeNo)
+        }
+    }
+
+    LaunchedEffect(episodeNo) { load() }
+
+    Column(
+        modifier = Modifier.fillMaxSize().padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            items(assets, key = { it.id }) { asset ->
-                Card(
-                    shape = RoundedCornerShape(10.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surface
-                    ),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(8.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .aspectRatio(1f)
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)),
-                            contentAlignment = Alignment.Center
+            Text(
+                "Media Library (Ep $episodeNo)",
+                style = MaterialTheme.typography.headlineLarge
+            )
+            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                OutlinedButton(onClick = { if (episodeNo > 1) episodeNo-- }) {
+                    Text("- Ep")
+                }
+                OutlinedButton(onClick = { episodeNo++ }) {
+                    Text("+ Ep")
+                }
+            }
+        }
+        ResourceStateBox(
+            resource = scenesState,
+            emptyMessage = "No rendered scenes or clips found for Episode $episodeNo.",
+            onRetry = { load() }
+        ) { scenes ->
+            LazyColumn(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                items(scenes, key = { it.id }) { sc ->
+                    val sceneNum = sc.scene_no ?: sc.scene_order ?: 0
+                    Card(modifier = Modifier.fillMaxWidth()) {
+                        Column(
+                            modifier = Modifier.padding(14.dp),
+                            verticalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.PlayArrow,
-                                contentDescription = asset.title,
-                                tint = MaterialTheme.colorScheme.secondary,
-                                modifier = Modifier.size(32.dp)
-                            )
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text(
+                                    "Scene #$sceneNum",
+                                    style = MaterialTheme.typography.headlineMedium
+                                )
+                                StatusBadge(sc.status ?: "DRAFT")
+                            }
+                            Text(sc.visual_prompt ?: sc.description ?: "No visual prompt")
+                            val clips = sc.clips.orEmpty()
+                            if (clips.isEmpty()) {
+                                Text(
+                                    "No rendered clips attached yet.",
+                                    style = MaterialTheme.typography.labelLarge
+                                )
+                            } else {
+                                clips.forEach { clip ->
+                                    Text(
+                                        "Clip Scene #${clip.scene_no ?: clip.scene_order ?: sceneNum}: " +
+                                            "${clip.clip_url ?: "No URL"} " +
+                                            "(${clip.provider ?: "GPU"}, ${clip.duration_sec ?: 0.0}s)",
+                                        color = MaterialTheme.colorScheme.secondary
+                                    )
+                                }
+                            }
                         }
-                        Spacer(modifier = Modifier.height(6.dp))
-                        Text(
-                            text = asset.title,
-                            style = MaterialTheme.typography.labelLarge,
-                            color = MaterialTheme.colorScheme.onSurface,
-                            maxLines = 1
-                        )
-                        Text(
-                            text = asset.mediaType,
-                            style = MaterialTheme.typography.labelLarge,
-                            color = MaterialTheme.colorScheme.secondary
-                        )
                     }
                 }
             }

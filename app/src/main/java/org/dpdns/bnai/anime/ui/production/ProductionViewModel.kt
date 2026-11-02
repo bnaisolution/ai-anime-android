@@ -1,48 +1,122 @@
 package org.dpdns.bnai.anime.ui.production
+
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
 import org.dpdns.bnai.anime.core.network.AnimeRepository
-import org.dpdns.bnai.anime.core.network.RetrofitClient
-enum class ProductionStage(val displayTitle: String, val detailMessage: String) {
-    Queued("Queued", "Job registered in WF-10..."),
-    Scripting("Scripting", "WF-02 generating screenplay..."),
-    Rendering("Rendering", "Rendering Scene 3..."),
-    QC("QC", "Running WF-11 Automated Quality Gate..."),
-    Completed("Completed", "Master MP4 verified."),
-    Failed("Failed", "Worker timeout.")
-}
-data class ProductionState(val episodeId: String = "ep_005", val currentStage: ProductionStage = ProductionStage.Queued, val errorMessage: String? = null)
-class ProductionViewModel(private val repository: AnimeRepository = AnimeRepository()) : ViewModel() {
+import org.dpdns.bnai.anime.core.network.Resource
+
+data class ProductionState(
+    val targetId: String = "",
+    val backendStatus: String = "IDLE",
+    val isPolling: Boolean = false,
+    val errorMessage: String? = null,
+    val retryCount: Int = 0
+)
+
+class ProductionViewModel(
+    private val repository: AnimeRepository = AnimeRepository()
+) : ViewModel() {
+
     private val _productionState = MutableStateFlow(ProductionState())
     val productionState: StateFlow<ProductionState> = _productionState.asStateFlow()
-    private var pollingJob: Job? = null
-    fun startPolling(episodeId: String) {
-        pollingJob?.cancel()
-        pollingJob = viewModelScope.launch {
-            val api = RetrofitClient.getApiService()
-            val sequence = listOf(ProductionStage.Queued, ProductionStage.Scripting, ProductionStage.Rendering, ProductionStage.QC, ProductionStage.Completed)
-            for (stage in sequence) {
-                if (episodeId.length == 36) {
-                    try {
-                        val cmdRes = api.getCommandStatus(episodeId)
-                        val backendStatus = cmdRes.body()?.data?.status?.uppercase()
-                        if (backendStatus == "FAILED") { triggerSimulatedFailure(episodeId); return@launch }
-                        else if (backendStatus == "SUCCEEDED") { _productionState.value = ProductionState(episodeId, ProductionStage.Completed, null); return@launch }
-                    } catch (_: Exception) {}
-                }
-                _productionState.value = ProductionState(episodeId, stage, null)
-                if (stage != ProductionStage.Completed) delay(4000)
-            }
-        }
+
+    companion object {
+        val NON_TERMINAL_STATES = setOf(
+            "QUEUED", "DISPATCHED", "ACKNOWLEDGED", "RECONCILING", "RUNNING"
+        )
+        val TERMINAL_STATES = setOf(
+            "SUCCEEDED", "FAILED", "MANUAL_REVIEW", "COMPLETED"
+        )
     }
-    fun triggerSimulatedFailure(episodeId: String) {
-        pollingJob?.cancel()
-        _productionState.value = ProductionState(episodeId, ProductionStage.Failed, ProductionStage.Failed.detailMessage)
+
+    // Patch 1: Called from repeatOnLifecycle(Lifecycle.State.STARTED)
+    // - Poll interval: 4000ms (3-5s spec)
+    // - Stops on terminal state
+    // - Exponential backoff on network failure (3s, 6s, 12s)
+    // - Max 150 iterations cap
+    suspend fun pollWhileStarted(commandOrJobId: String) {
+        val projectId = repository.currentProjectId()
+        var consecutiveFailures = 0
+        var pollIterations = 0
+        val maxIterations = 150
+
+        while (pollIterations < maxIterations) {
+            pollIterations++
+            _productionState.value = _productionState.value.copy(
+                targetId = commandOrJobId,
+                isPolling = true
+            )
+
+            val resolvedStatus: String? = if (commandOrJobId.length == 36) {
+                when (val cmdRes = repository.fetchCommandStatus(commandOrJobId)) {
+                    is Resource.Success -> {
+                        consecutiveFailures = 0
+                        cmdRes.data.status?.uppercase() ?: "QUEUED"
+                    }
+                    is Resource.Error -> {
+                        consecutiveFailures++
+                        null
+                    }
+                    else -> "QUEUED"
+                }
+            } else {
+                when (val jobsRes = repository.fetchJobs(projectId)) {
+                    is Resource.Success -> {
+                        consecutiveFailures = 0
+                        jobsRes.data.firstOrNull()?.status?.uppercase() ?: "IDLE"
+                    }
+                    is Resource.Error -> {
+                        consecutiveFailures++
+                        null
+                    }
+                    is Resource.Empty -> {
+                        consecutiveFailures = 0
+                        "IDLE"
+                    }
+                    else -> "IDLE"
+                }
+            }
+
+            if (resolvedStatus == null) {
+                if (consecutiveFailures >= 3) {
+                    _productionState.value = ProductionState(
+                        targetId = commandOrJobId,
+                        backendStatus = "ERROR",
+                        isPolling = false,
+                        errorMessage = "Network failure after 3 retries. Tap Retry to poll again.",
+                        retryCount = consecutiveFailures
+                    )
+                    return
+                }
+                val backoffMs = 3000L * (1 shl (consecutiveFailures - 1))
+                delay(backoffMs)
+                continue
+            }
+
+            _productionState.value = ProductionState(
+                targetId = commandOrJobId,
+                backendStatus = resolvedStatus,
+                isPolling = resolvedStatus in NON_TERMINAL_STATES,
+                errorMessage = if (resolvedStatus == "FAILED")
+                    "Command/Job reported FAILED." else null,
+                retryCount = consecutiveFailures
+            )
+
+            if (resolvedStatus in TERMINAL_STATES ||
+                resolvedStatus !in NON_TERMINAL_STATES
+            ) {
+                return
+            }
+
+            delay(4000L)
+        }
+
+        _productionState.value = _productionState.value.copy(
+            isPolling = false,
+            errorMessage = "Polling paused due to inactivity timeout. Tap Retry to refresh."
+        )
     }
 }
