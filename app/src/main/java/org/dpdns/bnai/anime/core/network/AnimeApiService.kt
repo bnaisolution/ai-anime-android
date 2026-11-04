@@ -2,23 +2,14 @@ package org.dpdns.bnai.anime.core.network
 
 import com.google.gson.annotations.SerializedName
 import retrofit2.Response
-import retrofit2.http.Body
-import retrofit2.http.GET
-import retrofit2.http.Header
-import retrofit2.http.POST
-import retrofit2.http.Path
-import retrofit2.http.Query
+import retrofit2.http.*
 
 typealias JsonMap = Map<String, @JvmSuppressWildcards Any?>
 
-// ============================================================================
-// ENVELOPE & AUTH
-// ============================================================================
 data class ApiMeta(val request_id: String? = null)
 data class ApiEnvelope<T>(val data: T?, val meta: ApiMeta? = null)
 
 data class LoginRequest(val email: String, val password: String)
-
 data class LoginResponse(
     val token: String? = null,
     val access_token: String? = null,
@@ -27,33 +18,27 @@ data class LoginResponse(
     val email: String? = null,
     val role: String? = "normal_user"
 )
+data class AuthMeResponse(val status: String? = null, val user: JsonMap? = null)
 
-data class AuthMeResponse(
-    val status: String? = null,
-    val user: JsonMap? = null
-)
-
-// ============================================================================
-// AI BRAIN
-// ============================================================================
+// Fix #113 & #118: Added current_screen and conversation_id for AI Director context & memory
 data class AiChatRequest(
     val message: String,
     val project_id: String? = null,
     val skill_key: String = "ai_admin",
+    val current_screen: String? = null,
+    val conversation_id: String? = null,
     val request_id: String? = null
 )
-
 data class AiChatResponse(
     val request_id: String? = null,
     val status: String? = null,
     val reply: String? = null,
     val message: String? = null,
-    val provider: String? = null
+    val provider: String? = null,
+    val model: String? = null,
+    val action: String? = null
 )
 
-// ============================================================================
-// HEALTH
-// ============================================================================
 data class HealthResponseDto(
     val ok: Boolean = false,
     val status: String? = null,
@@ -63,9 +48,6 @@ data class HealthResponseDto(
     val timestamp: String? = null
 )
 
-// ============================================================================
-// GAP #1: CommandIntent — EXACT match with backend commands.types.ts (33 values)
-// ============================================================================
 enum class CommandIntent {
     CREATE_PROJECT,
     OPEN_PROJECT,
@@ -102,9 +84,6 @@ enum class CommandIntent {
     SYSTEM_HEALTH
 }
 
-// ============================================================================
-// COMMAND DTOs
-// ============================================================================
 data class CreateCommandRequest(
     val project_id: String,
     val intent: String,
@@ -119,6 +98,7 @@ data class ApiCommandRecordDto(
     val intent: String? = null,
     val status: String? = null,
     val error_message: String? = null,
+    val payload: JsonMap? = null,
     val result: JsonMap? = null,
     val created_at: String? = null,
     val updated_at: String? = null
@@ -131,16 +111,27 @@ data class SubmitCommandResultDto(
     val command: ApiCommandRecordDto? = null
 )
 
-// ============================================================================
-// GAP #5.2: ProjectDto — no phantom "status" field, use is_active
-// ============================================================================
 data class ProjectDto(
     val id: String,
     val name: String,
     val is_active: Boolean? = true,
     val story_bible: JsonMap? = null,
     val current_season: Int? = 1,
-    val current_episode: Int? = 1
+    val current_episode: Int? = 1,
+    val budget_ceiling: Double? = null
+)
+
+data class UpdateProjectSettingsRequest(
+    val name: String? = null,
+    val visual_medium: String? = null,
+    val genre: String? = null,
+    val auto_approve: Boolean? = null,
+    val cover_image_url: String? = null,
+    val budget_ceiling: Int? = null
+)
+
+data class UpdateBudgetRequest(
+    val budget_ceiling: Int
 )
 
 data class ProjectOverviewDto(
@@ -154,9 +145,6 @@ data class ProjectOverviewDto(
     val continuity_status: String? = null
 )
 
-// ============================================================================
-// EPISODE
-// ============================================================================
 data class EpisodeDto(
     val id: String,
     val project_id: String? = null,
@@ -165,12 +153,13 @@ data class EpisodeDto(
     val synopsis: String? = null,
     val current_state: String? = null,
     val qc_status: String? = null,
+    val script_json: Any? = null,
+    val master_video_url: String? = null,
+    val thumbnail_url: String? = null,
+    val viral_metadata: JsonMap? = null,
     val updated_at: String? = null
 )
 
-// ============================================================================
-// SCENE & CLIP
-// ============================================================================
 data class ClipDto(
     val id: String? = null,
     val scene_order: Int? = null,
@@ -181,7 +170,6 @@ data class ClipDto(
     val status: String? = null
 )
 
-// GAP #5.3: SceneDto — no phantom "title" column (scenes table doesn't have it)
 data class SceneDto(
     val id: String,
     val episode_no: Int? = null,
@@ -189,25 +177,29 @@ data class SceneDto(
     val scene_no: Int? = null,
     val description: String? = null,
     val visual_prompt: String? = null,
+    val dialogue_speaker_id: String? = null,
+    val voice_text: String? = null,
+    val bgm_hint: String? = null,
+    val sfx_hint: String? = null,
     val status: String? = null,
     val clips: List<ClipDto>? = null
 )
 
-// ============================================================================
-// CHARACTER
-// ============================================================================
+// Fix #12: Nullable character_code & name so Gson never fails on partial DB rows
 data class CharacterDto(
     val id: String? = null,
-    val character_code: String,
-    val name: String,
+    val character_code: String? = null,
+    val name: String? = null,
     val role: String? = null,
+    val description: String? = null,
+    val initial_status: String? = null,
+    val image_url: String? = null,
+    val canon_lock_status: String? = null,
     val visual_dna: JsonMap? = null,
-    val voice_config: JsonMap? = null
+    val voice_config: JsonMap? = null,
+    val powers_and_lore: JsonMap? = null
 )
 
-// ============================================================================
-// GAP #5.4: JobDto — aligned with backend listJobs fields
-// ============================================================================
 data class JobDto(
     val id: String,
     val project_id: String? = null,
@@ -222,9 +214,6 @@ data class JobDto(
     val created_at: String? = null
 )
 
-// ============================================================================
-// GAP #5.1: ApprovalDecisionDto — decision_reason mapping, resource_type computed
-// ============================================================================
 data class ApprovalDecisionDto(
     val id: String,
     val project_id: String? = null,
@@ -233,10 +222,10 @@ data class ApprovalDecisionDto(
     val resource_version: Int = 1,
     val status: String? = null,
     val risk: String? = null,
-    @SerializedName("decision_reason", alternate = ["reason"])
-    val reason: String? = null,
+    @SerializedName("decision_reason", alternate = ["reason"]) val reason: String? = null,
     val decision: String? = null,
     val exact_diff: JsonMap? = null,
+    val expires_at: String? = null,
     val created_at: String? = null
 ) {
     val resource_type: String
@@ -249,9 +238,6 @@ data class DecideApprovalRequest(
     val resource_version: Int = 1
 )
 
-// ============================================================================
-// QUICK MEDIA & VISION
-// ============================================================================
 data class QuickGenerateRequest(
     val prompt: String,
     val style_preset: String? = "anime_cinematic",
@@ -262,17 +248,17 @@ data class QuickGenerateRequest(
 data class VisionAnalyzeRequest(
     val media_url: String,
     val analysis_type: String = "GENERAL",
-    val prompt: String = "Extract 11-field Visual DNA"
+    val prompt: String = "Extract 11-field Visual DNA",
+    val character_code: String? = null,
+    val save_to_character: Boolean = false
 )
 
-// ============================================================================
-// PROMPT STUDIO
-// ============================================================================
 data class SystemPromptDto(
     val id: String,
     val project_id: String? = null,
     val title: String,
     val visual_medium: String = "ANIME",
+    val prompt_category: String? = "BIBLE",
     val prompt_text: String,
     val is_default: Boolean? = false
 )
@@ -281,13 +267,11 @@ data class CreateSystemPromptRequest(
     val project_id: String? = null,
     val title: String,
     val visual_medium: String,
+    val prompt_category: String = "BIBLE",
     val prompt_text: String,
     val set_active: Boolean = true
 )
 
-// ============================================================================
-// GPU / KAGGLE / TELEGRAM STORAGE CONFIG
-// ============================================================================
 data class CustomGpuConfigDto(
     val enabled: Boolean = false,
     val worker_url: String = "",
@@ -324,27 +308,19 @@ data class GpuSetupResponseDto(
     val kaggle_deploy: JsonMap? = null
 )
 
-// ============================================================================
-// RETROFIT INTERFACE — All endpoints including 13 GAP #2 additions
-// ============================================================================
 interface AnimeApiService {
-
-    // --- Auth ---
     @POST("api/v1/auth/login")
     suspend fun login(@Body request: LoginRequest): Response<LoginResponse>
 
     @GET("api/v1/auth/me")
     suspend fun getMe(): Response<AuthMeResponse>
 
-    // --- AI Brain ---
     @POST("api/v1/ai/chat")
     suspend fun chatWithAi(@Body request: AiChatRequest): Response<AiChatResponse>
 
-    // --- Health ---
     @GET("v1/anime/health")
     suspend fun getAnimeHealth(): Response<HealthResponseDto>
 
-    // --- Commands (WF-00) ---
     @POST("v1/anime/commands")
     suspend fun submitCommand(
         @Header("Idempotency-Key") idempotencyKey: String,
@@ -352,84 +328,71 @@ interface AnimeApiService {
     ): Response<ApiEnvelope<SubmitCommandResultDto>>
 
     @GET("v1/anime/commands/{id}")
-    suspend fun getCommandStatus(
-        @Path("id") commandId: String
-    ): Response<ApiEnvelope<ApiCommandRecordDto>>
+    suspend fun getCommandStatus(@Path("id") commandId: String): Response<ApiEnvelope<ApiCommandRecordDto>>
 
-    // --- Projects & Story ---
     @GET("v1/anime/projects")
     suspend fun getProjects(): Response<ApiEnvelope<List<ProjectDto>>>
 
     @GET("v1/anime/projects/{id}/overview")
-    suspend fun getProjectOverview(
-        @Path("id") projectId: String
-    ): Response<ApiEnvelope<ProjectOverviewDto>>
+    suspend fun getProjectOverview(@Path("id") projectId: String): Response<ApiEnvelope<ProjectOverviewDto>>
+
+    @PATCH("v1/anime/projects/{id}")
+    suspend fun updateProjectSettings(
+        @Path("id") projectId: String,
+        @Body body: UpdateProjectSettingsRequest
+    ): Response<ApiEnvelope<ProjectDto>>
+
+    @PATCH("v1/anime/projects/{id}/budget")
+    suspend fun updateProjectBudget(
+        @Path("id") projectId: String,
+        @Body body: UpdateBudgetRequest
+    ): Response<ApiEnvelope<JsonMap>>
 
     @GET("v1/anime/projects/{id}/episodes")
-    suspend fun getProjectEpisodes(
-        @Path("id") projectId: String
-    ): Response<ApiEnvelope<List<EpisodeDto>>>
+    suspend fun getProjectEpisodes(@Path("id") projectId: String): Response<ApiEnvelope<List<EpisodeDto>>>
 
     @GET("v1/anime/projects/{id}/episodes/{episodeNo}")
-    suspend fun getEpisodeDetail(
-        @Path("id") projectId: String,
-        @Path("episodeNo") episodeNo: Int
-    ): Response<ApiEnvelope<EpisodeDto>>
+    suspend fun getEpisodeDetail(@Path("id") projectId: String, @Path("episodeNo") episodeNo: Int): Response<ApiEnvelope<EpisodeDto>>
 
     @GET("v1/anime/projects/{id}/episodes/{episodeNo}/plan")
-    suspend fun getEpisodePlan(
-        @Path("id") projectId: String,
-        @Path("episodeNo") episodeNo: Int
-    ): Response<ApiEnvelope<JsonMap>>
+    suspend fun getEpisodePlan(@Path("id") projectId: String, @Path("episodeNo") episodeNo: Int): Response<ApiEnvelope<JsonMap>>
 
     @GET("v1/anime/projects/{id}/episodes/{episodeNo}/scenes")
-    suspend fun getEpisodeScenes(
-        @Path("id") projectId: String,
-        @Path("episodeNo") episodeNo: Int
-    ): Response<ApiEnvelope<List<SceneDto>>>
+    suspend fun getEpisodeScenes(@Path("id") projectId: String, @Path("episodeNo") episodeNo: Int): Response<ApiEnvelope<List<SceneDto>>>
+
+    @GET("v1/anime/projects/{id}/media")
+    suspend fun getProjectMedia(@Path("id") projectId: String): Response<ApiEnvelope<JsonMap>>
 
     @GET("v1/anime/projects/{id}/jobs")
-    suspend fun getProjectJobs(
-        @Path("id") projectId: String
-    ): Response<ApiEnvelope<List<JobDto>>>
+    suspend fun getProjectJobs(@Path("id") projectId: String): Response<ApiEnvelope<List<JobDto>>>
 
     @GET("v1/anime/projects/{id}/jobs/{jobId}")
-    suspend fun getJobDetail(
-        @Path("id") projectId: String,
-        @Path("jobId") jobId: String
-    ): Response<ApiEnvelope<JobDto>>
+    suspend fun getJobDetail(@Path("id") projectId: String, @Path("jobId") jobId: String): Response<ApiEnvelope<JobDto>>
 
     @GET("v1/anime/projects/{id}/bible")
-    suspend fun getProjectBible(
-        @Path("id") projectId: String
-    ): Response<ApiEnvelope<JsonMap>>
+    suspend fun getProjectBible(@Path("id") projectId: String): Response<ApiEnvelope<JsonMap>>
 
     @GET("v1/anime/projects/{id}/canon")
-    suspend fun getProjectCanon(
-        @Path("id") projectId: String
-    ): Response<ApiEnvelope<List<JsonMap>>>
+    suspend fun getProjectCanon(@Path("id") projectId: String): Response<ApiEnvelope<List<JsonMap>>>
+
+    @GET("v1/anime/projects/{id}/canon/proposals")
+    suspend fun getCanonProposals(@Path("id") projectId: String): Response<ApiEnvelope<List<JsonMap>>>
 
     @GET("v1/anime/projects/{id}/characters")
-    suspend fun getProjectCharacters(
-        @Path("id") projectId: String
-    ): Response<ApiEnvelope<List<CharacterDto>>>
+    suspend fun getProjectCharacters(@Path("id") projectId: String): Response<ApiEnvelope<List<CharacterDto>>>
 
     @GET("v1/anime/projects/{id}/timeline")
-    suspend fun getProjectTimeline(
-        @Path("id") projectId: String
-    ): Response<ApiEnvelope<List<JsonMap>>>
+    suspend fun getProjectTimeline(@Path("id") projectId: String): Response<ApiEnvelope<List<JsonMap>>>
 
     @GET("v1/anime/projects/{id}/analytics")
-    suspend fun getProjectAnalytics(
-        @Path("id") projectId: String
-    ): Response<ApiEnvelope<JsonMap>>
+    suspend fun getProjectAnalytics(@Path("id") projectId: String): Response<ApiEnvelope<JsonMap>>
 
     @GET("v1/anime/projects/{id}/audit")
-    suspend fun getProjectAudit(
-        @Path("id") projectId: String
-    ): Response<ApiEnvelope<List<JsonMap>>>
+    suspend fun getProjectAudit(@Path("id") projectId: String): Response<ApiEnvelope<List<JsonMap>>>
 
-    // --- Quick Tools & Vision (WF-05) ---
+    @GET("v1/anime/projects/{id}/notifications")
+    suspend fun getProjectNotifications(@Path("id") projectId: String): Response<ApiEnvelope<List<JsonMap>>>
+
     @POST("v1/anime/projects/{id}/quick/image")
     suspend fun quickGenerateImage(
         @Path("id") projectId: String,
@@ -451,11 +414,8 @@ interface AnimeApiService {
         @Body body: VisionAnalyzeRequest
     ): Response<ApiEnvelope<SubmitCommandResultDto>>
 
-    // --- Approvals (WF-11) ---
     @GET("v1/anime/projects/{id}/approvals")
-    suspend fun getProjectApprovals(
-        @Path("id") projectId: String
-    ): Response<ApiEnvelope<List<ApprovalDecisionDto>>>
+    suspend fun getProjectApprovals(@Path("id") projectId: String): Response<ApiEnvelope<List<ApprovalDecisionDto>>>
 
     @POST("v1/anime/projects/{id}/approvals/{approvalId}/decisions")
     suspend fun decideApproval(
@@ -465,63 +425,41 @@ interface AnimeApiService {
         @Body body: DecideApprovalRequest
     ): Response<ApiEnvelope<ApprovalDecisionDto>>
 
-    // --- Admin & Owner ---
     @GET("v1/anime/admin/workflows")
-    suspend fun getAdminWorkflows(
-        @Query("project_id") projectId: String
-    ): Response<ApiEnvelope<List<JsonMap>>>
+    suspend fun getAdminWorkflows(@Query("project_id") projectId: String): Response<ApiEnvelope<List<JsonMap>>>
 
     @GET("v1/anime/admin/queues")
-    suspend fun getAdminQueues(
-        @Query("project_id") projectId: String
-    ): Response<ApiEnvelope<JsonMap>>
+    suspend fun getAdminQueues(@Query("project_id") projectId: String): Response<ApiEnvelope<JsonMap>>
 
     @GET("v1/admin/anime/workers")
-    suspend fun getAdminWorkers(
-        @Query("project_id") projectId: String
-    ): Response<ApiEnvelope<List<JsonMap>>>
+    suspend fun getAdminWorkers(@Query("project_id") projectId: String): Response<ApiEnvelope<List<JsonMap>>>
 
     @GET("v1/admin/anime/ledger/summary")
-    suspend fun getLedgerSummary(
-        @Query("project_id") projectId: String
-    ): Response<ApiEnvelope<JsonMap>>
+    suspend fun getLedgerSummary(@Query("project_id") projectId: String): Response<ApiEnvelope<JsonMap>>
 
-    // --- Prompts & GPU Config ---
     @GET("v1/anime/prompts")
-    suspend fun getSystemPrompts(
-        @Query("project_id") projectId: String? = null
-    ): Response<ApiEnvelope<List<SystemPromptDto>>>
+    suspend fun getSystemPrompts(@Query("project_id") projectId: String? = null): Response<ApiEnvelope<List<SystemPromptDto>>>
 
     @POST("v1/anime/prompts")
-    suspend fun createSystemPrompt(
-        @Body body: CreateSystemPromptRequest
-    ): Response<ApiEnvelope<SystemPromptDto>>
+    suspend fun createSystemPrompt(@Body body: CreateSystemPromptRequest): Response<ApiEnvelope<SystemPromptDto>>
+
+    @DELETE("v1/anime/prompts/{promptId}")
+    suspend fun deleteSystemPrompt(@Path("promptId") promptId: String): Response<ApiEnvelope<JsonMap>>
 
     @GET("v1/anime/infrastructure/gpu")
     suspend fun getGpuConfig(): Response<ApiEnvelope<JsonMap>>
 
     @POST("v1/anime/infrastructure/gpu")
-    suspend fun saveGpuConfig(
-        @Body request: GpuSetupRequest
-    ): Response<ApiEnvelope<GpuSetupResponseDto>>
+    suspend fun saveGpuConfig(@Body request: GpuSetupRequest): Response<ApiEnvelope<GpuSetupResponseDto>>
 
-    // ========================================================================
-    // GAP #2: 13 NEW READ ENDPOINTS (must be deployed on backend first)
-    // ========================================================================
     @GET("v1/anime/projects/{id}/quota")
-    suspend fun getProjectQuota(
-        @Path("id") projectId: String
-    ): Response<ApiEnvelope<JsonMap>>
+    suspend fun getProjectQuota(@Path("id") projectId: String): Response<ApiEnvelope<JsonMap>>
 
     @GET("v1/anime/projects/{id}/continuity")
-    suspend fun getProjectContinuity(
-        @Path("id") projectId: String
-    ): Response<ApiEnvelope<List<JsonMap>>>
+    suspend fun getProjectContinuity(@Path("id") projectId: String): Response<ApiEnvelope<List<JsonMap>>>
 
     @GET("v1/anime/projects/{id}/retries")
-    suspend fun getProjectRetries(
-        @Path("id") projectId: String
-    ): Response<ApiEnvelope<List<JsonMap>>>
+    suspend fun getProjectRetries(@Path("id") projectId: String): Response<ApiEnvelope<List<JsonMap>>>
 
     @GET("v1/anime/projects/{id}/characters/{characterId}/reference-history")
     suspend fun getCharacterReferenceHistory(

@@ -9,10 +9,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import org.dpdns.bnai.anime.core.auth.TokenManager
-import org.dpdns.bnai.anime.core.network.AnimeApiService
-import org.dpdns.bnai.anime.core.network.LoginRequest
-import org.dpdns.bnai.anime.core.network.Resource
-import org.dpdns.bnai.anime.core.network.RetrofitClient
+import org.dpdns.bnai.anime.core.network.*
 
 class AuthViewModel(
     private val apiService: AnimeApiService,
@@ -37,24 +34,16 @@ class AuthViewModel(
                         ?: body?.access_token?.takeIf { it.isNotBlank() }
                     if (token != null) {
                         tokenManager.saveToken(token)
-                        tokenManager.saveUserMeta(
-                            body?.userId,
-                            body?.workspaceId,
-                            body?.role,
-                            body?.email ?: email.trim()
-                        )
+                        tokenManager.saveUserMeta(body?.userId, body?.workspaceId, body?.role, body?.email ?: email.trim())
                         _authState.value = Resource.Success(token)
                     } else {
-                        _authState.value = Resource.Error("Login response did not include a token.")
+                        _authState.value = Resource.Error("Login response did not include a valid token.")
                     }
                 } else {
-                    _authState.value = Resource.Error(
-                        "Login failed (HTTP ${response.code()})",
-                        response.code()
-                    )
+                    _authState.value = Resource.Error("Invalid email or password (HTTP ${response.code()})", response.code())
                 }
             } catch (e: Exception) {
-                _authState.value = Resource.Error(e.localizedMessage ?: "Network error")
+                _authState.value = Resource.Error(e.localizedMessage ?: "Network connection failed")
             }
         }
     }
@@ -63,10 +52,7 @@ class AuthViewModel(
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
             val appContext = context.applicationContext
-            return AuthViewModel(
-                RetrofitClient.getApiService(appContext),
-                TokenManager.init(appContext)
-            ) as T
+            return AuthViewModel(RetrofitClient.getApiService(appContext), TokenManager.init(appContext)) as T
         }
     }
 }

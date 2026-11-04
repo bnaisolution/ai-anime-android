@@ -6,10 +6,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import org.dpdns.bnai.anime.core.network.AnimeRepository
-import org.dpdns.bnai.anime.core.network.CommandIntent
-import org.dpdns.bnai.anime.core.network.ProjectOverviewDto
-import org.dpdns.bnai.anime.core.network.Resource
+import org.dpdns.bnai.anime.core.network.*
 
 data class StoryBibleData(
     val projectId: String,
@@ -19,10 +16,7 @@ data class StoryBibleData(
     val toneAndTheme: String
 )
 
-class ProjectViewModel(
-    private val repository: AnimeRepository = AnimeRepository()
-) : ViewModel() {
-
+class ProjectViewModel(private val repository: AnimeRepository = AnimeRepository()) : ViewModel() {
     private val _overviewState = MutableStateFlow<Resource<ProjectOverviewDto>>(Resource.Loading)
     val overviewState: StateFlow<Resource<ProjectOverviewDto>> = _overviewState.asStateFlow()
 
@@ -41,6 +35,38 @@ class ProjectViewModel(
         }
     }
 
+    fun updateSettings(
+        projectId: String,
+        visualMedium: String,
+        genre: String,
+        autoApprove: Boolean,
+        coverUrl: String?,
+        onDone: (String) -> Unit
+    ) {
+        val targetId = projectId.ifBlank { repository.currentProjectId() }
+        viewModelScope.launch {
+            when (val res = repository.updateProjectSettings(targetId, visualMedium, genre, autoApprove, coverUrl)) {
+                is Resource.Success -> {
+                    onDone("Project settings saved!")
+                    fetchOverview(targetId)
+                }
+                is Resource.Error -> onDone("Failed: ${res.message}")
+                else -> Unit
+            }
+        }
+    }
+
+    fun quickGenerateEpisode(projectId: String, onDone: (String) -> Unit) {
+        val targetId = projectId.ifBlank { repository.currentProjectId() }
+        viewModelScope.launch {
+            when (val res = repository.submitStudioCommand(targetId, CommandIntent.GENERATE_EPISODE, "SAVE")) {
+                is Resource.Success -> onDone("Episode generation queued (${res.data.status ?: "QUEUED"})")
+                is Resource.Error -> onDone("Failed: ${res.message}")
+                else -> Unit
+            }
+        }
+    }
+
     fun fetchBible(projectId: String) {
         val targetId = projectId.ifBlank { repository.currentProjectId() }
         if (targetId.isBlank()) {
@@ -53,17 +79,11 @@ class ProjectViewModel(
                 is Resource.Success -> {
                     val data = res.data
                     val rawBible = data["story_bible"] as? Map<*, *> ?: data
-                    val title = (
-                        rawBible["title"] ?: data["name"] ?: "Project Story Bible"
-                    ).toString()
-                    val overview = (
-                        rawBible["world_overview"] ?: rawBible["logline"] ?: ""
-                    ).toString()
+                    val title = (rawBible["title"] ?: data["name"] ?: "Project Story Bible").toString()
+                    val overview = (rawBible["world_overview"] ?: rawBible["logline"] ?: "").toString()
                     val powers = (rawBible["magic_system"] ?: "").toString()
                     val tone = (rawBible["tone"] ?: "").toString()
-                    _bibleState.value = Resource.Success(
-                        StoryBibleData(targetId, title, overview, powers, tone)
-                    )
+                    _bibleState.value = Resource.Success(StoryBibleData(targetId, title, overview, powers, tone))
                 }
                 is Resource.Empty -> _bibleState.value = Resource.Empty
                 is Resource.Error -> _bibleState.value = res
@@ -72,24 +92,11 @@ class ProjectViewModel(
         }
     }
 
-    fun proposeBibleChange(
-        projectId: String,
-        summary: String,
-        onDone: (String) -> Unit
-    ) {
+    fun proposeBibleChange(projectId: String, summary: String, onDone: (String) -> Unit) {
         val targetId = projectId.ifBlank { repository.currentProjectId() }
         viewModelScope.launch {
-            when (
-                val res = repository.submitStudioCommand(
-                    projectId = targetId,
-                    intent = CommandIntent.SAVE_BIBLE,
-                    mode = "SAVE",
-                    payload = mapOf("user_prompt" to summary)
-                )
-            ) {
-                is Resource.Success -> onDone(
-                    "WF-01 SAVE_BIBLE Dispatched (${res.data.status ?: "QUEUED"})"
-                )
+            when (val res = repository.submitStudioCommand(targetId, CommandIntent.SAVE_BIBLE, "SAVE", payload = mapOf("user_prompt" to summary))) {
+                is Resource.Success -> onDone("Story Bible saved (${res.data.status ?: "QUEUED"})")
                 is Resource.Error -> onDone("Failed: ${res.message}")
                 else -> Unit
             }

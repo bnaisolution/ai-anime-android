@@ -6,5 +6,10 @@ data class Episode(
     val title: String,
     val status: String,
     val synopsis: String? = null,
-    val updatedAt: String? = null
+    val updatedAt: String? = null,
+    val qcStatus: String? = null,
+    val scriptText: String? = null,
+    val masterVideoUrl: String? = null,
+    val thumbnailUrl: String? = null,
+    val projectName: String? = null
 )

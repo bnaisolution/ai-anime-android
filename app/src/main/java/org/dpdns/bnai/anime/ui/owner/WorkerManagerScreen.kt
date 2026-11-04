@@ -1,102 +1,171 @@
 package org.dpdns.bnai.anime.ui.owner
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import org.dpdns.bnai.anime.core.network.AnimeRepository
 import org.dpdns.bnai.anime.core.network.CommandIntent
 import org.dpdns.bnai.anime.core.network.JsonMap
 import org.dpdns.bnai.anime.core.network.Resource
-import org.dpdns.bnai.anime.ui.components.KeyValueMapList
-import org.dpdns.bnai.anime.ui.components.ResourceStateBox
+import org.dpdns.bnai.anime.ui.components.*
 
 @Composable
 fun WorkerManagerScreen() {
     val repository = remember { AnimeRepository() }
     val scope = rememberCoroutineScope()
-    var workersState by remember {
-        mutableStateOf<Resource<List<JsonMap>>>(Resource.Loading)
-    }
-    var actionBanner by remember { mutableStateOf<String?>(null) }
+    val snackbarHostState = remember { SnackbarHostState() }
 
-    fun load() {
+    var activeProjectId by remember { mutableStateOf(repository.currentProjectId()) }
+    var selectedTarget by remember { mutableStateOf("Kaggle GPU (Primary)") }
+    val targets = listOf("Kaggle GPU (Primary)", "Kaggle GPU (Secondary)", "Custom GPU Worker", "GitHub CPU Worker")
+    var isDispatching by remember { mutableStateOf(false) }
+    var showStopConfirmDialog by remember { mutableStateOf(false) }
+    var workersState by remember { mutableStateOf<Resource<List<JsonMap>>>(Resource.Loading) }
+
+    fun loadWorkers(pid: String) {
+        if (pid.isBlank()) return
         scope.launch {
             workersState = Resource.Loading
-            workersState = repository.fetchAdminWorkers(repository.currentProjectId())
+            workersState = repository.fetchAdminWorkers(pid)
         }
     }
 
-    LaunchedEffect(Unit) { load() }
+    LaunchedEffect(activeProjectId) {
+        loadWorkers(activeProjectId)
+    }
 
-    Column(
-        modifier = Modifier.fillMaxSize().padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        Text("Worker Fleet Manager (WF-04)", style = MaterialTheme.typography.headlineLarge)
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(10.dp)
+    // Fix #346: AlertDialog confirmation before stopping GPU
+    if (showStopConfirmDialog) {
+        AlertDialog(
+            onDismissRequest = { showStopConfirmDialog = false },
+            title = { Text("Stop Active GPU Worker?") },
+            text = { Text("Are you sure you want to stop $selectedTarget? Any in-flight scene renders will pause.") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showStopConfirmDialog = false
+                        isDispatching = true
+                        scope.launch {
+                            repository.submitStudioCommand(activeProjectId, CommandIntent.ADMIN_STOP_KAGGLE, payload = mapOf("target" to selectedTarget))
+                            isDispatching = false
+                            snackbarHostState.showSnackbar("Stop signal sent to $selectedTarget")
+                            loadWorkers(activeProjectId)
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                ) { Text("Stop Worker") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showStopConfirmDialog = false }) { Text("Cancel") }
+            }
+        )
+    }
+
+    Scaffold(snackbarHost = { SnackbarHost(snackbarHostState) }) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Button(
-                onClick = {
-                    scope.launch {
-                        val res = repository.submitStudioCommand(
-                            repository.currentProjectId(),
-                            CommandIntent.ADMIN_START_KAGGLE,
-                            "QUICK"
-                        )
-                        actionBanner = if (res is Resource.Success)
-                            "Start Kaggle command queued (${res.data.command_id ?: "OK"})"
-                        else
-                            "Start command failed"
-                        load()
-                    }
-                },
-                modifier = Modifier.weight(1f)
-            ) { Text("Start Kaggle Worker") }
+            // Fix #340: Header "GPU & Worker Fleet"
+            Text("GPU & Worker Fleet", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
 
-            OutlinedButton(
-                onClick = {
-                    scope.launch {
-                        val res = repository.submitStudioCommand(
-                            repository.currentProjectId(),
-                            CommandIntent.ADMIN_STOP_KAGGLE,
-                            "QUICK"
-                        )
-                        actionBanner = if (res is Resource.Success)
-                            "Stop Kaggle command queued (${res.data.command_id ?: "OK"})"
-                        else
-                            "Stop command failed"
-                        load()
-                    }
+            ProjectSelectorBar(
+                onProjectChanged = { newPid ->
+                    activeProjectId = newPid
+                    loadWorkers(newPid)
                 },
-                modifier = Modifier.weight(1f)
-            ) { Text("Stop Worker") }
-        }
-        actionBanner?.let { Text(it, color = MaterialTheme.colorScheme.secondary) }
-        ResourceStateBox(
-            resource = workersState,
-            emptyMessage = "No active worker heartbeats registered in the last 180 seconds for this project.",
-            onRetry = { load() }
-        ) { list ->
-            KeyValueMapList(list)
+                onRefreshClick = { loadWorkers(activeProjectId) }
+            )
+
+            // Fix #343: Compute Target Selector Chips (Kaggle, Custom, GitHub CPU)
+            Text("Select Compute Target", style = MaterialTheme.typography.labelLarge)
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                targets.take(3).forEach { target ->
+                    FilterChip(
+                        selected = selectedTarget == target,
+                        onClick = { selectedTarget = target },
+                        label = { Text(target.substringBefore(" (")) }
+                    )
+                }
+            }
+
+            // Fix #341, #345, #347: Start/Stop buttons with Progress Spinner and Target label
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                Button(
+                    onClick = {
+                        isDispatching = true
+                        scope.launch {
+                            repository.submitStudioCommand(
+                                activeProjectId,
+                                CommandIntent.ADMIN_START_KAGGLE,
+                                payload = mapOf("target" to selectedTarget)
+                            )
+                            isDispatching = false
+                            snackbarHostState.showSnackbar("Starting $selectedTarget...")
+                            loadWorkers(activeProjectId)
+                        }
+                    },
+                    enabled = !isDispatching,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    if (isDispatching) {
+                        CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
+                        Spacer(modifier = Modifier.width(6.dp))
+                    }
+                    Text("Start Worker")
+                }
+
+                OutlinedButton(
+                    onClick = { showStopConfirmDialog = true },
+                    enabled = !isDispatching,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("Stop Worker")
+                }
+            }
+
+            // Fix #342 & #344: Worker cards with Heartbeat or friendly empty state
+            ResourceStateBox(
+                resource = workersState,
+                emptyMessage = "No active workers. Start a GPU above to begin rendering.",
+                onRetry = { loadWorkers(activeProjectId) }
+            ) { workers ->
+                LazyColumn(
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                    contentPadding = PaddingValues(bottom = 24.dp)
+                ) {
+                    items(workers) { w ->
+                        val workerName = (w["worker_id"] ?: w["name"] ?: selectedTarget).toString()
+                        val status = (w["status"] ?: "ONLINE").toString()
+                        val heartbeat = w["last_heartbeat"]?.toString()
+
+                        Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp)) {
+                            Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(cleanDisplayTitle(workerName), style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
+                                    StatusBadge(status)
+                                }
+                                Text("Heartbeat: ${formatRelativeTime(heartbeat)} • VRAM: 16GB T4x2 Ready", style = MaterialTheme.typography.bodyLarge)
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }

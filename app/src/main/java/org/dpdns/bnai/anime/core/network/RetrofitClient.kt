@@ -10,7 +10,6 @@ import java.util.UUID
 import java.util.concurrent.TimeUnit
 
 object RetrofitClient {
-    // Fastify API Authority BASE_URL (Part 5.1 & Part 15.4)
     const val BASE_URL = "https://api.bnai.dpdns.org/"
 
     @Volatile
@@ -21,6 +20,7 @@ object RetrofitClient {
             val tm = tokenManager ?: TokenManager.getInstance()
             val activeToken = tm?.getToken()
             val activeProject = tm?.getActiveProjectId().orEmpty()
+            val requestPath = chain.request().url.encodedPath
 
             val requestBuilder = chain.request().newBuilder()
                 .header("Accept", "application/json")
@@ -35,9 +35,12 @@ object RetrofitClient {
 
             val response = chain.proceed(requestBuilder.build())
 
-            // Patch 2: Clear token on 401, surface session expiry
-            if (response.code == 401) {
-                tm?.clearToken("Session expired. Please log in again.")
+            // Fix #224 & #242: Only clear token on genuine JWT expiry (401 when token was sent on non-login/non-optional route)
+            if (response.code == 401 && !activeToken.isNullOrBlank() && !requestPath.contains("/auth/login")) {
+                val errBody = response.peekBody(512).string().lowercase()
+                if (errBody.contains("expired") || errBody.contains("invalid token") || errBody.contains("jwt") || errBody.contains("unauthorized")) {
+                    tm.clearToken("Session expired. Please sign in again.")
+                }
             }
             response
         }

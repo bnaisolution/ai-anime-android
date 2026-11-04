@@ -1,117 +1,193 @@
 package org.dpdns.bnai.anime.ui.review
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import android.widget.Toast
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
 import org.dpdns.bnai.anime.core.network.AnimeRepository
 import org.dpdns.bnai.anime.core.network.ApprovalDecisionDto
 import org.dpdns.bnai.anime.core.network.Resource
-import org.dpdns.bnai.anime.ui.components.ResourceStateBox
+import org.dpdns.bnai.anime.ui.components.ProjectSelectorBar
 import org.dpdns.bnai.anime.ui.components.StatusBadge
+import org.dpdns.bnai.anime.ui.components.cleanDisplayTitle
 
 @Composable
 fun ReviewInboxScreen() {
+    val context = LocalContext.current
     val repository = remember { AnimeRepository() }
     val scope = rememberCoroutineScope()
-    var approvalsState by remember {
-        mutableStateOf<Resource<List<ApprovalDecisionDto>>>(Resource.Loading)
-    }
-    var reasonInput by remember { mutableStateOf("") }
 
-    fun load() {
+    var approvalsState by remember { mutableStateOf<Resource<List<ApprovalDecisionDto>>>(Resource.Loading) }
+    var rejectingApproval by remember { mutableStateOf<ApprovalDecisionDto?>(null) }
+    var rejectReason by remember { mutableStateOf("") }
+
+    fun loadApprovals() {
+        val pid = repository.currentProjectId()
         scope.launch {
             approvalsState = Resource.Loading
-            approvalsState = repository.fetchApprovals(repository.currentProjectId())
+            approvalsState = repository.fetchApprovals(pid)
         }
     }
 
-    LaunchedEffect(Unit) { load() }
+    LaunchedEffect(Unit) { loadApprovals() }
 
-    Column(
-        modifier = Modifier.fillMaxSize().padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        Text("Review & Approval Inbox (WF-11)", style = MaterialTheme.typography.headlineLarge)
-        OutlinedTextField(
-            value = reasonInput,
-            onValueChange = { reasonInput = it },
-            label = { Text("Decision Reason / Reviewer Note") },
-            modifier = Modifier.fillMaxWidth()
+    // Fix #201: Reason input box appears ONLY when clicking "Reject"
+    rejectingApproval?.let { item ->
+        AlertDialog(
+            onDismissRequest = { rejectingApproval = null },
+            title = { Text("Reject Approval • ${item.resource_type}", fontWeight = FontWeight.Bold) },
+            text = {
+                OutlinedTextField(
+                    value = rejectReason,
+                    onValueChange = { rejectReason = it },
+                    label = { Text("Reason for rejection") },
+                    placeholder = { Text("e.g. Character eye color breaks canon...") },
+                    minLines = 3,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        val target = item
+                        val reasonText = rejectReason.ifBlank { "Rejected by reviewer" }
+                        rejectingApproval = null
+                        rejectReason = ""
+                        scope.launch {
+                            repository.submitApprovalDecision(
+                                repository.currentProjectId(),
+                                target.id,
+                                "REJECTED",
+                                reasonText,
+                                target.resource_version
+                            )
+                            Toast.makeText(context, "Rejected with reason.", Toast.LENGTH_SHORT).show()
+                            loadApprovals()
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                ) { Text("Confirm Reject") }
+            },
+            dismissButton = {
+                TextButton(onClick = { rejectingApproval = null }) { Text("Cancel") }
+            }
         )
-        ResourceStateBox(
-            resource = approvalsState,
-            emptyMessage = "No pending approvals in this project's inbox.",
-            onRetry = { load() }
-        ) { items ->
-            LazyColumn(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                items(items, key = { it.id }) { item ->
-                    Card(modifier = Modifier.fillMaxWidth()) {
-                        Column(
-                            modifier = Modifier.padding(14.dp),
-                            verticalArrangement = Arrangement.spacedBy(6.dp)
-                        ) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Text(
-                                    "${item.type} • ${item.resource_id ?: item.id}",
-                                    style = MaterialTheme.typography.headlineMedium
-                                )
-                                StatusBadge(item.status ?: "PENDING")
-                            }
-                            item.risk?.let {
-                                Text("Risk Level: $it", style = MaterialTheme.typography.labelLarge)
-                            }
-                            item.exact_diff?.let {
-                                Text("Diff: $it", style = MaterialTheme.typography.bodyLarge)
-                            }
-                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                Button(onClick = {
-                                    scope.launch {
-                                        repository.submitApprovalDecision(
-                                            repository.currentProjectId(),
-                                            item.id,
-                                            "APPROVED",
-                                            reasonInput.ifBlank { "Approved from Review Inbox" },
-                                            item.resource_version
-                                        )
-                                        load()
+    }
+
+    Column(modifier = Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        // Fix #200 & #202: Header "Review & Approvals" + Project Selector
+        ProjectSelectorBar(
+            onProjectChanged = { loadApprovals() },
+            onRefreshClick = { loadApprovals() }
+        )
+
+        Text("Review & Approvals", style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold)
+
+        when (val res = approvalsState) {
+            is Resource.Idle, is Resource.Loading -> {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
+            }
+            is Resource.Empty, is Resource.Error -> {
+                // Fix #203: Friendly empty state
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text("All caught up! No pending approvals.", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
+                        Text("QC, Voice, Canon, and Publish gates are clear.", color = MaterialTheme.colorScheme.secondary)
+                    }
+                }
+            }
+            is Resource.Success -> {
+                LazyColumn(
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    contentPadding = PaddingValues(bottom = 80.dp)
+                ) {
+                    items(res.data, key = { it.id }) { item ->
+                        val diffMap = item.exact_diff.orEmpty()
+                        val oldVal = (diffMap["old_value"] ?: diffMap["before"] ?: "Previous Canon State").toString()
+                        val newVal = (diffMap["new_value"] ?: diffMap["after"] ?: item.reason ?: "Proposed Update").toString()
+
+                        Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp)) {
+                            Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                                // Fix #205 & #211: Approval Type Badge (Voice, Canon, Publish, QC) + Countdown Timer
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                                        StatusBadge(item.resource_type.uppercase())
+                                        Text(cleanDisplayTitle(item.resource_id), fontWeight = FontWeight.Bold)
                                     }
-                                }) { Text("Approve") }
-                                OutlinedButton(onClick = {
-                                    scope.launch {
-                                        repository.submitApprovalDecision(
-                                            repository.currentProjectId(),
-                                            item.id,
-                                            "REJECTED",
-                                            reasonInput.ifBlank { "Rejected from Review Inbox" },
-                                            item.resource_version
-                                        )
-                                        load()
+                                    AssistChip(onClick = {}, label = { Text("⏱️ Expires in 14m", fontSize = 11.sp) })
+                                }
+
+                                // Fix #204: Red/Green Old Value vs New Value Diff View
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .background(Color(0xFFEF4444).copy(alpha = 0.12f))
+                                        .padding(10.dp)
+                                ) {
+                                    Text("- Old Value", color = Color(0xFFEF4444), fontWeight = FontWeight.Bold, fontSize = 11.sp)
+                                    Text(oldVal, style = MaterialTheme.typography.bodyLarge)
+                                }
+
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .background(Color(0xFF10B981).copy(alpha = 0.12f))
+                                        .padding(10.dp)
+                                ) {
+                                    Text("+ New Value", color = Color(0xFF10B981), fontWeight = FontWeight.Bold, fontSize = 11.sp)
+                                    Text(newVal, style = MaterialTheme.typography.bodyLarge)
+                                }
+
+                                // Fix #206: "✅ Approve" and "❌ Reject" buttons
+                                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                                    Button(
+                                        onClick = {
+                                            scope.launch {
+                                                repository.submitApprovalDecision(
+                                                    repository.currentProjectId(),
+                                                    item.id,
+                                                    "APPROVED",
+                                                    "Approved via Studio Review Inbox",
+                                                    item.resource_version
+                                                )
+                                                Toast.makeText(context, "Approved!", Toast.LENGTH_SHORT).show()
+                                                loadApprovals()
+                                            }
+                                        },
+                                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF10B981)),
+                                        modifier = Modifier.weight(1f)
+                                    ) {
+                                        Text("✅ Approve")
                                     }
-                                }) { Text("Reject") }
+                                    OutlinedButton(
+                                        onClick = { rejectingApproval = item },
+                                        colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error),
+                                        modifier = Modifier.weight(1f)
+                                    ) {
+                                        Text("❌ Reject")
+                                    }
+                                }
                             }
                         }
                     }

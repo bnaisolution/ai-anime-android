@@ -5,5 +5,7 @@ data class Character(
     val name: String,
     val role: String,
     val visualDna: String,
-    val voiceId: String
+    val voiceId: String,
+    val status: String = "alive",
+    val imageUrl: String? = null
 )

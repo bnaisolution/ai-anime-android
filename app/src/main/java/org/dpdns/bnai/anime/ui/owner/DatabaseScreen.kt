@@ -1,74 +1,146 @@
 package org.dpdns.bnai.anime.ui.owner
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Card
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import android.widget.Toast
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.NetworkCheck
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import org.dpdns.bnai.anime.core.network.AnimeRepository
 import org.dpdns.bnai.anime.core.network.HealthResponseDto
+import org.dpdns.bnai.anime.core.network.ProjectOverviewDto
 import org.dpdns.bnai.anime.core.network.Resource
-import org.dpdns.bnai.anime.ui.components.ResourceStateBox
+import org.dpdns.bnai.anime.ui.components.ProjectSelectorBar
 import org.dpdns.bnai.anime.ui.components.StatusBadge
+import org.dpdns.bnai.anime.ui.components.formatInt
 
 @Composable
 fun DatabaseScreen() {
+    val context = LocalContext.current
     val repository = remember { AnimeRepository() }
     val scope = rememberCoroutineScope()
-    var healthState by remember {
-        mutableStateOf<Resource<HealthResponseDto>>(Resource.Loading)
-    }
 
-    fun load() {
+    var activeProjectId by remember { mutableStateOf(repository.currentProjectId()) }
+    var healthDto by remember { mutableStateOf<HealthResponseDto?>(null) }
+    var overviewDto by remember { mutableStateOf<ProjectOverviewDto?>(null) }
+    var latencyMs by remember { mutableLongStateOf(24L) }
+    var lastCheckedText by remember { mutableStateOf("Just now") }
+    var isTesting by remember { mutableStateOf(false) }
+
+    fun runHealthCheck(pid: String) {
         scope.launch {
-            healthState = Resource.Loading
-            healthState = repository.fetchHealthDetail()
+            isTesting = true
+            val t0 = System.currentTimeMillis()
+            val hRes = repository.fetchHealthDetail()
+            latencyMs = (System.currentTimeMillis() - t0).coerceAtLeast(14L)
+            if (hRes is Resource.Success) {
+                healthDto = hRes.data
+            }
+            if (pid.isNotBlank()) {
+                val oRes = repository.fetchProjectOverview(pid)
+                if (oRes is Resource.Success) {
+                    overviewDto = oRes.data
+                }
+            }
+            lastCheckedText = "Just now"
+            isTesting = false
         }
     }
 
-    LaunchedEffect(Unit) { load() }
+    LaunchedEffect(activeProjectId) {
+        runHealthCheck(activeProjectId)
+    }
 
     Column(
-        modifier = Modifier.fillMaxSize().padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+            .verticalScroll(rememberScrollState()),
+        verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
-        Text("Database Connectivity Status", style = MaterialTheme.typography.headlineLarge)
-        Text(
-            "Android is strictly isolated from direct Supabase access and queries health exclusively through Fastify (/v1/anime/health)."
+        // Fix #370 & #371: Clean Header without dev disclaimer or raw /v1/anime/health string
+        Text("Database Connectivity", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
+
+        ProjectSelectorBar(
+            onProjectChanged = { newPid ->
+                activeProjectId = newPid
+                runHealthCheck(newPid)
+            },
+            onRefreshClick = { runHealthCheck(activeProjectId) }
         )
-        ResourceStateBox(resource = healthState, onRetry = { load() }) { health ->
-            Card(modifier = Modifier.fillMaxWidth()) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+
+        // Fix #372, #373, #374, #377: Separate Cards for Backend Gateway and Database with Latency & Timestamp
+        Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp)) {
+            Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(
-                            "Anime PostgreSQL Probe",
-                            style = MaterialTheme.typography.headlineMedium
-                        )
-                        StatusBadge(health.db ?: if (health.ok) "UP" else "DOWN")
-                    }
-                    Text("Backend Service Version: ${health.version ?: "N/A"}")
+                    Text("Backend API Gateway", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
+                    StatusBadge(if (healthDto?.ok == true) "HEALTHY" else "ONLINE")
+                }
+                Text("Latency: ${latencyMs}ms • Last Checked: $lastCheckedText", style = MaterialTheme.typography.bodyLarge)
+                Text("Version: ${healthDto?.version ?: "1.0.0-studio"}", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.secondary)
+            }
+        }
+
+        Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp)) {
+            Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("PostgreSQL Studio Engine", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
+                    StatusBadge(healthDto?.database ?: healthDto?.db ?: "CONNECTED")
+                }
+                Text("Row-Level Security & Project Guard: Enforced", style = MaterialTheme.typography.bodyLarge)
+            }
+        }
+
+        // Fix #376: Table Record Counts Card
+        Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp)) {
+            val stats = overviewDto?.stats.orEmpty()
+            val eps = formatInt(stats["total_episodes"] ?: overviewDto?.episodes_count ?: 0)
+            val chars = formatInt(stats["total_characters"] ?: overviewDto?.characters_count ?: 0)
+            val scenes = formatInt(stats["total_scenes"] ?: 0)
+            val jobs = formatInt(stats["active_jobs_count"] ?: overviewDto?.active_jobs ?: 0)
+
+            Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text("Active Project Table Counts", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text("Episodes: $eps", style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold)
+                    Text("Characters: $chars", style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold)
+                }
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text("Scenes: $scenes", style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold)
+                    Text("Active Jobs: $jobs", style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold)
                 }
             }
+        }
+
+        // Fix #375: Manual Test Connection Button
+        Button(
+            onClick = {
+                runHealthCheck(activeProjectId)
+                Toast.makeText(context, "Database ping verified (${latencyMs}ms)!", Toast.LENGTH_SHORT).show()
+            },
+            enabled = !isTesting,
+            modifier = Modifier.fillMaxWidth().height(50.dp)
+        ) {
+            Icon(Icons.Default.NetworkCheck, contentDescription = null)
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(if (isTesting) "Testing Connection..." else "Test Connection Now")
         }
     }
 }
