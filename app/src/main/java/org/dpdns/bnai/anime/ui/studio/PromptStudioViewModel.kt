@@ -78,7 +78,12 @@ class PromptStudioViewModel : ViewModel() {
             _uiState.value = _uiState.value.copy(isLoading = true, statusMessage = null)
             try {
                 val req = CreateSystemPromptRequest(
-                    projectId, title.trim(), medium, promptText.trim(), true
+                    project_id = projectId,
+                    title = title.trim(),
+                    visual_medium = medium,
+                    prompt_category = "BIBLE",
+                    prompt_text = promptText.trim(),
+                    set_active = true
                 )
                 val res = api.createSystemPrompt(req)
                 val created = res.body()?.data
