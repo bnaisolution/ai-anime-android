@@ -8,12 +8,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.foundation.gestures.detectDragGestures
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.unit.IntOffset
-import kotlin.math.roundToInt
-
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -63,8 +57,8 @@ data class NavItem(val route: String, val label: String, val icon: ImageVector)
 fun AppNavGraph(navController: NavHostController) {
     val tokenManager = remember { TokenManager.getInstance() }
     val repository = remember { AnimeRepository() }
-    val startDest = if (!tokenManager?.getToken().isNullOrBlank()) "studio" else "auth"
-    val expiredMessage by (tokenManager?.sessionExpiredMessage?.collectAsState() ?: remember { mutableStateOf(null) })
+    val startDest = if (!tokenManager.getToken().isNullOrBlank()) "studio" else "auth"
+    val expiredMessage by tokenManager.sessionExpiredMessage.collectAsState()
 
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
@@ -72,11 +66,10 @@ fun AppNavGraph(navController: NavHostController) {
     val currentRoute = backStackEntry?.destination?.route ?: startDest
     var selectedCharacter by remember { mutableStateOf<Character?>(null) }
 
-    // Fix #77 & #102: Live System Health Dot + Global Floating AI Director Sheet
     var isBackendHealthy by remember { mutableStateOf(true) }
+    var activeProviderBadge by remember { mutableStateOf(tokenManager.getConfiguredProviderLabel()) }
     var showGlobalAiSheet by remember { mutableStateOf(false) }
 
-    // Fix #401: Accordion state for Side Menu sections (Workspace open by default)
     val expandedSections = remember {
         mutableStateMapOf(
             "WORKSPACE" to true,
@@ -90,6 +83,8 @@ fun AppNavGraph(navController: NavHostController) {
     LaunchedEffect(currentRoute) {
         if (currentRoute != "auth") {
             isBackendHealthy = repository.checkBackendHealth()
+            activeProviderBadge = repository.resolveConfiguredAiProviderBadge()
+            tokenManager.saveConfiguredProviderLabel(activeProviderBadge)
         }
     }
 
@@ -101,7 +96,6 @@ fun AppNavGraph(navController: NavHostController) {
         }
     }
 
-    // Fix #3: Exactly 5 bottom destinations, no "More", renamed "Production" -> "Pipeline"
     val bottomDestinations = listOf(
         NavItem("studio", "Home", Icons.Default.Home),
         NavItem("project_detail", "Projects", Icons.Default.Folder),
@@ -110,8 +104,7 @@ fun AppNavGraph(navController: NavHostController) {
         NavItem("episodes", "Episodes", Icons.Default.VideoLibrary)
     )
 
-    // Fix #220, #221, #397, #402: Renamed Quick Generate & World Wiki; unlocked Prompt Studio & Settings for all BYOD users
-    val drawerSections = remember(tokenManager?.isOwner()) {
+    val drawerSections = remember(tokenManager.isOwner()) {
         buildList {
             add("WORKSPACE" to listOf(
                 "studio" to "Home Dashboard",
@@ -146,7 +139,7 @@ fun AppNavGraph(navController: NavHostController) {
                 "notifications" to "Notifications",
                 "audit_log" to "Audit Activity"
             ))
-            if (tokenManager?.isOwner() == true) {
+            if (tokenManager.isOwner()) {
                 add("OWNER CONTROL" to listOf(
                     "owner_overview" to "Owner Overview",
                     "workflows" to "Workflow Engine Status",
@@ -168,9 +161,11 @@ fun AppNavGraph(navController: NavHostController) {
 
     if (showGlobalAiSheet) {
         GlobalAiDirectorBottomSheet(
+            currentScreen = currentRoute,
             currentScreenName = currentRoute,
             onDismiss = { showGlobalAiSheet = false },
-            onNavigateToRoute = { target -> navController.navigate(target) }
+            onNavigateToRoute = { target -> navController.navigate(target) },
+            onOpenFullAiBrain = { navController.navigate("ai_brain") { launchSingleTop = true } }
         )
     }
 
@@ -179,9 +174,8 @@ fun AppNavGraph(navController: NavHostController) {
         drawerContent = {
             ModalDrawerSheet {
                 Column(modifier = Modifier.fillMaxHeight().padding(12.dp)) {
-                    // Fix #398, #403: User Profile Card at top of Drawer
-                    val userEmail = tokenManager?.getUserEmail()?.ifBlank { "studio@bnai.dpdns.org" } ?: "studio@bnai.dpdns.org"
-                    val userRole = tokenManager?.getUserRole()?.uppercase() ?: "CREATOR"
+                    val userEmail = tokenManager.getUserEmail().ifBlank { "studio@bnai.dpdns.org" }
+                    val userRole = tokenManager.getUserRole().uppercase()
                     Card(
                         modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
                         shape = RoundedCornerShape(12.dp),
@@ -203,12 +197,11 @@ fun AppNavGraph(navController: NavHostController) {
                                     )
                                 }
                                 Column(modifier = Modifier.weight(1f)) {
-                                    Text(userEmail.substringBefore("@"), style = MaterialTheme.typography.headlineMedium, maxLines = 1)
-                                    Text(userEmail, style = MaterialTheme.typography.bodyLarge, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                    Text(userEmail.substringBefore("@"), style = MaterialTheme.typography.titleMedium, maxLines = 1)
+                                    Text(userEmail, style = MaterialTheme.typography.bodySmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
                                 }
                                 AssistChip(onClick = {}, label = { Text(userRole, fontSize = 10.sp) })
                             }
-                            // Fix #399, #404: Chat History shortcut right below Profile
                             OutlinedButton(
                                 onClick = {
                                     scope.launch { drawerState.close() }
@@ -225,7 +218,6 @@ fun AppNavGraph(navController: NavHostController) {
 
                     HorizontalDivider()
 
-                    // Fix #396, #401: Accordion (Expandable) Navigation List
                     Column(
                         modifier = Modifier
                             .weight(1f)
@@ -272,7 +264,6 @@ fun AppNavGraph(navController: NavHostController) {
 
                     HorizontalDivider()
 
-                    // Fix #2, #220, #222, #405: Settings and Logout pinned at bottom of Drawer
                     Row(
                         modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -291,7 +282,7 @@ fun AppNavGraph(navController: NavHostController) {
                         Button(
                             onClick = {
                                 scope.launch { drawerState.close() }
-                                tokenManager?.clearToken()
+                                tokenManager.clearToken()
                                 navController.navigate("auth") {
                                     popUpTo(0) { inclusive = true }
                                 }
@@ -312,7 +303,6 @@ fun AppNavGraph(navController: NavHostController) {
                 topBar = {
                     TopAppBar(
                         title = {
-                            // Fix #18 & #102: Clickable "AI Studio" title -> Home + 8px Health Dot
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -330,25 +320,24 @@ fun AppNavGraph(navController: NavHostController) {
                             }
                         },
                         navigationIcon = {
-                        val isRootDestination = currentRoute in setOf("studio", "projects", "ai_brain", "production", "episodes")
-                        if (isRootDestination) {
-                            IconButton(onClick = { scope.launch { drawerState.open() } }) {
-                                Icon(Icons.Default.Menu, contentDescription = "Open Navigation Drawer")
-                            }
-                        } else {
-                            IconButton(onClick = {
-                                if (!navController.popBackStack()) {
-                                    navController.navigate("studio") {
-                                        popUpTo("studio") { inclusive = true }
-                                    }
+                            val isRootDestination = currentRoute in setOf("studio", "project_detail", "ai_brain", "production", "episodes")
+                            if (isRootDestination) {
+                                IconButton(onClick = { scope.launch { drawerState.open() } }) {
+                                    Icon(Icons.Default.Menu, contentDescription = "Open Navigation Drawer")
                                 }
-                            }) {
-                                Icon(Icons.Default.ArrowBack, contentDescription = "Navigate Back")
+                            } else {
+                                IconButton(onClick = {
+                                    if (!navController.popBackStack()) {
+                                        navController.navigate("studio") {
+                                            popUpTo("studio") { inclusive = true }
+                                        }
+                                    }
+                                }) {
+                                    Icon(Icons.Default.ArrowBack, contentDescription = "Navigate Back")
+                                }
                             }
-                        }
-                    },
+                        },
                         actions = {
-                            // Fix #197: Show active AI model badge in TopAppBar instead of Logout
                             AssistChip(
                                 onClick = { navController.navigate("settings") { launchSingleTop = true } },
                                 label = { Text(activeProviderBadge, fontSize = 11.sp) }
@@ -358,8 +347,7 @@ fun AppNavGraph(navController: NavHostController) {
                     )
                 },
                 floatingActionButton = {
-                    // Fix #77: Global AI Director FAB on screens (except when already on AI Director or Studio Home which has Create FAB)
-                    if (currentRoute != "ai_brain") {
+                    if (currentRoute !in listOf("ai_brain", "studio")) {
                         FloatingActionButton(
                             onClick = { showGlobalAiSheet = true },
                             containerColor = MaterialTheme.colorScheme.primary
@@ -420,6 +408,7 @@ fun AppNavGraph(navController: NavHostController) {
                                     onOpenCharacters = { navController.navigate("characters") },
                                     onOpenEpisodes = { navController.navigate("episodes") },
                                     onOpenReviews = { navController.navigate("review_inbox") },
+                                    onOpenReviewInbox = { navController.navigate("review_inbox") },
                                     onOpenAnalytics = { navController.navigate("analytics") }
                                 )
                             }

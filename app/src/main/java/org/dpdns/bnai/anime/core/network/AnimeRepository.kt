@@ -2,7 +2,6 @@ package org.dpdns.bnai.anime.core.network
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-
 import org.dpdns.bnai.anime.core.auth.TokenManager
 import org.dpdns.bnai.anime.core.model.*
 import retrofit2.Response
@@ -11,7 +10,7 @@ import java.util.UUID
 class AnimeRepository(private val apiService: AnimeApiService = RetrofitClient.getApiService()) {
 
     fun currentProjectId(): String =
-        TokenManager.getInstance()?.getActiveProjectId().orEmpty()
+        TokenManager.getInstance().getActiveProjectId()
 
     private fun <T, R> mapEnvelope(
         response: Response<ApiEnvelope<T>>,
@@ -35,7 +34,7 @@ class AnimeRepository(private val apiService: AnimeApiService = RetrofitClient.g
             } else {
                 val activeId = currentProjectId()
                 if (activeId.isBlank() || dtoList.none { it.id == activeId }) {
-                    TokenManager.getInstance()?.saveActiveProjectId(dtoList.first().id)
+                    TokenManager.getInstance().saveActiveProjectId(dtoList.first().id)
                 }
                 Resource.Success(dtoList.map { dto ->
                     Project(
@@ -57,6 +56,42 @@ class AnimeRepository(private val apiService: AnimeApiService = RetrofitClient.g
         mapEnvelope(apiService.getProjectOverview(projectId)) { it }
     } catch (e: Exception) {
         Resource.Error(e.localizedMessage ?: "Failed to load overview")
+    }
+
+    suspend fun fetchProjectOverviewRaw(
+        projectId: String = currentProjectId()
+    ): Resource<JsonMap> {
+        return when (val res = fetchProjectOverview(projectId)) {
+            is Resource.Success -> {
+                val dto = res.data
+                val bible = dto.project?.story_bible ?: emptyMap()
+                Resource.Success(mapOf(
+                    "project" to mapOf(
+                        "id" to dto.project?.id,
+                        "name" to dto.project?.name,
+                        "is_active" to dto.project?.is_active,
+                        "story_bible" to bible
+                    ),
+                    "name" to (dto.project?.name ?: "Studio Project"),
+                    "genre" to (bible["genre"] ?: "Action / Fantasy"),
+                    "visual_medium" to (bible["visual_medium"] ?: "ANIME"),
+                    "auto_approve" to (bible["auto_approve"] == true),
+                    "cover_image_url" to bible["cover_image_url"],
+                    "budget_ceiling" to (bible["budget_ceiling"] ?: dto.project?.budget_ceiling ?: 1000),
+                    "stats" to (dto.stats ?: emptyMap<String, Any?>()),
+                    "episodes_count" to (dto.episodes_count ?: 0),
+                    "characters_count" to (dto.characters_count ?: 0),
+                    "pending_approvals" to (dto.pending_approvals ?: 0),
+                    "pending_approvals_count" to (dto.pending_approvals ?: 0),
+                    "active_jobs" to (dto.active_jobs ?: 0),
+                    "active_jobs_count" to (dto.active_jobs ?: 0),
+                    "canon_status" to (dto.canon_status ?: "UNSET"),
+                    "continuity_status" to (dto.continuity_status ?: "UNCHECKED")
+                ))
+            }
+            is Resource.Error -> res
+            else -> Resource.Empty
+        }
     }
 
     suspend fun updateProjectSettings(
@@ -83,10 +118,41 @@ class AnimeRepository(private val apiService: AnimeApiService = RetrofitClient.g
         Resource.Error(e.localizedMessage ?: "Failed to update project settings")
     }
 
+    suspend fun updateProjectSettings(
+        projectId: String = currentProjectId(),
+        updates: JsonMap
+    ): Resource<JsonMap> = withContext(Dispatchers.IO) {
+        try {
+            val req = UpdateProjectSettingsRequest(
+                name = updates["name"] as? String,
+                visual_medium = updates["visual_medium"] as? String,
+                genre = updates["genre"] as? String,
+                auto_approve = updates["auto_approve"] as? Boolean,
+                cover_image_url = updates["cover_image_url"] as? String,
+                budget_ceiling = (updates["budget_ceiling"] as? Number)?.toInt()
+            )
+            val response = apiService.updateProjectSettings(projectId, req)
+            if (response.isSuccessful) {
+                Resource.Success(updates)
+            } else {
+                Resource.Error("Failed (${response.code()})", response.code())
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.localizedMessage ?: "Update failed")
+        }
+    }
+
     suspend fun updateBudgetLimit(projectId: String, limit: Int): Resource<JsonMap> = try {
         mapEnvelope(apiService.updateProjectBudget(projectId, UpdateBudgetRequest(limit))) { it }
     } catch (e: Exception) {
         Resource.Error(e.localizedMessage ?: "Failed to update budget limit")
+    }
+
+    suspend fun updateBudgetLimit(
+        projectId: String = currentProjectId(),
+        limit: Double
+    ): Resource<JsonMap> {
+        return updateBudgetLimit(projectId, limit.toInt())
     }
 
     suspend fun fetchBible(projectId: String): Resource<JsonMap> = try {
@@ -95,7 +161,22 @@ class AnimeRepository(private val apiService: AnimeApiService = RetrofitClient.g
         Resource.Error(e.localizedMessage ?: "Failed to load Story Bible")
     }
 
-    // Fix #12: Null-safe CharacterDto mapping
+    suspend fun updateProjectBible(
+        projectId: String = currentProjectId(),
+        bibleUpdates: JsonMap
+    ): Resource<JsonMap> = withContext(Dispatchers.IO) {
+        try {
+            val response = apiService.updateProjectBible(projectId, mapOf("story_bible" to bibleUpdates))
+            if (response.isSuccessful) {
+                Resource.Success(response.body()?.data ?: bibleUpdates)
+            } else {
+                Resource.Error("Save Bible draft failed (${response.code()})", response.code())
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.localizedMessage ?: "Failed to save Bible draft")
+        }
+    }
+
     suspend fun fetchCharacters(projectId: String): Resource<List<Character>> = try {
         mapEnvelope(apiService.getProjectCharacters(projectId)) { list ->
             list.mapIndexed { idx, dto ->
@@ -132,7 +213,50 @@ class AnimeRepository(private val apiService: AnimeApiService = RetrofitClient.g
         Resource.Error(e.localizedMessage ?: "Failed to load raw characters")
     }
 
-    // Fix #39 & #44: Avoid "Episode 1: Episode 1" duplication and expose script/video/thumbnail
+    suspend fun createCharacterSync(
+        projectId: String = currentProjectId(),
+        name: String,
+        role: String,
+        status: String = "alive",
+        voiceId: String = "UNSET",
+        visualDnaSummary: String = ""
+    ): Resource<CharacterDto> = withContext(Dispatchers.IO) {
+        try {
+            val payload: JsonMap = mapOf(
+                "name" to name.trim(),
+                "role" to role.trim().ifBlank { "SUPPORTING" },
+                "status" to status.lowercase(),
+                "voice_id" to voiceId,
+                "visual_dna" to mapOf("summary" to visualDnaSummary, "role" to role.trim().ifBlank { "SUPPORTING" })
+            )
+            val response = apiService.createCharacter(projectId, payload)
+            if (response.isSuccessful && response.body()?.data != null) {
+                Resource.Success(response.body()!!.data!!)
+            } else {
+                Resource.Error("Character creation failed (${response.code()})", response.code())
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.localizedMessage ?: "Character creation error")
+        }
+    }
+
+    suspend fun updateCharacterSync(
+        projectId: String = currentProjectId(),
+        characterIdOrCode: String,
+        updates: JsonMap
+    ): Resource<CharacterDto> = withContext(Dispatchers.IO) {
+        try {
+            val response = apiService.updateCharacter(projectId, characterIdOrCode, updates)
+            if (response.isSuccessful && response.body()?.data != null) {
+                Resource.Success(response.body()!!.data!!)
+            } else {
+                Resource.Error("Update character failed (${response.code()})", response.code())
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.localizedMessage ?: "Update character error")
+        }
+    }
+
     suspend fun fetchEpisodes(projectId: String): Resource<List<Episode>> = try {
         mapEnvelope(apiService.getProjectEpisodes(projectId)) { list ->
             list.map { dto ->
@@ -146,7 +270,7 @@ class AnimeRepository(private val apiService: AnimeApiService = RetrofitClient.g
                     id = dto.id,
                     episodeNumber = dto.episode_no,
                     title = cleanTitle,
-                    status = dto.current_state ?: "DRAFT",
+                    status = dto.current_state ?: dto.status ?: "DRAFT",
                     synopsis = dto.synopsis,
                     updatedAt = dto.updated_at,
                     qcStatus = dto.qc_status,
@@ -160,6 +284,37 @@ class AnimeRepository(private val apiService: AnimeApiService = RetrofitClient.g
         Resource.Error(e.localizedMessage ?: "Failed to load episodes")
     }
 
+    suspend fun fetchEpisodesRaw(projectId: String = currentProjectId()): Resource<List<EpisodeDto>> = withContext(Dispatchers.IO) {
+        try {
+            val response = apiService.getProjectEpisodes(projectId)
+            if (response.isSuccessful) {
+                val list = response.body()?.data ?: emptyList()
+                if (list.isEmpty()) Resource.Empty else Resource.Success(list)
+            } else {
+                Resource.Error("Failed to fetch episodes (${response.code()})", response.code())
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.localizedMessage ?: "Failed to fetch episodes")
+        }
+    }
+
+    suspend fun updateEpisodeSync(
+        projectId: String = currentProjectId(),
+        episodeNo: Int,
+        updates: JsonMap
+    ): Resource<EpisodeDto> = withContext(Dispatchers.IO) {
+        try {
+            val response = apiService.updateEpisode(projectId, episodeNo, updates)
+            if (response.isSuccessful && response.body()?.data != null) {
+                Resource.Success(response.body()!!.data!!)
+            } else {
+                Resource.Error("Episode update failed (${response.code()})", response.code())
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.localizedMessage ?: "Episode update error")
+        }
+    }
+
     suspend fun fetchEpisodePlan(projectId: String, episodeNo: Int): Resource<JsonMap> = try {
         mapEnvelope(apiService.getEpisodePlan(projectId, episodeNo)) { it }
     } catch (e: Exception) {
@@ -170,6 +325,28 @@ class AnimeRepository(private val apiService: AnimeApiService = RetrofitClient.g
         mapEnvelope(apiService.getEpisodeScenes(projectId, episodeNo)) { it }
     } catch (e: Exception) {
         Resource.Error(e.localizedMessage ?: "Failed to load scenes")
+    }
+
+    suspend fun fetchScenesRaw(projectId: String = currentProjectId(), episodeNo: Int = 1): Resource<List<SceneDto>> {
+        return fetchScenes(projectId, episodeNo)
+    }
+
+    suspend fun updateSceneSync(
+        projectId: String = currentProjectId(),
+        episodeNo: Int,
+        sceneId: String,
+        updates: JsonMap
+    ): Resource<SceneDto> = withContext(Dispatchers.IO) {
+        try {
+            val response = apiService.updateScene(projectId, episodeNo, sceneId, updates)
+            if (response.isSuccessful && response.body()?.data != null) {
+                Resource.Success(response.body()!!.data!!)
+            } else {
+                Resource.Error("Scene update failed (${response.code()})", response.code())
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.localizedMessage ?: "Scene update error")
+        }
     }
 
     suspend fun fetchProjectMedia(projectId: String): Resource<JsonMap> = try {
@@ -188,6 +365,22 @@ class AnimeRepository(private val apiService: AnimeApiService = RetrofitClient.g
         mapEnvelope(apiService.getJobDetail(projectId, jobId)) { it }
     } catch (e: Exception) {
         Resource.Error(e.localizedMessage ?: "Failed to load job details")
+    }
+
+    suspend fun cancelJobSync(
+        projectId: String = currentProjectId(),
+        jobId: String
+    ): Resource<JsonMap> = withContext(Dispatchers.IO) {
+        try {
+            val response = apiService.cancelJob(projectId, jobId)
+            if (response.isSuccessful) {
+                Resource.Success(response.body()?.data ?: mapOf("status" to "CANCELLED"))
+            } else {
+                Resource.Error("Job cancellation failed (${response.code()})", response.code())
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.localizedMessage ?: "Job cancellation error")
+        }
     }
 
     suspend fun fetchRetries(projectId: String): Resource<List<JsonMap>> = try {
@@ -225,7 +418,7 @@ class AnimeRepository(private val apiService: AnimeApiService = RetrofitClient.g
     ): Resource<AiChatResponse> = try {
         val req = AiChatRequest(
             message = message,
-            project_id = projectId.ifBlank { null },
+            project_id = projectId.takeIf { it.isNotBlank() },
             skill_key = "cinematic_director",
             current_screen = currentScreen,
             conversation_id = conversationId,
@@ -241,6 +434,20 @@ class AnimeRepository(private val apiService: AnimeApiService = RetrofitClient.g
         }
     } catch (e: Exception) {
         Resource.Error(e.localizedMessage ?: "AI Director unreachable")
+    }
+
+    suspend fun askAiDirector(
+        message: String,
+        currentScreen: String = "STUDIO",
+        conversationId: String? = null,
+        projectId: String = currentProjectId()
+    ): Resource<AiChatResponse> {
+        return chatWithBrain(
+            message = message,
+            projectId = projectId,
+            currentScreen = currentScreen,
+            conversationId = conversationId
+        )
     }
 
     suspend fun submitStudioCommand(
@@ -289,6 +496,30 @@ class AnimeRepository(private val apiService: AnimeApiService = RetrofitClient.g
         Resource.Error(e.localizedMessage ?: "Quick media request failed")
     }
 
+    suspend fun submitQuickImage(
+        projectId: String = currentProjectId(),
+        prompt: String,
+        stylePreset: String = "ANIME"
+    ): Resource<SubmitCommandResultDto> {
+        return triggerQuickMedia(
+            projectId = projectId,
+            isVideo = false,
+            prompt = "$prompt [Style: $stylePreset]"
+        )
+    }
+
+    suspend fun submitQuickVideo(
+        projectId: String = currentProjectId(),
+        prompt: String,
+        durationSec: Int = 5
+    ): Resource<SubmitCommandResultDto> {
+        return triggerQuickMedia(
+            projectId = projectId,
+            isVideo = true,
+            prompt = prompt
+        )
+    }
+
     suspend fun triggerVisionAnalysis(
         projectId: String,
         mediaUrl: String,
@@ -313,6 +544,21 @@ class AnimeRepository(private val apiService: AnimeApiService = RetrofitClient.g
         Resource.Error(e.localizedMessage ?: "Vision request failed")
     }
 
+    suspend fun submitVisionAnalysis(
+        projectId: String = currentProjectId(),
+        imageUrl: String,
+        analysisType: String = "QUICK",
+        characterId: String = "CHAR_001"
+    ): Resource<SubmitCommandResultDto> {
+        return triggerVisionAnalysis(
+            projectId = projectId,
+            mediaUrl = imageUrl,
+            prompt = "Extract 11-field Character Visual DNA",
+            characterCode = characterId,
+            saveToCharacter = analysisType.equals("SAVE", ignoreCase = true)
+        )
+    }
+
     suspend fun fetchAnalytics(projectId: String): Resource<JsonMap> = try {
         mapEnvelope(apiService.getProjectAnalytics(projectId)) { it }
     } catch (e: Exception) {
@@ -331,35 +577,41 @@ class AnimeRepository(private val apiService: AnimeApiService = RetrofitClient.g
         Resource.Error(e.localizedMessage ?: "Failed to load notifications")
     }
 
-    suspend fun fetchAdminWorkflows(projectId: String): Resource<List<JsonMap>> = try {
+    suspend fun fetchAdminWorkflows(projectId: String = currentProjectId()): Resource<List<JsonMap>> = try {
         mapEnvelope(apiService.getAdminWorkflows(projectId)) { it }
     } catch (e: Exception) {
         Resource.Error(e.localizedMessage ?: "Failed to load workflows")
     }
 
-    suspend fun fetchAdminWorkers(projectId: String): Resource<List<JsonMap>> = try {
+    suspend fun fetchAdminWorkers(projectId: String = currentProjectId()): Resource<List<JsonMap>> = try {
         mapEnvelope(apiService.getAdminWorkers(projectId)) { it }
     } catch (e: Exception) {
         Resource.Error(e.localizedMessage ?: "Failed to load workers")
     }
 
-    suspend fun fetchAdminQueues(projectId: String): Resource<JsonMap> = try {
+    suspend fun fetchAdminQueues(projectId: String = currentProjectId()): Resource<JsonMap> = try {
         mapEnvelope(apiService.getAdminQueues(projectId)) { it }
     } catch (e: Exception) {
         Resource.Error(e.localizedMessage ?: "Failed to load queues")
     }
 
-    suspend fun fetchLedgerSummary(projectId: String): Resource<JsonMap> = try {
+    suspend fun fetchLedgerSummary(projectId: String = currentProjectId()): Resource<JsonMap> = try {
         mapEnvelope(apiService.getLedgerSummary(projectId)) { it }
     } catch (e: Exception) {
         Resource.Error(e.localizedMessage ?: "Failed to load ledger summary")
     }
 
-    suspend fun fetchQuota(projectId: String): Resource<JsonMap> = try {
+    suspend fun fetchAdminLedgerSummary(): Resource<JsonMap> =
+        fetchLedgerSummary(currentProjectId())
+
+    suspend fun fetchQuota(projectId: String = currentProjectId()): Resource<JsonMap> = try {
         mapEnvelope(apiService.getProjectQuota(projectId)) { it }
     } catch (e: Exception) {
         Resource.Error(e.localizedMessage ?: "Failed to load quota")
     }
+
+    suspend fun fetchProjectQuota(projectId: String = currentProjectId()): Resource<JsonMap> =
+        fetchQuota(projectId)
 
     suspend fun fetchCanon(projectId: String): Resource<List<JsonMap>> = try {
         mapEnvelope(apiService.getProjectCanon(projectId)) { it }
@@ -391,224 +643,6 @@ class AnimeRepository(private val apiService: AnimeApiService = RetrofitClient.g
         Resource.Error(e.localizedMessage ?: "Failed to load character reference history")
     }
 
-    suspend fun deletePrompt(promptId: String): Resource<JsonMap> = try {
-        mapEnvelope(apiService.deleteSystemPrompt(promptId)) { it }
-    } catch (e: Exception) {
-        Resource.Error(e.localizedMessage ?: "Failed to delete prompt")
-    }
-
-    suspend fun fetchHealthDetail(): Resource<HealthResponseDto> = try {
-        val res = apiService.getAnimeHealth()
-        if (res.isSuccessful && res.body() != null) Resource.Success(res.body()!!)
-        else Resource.Error("Health HTTP ${res.code()}", res.code())
-    } catch (e: Exception) {
-        Resource.Error(e.localizedMessage ?: "Backend unreachable")
-    }
-
-    suspend fun checkBackendHealth(): Boolean =
-        (fetchHealthDetail() as? Resource.Success)?.data?.ok == true
-
-    
-    // === STUDIO V2 SYNCHRONOUS CRUD, CANCELLATION & COMPLETE BRIDGE METHODS (C12..C17 FIXED) ===
-
-    suspend fun createProjectSync(
-        name: String,
-        genre: String = "Action / Fantasy",
-        visualMedium: String = "ANIME",
-        premise: String = "",
-        autoApprove: Boolean = false
-    ): Resource<Project> = withContext(Dispatchers.IO) {
-        try {
-            val payload: JsonMap = mapOf(
-                "name" to name.trim(),
-                "genre" to genre,
-                "visual_medium" to visualMedium,
-                "premise" to premise,
-                "auto_approve" to autoApprove
-            )
-            val response = apiService.createProjectSync(payload)
-            if (response.isSuccessful) {
-                val dto = response.body()?.data
-                if (dto != null) {
-                    TokenManager.cachedProjectId = dto.id
-                    Resource.Success(
-                        Project(
-                            id = dto.id,
-                            name = dto.name,
-                            activeEpisode = "Season ${dto.current_season ?: 1} • Episode ${dto.current_episode ?: 0}",
-                            status = if (dto.is_active == false) "INACTIVE" else "ACTIVE"
-                        )
-                    )
-                } else {
-                    Resource.Error("Empty project response from server")
-                }
-            } else {
-                Resource.Error("Create project failed (${response.code()})", response.code())
-            }
-        } catch (e: Exception) {
-            Resource.Error(e.localizedMessage ?: "Failed to create project")
-        }
-    }
-
-    suspend fun updateProjectBible(
-        projectId: String = currentProjectId(),
-        bibleUpdates: JsonMap
-    ): Resource<JsonMap> = withContext(Dispatchers.IO) {
-        try {
-            val response = apiService.updateProjectBible(projectId, mapOf("story_bible" to bibleUpdates))
-            if (response.isSuccessful) {
-                Resource.Success(response.body()?.data ?: bibleUpdates)
-            } else {
-                Resource.Error("Save Bible draft failed (${response.code()})", response.code())
-            }
-        } catch (e: Exception) {
-            Resource.Error(e.localizedMessage ?: "Failed to save Bible draft")
-        }
-    }
-
-    suspend fun createCharacterSync(
-        projectId: String = currentProjectId(),
-        name: String,
-        role: String,
-        status: String = "alive",
-        voiceId: String = "UNSET",
-        visualDnaSummary: String = ""
-    ): Resource<CharacterDto> = withContext(Dispatchers.IO) {
-        try {
-            val payload: JsonMap = mapOf(
-                "name" to name.trim(),
-                "role" to role.trim().ifBlank { "SUPPORTING" },
-                "status" to status.lowercase(),
-                "voice_id" to voiceId,
-                "visual_dna" to mapOf("summary" to visualDnaSummary, "role" to role.trim().ifBlank { "SUPPORTING" })
-            )
-            val response = apiService.createCharacter(projectId, payload)
-            if (response.isSuccessful && response.body()?.data != null) {
-                Resource.Success(response.body()!!.data!!)
-            } else {
-                Resource.Error("Character creation failed (${response.code()})", response.code())
-            }
-        } catch (e: Exception) {
-            Resource.Error(e.localizedMessage ?: "Character creation error")
-        }
-    }
-
-    suspend fun updateCharacterSync(
-        projectId: String = currentProjectId(),
-        characterIdOrCode: String,
-        updates: JsonMap
-    ): Resource<CharacterDto> = withContext(Dispatchers.IO) {
-        try {
-            val response = apiService.updateCharacter(projectId, characterIdOrCode, updates)
-            if (response.isSuccessful && response.body()?.data != null) {
-                Resource.Success(response.body()!!.data!!)
-            } else {
-                Resource.Error("Update character failed (${response.code()})", response.code())
-            }
-        } catch (e: Exception) {
-            Resource.Error(e.localizedMessage ?: "Update character error")
-        }
-    }
-
-    suspend fun updateEpisodeSync(
-        projectId: String = currentProjectId(),
-        episodeNo: Int,
-        updates: JsonMap
-    ): Resource<EpisodeDto> = withContext(Dispatchers.IO) {
-        try {
-            val response = apiService.updateEpisode(projectId, episodeNo, updates)
-            if (response.isSuccessful && response.body()?.data != null) {
-                Resource.Success(response.body()!!.data!!)
-            } else {
-                Resource.Error("Episode update failed (${response.code()})", response.code())
-            }
-        } catch (e: Exception) {
-            Resource.Error(e.localizedMessage ?: "Episode update error")
-        }
-    }
-
-    suspend fun updateSceneSync(
-        projectId: String = currentProjectId(),
-        episodeNo: Int,
-        sceneId: String,
-        updates: JsonMap
-    ): Resource<SceneDto> = withContext(Dispatchers.IO) {
-        try {
-            val response = apiService.updateScene(projectId, episodeNo, sceneId, updates)
-            if (response.isSuccessful && response.body()?.data != null) {
-                Resource.Success(response.body()!!.data!!)
-            } else {
-                Resource.Error("Scene update failed (${response.code()})", response.code())
-            }
-        } catch (e: Exception) {
-            Resource.Error(e.localizedMessage ?: "Scene update error")
-        }
-    }
-
-    suspend fun cancelJobSync(
-        projectId: String = currentProjectId(),
-        jobId: String
-    ): Resource<JsonMap> = withContext(Dispatchers.IO) {
-        try {
-            val response = apiService.cancelJob(projectId, jobId)
-            if (response.isSuccessful) {
-                Resource.Success(response.body()?.data ?: mapOf("status" to "CANCELLED"))
-            } else {
-                Resource.Error("Job cancellation failed (${response.code()})", response.code())
-            }
-        } catch (e: Exception) {
-            Resource.Error(e.localizedMessage ?: "Job cancellation error")
-        }
-    }
-
-    // C14 FIX: Convert ProjectOverviewDto to JsonMap
-    suspend fun fetchProjectOverviewRaw(
-        projectId: String = currentProjectId()
-    ): Resource<JsonMap> {
-        return when (val res = fetchProjectOverview(projectId)) {
-            is Resource.Success -> {
-                val dto = res.data
-                Resource.Success(mapOf(
-                    "project" to mapOf(
-                        "id" to dto.project?.id,
-                        "name" to dto.project?.name,
-                        "is_active" to dto.project?.is_active
-                    ),
-                    "stats" to (dto.stats ?: emptyMap<String, Any?>()),
-                    "episodes_count" to (dto.episodes_count ?: 0),
-                    "characters_count" to (dto.characters_count ?: 0),
-                    "pending_approvals" to (dto.pending_approvals ?: 0),
-                    "pending_approvals_count" to (dto.pending_approvals ?: 0),
-                    "active_jobs" to (dto.active_jobs ?: 0),
-                    "active_jobs_count" to (dto.active_jobs ?: 0),
-                    "canon_status" to dto.canon_status,
-                    "continuity_status" to dto.continuity_status
-                ))
-            }
-            is Resource.Error -> res
-            else -> Resource.Empty
-        }
-    }
-
-    suspend fun fetchEpisodesRaw(projectId: String = currentProjectId()): Resource<List<EpisodeDto>> = withContext(Dispatchers.IO) {
-        try {
-            val response = apiService.getProjectEpisodes(projectId)
-            if (response.isSuccessful) {
-                val list = response.body()?.data ?: emptyList()
-                if (list.isEmpty()) Resource.Empty else Resource.Success(list)
-            } else {
-                Resource.Error("Failed to fetch episodes (${response.code()})", response.code())
-            }
-        } catch (e: Exception) {
-            Resource.Error(e.localizedMessage ?: "Failed to fetch episodes")
-        }
-    }
-
-    suspend fun fetchScenesRaw(projectId: String = currentProjectId(), episodeNo: Int = 1): Resource<List<SceneDto>> {
-        return fetchScenes(projectId, episodeNo)
-    }
-
-    // C17 FIX: Use takeIf { it.isNotBlank() } instead of ifBlank { null }
     suspend fun fetchSystemPrompts(projectId: String = currentProjectId()): Resource<List<SystemPromptDto>> = withContext(Dispatchers.IO) {
         try {
             val response = apiService.getSystemPrompts(projectId.takeIf { it.isNotBlank() })
@@ -622,7 +656,6 @@ class AnimeRepository(private val apiService: AnimeApiService = RetrofitClient.g
         }
     }
 
-    // C17 FIX: Use takeIf { it.isNotBlank() } instead of ifBlank { null }
     suspend fun saveSystemPrompt(
         projectId: String = currentProjectId(),
         title: String,
@@ -649,61 +682,14 @@ class AnimeRepository(private val apiService: AnimeApiService = RetrofitClient.g
         }
     }
 
-    // C16 FIX: Return Resource<AiChatResponse> and pass projectId to chatWithBrain
-    suspend fun askAiDirector(
-        message: String,
-        currentScreen: String = "STUDIO",
-        conversationId: String? = null,
-        projectId: String = currentProjectId()
-    ): Resource<AiChatResponse> {
-        return chatWithBrain(
-            message = message,
-            projectId = projectId,
-            currentScreen = currentScreen,
-            conversationId = conversationId
-        )
+    suspend fun deletePrompt(promptId: String): Resource<JsonMap> = try {
+        mapEnvelope(apiService.deleteSystemPrompt(promptId)) { it }
+    } catch (e: Exception) {
+        Resource.Error(e.localizedMessage ?: "Failed to delete prompt")
     }
 
-    // C12 FIX: Return Resource<SubmitCommandResultDto> with exact triggerQuickMedia params
-    suspend fun submitQuickImage(
-        projectId: String = currentProjectId(),
-        prompt: String,
-        stylePreset: String = "ANIME"
-    ): Resource<SubmitCommandResultDto> {
-        return triggerQuickMedia(
-            projectId = projectId,
-            isVideo = false,
-            prompt = "$prompt [Style: $stylePreset]"
-        )
-    }
-
-    suspend fun submitQuickVideo(
-        projectId: String = currentProjectId(),
-        prompt: String,
-        durationSec: Int = 5
-    ): Resource<SubmitCommandResultDto> {
-        return triggerQuickMedia(
-            projectId = projectId,
-            isVideo = true,
-            prompt = prompt
-        )
-    }
-
-    // C13 FIX: Return Resource<SubmitCommandResultDto> with mediaUrl & saveToCharacter params
-    suspend fun submitVisionAnalysis(
-        projectId: String = currentProjectId(),
-        imageUrl: String,
-        analysisType: String = "QUICK",
-        characterId: String = "CHAR_001"
-    ): Resource<SubmitCommandResultDto> {
-        return triggerVisionAnalysis(
-            projectId = projectId,
-            mediaUrl = imageUrl,
-            prompt = "Extract 11-field Character Visual DNA",
-            characterCode = characterId,
-            saveToCharacter = analysisType.equals("SAVE", ignoreCase = true)
-        )
-    }
+    suspend fun deleteSystemPrompt(promptId: String): Resource<JsonMap> =
+        deletePrompt(promptId)
 
     suspend fun fetchGpuInfrastructure(): Resource<JsonMap> = withContext(Dispatchers.IO) {
         try {
@@ -720,19 +706,9 @@ class AnimeRepository(private val apiService: AnimeApiService = RetrofitClient.g
 
     suspend fun saveGpuInfrastructure(payload: JsonMap): Resource<JsonMap> = withContext(Dispatchers.IO) {
         try {
-            val req = GpuSetupRequest(
-                preferred_mode = (payload["preferred_mode"] as? String) ?: "KAGGLE_AUTO",
-                models_dataset_slug = payload["models_dataset_slug"] as? String,
-                auto_deploy_kaggle = (payload["auto_deploy_kaggle"] as? Boolean) ?: true,
-                custom_gpu = payload["custom_gpu"] as? CustomGpuConfigDto,
-                kaggle_primary = payload["kaggle_primary"] as? KaggleAccountConfigDto,
-                kaggle_secondary = payload["kaggle_secondary"] as? KaggleAccountConfigDto,
-                telegram_storage = payload["telegram_storage"] as? TelegramStorageConfigDto,
-                github_worker_url = payload["github_worker_url"] as? String
-            )
-            val response = apiService.saveGpuConfig(req)
+            val response = apiService.saveGpuConfigRaw(payload)
             if (response.isSuccessful) {
-                Resource.Success(payload)
+                Resource.Success(response.body()?.data ?: payload)
             } else {
                 Resource.Error("Failed to save infrastructure config (${response.code()})", response.code())
             }
@@ -741,60 +717,20 @@ class AnimeRepository(private val apiService: AnimeApiService = RetrofitClient.g
         }
     }
 
-    suspend fun fetchProjectQuota(projectId: String = currentProjectId()): Resource<JsonMap> {
-        return fetchQuota(projectId)
+    suspend fun fetchHealthDetail(): Resource<HealthResponseDto> = try {
+        val res = apiService.getAnimeHealth()
+        if (res.isSuccessful && res.body() != null) Resource.Success(res.body()!!)
+        else Resource.Error("Health HTTP ${res.code()}", res.code())
+    } catch (e: Exception) {
+        Resource.Error(e.localizedMessage ?: "Backend unreachable")
     }
 
-    suspend fun fetchAdminLedgerSummary(): Resource<JsonMap> {
-        return fetchLedgerSummary(currentProjectId())
-    }
-
-    suspend fun fetchAdminWorkflows(): Resource<List<JsonMap>> {
-        return fetchAdminWorkflows(currentProjectId())
-    }
-
-    suspend fun fetchAdminWorkers(): Resource<List<JsonMap>> {
-        return fetchAdminWorkers(currentProjectId())
-    }
-
-    // C15 FIX: Map JsonMap to UpdateProjectSettingsRequest DTO
-    suspend fun updateProjectSettings(
-        projectId: String = currentProjectId(),
-        updates: JsonMap
-    ): Resource<JsonMap> = withContext(Dispatchers.IO) {
-        try {
-            val req = UpdateProjectSettingsRequest(
-                name = updates["name"] as? String,
-                visual_medium = updates["visual_medium"] as? String,
-                genre = updates["genre"] as? String,
-                auto_approve = updates["auto_approve"] as? Boolean,
-                cover_image_url = updates["cover_image_url"] as? String,
-                budget_ceiling = (updates["budget_ceiling"] as? Number)?.toInt()
-            )
-            val response = apiService.updateProjectSettings(projectId, req)
-            if (response.isSuccessful) {
-                Resource.Success(updates)
-            } else {
-                Resource.Error("Failed (${response.code()})", response.code())
-            }
-        } catch (e: Exception) {
-            Resource.Error(e.localizedMessage ?: "Update failed")
-        }
-    }
-
-    suspend fun updateBudgetLimit(
-        projectId: String = currentProjectId(),
-        limit: Double
-    ): Resource<JsonMap> {
-        return updateBudgetLimit(projectId, limit.toInt())
-    }
+    suspend fun checkBackendHealth(): Boolean =
+        (fetchHealthDetail() as? Resource.Success)?.data?.ok == true
 
     suspend fun resolveConfiguredAiProviderBadge(): String = withContext(Dispatchers.IO) {
         try {
-            val isUp = checkBackendHealth()
-            if (!isUp) {
-                return@withContext "AI: Disconnected"
-            }
+            if (!checkBackendHealth()) return@withContext "AI: Disconnected"
             val gpuRes = fetchGpuInfrastructure()
             if (gpuRes is Resource.Success) {
                 val data = gpuRes.data
@@ -810,7 +746,7 @@ class AnimeRepository(private val apiService: AnimeApiService = RetrofitClient.g
                     return@withContext label
                 }
             }
-            return@withContext TokenManager.cachedProviderLabel ?: "AI: Configured"
+            return@withContext TokenManager.cachedProviderLabel ?: "Groq • Gemini"
         } catch (_: Exception) {
             return@withContext "AI: Disconnected"
         }

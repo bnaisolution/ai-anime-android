@@ -23,14 +23,13 @@ import org.dpdns.bnai.anime.ui.designsystem.*
 @Composable
 fun SettingsScreen() {
     val context = LocalContext.current
-    val tokenManager = remember { TokenManager(context) }
+    val tokenManager = remember { TokenManager.init(context) }
     val repository = remember { AnimeRepository() }
     val scope = rememberCoroutineScope()
 
     var selectedTab by remember { mutableStateOf(0) }
     val tabs = listOf("AI & Vision", "Compute Workers", "Storage & Policy", "Session")
 
-    // Persisted non-secret fields hydrated from backend
     var primaryProvider by remember { mutableStateOf("groq") }
     var fallbackProvider by remember { mutableStateOf("gemini") }
     var visionProvider by remember { mutableStateOf("gemini") }
@@ -40,7 +39,6 @@ fun SettingsScreen() {
     var telegramChatId by remember { mutableStateOf("") }
     var autoApprovePolicy by remember { mutableStateOf(false) }
 
-    // Secret inputs remain blank unless user enters a new secret (prevents overwriting saved keys)
     var newGroqKey by remember { mutableStateOf("") }
     var newGeminiKey by remember { mutableStateOf("") }
     var newKaggleKey by remember { mutableStateOf("") }
@@ -69,10 +67,11 @@ fun SettingsScreen() {
                 kaggleUsername = (d["kaggle_username"] ?: "").toString().let { if (it == "null") "" else it }
                 telegramChatId = (d["telegram_chat_id"] ?: "").toString().let { if (it == "null") "" else it }
 
-                hasSavedGroqKey = !d["groq_api_key"].toString().isNullOrBlank() && d["groq_api_key"].toString() != "null"
-                hasSavedGeminiKey = !d["gemini_api_key"].toString().isNullOrBlank() && d["gemini_api_key"].toString() != "null"
-                hasSavedKaggleKey = !d["kaggle_key"].toString().isNullOrBlank() && d["kaggle_key"].toString() != "null"
+                hasSavedGroqKey = !d["groq_api_key"]?.toString().isNullOrBlank() && d["groq_api_key"].toString() != "null"
+                hasSavedGeminiKey = !d["gemini_api_key"]?.toString().isNullOrBlank() && d["gemini_api_key"].toString() != "null"
+                hasSavedKaggleKey = !d["kaggle_key"]?.toString().isNullOrBlank() && d["kaggle_key"].toString() != "null"
             }
+
             if (pid.isNotBlank()) {
                 val ovRes = repository.fetchProjectOverviewRaw(pid)
                 if (ovRes is Resource.Success) {
@@ -239,7 +238,11 @@ fun SettingsScreen() {
                                 val t0 = System.currentTimeMillis()
                                 val isHealthy = repository.checkBackendHealth()
                                 val elapsed = System.currentTimeMillis() - t0
-                                connectionStatus = if (isHealthy) { "Connected • Verified Round-Trip Latency: ${elapsed}ms" } else { "Connection Failed (Backend Unreachable)" }
+                                connectionStatus = if (isHealthy) {
+                                    "Connected • Verified Round-Trip Latency: ${elapsed}ms"
+                                } else {
+                                    "Connection Failed (Backend Unreachable)"
+                                }
                             }
                         },
                         modifier = Modifier.fillMaxWidth()
@@ -248,7 +251,6 @@ fun SettingsScreen() {
             }
         }
 
-        // BUG-025: Partial non-destructive save + Read-After-Write verification
         PrimaryButton(
             text = "Save & Verify Configuration",
             isLoading = isSaving,
@@ -263,7 +265,6 @@ fun SettingsScreen() {
                         "kaggle_username" to kaggleUsername.trim(),
                         "telegram_chat_id" to telegramChatId.trim()
                     )
-                    // Never overwrite saved secrets with blank strings!
                     if (newGroqKey.isNotBlank()) infraPayload["groq_api_key"] = newGroqKey.trim()
                     if (newGeminiKey.isNotBlank()) infraPayload["gemini_api_key"] = newGeminiKey.trim()
                     if (newKaggleKey.isNotBlank()) infraPayload["kaggle_key"] = newKaggleKey.trim()
@@ -282,9 +283,9 @@ fun SettingsScreen() {
                         )
                     }
 
-                    // Update global provider badge & reload from backend to prove persistence
                     val badge = "${primaryProvider.trim()} • ${fallbackProvider.trim()}"
                     tokenManager.saveConfiguredProviderLabel(badge)
+
                     newGroqKey = ""
                     newGeminiKey = ""
                     newKaggleKey = ""
@@ -303,6 +304,7 @@ fun SettingsScreen() {
             },
             modifier = Modifier.fillMaxWidth()
         )
+
         Spacer(modifier = Modifier.height(64.dp))
     }
 }

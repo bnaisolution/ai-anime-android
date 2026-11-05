@@ -4,9 +4,6 @@ import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -44,7 +41,6 @@ fun EpisodePlannerScreen(
     var currentStatus by remember { mutableStateOf("PENDING") }
     var currentQcStatus by remember { mutableStateOf("PENDING") }
 
-    // BUG-019: Episode-specific saved prompt selector & preview
     var episodePrompts by remember { mutableStateOf<List<SystemPromptDto>>(emptyList()) }
     var selectedPrompt by remember { mutableStateOf<SystemPromptDto?>(null) }
     var promptDropdownExpanded by remember { mutableStateOf(false) }
@@ -66,7 +62,8 @@ fun EpisodePlannerScreen(
         }
         editTitle = dto.title?.takeIf { it.isNotBlank() } ?: "Episode ${dto.episode_no}"
         editSynopsis = dto.synopsis.orEmpty()
-        editScriptText = dto.script_json?.get("raw_script")?.toString()
+        val scriptMap = dto.script_json as? Map<*, *>
+        editScriptText = scriptMap?.get("raw_script")?.toString()
             ?: dto.script_json?.toString().orEmpty()
         currentStatus = dto.current_state ?: dto.status ?: "PENDING"
         currentQcStatus = dto.qc_status ?: "PENDING"
@@ -129,10 +126,12 @@ fun EpisodePlannerScreen(
                 payload = payload
             )
             isGenerating = false
-            // EXTRA-BUG-06 FIX: Only navigate to Production when a valid command_id is returned!
-            if (res is Resource.Success && res.data.command_id.isNotBlank()) {
-                Toast.makeText(context, "Episode $selectedEpNo production queued!", Toast.LENGTH_SHORT).show()
-                onStartProduction(res.data.command_id)
+            if (res is Resource.Success) {
+                val cid = res.data.command_id.orEmpty()
+                if (cid.isNotBlank()) {
+                    Toast.makeText(context, "Episode $selectedEpNo production queued!", Toast.LENGTH_SHORT).show()
+                    onStartProduction(cid)
+                }
             } else if (res is Resource.Error) {
                 Toast.makeText(context, res.message, Toast.LENGTH_LONG).show()
             }
@@ -167,12 +166,9 @@ fun EpisodePlannerScreen(
         ScreenHeader(
             title = "Episode Planner",
             subtitle = "Edit episode metadata/script via PATCH or launch preflight-checked production",
-            trailingContent = {
-                StatusChip(label = currentStatus)
-            }
+            trailingContent = { StatusChip(label = currentStatus) }
         )
 
-        // Episode Selector Row
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -216,7 +212,6 @@ fun EpisodePlannerScreen(
             )
         }
 
-        // BUG-019: Episode-Specific Prompt Selector & Preview
         StandardCard {
             SectionHeader(
                 title = "Episode Prompt Selection",
@@ -228,8 +223,7 @@ fun EpisodePlannerScreen(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 OutlinedTextField(
-                    value = selectedPrompt?.let { "${it.title} (${it.prompt_category ?: "EPISODE"})" }
-                        ?: "Use Project Default Episode Prompt",
+                    value = selectedPrompt?.let { "${it.title} (${it.prompt_category ?: "EPISODE"})" } ?: "Use Project Default Episode Prompt",
                     onValueChange = {},
                     readOnly = true,
                     label = { Text("Director Prompt Override") },
@@ -290,7 +284,6 @@ fun EpisodePlannerScreen(
             }
         }
 
-        // BUG-020: Episode Metadata & Script Editor (Saved via PATCH /episodes/:episodeNo)
         StandardCard {
             SectionHeader(title = "Episode Metadata & Script Editor", badgeText = "QC: $currentQcStatus")
             OutlinedTextField(
@@ -315,7 +308,6 @@ fun EpisodePlannerScreen(
                 modifier = Modifier.fillMaxWidth()
             )
 
-            // Dedicated PATCH button — never triggers episode generation!
             PrimaryButton(
                 text = "Save Script & Metadata (No Generation)",
                 isLoading = isSavingMetadata,
@@ -347,7 +339,6 @@ fun EpisodePlannerScreen(
             )
         }
 
-        // Explicit Production & Regeneration Actions (Separated from Metadata Editing)
         StandardCard {
             SectionHeader(title = "AI Production Pipeline (Preflight Gated)")
             Text(
@@ -374,6 +365,7 @@ fun EpisodePlannerScreen(
                 )
             }
         }
+
         Spacer(modifier = Modifier.height(64.dp))
     }
 }

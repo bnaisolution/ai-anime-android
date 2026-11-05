@@ -12,6 +12,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
 import org.dpdns.bnai.anime.core.network.AnimeRepository
+import org.dpdns.bnai.anime.core.network.JsonMap
 import org.dpdns.bnai.anime.core.network.Resource
 import org.dpdns.bnai.anime.ui.components.formatRelativeTime
 import org.dpdns.bnai.anime.ui.designsystem.*
@@ -22,7 +23,8 @@ import java.time.temporal.ChronoUnit
 fun WorkerManagerScreen() {
     val repository = remember { AnimeRepository() }
     val scope = rememberCoroutineScope()
-    var workersState by remember { mutableStateOf<Resource<List>>>(Resource.Loading) }
+
+    var workersState by remember { mutableStateOf<Resource<List<JsonMap>>>(Resource.Loading) }
 
     fun loadWorkers() {
         scope.launch {
@@ -31,7 +33,9 @@ fun WorkerManagerScreen() {
         }
     }
 
-    LaunchedEffect(Unit) { loadWorkers() }
+    LaunchedEffect(Unit) {
+        loadWorkers()
+    }
 
     Column(
         modifier = Modifier
@@ -64,7 +68,6 @@ fun WorkerManagerScreen() {
                     val heartbeatIso = (w["last_heartbeat"] ?: w["updated_at"])?.toString()
                     val rawStatus = (w["status"] ?: "UNKNOWN").toString().uppercase()
 
-                    // Verify heartbeat freshness (>5 minutes old = STALE / OFFLINE)
                     val isHeartbeatStale = try {
                         if (heartbeatIso.isNullOrBlank()) true
                         else ChronoUnit.MINUTES.between(Instant.parse(heartbeatIso), Instant.now()) > 5

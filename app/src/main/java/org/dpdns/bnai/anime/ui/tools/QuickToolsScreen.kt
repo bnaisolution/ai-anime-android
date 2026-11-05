@@ -30,7 +30,7 @@ fun QuickToolsScreen(
     val repository = remember { AnimeRepository() }
     val scope = rememberCoroutineScope()
 
-    var mode by rememberSaveable { mutableStateOf("IMAGE") } // IMAGE | VIDEO
+    var mode by rememberSaveable { mutableStateOf("IMAGE") }
     var promptText by rememberSaveable { mutableStateOf("") }
     var stylePreset by rememberSaveable { mutableStateOf("Cinematic Anime") }
     var aspectRatio by rememberSaveable { mutableStateOf("16:9") }
@@ -43,16 +43,17 @@ fun QuickToolsScreen(
     var isCancelling by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
-    // BUG-023: Poll real backend command status without fake percentages or fixed 45s ETA
     LaunchedEffect(activeCommandId) {
         val cid = activeCommandId ?: return@LaunchedEffect
         elapsedSeconds = 0
         while (true) {
             when (val res = repository.fetchCommandStatus(cid)) {
                 is Resource.Success -> {
-                    val st = res.data.status.uppercase()
+                    val st = res.data.status?.uppercase() ?: "QUEUED"
                     activeStatus = st
-                    val outUrl = (res.data.result?.get("media_url") ?: res.data.result?.get("url") ?: res.data.result?.get("working_storage_url"))?.toString()
+                    val outUrl = (res.data.result?.get("media_url")
+                        ?: res.data.result?.get("url")
+                        ?: res.data.result?.get("working_storage_url"))?.toString()
                     if (!outUrl.isNullOrBlank() && outUrl != "null") {
                         resultMediaUrl = outUrl
                     }
@@ -83,7 +84,7 @@ fun QuickToolsScreen(
         ProjectSelectorBar()
 
         ScreenHeader(
-            title = "Quick Tools (Ad-Hoc Preview)",
+            title = "Quick Generate (Ad-Hoc Preview)",
             subtitle = "Runs in QUICK zero-persistence mode until you explicitly click Save to Project"
         )
 
@@ -142,9 +143,12 @@ fun QuickToolsScreen(
                             repository.submitQuickVideo(pid, promptText.trim(), 5)
                         }
                         isSubmitting = false
-                        if (res is Resource.Success && res.data.command_id.isNotBlank()) {
-                            activeCommandId = res.data.command_id
-                            activeStatus = res.data.status
+                        if (res is Resource.Success) {
+                            val cid = res.data.command_id.orEmpty()
+                            if (cid.isNotBlank()) {
+                                activeCommandId = cid
+                                activeStatus = res.data.status ?: "QUEUED"
+                            }
                         } else if (res is Resource.Error) {
                             errorMessage = res.message
                         }
@@ -164,6 +168,7 @@ fun QuickToolsScreen(
                     Text("Job #${activeCommandId?.take(8)}", fontWeight = FontWeight.Bold)
                     StatusChip(label = activeStatus ?: "QUEUED")
                 }
+
                 Text(
                     text = "Stage: ${friendlyPipelineStatus(activeStatus)} • Elapsed: ${elapsedSeconds}s",
                     fontSize = 12.sp,
@@ -171,10 +176,8 @@ fun QuickToolsScreen(
                 )
 
                 if (isJobRunning) {
-                    // BUG-023: Indeterminate progress bar when exact worker percentage is unknown
                     LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
 
-                    // BUG-022: Real backend job cancellation via POST /jobs/:jobId/cancel
                     DangerButton(
                         text = if (isCancelling) "Cancelling on Server..." else "Cancel Remote Job",
                         enabled = !isCancelling,

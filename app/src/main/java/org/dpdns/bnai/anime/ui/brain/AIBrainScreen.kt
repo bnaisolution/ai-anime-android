@@ -9,7 +9,6 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.DeleteSweep
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Send
@@ -39,22 +38,18 @@ import org.dpdns.bnai.anime.ui.designsystem.*
 @Composable
 fun AIBrainScreen() {
     val context = LocalContext.current
-    val tokenManager = remember { TokenManager(context) }
+    val tokenManager = remember { TokenManager.init(context) }
     val repository = remember { AnimeRepository() }
     val scope = rememberCoroutineScope()
     val listState = rememberLazyListState()
 
     var projectId by remember { mutableStateOf(repository.currentProjectId()) }
     var providerBadge by remember { mutableStateOf(tokenManager.getConfiguredProviderLabel()) }
-    var messages by remember(projectId) {
-        mutableStateOf(tokenManager.getProjectChatHistory(projectId))
-    }
+    var messages by remember(projectId) { mutableStateOf(tokenManager.getProjectChatHistory(projectId)) }
     var inputPrompt by rememberSaveable(projectId) { mutableStateOf("") }
     var isSending by remember { mutableStateOf(false) }
 
-    var activeCmdId by remember(projectId) {
-        mutableStateOf(tokenManager.getActiveCommandId(projectId, "ai_brain_cmd"))
-    }
+    var activeCmdId by remember(projectId) { mutableStateOf(tokenManager.getActiveCommandId(projectId, "ai_brain_cmd")) }
     var activeCmdStatus by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(projectId) {
@@ -67,7 +62,7 @@ fun AIBrainScreen() {
         while (true) {
             when (val res = repository.fetchCommandStatus(cid)) {
                 is Resource.Success -> {
-                    val st = res.data.status.uppercase()
+                    val st = res.data.status?.uppercase() ?: "QUEUED"
                     activeCmdStatus = st
                     if (st in listOf("SUCCEEDED", "COMPLETED", "FAILED", "ERROR", "CANCELLED")) {
                         tokenManager.saveActiveCommandId(projectId, "ai_brain_cmd", null)
@@ -85,23 +80,26 @@ fun AIBrainScreen() {
         if (clean.isEmpty() || isSending) return
         inputPrompt = ""
         isSending = true
+
         messages = tokenManager.appendProjectChatMessage(
             projectId,
             PersistedChatMessage(role = "user", content = clean)
         )
+
         scope.launch {
             if (messages.isNotEmpty()) {
                 listState.animateScrollToItem(messages.lastIndex)
             }
             val convId = tokenManager.getProjectConversationId(projectId)
-            when (val res = repository.askAiDirector(clean, "AI_BRAIN", convId)) {
+            when (val res = repository.askAiDirector(clean, "AI_BRAIN", convId, projectId)) {
                 is Resource.Success -> {
-                    val suggested = detectSuggestedIntentFromReply(res.data.reply)?.name
+                    val replyText = res.data.reply ?: res.data.message ?: "Done."
+                    val suggested = detectSuggestedIntentFromReply(replyText)?.name
                     messages = tokenManager.appendProjectChatMessage(
                         projectId,
                         PersistedChatMessage(
                             role = "assistant",
-                            content = res.data.reply,
+                            content = replyText,
                             suggestedIntent = suggested
                         )
                     )
@@ -171,7 +169,6 @@ fun AIBrainScreen() {
             }
         }
 
-        // Quick Suggestion Chips when conversation is empty
         if (messages.isEmpty()) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -203,8 +200,7 @@ fun AIBrainScreen() {
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
                     colors = CardDefaults.cardColors(
-                        containerColor = if (isUser) StudioTokens.Primary.copy(alpha = 0.14f)
-                        else MaterialTheme.colorScheme.surfaceVariant
+                        containerColor = if (isUser) StudioTokens.Primary.copy(alpha = 0.14f) else MaterialTheme.colorScheme.surfaceVariant
                     )
                 ) {
                     Column(
@@ -219,7 +215,6 @@ fun AIBrainScreen() {
                         )
                         MarkdownText(markdown = msg.content)
 
-                        // EXTRA-BUG-01: Explicit user confirmation before running any command
                         if (!isUser && !msg.suggestedIntent.isNullOrBlank()) {
                             val intentEnum = runCatching { CommandIntent.valueOf(msg.suggestedIntent) }.getOrNull()
                             if (intentEnum != null) {
@@ -238,11 +233,14 @@ fun AIBrainScreen() {
                                         onClick = {
                                             scope.launch {
                                                 val res = repository.submitStudioCommand(projectId, intentEnum)
-                                                if (res is Resource.Success && res.data.command_id.isNotBlank()) {
-                                                    activeCmdId = res.data.command_id
-                                                    activeCmdStatus = res.data.status
-                                                    tokenManager.saveActiveCommandId(projectId, "ai_brain_cmd", res.data.command_id)
-                                                    Toast.makeText(context, "Command #${res.data.command_id.take(6)} dispatched", Toast.LENGTH_SHORT).show()
+                                                if (res is Resource.Success) {
+                                                    val cid = res.data.command_id.orEmpty()
+                                                    if (cid.isNotBlank()) {
+                                                        activeCmdId = cid
+                                                        activeCmdStatus = res.data.status ?: "QUEUED"
+                                                        tokenManager.saveActiveCommandId(projectId, "ai_brain_cmd", cid)
+                                                        Toast.makeText(context, "Command #${cid.take(6)} dispatched", Toast.LENGTH_SHORT).show()
+                                                    }
                                                 }
                                             }
                                         }

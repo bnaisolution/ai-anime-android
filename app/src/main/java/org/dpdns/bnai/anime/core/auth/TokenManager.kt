@@ -23,6 +23,9 @@ class TokenManager(context: Context? = null) {
         (context ?: appContext)?.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
     private val gson = Gson()
 
+    val sessionExpiredMessage: StateFlow<String?>
+        get() = _sessionExpiredFlow.asStateFlow()
+
     fun saveToken(token: String) {
         cachedToken = token
         prefs?.edit()?.putString(KEY_JWT, token)?.apply()
@@ -32,12 +35,14 @@ class TokenManager(context: Context? = null) {
         return cachedToken ?: prefs?.getString(KEY_JWT, null)?.also { cachedToken = it }
     }
 
-    fun clearToken() {
+    fun clearToken(reason: String? = null) {
         cachedToken = null
         prefs?.edit()?.remove(KEY_JWT)?.apply()
+        if (!reason.isNullOrBlank()) {
+            _sessionExpiredFlow.value = reason
+        }
     }
 
-    // C11 FIX: Nullable params accepted to match AuthViewModel callers
     fun saveUserMeta(
         userId: String?,
         workspaceId: String? = "default-workspace",
@@ -98,8 +103,8 @@ class TokenManager(context: Context? = null) {
 
     fun getConfiguredProviderLabel(): String {
         return cachedProviderLabel
-            ?: prefs?.getString(KEY_PROVIDER_LABEL, "AI: Configured")?.also { cachedProviderLabel = it }
-            ?: "AI: Configured"
+            ?: prefs?.getString(KEY_PROVIDER_LABEL, "Groq • Gemini")?.also { cachedProviderLabel = it }
+            ?: "Groq • Gemini"
     }
 
     fun saveFabOffset(offsetX: Float, offsetY: Float) {
@@ -150,9 +155,6 @@ class TokenManager(context: Context? = null) {
         return created
     }
 
-    val sessionExpiredMessage: StateFlow<String?>
-        get() = _sessionExpiredFlow.asStateFlow()
-
     companion object {
         private const val PREFS_NAME = "anime_engine_auth_prefs"
         private const val KEY_JWT = "jwt_access_token"
@@ -183,10 +185,10 @@ class TokenManager(context: Context? = null) {
         @Volatile
         var cachedProviderLabel: String? = null
 
-        fun init(context: Context) {
+        fun init(context: Context): TokenManager {
             appContext = context.applicationContext
-            if (instance == null) {
-                instance = TokenManager(appContext)
+            return instance ?: synchronized(this) {
+                instance ?: TokenManager(appContext).also { instance = it }
             }
         }
 

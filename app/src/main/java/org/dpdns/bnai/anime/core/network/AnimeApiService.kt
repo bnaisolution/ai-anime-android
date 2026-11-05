@@ -20,7 +20,6 @@ data class LoginResponse(
 )
 data class AuthMeResponse(val status: String? = null, val user: JsonMap? = null)
 
-// Fix #113 & #118: Added current_screen and conversation_id for AI Director context & memory
 data class AiChatRequest(
     val message: String,
     val project_id: String? = null,
@@ -102,7 +101,10 @@ data class ApiCommandRecordDto(
     val result: JsonMap? = null,
     val created_at: String? = null,
     val updated_at: String? = null
-)
+) {
+    val error: String?
+        get() = error_message
+}
 
 data class SubmitCommandResultDto(
     val status: String? = null,
@@ -152,6 +154,7 @@ data class EpisodeDto(
     val title: String? = null,
     val synopsis: String? = null,
     val current_state: String? = null,
+    val status: String? = null,
     val qc_status: String? = null,
     val script_json: Any? = null,
     val master_video_url: String? = null,
@@ -185,7 +188,6 @@ data class SceneDto(
     val clips: List<ClipDto>? = null
 )
 
-// Fix #12: Nullable character_code & name so Gson never fails on partial DB rows
 data class CharacterDto(
     val id: String? = null,
     val character_code: String? = null,
@@ -333,6 +335,9 @@ interface AnimeApiService {
     @GET("v1/anime/projects")
     suspend fun getProjects(): Response<ApiEnvelope<List<ProjectDto>>>
 
+    @POST("v1/anime/projects")
+    suspend fun createProjectSync(@Body body: JsonMap): Response<ApiEnvelope<ProjectDto>>
+
     @GET("v1/anime/projects/{id}/overview")
     suspend fun getProjectOverview(@Path("id") projectId: String): Response<ApiEnvelope<ProjectOverviewDto>>
 
@@ -341,6 +346,12 @@ interface AnimeApiService {
         @Path("id") projectId: String,
         @Body body: UpdateProjectSettingsRequest
     ): Response<ApiEnvelope<ProjectDto>>
+
+    @PATCH("v1/anime/projects/{id}/bible")
+    suspend fun updateProjectBible(
+        @Path("id") projectId: String,
+        @Body body: JsonMap
+    ): Response<ApiEnvelope<JsonMap>>
 
     @PATCH("v1/anime/projects/{id}/budget")
     suspend fun updateProjectBudget(
@@ -354,11 +365,26 @@ interface AnimeApiService {
     @GET("v1/anime/projects/{id}/episodes/{episodeNo}")
     suspend fun getEpisodeDetail(@Path("id") projectId: String, @Path("episodeNo") episodeNo: Int): Response<ApiEnvelope<EpisodeDto>>
 
+    @PATCH("v1/anime/projects/{id}/episodes/{episodeNo}")
+    suspend fun updateEpisode(
+        @Path("id") projectId: String,
+        @Path("episodeNo") episodeNo: Int,
+        @Body body: JsonMap
+    ): Response<ApiEnvelope<EpisodeDto>>
+
     @GET("v1/anime/projects/{id}/episodes/{episodeNo}/plan")
     suspend fun getEpisodePlan(@Path("id") projectId: String, @Path("episodeNo") episodeNo: Int): Response<ApiEnvelope<JsonMap>>
 
     @GET("v1/anime/projects/{id}/episodes/{episodeNo}/scenes")
     suspend fun getEpisodeScenes(@Path("id") projectId: String, @Path("episodeNo") episodeNo: Int): Response<ApiEnvelope<List<SceneDto>>>
+
+    @PATCH("v1/anime/projects/{id}/episodes/{episodeNo}/scenes/{sceneId}")
+    suspend fun updateScene(
+        @Path("id") projectId: String,
+        @Path("episodeNo") episodeNo: Int,
+        @Path("sceneId") sceneId: String,
+        @Body body: JsonMap
+    ): Response<ApiEnvelope<SceneDto>>
 
     @GET("v1/anime/projects/{id}/media")
     suspend fun getProjectMedia(@Path("id") projectId: String): Response<ApiEnvelope<JsonMap>>
@@ -368,6 +394,12 @@ interface AnimeApiService {
 
     @GET("v1/anime/projects/{id}/jobs/{jobId}")
     suspend fun getJobDetail(@Path("id") projectId: String, @Path("jobId") jobId: String): Response<ApiEnvelope<JobDto>>
+
+    @POST("v1/anime/projects/{id}/jobs/{jobId}/cancel")
+    suspend fun cancelJob(
+        @Path("id") projectId: String,
+        @Path("jobId") jobId: String
+    ): Response<ApiEnvelope<JsonMap>>
 
     @GET("v1/anime/projects/{id}/bible")
     suspend fun getProjectBible(@Path("id") projectId: String): Response<ApiEnvelope<JsonMap>>
@@ -380,6 +412,19 @@ interface AnimeApiService {
 
     @GET("v1/anime/projects/{id}/characters")
     suspend fun getProjectCharacters(@Path("id") projectId: String): Response<ApiEnvelope<List<CharacterDto>>>
+
+    @POST("v1/anime/projects/{id}/characters")
+    suspend fun createCharacter(
+        @Path("id") projectId: String,
+        @Body body: JsonMap
+    ): Response<ApiEnvelope<CharacterDto>>
+
+    @PATCH("v1/anime/projects/{id}/characters/{cid}")
+    suspend fun updateCharacter(
+        @Path("id") projectId: String,
+        @Path("cid") characterIdOrCode: String,
+        @Body body: JsonMap
+    ): Response<ApiEnvelope<CharacterDto>>
 
     @GET("v1/anime/projects/{id}/timeline")
     suspend fun getProjectTimeline(@Path("id") projectId: String): Response<ApiEnvelope<List<JsonMap>>>
@@ -452,6 +497,9 @@ interface AnimeApiService {
     @POST("v1/anime/infrastructure/gpu")
     suspend fun saveGpuConfig(@Body request: GpuSetupRequest): Response<ApiEnvelope<GpuSetupResponseDto>>
 
+    @POST("v1/anime/infrastructure/gpu")
+    suspend fun saveGpuConfigRaw(@Body request: JsonMap): Response<ApiEnvelope<JsonMap>>
+
     @GET("v1/anime/projects/{id}/quota")
     suspend fun getProjectQuota(@Path("id") projectId: String): Response<ApiEnvelope<JsonMap>>
 
@@ -472,50 +520,4 @@ interface AnimeApiService {
         @Path("id") projectId: String,
         @Path("category") category: String
     ): Response<ApiEnvelope<List<JsonMap>>>
-
-    // === STUDIO V2 SYNCHRONOUS CRUD & JOB CANCELLATION CONTRACTS ===
-    @POST("v1/anime/projects")
-    suspend fun createProjectSync(
-        @Body body: JsonMap
-    ): Response<ApiEnvelope<ProjectDto>>
-
-    @PATCH("v1/anime/projects/{id}/bible")
-    suspend fun updateProjectBible(
-        @Path("id") projectId: String,
-        @Body body: JsonMap
-    ): Response<ApiEnvelope<JsonMap>>
-
-    @POST("v1/anime/projects/{id}/characters")
-    suspend fun createCharacter(
-        @Path("id") projectId: String,
-        @Body body: JsonMap
-    ): Response<ApiEnvelope<CharacterDto>>
-
-    @PATCH("v1/anime/projects/{id}/characters/{cid}")
-    suspend fun updateCharacter(
-        @Path("id") projectId: String,
-        @Path("cid") characterIdOrCode: String,
-        @Body body: JsonMap
-    ): Response<ApiEnvelope<CharacterDto>>
-
-    @PATCH("v1/anime/projects/{id}/episodes/{episodeNo}")
-    suspend fun updateEpisode(
-        @Path("id") projectId: String,
-        @Path("episodeNo") episodeNo: Int,
-        @Body body: JsonMap
-    ): Response<ApiEnvelope<EpisodeDto>>
-
-    @PATCH("v1/anime/projects/{id}/episodes/{episodeNo}/scenes/{sceneId}")
-    suspend fun updateScene(
-        @Path("id") projectId: String,
-        @Path("episodeNo") episodeNo: Int,
-        @Path("sceneId") sceneId: String,
-        @Body body: JsonMap
-    ): Response<ApiEnvelope<SceneDto>>
-
-    @POST("v1/anime/projects/{id}/jobs/{jobId}/cancel")
-    suspend fun cancelJob(
-        @Path("id") projectId: String,
-        @Path("jobId") jobId: String
-    ): Response<ApiEnvelope<JsonMap>>
 }

@@ -23,7 +23,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
@@ -33,6 +32,7 @@ import org.dpdns.bnai.anime.core.auth.TokenManager
 import org.dpdns.bnai.anime.core.model.Project
 import org.dpdns.bnai.anime.core.network.AnimeRepository
 import org.dpdns.bnai.anime.core.network.CommandIntent
+import org.dpdns.bnai.anime.core.network.JsonMap
 import org.dpdns.bnai.anime.core.network.Resource
 import org.dpdns.bnai.anime.ui.designsystem.MarkdownText
 import org.dpdns.bnai.anime.ui.designsystem.StatusChip
@@ -182,9 +182,7 @@ fun InfoTooltipButton(title: String, description: String) {
             title = { Text(title, fontWeight = FontWeight.Bold) },
             text = { Text(description) },
             confirmButton = {
-                TextButton(onClick = { showDialog = false }) {
-                    Text("Got it")
-                }
+                TextButton(onClick = { showDialog = false }) { Text("Got it") }
             }
         )
     }
@@ -201,6 +199,56 @@ fun InfoTooltipButton(title: String, description: String) {
     }
 }
 
+@Composable
+fun KeyValueMapList(items: List<JsonMap>) {
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
+        contentPadding = PaddingValues(bottom = 24.dp)
+    ) {
+        items(items) { map ->
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+            ) {
+                Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    val rawTitle = (map["title"] ?: map["name"] ?: map["arc_name"] ?: map["power_name"]
+                        ?: map["rule_code"] ?: map["location_code"] ?: map["artifact_code"]
+                        ?: map["character_code"] ?: map["wf_key"] ?: map["action"] ?: "Studio Item").toString()
+                    val status = (map["status"] ?: map["state"] ?: map["verification_status"] ?: map["priority"])?.toString()
+                    val timestamp = (map["updated_at"] ?: map["created_at"] ?: map["checked_at"])?.toString()
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(cleanDisplayTitle(rawTitle), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
+                        if (!status.isNullOrBlank()) StatusBadge(status)
+                    }
+
+                    map.entries.forEach { (k, v) ->
+                        if (k !in setOf("id", "project_id", "user_id", "workspace_id", "title", "name", "status", "state", "created_at", "updated_at", "checked_at") && v != null) {
+                            val label = k.replace("_", " ").replaceFirstChar { it.uppercase() }
+                            val formattedVal = if (v is Number) formatInt(v) else v.toString()
+                            Text("$label: $formattedVal", style = MaterialTheme.typography.bodyMedium)
+                        }
+                    }
+
+                    if (!timestamp.isNullOrBlank()) {
+                        Text(
+                            formatRelativeTime(timestamp),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.secondary
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProjectSelectorBar(
@@ -208,7 +256,7 @@ fun ProjectSelectorBar(
     onRefreshClick: (() -> Unit)? = null
 ) {
     val context = LocalContext.current
-    val tokenManager = remember { TokenManager(context) }
+    val tokenManager = remember { TokenManager.init(context) }
     val repository = remember { AnimeRepository() }
     var projects by remember { mutableStateOf<List<Project>>(emptyList()) }
     var expanded by remember { mutableStateOf(false) }
@@ -280,8 +328,8 @@ fun ProjectSelectorBar(
     }
 }
 
-fun detectSuggestedIntentFromReply(replyText: String): CommandIntent? {
-    val upper = replyText.uppercase()
+fun detectSuggestedIntentFromReply(replyText: String?): CommandIntent? {
+    val upper = replyText?.uppercase().orEmpty()
     return when {
         upper.contains("GENERATE_EPISODE") -> CommandIntent.GENERATE_EPISODE
         upper.contains("CONTINUE_EPISODE") -> CommandIntent.CONTINUE_EPISODE
@@ -292,43 +340,34 @@ fun detectSuggestedIntentFromReply(replyText: String): CommandIntent? {
     }
 }
 
-/**
- * BUG-005, BUG-006, BUG-028 & EXTRA-BUG-01:
- * Persistent Project-Scoped Global AI Director Bottom Sheet.
- * - Restores chat history per project across sheet close, navigation, and recreation.
- * - Renders full Markdown.
- * - Never executes commands without explicit user confirmation.
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GlobalAiDirectorBottomSheet(
-    currentScreen: String,
+    currentScreen: String = "STUDIO",
+    currentScreenName: String = currentScreen,
     onDismiss: () -> Unit,
-    onOpenFullAiBrain: () -> Unit = {}
+    onNavigateToRoute: (String) -> Unit = {},
+    onOpenFullAiBrain: () -> Unit = { onNavigateToRoute("ai_brain") }
 ) {
     val context = LocalContext.current
-    val tokenManager = remember { TokenManager(context) }
+    val tokenManager = remember { TokenManager.init(context) }
     val repository = remember { AnimeRepository() }
     val scope = rememberCoroutineScope()
-
     val projectId = repository.currentProjectId()
-    var messages by remember(projectId) {
-        mutableStateOf(tokenManager.getProjectChatHistory(projectId))
-    }
+    val effectiveScreen = currentScreenName.ifBlank { currentScreen }
+
+    var messages by remember(projectId) { mutableStateOf(tokenManager.getProjectChatHistory(projectId)) }
     var prompt by rememberSaveable(projectId) { mutableStateOf("") }
     var isSending by remember { mutableStateOf(false) }
-    var trackedCmdId by remember(projectId) {
-        mutableStateOf(tokenManager.getActiveCommandId(projectId, "ai_director_sheet"))
-    }
+    var trackedCmdId by remember(projectId) { mutableStateOf(tokenManager.getActiveCommandId(projectId, "ai_director_sheet")) }
     var trackedCmdStatus by remember { mutableStateOf<String?>(null) }
 
-    // Poll any active command initiated from AI Director
     LaunchedEffect(trackedCmdId, projectId) {
         val cid = trackedCmdId ?: return@LaunchedEffect
         while (true) {
             when (val st = repository.fetchCommandStatus(cid)) {
                 is Resource.Success -> {
-                    val statusUpper = st.data.status.uppercase()
+                    val statusUpper = st.data.status?.uppercase() ?: "QUEUED"
                     trackedCmdStatus = statusUpper
                     if (statusUpper in listOf("SUCCEEDED", "COMPLETED", "FAILED", "ERROR", "CANCELLED")) {
                         tokenManager.saveActiveCommandId(projectId, "ai_director_sheet", null)
@@ -362,7 +401,7 @@ fun GlobalAiDirectorBottomSheet(
                     Column {
                         Text("AI Studio Director", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                         Text(
-                            text = "Context: $currentScreen • Project #${projectId.take(6).ifBlank { "Global" }}",
+                            text = "Context: $effectiveScreen • Project #${projectId.take(6).ifBlank { "Global" }}",
                             fontSize = 11.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -429,8 +468,7 @@ fun GlobalAiDirectorBottomSheet(
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         colors = CardDefaults.cardColors(
-                            containerColor = if (isUser) StudioTokens.Primary.copy(alpha = 0.14f)
-                            else MaterialTheme.colorScheme.surfaceVariant
+                            containerColor = if (isUser) StudioTokens.Primary.copy(alpha = 0.14f) else MaterialTheme.colorScheme.surfaceVariant
                         ),
                         shape = RoundedCornerShape(12.dp)
                     ) {
@@ -446,7 +484,6 @@ fun GlobalAiDirectorBottomSheet(
                             )
                             MarkdownText(markdown = msg.content)
 
-                            // EXTRA-BUG-01 FIX: Explicit confirmation button before dispatching any command
                             if (!isUser && !msg.suggestedIntent.isNullOrBlank()) {
                                 val intentEnum = runCatching { CommandIntent.valueOf(msg.suggestedIntent) }.getOrNull()
                                 if (intentEnum != null) {
@@ -468,14 +505,13 @@ fun GlobalAiDirectorBottomSheet(
                                                         projectId = projectId,
                                                         intent = intentEnum
                                                     )
-                                                    if (res is Resource.Success && res.data.command_id.isNotBlank()) {
-                                                        trackedCmdId = res.data.command_id
-                                                        trackedCmdStatus = res.data.status
-                                                        tokenManager.saveActiveCommandId(
-                                                            projectId,
-                                                            "ai_director_sheet",
-                                                            res.data.command_id
-                                                        )
+                                                    if (res is Resource.Success) {
+                                                        val cid = res.data.command_id.orEmpty()
+                                                        if (cid.isNotBlank()) {
+                                                            trackedCmdId = cid
+                                                            trackedCmdStatus = res.data.status ?: "QUEUED"
+                                                            tokenManager.saveActiveCommandId(projectId, "ai_director_sheet", cid)
+                                                        }
                                                     }
                                                 }
                                             },
@@ -519,14 +555,15 @@ fun GlobalAiDirectorBottomSheet(
                         )
                         scope.launch {
                             val convId = tokenManager.getProjectConversationId(projectId)
-                            when (val res = repository.askAiDirector(cleanPrompt, currentScreen, convId)) {
+                            when (val res = repository.askAiDirector(cleanPrompt, effectiveScreen, convId)) {
                                 is Resource.Success -> {
-                                    val suggested = detectSuggestedIntentFromReply(res.data.reply)?.name
+                                    val replyText = res.data.reply ?: res.data.message ?: "Done."
+                                    val suggested = detectSuggestedIntentFromReply(replyText)?.name
                                     messages = tokenManager.appendProjectChatMessage(
                                         projectId,
                                         PersistedChatMessage(
                                             role = "assistant",
-                                            content = res.data.reply,
+                                            content = replyText,
                                             suggestedIntent = suggested
                                         )
                                     )

@@ -37,7 +37,6 @@ fun SceneDetailScreen(episodeNo: Int = 1) {
     var epDropdownExpanded by remember { mutableStateOf(false) }
     var scenesState by remember { mutableStateOf<Resource<List<SceneDto>>>(Resource.Loading) }
 
-    // BUG-021: Dedicated Scene PATCH dialog state
     var editingScene by remember { mutableStateOf<SceneDto?>(null) }
     var editDescription by remember { mutableStateOf("") }
     var editVisualPrompt by remember { mutableStateOf("") }
@@ -87,10 +86,9 @@ fun SceneDetailScreen(episodeNo: Int = 1) {
                     isLoading = isSavingScene,
                     onClick = {
                         val pid = repository.currentProjectId()
-                        val sceneIdOrOrder = sc.id ?: (sc.scene_order ?: sc.scene_no ?: 1).toString()
+                        val sceneIdOrOrder = sc.id.ifBlank { (sc.scene_order ?: sc.scene_no ?: 1).toString() }
                         isSavingScene = true
                         scope.launch {
-                            // BUG-021 FIX: Call dedicated scene PATCH route instead of CONTINUE_EPISODE!
                             val res = repository.updateSceneSync(
                                 projectId = pid,
                                 episodeNo = currentEpisodeNo,
@@ -175,11 +173,12 @@ fun SceneDetailScreen(episodeNo: Int = 1) {
                 verticalArrangement = Arrangement.spacedBy(10.dp),
                 contentPadding = PaddingValues(bottom = 80.dp)
             ) {
-                items(scenesList, key = { it.id ?: "${it.scene_order}" }) { scene ->
+                items(scenesList, key = { it.id.ifBlank { "${it.scene_order}" } }) { scene ->
                     val sceneNo = scene.scene_order ?: scene.scene_no ?: 1
                     val firstClipUrl = scene.clips?.firstOrNull()?.clip_url?.takeIf {
                         it.startsWith("http://") || it.startsWith("https://")
                     }
+
                     StandardCard {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
@@ -202,6 +201,7 @@ fun SceneDetailScreen(episodeNo: Int = 1) {
                             text = scene.description?.ifBlank { "No scene description" } ?: "No scene description",
                             fontSize = 14.sp
                         )
+
                         if (!scene.visual_prompt.isNullOrBlank()) {
                             Text(
                                 text = "Prompt: ${scene.visual_prompt}",

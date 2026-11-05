@@ -6,10 +6,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
@@ -48,11 +46,12 @@ fun QCScreen(
         }
     }
 
-    LaunchedEffect(Unit) { loadEpisodes() }
+    LaunchedEffect(Unit) {
+        loadEpisodes()
+    }
 
     val activeEp = episodes.find { it.episode_no == selectedEpNo }
     val rawQcStatus = (activeEp?.qc_status ?: "UNCHECKED").uppercase()
-    // BUG-052: Never treat SKIPPED or UNCHECKED as APPROVED/PASSED
     val isApproved = rawQcStatus == "APPROVED" || rawQcStatus == "PASSED"
 
     Column(
@@ -70,9 +69,7 @@ fun QCScreen(
         ScreenHeader(
             title = "Quality Control (QC Gate)",
             subtitle = "Inspect script, scene & media QC before unlocking publishing",
-            trailingContent = {
-                StatusChip(label = rawQcStatus)
-            }
+            trailingContent = { StatusChip(label = rawQcStatus) }
         )
 
         ExposedDropdownMenuBox(
@@ -134,7 +131,8 @@ fun QCScreen(
                                 episodeNo = selectedEpNo
                             )
                             if (res is Resource.Success) {
-                                Toast.makeText(context, "QC job queued (#${res.data.command_id.take(6)})", Toast.LENGTH_SHORT).show()
+                                val cid = res.data.command_id.orEmpty()
+                                Toast.makeText(context, "QC job queued (#${cid.take(6)})", Toast.LENGTH_SHORT).show()
                             }
                         }
                     },

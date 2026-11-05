@@ -6,11 +6,11 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
 import org.dpdns.bnai.anime.core.network.AnimeRepository
+import org.dpdns.bnai.anime.core.network.JsonMap
 import org.dpdns.bnai.anime.core.network.Resource
 import org.dpdns.bnai.anime.ui.components.ProjectSelectorBar
 import org.dpdns.bnai.anime.ui.components.formatInt
@@ -22,7 +22,8 @@ fun QuotaDashboardScreen(
 ) {
     val repository = remember { AnimeRepository() }
     val scope = rememberCoroutineScope()
-    var quotaState by remember { mutableStateOf<Resource>>(Resource.Loading) }
+
+    var quotaState by remember { mutableStateOf<Resource<JsonMap>>(Resource.Loading) }
 
     fun loadQuota() {
         val pid = repository.currentProjectId()
@@ -36,7 +37,9 @@ fun QuotaDashboardScreen(
         }
     }
 
-    LaunchedEffect(Unit) { loadQuota() }
+    LaunchedEffect(Unit) {
+        loadQuota()
+    }
 
     Column(
         modifier = Modifier
@@ -64,7 +67,7 @@ fun QuotaDashboardScreen(
             val requestsCount = formatInt(data["requests_count"] ?: recordsCount)
             val rawTokens = data["tokens_used"]
             val tokensDisplay = if (rawTokens != null && rawTokens.toString() != "null") formatInt(rawTokens) else "Not reported"
-            val dailyLimit = data["daily_limit"]?.let { formatInt(it) } ?: "UNKNOWN"
+            val dailyLimit = data["daily_limit"]?.let { lim -> formatInt(lim) } ?: "UNKNOWN"
             val sinceDate = (data["since_date"] ?: "Last 24h").toString()
 
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {

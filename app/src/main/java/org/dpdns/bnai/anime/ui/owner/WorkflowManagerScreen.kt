@@ -12,6 +12,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
 import org.dpdns.bnai.anime.core.network.AnimeRepository
+import org.dpdns.bnai.anime.core.network.JsonMap
 import org.dpdns.bnai.anime.core.network.Resource
 import org.dpdns.bnai.anime.ui.components.formatInt
 import org.dpdns.bnai.anime.ui.components.formatRelativeTime
@@ -45,7 +46,7 @@ fun WorkflowManagerScreen() {
     val repository = remember { AnimeRepository() }
     val scope = rememberCoroutineScope()
 
-    var wfSummaryRes by remember { mutableStateOf<Resource<List>>>(Resource.Loading) }
+    var wfSummaryRes by remember { mutableStateOf<Resource<List<JsonMap>>>(Resource.Loading) }
     var lastCheckedIso by remember { mutableStateOf<String?>(null) }
 
     fun loadWorkflowSummary() {
@@ -87,15 +88,18 @@ fun WorkflowManagerScreen() {
             )
         }
 
-        val backendList = (wfSummaryRes as? Resource.Success)?.data ?: emptyList()
+        val backendList: List<JsonMap> = when (val res = wfSummaryRes) {
+            is Resource.Success -> res.data
+            else -> emptyList()
+        }
 
         LazyColumn(
             verticalArrangement = Arrangement.spacedBy(10.dp),
             contentPadding = PaddingValues(bottom = 80.dp)
         ) {
             items(FROZEN_14_WORKFLOWS, key = { it.code }) { wf ->
-                val matched = backendList.find {
-                    val k = (it["wf_key"] ?: it["workflow_name"] ?: it["code"] ?: "").toString().uppercase()
+                val matched = backendList.firstOrNull { row ->
+                    val k = (row["wf_key"] ?: row["workflow_name"] ?: row["code"] ?: "").toString().uppercase()
                     k.contains(wf.code)
                 }
                 val totalCmds = formatInt(matched?.get("total_commands") ?: matched?.get("count") ?: 0)

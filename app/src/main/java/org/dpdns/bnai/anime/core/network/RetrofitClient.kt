@@ -18,8 +18,8 @@ object RetrofitClient {
     fun create(tokenManager: TokenManager? = null): AnimeApiService {
         val authAndTraceInterceptor = Interceptor { chain ->
             val tm = tokenManager ?: TokenManager.getInstance()
-            val activeToken = tm?.getToken()
-            val activeProject = tm?.getActiveProjectId().orEmpty()
+            val activeToken = tm.getToken()
+            val activeProject = tm.getActiveProjectId()
             val requestPath = chain.request().url.encodedPath
 
             val requestBuilder = chain.request().newBuilder()
@@ -35,7 +35,6 @@ object RetrofitClient {
 
             val response = chain.proceed(requestBuilder.build())
 
-            // Fix #224 & #242: Only clear token on genuine JWT expiry (401 when token was sent on non-login/non-optional route)
             if (response.code == 401 && !activeToken.isNullOrBlank() && !requestPath.contains("/auth/login")) {
                 val errBody = response.peekBody(512).string().lowercase()
                 if (errBody.contains("expired") || errBody.contains("invalid token") || errBody.contains("jwt") || errBody.contains("unauthorized")) {

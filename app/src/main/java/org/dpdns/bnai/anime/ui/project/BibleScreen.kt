@@ -7,7 +7,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoAwesome
-import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -22,6 +21,7 @@ import kotlinx.coroutines.launch
 import org.dpdns.bnai.anime.core.auth.TokenManager
 import org.dpdns.bnai.anime.core.network.AnimeRepository
 import org.dpdns.bnai.anime.core.network.CommandIntent
+import org.dpdns.bnai.anime.core.network.JsonMap
 import org.dpdns.bnai.anime.core.network.Resource
 import org.dpdns.bnai.anime.ui.components.ProjectSelectorBar
 import org.dpdns.bnai.anime.ui.components.friendlyPipelineStatus
@@ -30,7 +30,7 @@ import org.dpdns.bnai.anime.ui.designsystem.*
 @Composable
 fun BibleScreen() {
     val context = LocalContext.current
-    val tokenManager = remember { TokenManager(context) }
+    val tokenManager = remember { TokenManager.init(context) }
     val repository = remember { AnimeRepository() }
     val scope = rememberCoroutineScope()
 
@@ -57,17 +57,19 @@ fun BibleScreen() {
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var showDiscardDialog by remember { mutableStateOf(false) }
 
-    // BUG-001: Persistent async WF-01 command tracking
-    var activeWf01CmdId by remember(projectId) {
-        mutableStateOf(tokenManager.getActiveCommandId(projectId, "wf01_bible_gen"))
-    }
+    var activeWf01CmdId by remember(projectId) { mutableStateOf(tokenManager.getActiveCommandId(projectId, "wf01_bible_gen")) }
     var activeWf01Status by remember { mutableStateOf<String?>(null) }
     var isSubmittingWf01 by remember { mutableStateOf(false) }
 
     fun currentEditorSnapshot(): String {
         return listOf(
-            premise, toneGenre, worldSetting, worldRules,
-            powerSystem, characterFoundations, timelineFoundation
+            premise,
+            toneGenre,
+            worldSetting,
+            worldRules,
+            powerSystem,
+            characterFoundations,
+            timelineFoundation
         ).joinToString("||")
     }
 
@@ -77,7 +79,7 @@ fun BibleScreen() {
         showDiscardDialog = true
     }
 
-    fun hydrateFromBibleMap(map: Map<String, Any?>) {
+    fun hydrateFromBibleMap(map: JsonMap) {
         val bible = (map["story_bible"] as? Map<*, *>) ?: map
         premise = (bible["premise"] ?: bible["logline"] ?: bible["overview"] ?: "").toString()
         toneGenre = (bible["genre"] ?: bible["tone"] ?: "Dark Fantasy / Action").toString()
@@ -117,13 +119,12 @@ fun BibleScreen() {
         loadBibleFromServer(projectId)
     }
 
-    // BUG-001 FIX: Poll WF-01 command status until terminal state; fetch Bible ONLY after confirmed SUCCEEDED!
     LaunchedEffect(activeWf01CmdId, projectId) {
         val cmdId = activeWf01CmdId ?: return@LaunchedEffect
         while (true) {
             when (val st = repository.fetchCommandStatus(cmdId)) {
                 is Resource.Success -> {
-                    val statusUpper = st.data.status.uppercase()
+                    val statusUpper = st.data.status?.uppercase() ?: "QUEUED"
                     activeWf01Status = statusUpper
                     if (statusUpper in listOf("SUCCEEDED", "COMPLETED", "BIBLE_SAVED")) {
                         tokenManager.saveActiveCommandId(projectId, "wf01_bible_gen", null)
@@ -134,7 +135,7 @@ fun BibleScreen() {
                     } else if (statusUpper in listOf("FAILED", "ERROR", "CANCELLED", "DEAD_LETTER")) {
                         tokenManager.saveActiveCommandId(projectId, "wf01_bible_gen", null)
                         activeWf01CmdId = null
-                        errorMessage = st.data.error ?: "Story Bible AI generation failed."
+                        errorMessage = st.data.error_message ?: "Story Bible AI generation failed."
                         break
                     }
                 }
@@ -184,7 +185,6 @@ fun BibleScreen() {
             }
         )
 
-        // Active WF-01 AI Generation Progress Banner (BUG-001)
         if (!activeWf01CmdId.isNullOrBlank()) {
             StandardCard {
                 Row(
@@ -307,7 +307,7 @@ fun BibleScreen() {
                     if (projectId.isBlank()) return@PrimaryButton
                     isSavingDraft = true
                     scope.launch {
-                        val payload = mapOf(
+                        val payload: JsonMap = mapOf(
                             "premise" to premise,
                             "genre" to toneGenre,
                             "world_setting" to worldSetting,
@@ -349,11 +349,14 @@ fun BibleScreen() {
                             )
                         )
                         isSubmittingWf01 = false
-                        if (res is Resource.Success && res.data.command_id.isNotBlank()) {
-                            activeWf01CmdId = res.data.command_id
-                            activeWf01Status = res.data.status
-                            tokenManager.saveActiveCommandId(projectId, "wf01_bible_gen", res.data.command_id)
-                            Toast.makeText(context, "AI Bible Architect queued (#${res.data.command_id.take(6)})", Toast.LENGTH_SHORT).show()
+                        if (res is Resource.Success) {
+                            val cid = res.data.command_id.orEmpty()
+                            if (cid.isNotBlank()) {
+                                activeWf01CmdId = cid
+                                activeWf01Status = res.data.status ?: "QUEUED"
+                                tokenManager.saveActiveCommandId(projectId, "wf01_bible_gen", cid)
+                                Toast.makeText(context, "AI Bible Architect queued (#${cid.take(6)})", Toast.LENGTH_SHORT).show()
+                            }
                         } else if (res is Resource.Error) {
                             errorMessage = res.message
                         }
@@ -367,6 +370,7 @@ fun BibleScreen() {
                 Text("AI Expand Bible")
             }
         }
+
         Spacer(modifier = Modifier.height(64.dp))
     }
 }

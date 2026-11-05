@@ -1,15 +1,12 @@
 package org.dpdns.bnai.anime.ui.project
 
 import android.widget.Toast
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -24,6 +21,7 @@ import kotlinx.coroutines.launch
 import org.dpdns.bnai.anime.core.auth.TokenManager
 import org.dpdns.bnai.anime.core.network.AnimeRepository
 import org.dpdns.bnai.anime.core.network.CommandIntent
+import org.dpdns.bnai.anime.core.network.JsonMap
 import org.dpdns.bnai.anime.core.network.Resource
 import org.dpdns.bnai.anime.ui.components.ProjectSelectorBar
 import org.dpdns.bnai.anime.ui.components.formatInt
@@ -41,7 +39,8 @@ fun ProjectDetailScreen(
     onOpenScenes: () -> Unit = {},
     onOpenQC: () -> Unit = {},
     onOpenPublish: () -> Unit = {},
-    onOpenReviewInbox: () -> Unit = {},
+    onOpenReviews: () -> Unit = {},
+    onOpenReviewInbox: () -> Unit = onOpenReviews,
     onOpenAiBrain: () -> Unit = {},
     onOpenQuickTools: () -> Unit = {},
     onOpenVision: () -> Unit = {},
@@ -58,26 +57,20 @@ fun ProjectDetailScreen(
     viewModel: ProjectViewModel = viewModel()
 ) {
     val context = LocalContext.current
-    val tokenManager = remember { TokenManager(context) }
+    val tokenManager = remember { TokenManager.init(context) }
     val repository = remember { AnimeRepository() }
     val scope = rememberCoroutineScope()
 
     val activePid = projectId.ifBlank { repository.currentProjectId() }
-    var overviewMap by remember { mutableStateOf>(emptyMap()) }
+    var overviewMap by remember { mutableStateOf<JsonMap>(emptyMap()) }
     var isLoading by remember { mutableStateOf(true) }
     var loadError by remember { mutableStateOf<String?>(null) }
 
-    // BUG-013: Track active episode generation command & prevent duplicate taps
-    var activeCmdId by remember(activePid) {
-        mutableStateOf(tokenManager.getActiveCommandId(activePid, "quick_gen_episode"))
-    }
+    var activeCmdId by remember(activePid) { mutableStateOf(tokenManager.getActiveCommandId(activePid, "quick_gen_episode")) }
     var activeCmdStatus by remember { mutableStateOf<String?>(null) }
     var isSubmittingGen by remember { mutableStateOf(false) }
-    var idempotencyKey by remember(activePid) {
-        mutableStateOf("ep_gen_${activePid.take(8)}_${System.currentTimeMillis() / 60000}")
-    }
+    val idempotencyKey = remember(activePid) { "ep_gen_${activePid.take(8)}_${System.currentTimeMillis() / 60000}" }
 
-    // BUG-014: Hydrated Project Settings Dialog State
     var showSettingsDialog by remember { mutableStateOf(false) }
     var editName by remember { mutableStateOf("") }
     var editGenre by remember { mutableStateOf("Action / Fantasy") }
@@ -130,13 +123,12 @@ fun ProjectDetailScreen(
         loadProjectOverviewData(activePid)
     }
 
-    // Poll active episode generation command
     LaunchedEffect(activeCmdId, activePid) {
         val cid = activeCmdId ?: return@LaunchedEffect
         while (true) {
             when (val st = repository.fetchCommandStatus(cid)) {
                 is Resource.Success -> {
-                    val statusUpper = st.data.status.uppercase()
+                    val statusUpper = st.data.status?.uppercase() ?: "QUEUED"
                     activeCmdStatus = statusUpper
                     if (statusUpper in listOf("SUCCEEDED", "COMPLETED", "FAILED", "ERROR", "CANCELLED")) {
                         tokenManager.saveActiveCommandId(activePid, "quick_gen_episode", null)
@@ -155,13 +147,11 @@ fun ProjectDetailScreen(
     val coverUrl = (overviewMap["cover_image_url"] ?: (overviewMap["project"] as? Map<*, *>)?.get("cover_image_url"))
         ?.toString()?.takeIf { it.isNotBlank() && it != "null" }
 
-    // BUG-012 FIX: Never turn null into LOCKED or OK; preserve UNSET and UNCHECKED honestly
     val canonStatus = (overviewMap["canon_status"] ?: (overviewMap["status"] as? Map<*, *>)?.get("canon_status"))
         ?.toString()?.takeIf { it.isNotBlank() && it != "null" } ?: "UNSET"
     val continuityStatus = (overviewMap["continuity_status"] ?: (overviewMap["status"] as? Map<*, *>)?.get("continuity_status"))
         ?.toString()?.takeIf { it.isNotBlank() && it != "null" } ?: "UNCHECKED"
 
-    // BUG-016 FIX: Separate Pending Approvals from Pending Operational Actions
     val countsObj = (overviewMap["counts"] as? Map<*, *>) ?: overviewMap
     val episodesCount = formatInt(countsObj["episodes_count"] ?: overviewMap["episodes_count"] ?: 0)
     val charactersCount = formatInt(countsObj["characters_count"] ?: overviewMap["characters_count"] ?: 0)
@@ -282,7 +272,6 @@ fun ProjectDetailScreen(
                 SecondaryButton(text = "Retry", onClick = { loadProjectOverviewData(repository.currentProjectId()) })
             }
         } else {
-            // BUG-015: Rendered Cover Image with Loading, Broken & No-Cover Fallback states
             AsyncMediaPreview(
                 mediaUrl = coverUrl,
                 contentDescription = "$projName Cover Banner",
@@ -300,7 +289,6 @@ fun ProjectDetailScreen(
                 }
             )
 
-            // BUG-012: Distinct Canon (UNSET | DRAFT | LOCKED) and Continuity (UNCHECKED | PASSED | ISSUES_FOUND)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -315,12 +303,12 @@ fun ProjectDetailScreen(
                 }
             }
 
-            // Metrics Grid (BUG-016: Separate Pending Approvals vs Pending Operational Actions)
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 MetricCard(label = "Episodes", value = episodesCount, modifier = Modifier.weight(1f), onClick = onOpenEpisodes)
                 MetricCard(label = "Scenes", value = scenesCount, modifier = Modifier.weight(1f), onClick = onOpenScenes)
                 MetricCard(label = "Characters", value = charactersCount, modifier = Modifier.weight(1f), onClick = onOpenCharacters)
             }
+
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 MetricCard(
                     label = "Active Jobs",
@@ -345,7 +333,6 @@ fun ProjectDetailScreen(
                 )
             }
 
-            // BUG-013: Duplicate-safe Quick Generate Next Episode with active command monitoring
             StandardCard {
                 SectionHeader(
                     title = "Episode Production Control",
@@ -380,11 +367,14 @@ fun ProjectDetailScreen(
                                     payload = mapOf("idempotency_key" to idempotencyKey)
                                 )
                                 isSubmittingGen = false
-                                if (res is Resource.Success && res.data.command_id.isNotBlank()) {
-                                    activeCmdId = res.data.command_id
-                                    activeCmdStatus = res.data.status
-                                    tokenManager.saveActiveCommandId(pid, "quick_gen_episode", res.data.command_id)
-                                    Toast.makeText(context, "Episode $nextEp queued (#${res.data.command_id.take(6)})", Toast.LENGTH_SHORT).show()
+                                if (res is Resource.Success) {
+                                    val cid = res.data.command_id.orEmpty()
+                                    if (cid.isNotBlank()) {
+                                        activeCmdId = cid
+                                        activeCmdStatus = res.data.status ?: "QUEUED"
+                                        tokenManager.saveActiveCommandId(pid, "quick_gen_episode", cid)
+                                        Toast.makeText(context, "Episode $nextEp queued (#${cid.take(6)})", Toast.LENGTH_SHORT).show()
+                                    }
                                 } else if (res is Resource.Error) {
                                     Toast.makeText(context, res.message, Toast.LENGTH_LONG).show()
                                 }
@@ -395,7 +385,6 @@ fun ProjectDetailScreen(
                 }
             }
 
-            // Studio Modules Navigation Grid
             SectionHeader(title = "Studio Modules")
             val modules = listOf(
                 "Story Bible" to onOpenBible,
@@ -413,6 +402,7 @@ fun ProjectDetailScreen(
                 "Analytics" to onOpenAnalytics,
                 "Quota & Budget" to onOpenBudget
             )
+
             modules.chunked(2).forEach { pair ->
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     pair.forEach { (label, action) ->
@@ -426,6 +416,7 @@ fun ProjectDetailScreen(
                     }
                 }
             }
+
             Spacer(modifier = Modifier.height(64.dp))
         }
     }

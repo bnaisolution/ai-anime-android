@@ -9,7 +9,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Restore
-import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -43,7 +42,6 @@ fun PromptStudioScreen() {
     var selectedCatIndex by remember { mutableStateOf(0) }
     val currentCategory = CATEGORIES[selectedCatIndex]
 
-    // BUG-007 FIX: Independent state maps per category (no shared state leakage across tabs!)
     val titlesByCat = remember {
         mutableStateMapOf(
             "BIBLE" to "Default Bible Architect Prompt",
@@ -189,7 +187,6 @@ fun PromptStudioScreen() {
             }
         }
 
-        // BUG-008: Explicit View Mode vs Edit Mode controls
         StandardCard {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -294,14 +291,12 @@ fun PromptStudioScreen() {
             }
         }
 
-        // Saved Prompts Library for Current Category
-        val categorySavedList = savedPrompts.filter {
-            (it.prompt_category ?: "BIBLE").uppercase() == currentCategory
-        }
+        val categorySavedList = savedPrompts.filter { (it.prompt_category ?: "BIBLE").uppercase() == currentCategory }
         SectionHeader(
             title = "Saved $currentCategory Prompts (${categorySavedList.size})",
             badgeText = currentCategory
         )
+
         if (categorySavedList.isEmpty()) {
             StandardCard {
                 Text(
@@ -335,9 +330,10 @@ fun PromptStudioScreen() {
                             )
                         }
                         IconButton(onClick = {
-                            val pid = item.id ?: return@IconButton
+                            val promptId = item.id
+                            if (promptId.isBlank()) return@IconButton
                             scope.launch {
-                                repository.deleteSystemPrompt(pid)
+                                repository.deleteSystemPrompt(promptId)
                                 loadPromptsForProject()
                             }
                         }) {
@@ -347,6 +343,7 @@ fun PromptStudioScreen() {
                 }
             }
         }
+
         Spacer(modifier = Modifier.height(64.dp))
     }
 }

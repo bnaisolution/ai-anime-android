@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.dpdns.bnai.anime.core.network.AnimeRepository
+import org.dpdns.bnai.anime.core.network.JsonMap
 import org.dpdns.bnai.anime.core.network.Resource
 import org.dpdns.bnai.anime.ui.components.ProjectSelectorBar
 import org.dpdns.bnai.anime.ui.components.friendlyPipelineStatus
@@ -29,31 +30,35 @@ fun VisionAnalysisScreen() {
 
     var imageUrl by rememberSaveable { mutableStateOf("") }
     var characterCode by rememberSaveable { mutableStateOf("CHAR_001") }
-    var mode by rememberSaveable { mutableStateOf("QUICK") } // QUICK | SAVE
+    var mode by rememberSaveable { mutableStateOf("QUICK") }
 
     var activeCommandId by rememberSaveable { mutableStateOf<String?>(null) }
     var commandStatus by remember { mutableStateOf<String?>(null) }
-    var extractedDna by remember { mutableStateOf>(emptyMap()) }
+    var extractedDna by remember { mutableStateOf<JsonMap>(emptyMap()) }
     var providerUsed by remember { mutableStateOf<String?>(null) }
     var errorOrReviewMsg by remember { mutableStateOf<String?>(null) }
     var isSubmitting by remember { mutableStateOf(false) }
 
-    // BUG-009 FIX: Poll actual command status and NEVER invent fake fallback DNA!
     LaunchedEffect(activeCommandId) {
         val cid = activeCommandId ?: return@LaunchedEffect
         while (true) {
             when (val res = repository.fetchCommandStatus(cid)) {
                 is Resource.Success -> {
-                    val st = res.data.status.uppercase()
+                    val st = res.data.status?.uppercase() ?: "QUEUED"
                     commandStatus = st
                     val resultObj = res.data.result ?: emptyMap()
                     val rawDna = (resultObj["visual_dna"] as? Map<*, *>)
                         ?: ((resultObj["n8n_response"] as? Map<*, *>)?.get("visual_dna") as? Map<*, *>)
 
                     if (rawDna != null && rawDna.isNotEmpty()) {
-                        extractedDna = rawDna.entries.associate { (k, v) ->
-                            k.toString() to (v?.toString() ?: "")
+                        val cleanMap = mutableMapOf<String, Any?>()
+                        for (entry in rawDna.entries) {
+                            val k = entry.key?.toString().orEmpty()
+                            if (k.isNotBlank()) {
+                                cleanMap[k] = entry.value?.toString().orEmpty()
+                            }
                         }
+                        extractedDna = cleanMap
                         providerUsed = (resultObj["vision_provider_used"] ?: "Configured Vision Provider").toString()
                     }
 
@@ -63,8 +68,7 @@ fun VisionAnalysisScreen() {
                         }
                         break
                     } else if (st in listOf("FAILED", "ERROR", "MANUAL_REVIEW", "MANUAL_REVIEW_QUEUED", "CANCELLED")) {
-                        errorOrReviewMsg = res.data.error
-                            ?: "Vision analysis ended with status: $st. No visual attributes were fabricated."
+                        errorOrReviewMsg = res.data.error_message ?: "Vision analysis ended with status: $st. No visual attributes were fabricated."
                         break
                     }
                 }
@@ -78,8 +82,10 @@ fun VisionAnalysisScreen() {
         }
     }
 
-    val isProcessing = activeCommandId != null &&
-        commandStatus !in listOf("SUCCEEDED", "COMPLETED", "VISION_EXTRACTION_SAVED", "QUICK_VISION_PREVIEW_READY", "FAILED", "ERROR", "MANUAL_REVIEW", "MANUAL_REVIEW_QUEUED", "CANCELLED")
+    val isProcessing = activeCommandId != null && commandStatus !in listOf(
+        "SUCCEEDED", "COMPLETED", "VISION_EXTRACTION_SAVED", "QUICK_VISION_PREVIEW_READY",
+        "FAILED", "ERROR", "MANUAL_REVIEW", "MANUAL_REVIEW_QUEUED", "CANCELLED"
+    )
 
     Column(
         modifier = Modifier
@@ -150,10 +156,13 @@ fun VisionAnalysisScreen() {
                             characterId = characterCode.trim().ifBlank { "CHAR_001" }
                         )
                         isSubmitting = false
-                        if (res is Resource.Success && res.data.command_id.isNotBlank()) {
-                            activeCommandId = res.data.command_id
-                            commandStatus = res.data.status
-                            Toast.makeText(context, "Vision job queued (#${res.data.command_id.take(6)})", Toast.LENGTH_SHORT).show()
+                        if (res is Resource.Success) {
+                            val cid = res.data.command_id.orEmpty()
+                            if (cid.isNotBlank()) {
+                                activeCommandId = cid
+                                commandStatus = res.data.status ?: "QUEUED"
+                                Toast.makeText(context, "Vision job queued (#${cid.take(6)})", Toast.LENGTH_SHORT).show()
+                            }
                         } else if (res is Resource.Error) {
                             errorOrReviewMsg = res.message
                         }
@@ -195,7 +204,9 @@ fun VisionAnalysisScreen() {
                 title = "Verified Visual DNA Output",
                 badgeText = providerUsed ?: mode
             )
-            extractedDna.forEach { (fieldKey, fieldVal) ->
+            for (entry in extractedDna.entries) {
+                val fieldKey = entry.key
+                val fieldVal = entry.value?.toString().orEmpty()
                 StandardCard {
                     Text(
                         text = fieldKey.replace("_", " ").uppercase(),
@@ -207,6 +218,7 @@ fun VisionAnalysisScreen() {
                 }
             }
         }
+
         Spacer(modifier = Modifier.height(64.dp))
     }
 }
