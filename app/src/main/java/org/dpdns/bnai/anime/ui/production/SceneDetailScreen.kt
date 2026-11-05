@@ -5,13 +5,10 @@ import android.net.Uri
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.OpenInBrowser
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -22,230 +19,248 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
-import org.dpdns.bnai.anime.core.model.Episode
-import org.dpdns.bnai.anime.core.network.*
+import org.dpdns.bnai.anime.core.network.AnimeRepository
+import org.dpdns.bnai.anime.core.network.CommandIntent
+import org.dpdns.bnai.anime.core.network.Resource
+import org.dpdns.bnai.anime.core.network.SceneDto
 import org.dpdns.bnai.anime.ui.components.ProjectSelectorBar
-import org.dpdns.bnai.anime.ui.components.ResourceStateBox
-import org.dpdns.bnai.anime.ui.components.StatusBadge
+import org.dpdns.bnai.anime.ui.designsystem.*
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SceneDetailScreen(episodeNo: Int = 1) {
     val context = LocalContext.current
     val repository = remember { AnimeRepository() }
     val scope = rememberCoroutineScope()
 
-    var currentEpisode by remember { mutableStateOf(episodeNo) }
-    var episodes by remember { mutableStateOf<List<Episode>>(emptyList()) }
+    var currentEpisodeNo by remember { mutableStateOf(episodeNo.coerceAtLeast(1)) }
     var epDropdownExpanded by remember { mutableStateOf(false) }
-
     var scenesState by remember { mutableStateOf<Resource<List<SceneDto>>>(Resource.Loading) }
-    var selectedFilter by remember { mutableStateOf("All") }
-    var editingScene by remember { mutableStateOf<SceneDto?>(null) }
-    var editedDescription by remember { mutableStateOf("") }
 
-    fun loadScenes(ep: Int) {
+    // BUG-021: Dedicated Scene PATCH dialog state
+    var editingScene by remember { mutableStateOf<SceneDto?>(null) }
+    var editDescription by remember { mutableStateOf("") }
+    var editVisualPrompt by remember { mutableStateOf("") }
+    var isSavingScene by remember { mutableStateOf(false) }
+
+    fun loadScenesForEpisode(ep: Int = currentEpisodeNo) {
         val pid = repository.currentProjectId()
+        if (pid.isBlank()) {
+            scenesState = Resource.Empty
+            return
+        }
         scope.launch {
             scenesState = Resource.Loading
-            val epRes = repository.fetchEpisodes(pid)
-            episodes = (epRes as? Resource.Success)?.data.orEmpty()
-            scenesState = repository.fetchScenes(pid, ep)
+            scenesState = repository.fetchScenesRaw(pid, ep)
         }
     }
 
-    LaunchedEffect(currentEpisode) { loadScenes(currentEpisode) }
+    LaunchedEffect(currentEpisodeNo) {
+        loadScenesForEpisode(currentEpisodeNo)
+    }
 
-    // Fix #60: Edit Scene Description Dialog
     editingScene?.let { sc ->
         AlertDialog(
-            onDismissRequest = { editingScene = null },
-            title = { Text("Edit Scene #${sc.scene_no ?: sc.scene_order ?: 1}") },
+            onDismissRequest = { if (!isSavingScene) editingScene = null },
+            title = { Text("Edit Scene #${sc.scene_order ?: sc.scene_no ?: 1}", fontWeight = FontWeight.Bold) },
             text = {
-                OutlinedTextField(
-                    value = editedDescription,
-                    onValueChange = { editedDescription = it },
-                    label = { Text("Scene Action / Visual Prompt") },
-                    minLines = 4,
-                    modifier = Modifier.fillMaxWidth()
-                )
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    OutlinedTextField(
+                        value = editDescription,
+                        onValueChange = { editDescription = it },
+                        label = { Text("Scene Description / Action") },
+                        minLines = 3,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    OutlinedTextField(
+                        value = editVisualPrompt,
+                        onValueChange = { editVisualPrompt = it },
+                        label = { Text("Visual Prompt") },
+                        minLines = 3,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
             },
             confirmButton = {
-                Button(onClick = {
-                    scope.launch {
-                        repository.submitStudioCommand(
-                            projectId = repository.currentProjectId(),
-                            intent = CommandIntent.CONTINUE_EPISODE,
-                            mode = "SAVE",
-                            episodeNo = currentEpisode,
-                            payload = mapOf("scene_id" to sc.id, "description" to editedDescription)
-                        )
-                        Toast.makeText(context, "Scene updated!", Toast.LENGTH_SHORT).show()
-                        editingScene = null
-                        loadScenes(currentEpisode)
+                PrimaryButton(
+                    text = "Save Scene (PATCH)",
+                    isLoading = isSavingScene,
+                    onClick = {
+                        val pid = repository.currentProjectId()
+                        val sceneIdOrOrder = sc.id ?: (sc.scene_order ?: sc.scene_no ?: 1).toString()
+                        isSavingScene = true
+                        scope.launch {
+                            // BUG-021 FIX: Call dedicated scene PATCH route instead of CONTINUE_EPISODE!
+                            val res = repository.updateSceneSync(
+                                projectId = pid,
+                                episodeNo = currentEpisodeNo,
+                                sceneId = sceneIdOrOrder,
+                                updates = mapOf(
+                                    "description" to editDescription,
+                                    "visual_prompt" to editVisualPrompt
+                                )
+                            )
+                            isSavingScene = false
+                            if (res is Resource.Success) {
+                                editingScene = null
+                                Toast.makeText(context, "Scene updated via PATCH", Toast.LENGTH_SHORT).show()
+                                loadScenesForEpisode(currentEpisodeNo)
+                            } else if (res is Resource.Error) {
+                                Toast.makeText(context, res.message, Toast.LENGTH_LONG).show()
+                            }
+                        }
                     }
-                }) { Text("Save") }
+                )
             },
             dismissButton = {
-                TextButton(onClick = { editingScene = null }) { Text("Cancel") }
+                TextButton(onClick = { editingScene = null }, enabled = !isSavingScene) {
+                    Text("Cancel")
+                }
             }
         )
     }
 
-    Column(modifier = Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
         ProjectSelectorBar(
-            onProjectChanged = { loadScenes(currentEpisode) },
-            onRefreshClick = { loadScenes(currentEpisode) }
+            onProjectChanged = { loadScenesForEpisode(currentEpisodeNo) },
+            onRefreshClick = { loadScenesForEpisode(currentEpisodeNo) }
         )
 
-        // Fix #57: Episode Dropdown Selector instead of ugly +/- buttons
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+        ScreenHeader(
+            title = "Scene Inspector",
+            subtitle = "Inspect scenes & rendered clips, edit scene prompts via PATCH, or regenerate a scene"
+        )
+
+        ExposedDropdownMenuBox(
+            expanded = epDropdownExpanded,
+            onExpandedChange = { epDropdownExpanded = !epDropdownExpanded },
+            modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Scene Inspector", style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold)
-            Box {
-                OutlinedButton(onClick = { epDropdownExpanded = true }) {
-                    Text("Episode $currentEpisode")
-                }
-                DropdownMenu(expanded = epDropdownExpanded, onDismissRequest = { epDropdownExpanded = false }) {
-                    val epNums = if (episodes.isNotEmpty()) episodes.map { it.episodeNumber } else (1..5).toList()
-                    epNums.forEach { num ->
-                        DropdownMenuItem(
-                            text = { Text("Episode $num") },
-                            onClick = {
-                                currentEpisode = num
-                                epDropdownExpanded = false
-                            }
-                        )
-                    }
+            OutlinedTextField(
+                value = "Episode $currentEpisodeNo",
+                onValueChange = {},
+                readOnly = true,
+                label = { Text("Episode") },
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = epDropdownExpanded) },
+                singleLine = true,
+                modifier = Modifier.menuAnchor().fillMaxWidth()
+            )
+            ExposedDropdownMenu(
+                expanded = epDropdownExpanded,
+                onDismissRequest = { epDropdownExpanded = false }
+            ) {
+                (1..12).forEach { epNum ->
+                    DropdownMenuItem(
+                        text = { Text("Episode $epNum") },
+                        onClick = {
+                            currentEpisodeNo = epNum
+                            epDropdownExpanded = false
+                        }
+                    )
                 }
             }
         }
 
-        // Fix #62: FilterChips (All, Pending, Rendered)
-        LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            items(listOf("All", "Pending", "Rendered")) { filter ->
-                FilterChip(
-                    selected = selectedFilter == filter,
-                    onClick = { selectedFilter = filter },
-                    label = { Text(filter) }
-                )
-            }
-        }
-
-        ResourceStateBox(
+        org.dpdns.bnai.anime.ui.components.ResourceStateBox(
             resource = scenesState,
-            emptyMessage = "No scenes generated for Episode $currentEpisode yet.",
-            onRetry = { loadScenes(currentEpisode) }
-        ) { scenes ->
-            val filtered = scenes.filter { sc ->
-                val isRendered = sc.status?.uppercase() in setOf("RENDERED", "COMPLETED", "SUCCEEDED") || !sc.clips.isNullOrEmpty()
-                when (selectedFilter) {
-                    "Rendered" -> isRendered
-                    "Pending" -> !isRendered
-                    else -> true
-                }
-            }
-
+            emptyMessage = "No scenes generated for Episode $currentEpisodeNo yet.",
+            onRetry = { loadScenesForEpisode(currentEpisodeNo) }
+        ) { scenesList ->
             LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(12.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
                 contentPadding = PaddingValues(bottom = 80.dp)
             ) {
-                itemsIndexed(filtered, key = { _, s -> s.id }) { idx, sc ->
-                    // GAP #5.3: Use scene_no or scene_order, never non-existent title
-                    val resolvedSceneNo = sc.scene_no ?: sc.scene_order ?: (idx + 1)
-                    val isRendered = sc.status?.uppercase() in setOf("RENDERED", "COMPLETED", "SUCCEEDED") || !sc.clips.isNullOrEmpty()
+                items(scenesList, key = { it.id ?: "${it.scene_order}" }) { scene ->
+                    val sceneNo = scene.scene_order ?: scene.scene_no ?: 1
+                    val firstClipUrl = scene.clips?.firstOrNull()?.clip_url?.takeIf {
+                        it.startsWith("http://") || it.startsWith("https://")
+                    }
+                    StandardCard {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("Scene #$sceneNo", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                            StatusChip(label = scene.status ?: "PENDING")
+                        }
 
-                    Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp)) {
-                        Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
+                        if (!firstClipUrl.isNullOrBlank()) {
+                            AsyncMediaPreview(
+                                mediaUrl = firstClipUrl,
+                                contentDescription = "Scene $sceneNo preview",
+                                height = 130.dp
+                            )
+                        }
+
+                        Text(
+                            text = scene.description?.ifBlank { "No scene description" } ?: "No scene description",
+                            fontSize = 14.sp
+                        )
+                        if (!scene.visual_prompt.isNullOrBlank()) {
+                            Text(
+                                text = "Prompt: ${scene.visual_prompt}",
+                                fontSize = 12.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            OutlinedButton(
+                                onClick = {
+                                    editDescription = scene.description.orEmpty()
+                                    editVisualPrompt = scene.visual_prompt.orEmpty()
+                                    editingScene = scene
+                                },
+                                modifier = Modifier.weight(1f)
                             ) {
-                                Text("Scene #$resolvedSceneNo", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
-                                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                                    // Fix #58: Color-coded Badges (Green = Ready, Orange = Pending)
-                                    StatusBadge(if (isRendered) "COMPLETED" else "PENDING")
-                                    // Fix #60: Edit Icon
-                                    IconButton(onClick = {
-                                        editedDescription = sc.description ?: sc.visual_prompt ?: ""
-                                        editingScene = sc
-                                    }) {
-                                        Icon(Icons.Default.Edit, contentDescription = "Edit Scene", modifier = Modifier.size(18.dp))
-                                    }
-                                }
+                                Icon(Icons.Default.Edit, contentDescription = null, modifier = Modifier.size(16.dp))
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text("Edit (PATCH)", fontSize = 12.sp)
                             }
 
-                            Text(sc.description ?: "No scene description.")
-
-                            if (!sc.visual_prompt.isNullOrBlank()) {
-                                Text("Prompt: ${sc.visual_prompt}", fontSize = 12.sp, color = MaterialTheme.colorScheme.secondary)
-                            }
-
-                            // Fix #63: Dialogue Speaker & Voice Text clearly displayed
-                            if (!sc.dialogue_speaker_id.isNullOrBlank() || !sc.voice_text.isNullOrBlank()) {
-                                Surface(
-                                    color = MaterialTheme.colorScheme.surfaceVariant,
-                                    shape = RoundedCornerShape(8.dp),
-                                    modifier = Modifier.fillMaxWidth()
-                                ) {
-                                    Column(modifier = Modifier.padding(10.dp)) {
-                                        Text("🎙️ Speaker: ${sc.dialogue_speaker_id ?: "Narrator"}", fontWeight = FontWeight.SemiBold, fontSize = 12.sp)
-                                        Text("\"${sc.voice_text ?: "..."}\"", style = MaterialTheme.typography.bodyLarge)
-                                    }
-                                }
-                            }
-
-                            // Fix #64: Audio tags (bgm_hint and sfx_hint) as Chips
-                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                if (!sc.bgm_hint.isNullOrBlank()) {
-                                    AssistChip(onClick = {}, label = { Text("🎵 BGM: ${sc.bgm_hint}", fontSize = 11.sp) })
-                                }
-                                if (!sc.sfx_hint.isNullOrBlank()) {
-                                    AssistChip(onClick = {}, label = { Text("💥 SFX: ${sc.sfx_hint}", fontSize = 11.sp) })
-                                }
-                            }
-
-                            // Fix #59: Lightweight clickable URLs instead of heavy embedded video players
-                            sc.clips?.forEach { clip ->
-                                val url = clip.clip_url.orEmpty()
-                                if (url.isNotBlank()) {
-                                    OutlinedButton(
-                                        onClick = {
-                                            runCatching {
-                                                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
-                                            }
-                                        },
-                                        modifier = Modifier.fillMaxWidth()
-                                    ) {
-                                        Icon(Icons.Default.OpenInBrowser, contentDescription = null, modifier = Modifier.size(16.dp))
-                                        Spacer(modifier = Modifier.width(6.dp))
-                                        Text("Open Rendered Clip (${clip.duration_sec?.toInt() ?: 5}s • ${clip.provider ?: "GPU"})")
-                                    }
-                                }
-                            }
-
-                            // Fix #61: Regenerate Scene Button
                             OutlinedButton(
                                 onClick = {
                                     scope.launch {
-                                        repository.submitStudioCommand(
-                                            projectId = repository.currentProjectId(),
-                                            intent = CommandIntent.RETRY_FAILED,
-                                            mode = "QUICK",
-                                            episodeNo = currentEpisode,
-                                            payload = mapOf("scene_no" to resolvedSceneNo, "scene_id" to sc.id)
+                                        val pid = repository.currentProjectId()
+                                        val res = repository.submitStudioCommand(
+                                            projectId = pid,
+                                            intent = CommandIntent.CONTINUE_EPISODE,
+                                            episodeNo = currentEpisodeNo,
+                                            payload = mapOf("scene_order" to sceneNo, "regenerate_scene_only" to true)
                                         )
-                                        Toast.makeText(context, "Regenerating Scene #$resolvedSceneNo...", Toast.LENGTH_SHORT).show()
+                                        if (res is Resource.Success) {
+                                            Toast.makeText(context, "Scene #$sceneNo regeneration queued", Toast.LENGTH_SHORT).show()
+                                        }
                                     }
                                 },
-                                modifier = Modifier.fillMaxWidth()
+                                modifier = Modifier.weight(1f)
                             ) {
                                 Icon(Icons.Default.Refresh, contentDescription = null, modifier = Modifier.size(16.dp))
-                                Spacer(modifier = Modifier.width(6.dp))
-                                Text("Regenerate Scene")
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text("Regenerate", fontSize = 12.sp)
+                            }
+                        }
+
+                        if (!firstClipUrl.isNullOrBlank()) {
+                            TextButton(
+                                onClick = {
+                                    runCatching {
+                                        context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(firstClipUrl)))
+                                    }
+                                }
+                            ) {
+                                Icon(Icons.Default.PlayArrow, contentDescription = null, modifier = Modifier.size(16.dp))
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text("Open Rendered Clip Stream")
                             }
                         }
                     }

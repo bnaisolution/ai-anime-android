@@ -1,28 +1,25 @@
 package org.dpdns.bnai.anime.ui.advanced
 
 import android.widget.Toast
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import org.dpdns.bnai.anime.core.model.Character
 import org.dpdns.bnai.anime.core.network.AnimeRepository
 import org.dpdns.bnai.anime.core.network.Resource
 import org.dpdns.bnai.anime.ui.components.ProjectSelectorBar
-import org.dpdns.bnai.anime.ui.components.StatusBadge
+import org.dpdns.bnai.anime.ui.components.friendlyPipelineStatus
+import org.dpdns.bnai.anime.ui.designsystem.*
 
 @Composable
 fun VisionAnalysisScreen() {
@@ -30,173 +27,186 @@ fun VisionAnalysisScreen() {
     val repository = remember { AnimeRepository() }
     val scope = rememberCoroutineScope()
 
-    var activeProjectId by remember { mutableStateOf(repository.currentProjectId()) }
-    var imageUrl by remember { mutableStateOf("https://api.bnai.dpdns.org/v1/media/sample-character-ref.png") }
-    var saveToCharacterMode by remember { mutableStateOf(false) }
-    var characters by remember { mutableStateOf<List<Character>>(emptyList()) }
-    var selectedCharacterCode by remember { mutableStateOf("CHAR_001") }
-    var isScanning by remember { mutableStateOf(false) }
-    var scanStatusText by remember { mutableStateOf<String?>(null) }
+    var imageUrl by rememberSaveable { mutableStateOf("") }
+    var characterCode by rememberSaveable { mutableStateOf("CHAR_001") }
+    var mode by rememberSaveable { mutableStateOf("QUICK") } // QUICK | SAVE
 
-    // [BLOCKER-5 FIX] Explicit generic type Map<String, String>
-    var extractedDna by remember { mutableStateOf<Map<String, String>>(emptyMap()) }
+    var activeCommandId by rememberSaveable { mutableStateOf<String?>(null) }
+    var commandStatus by remember { mutableStateOf<String?>(null) }
+    var extractedDna by remember { mutableStateOf>(emptyMap()) }
+    var providerUsed by remember { mutableStateOf<String?>(null) }
+    var errorOrReviewMsg by remember { mutableStateOf<String?>(null) }
+    var isSubmitting by remember { mutableStateOf(false) }
 
-    val galleryLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-        uri?.let {
-            imageUrl = it.toString()
-            Toast.makeText(context, "Image selected for backend upload session", Toast.LENGTH_SHORT).show()
-        }
-    }
+    // BUG-009 FIX: Poll actual command status and NEVER invent fake fallback DNA!
+    LaunchedEffect(activeCommandId) {
+        val cid = activeCommandId ?: return@LaunchedEffect
+        while (true) {
+            when (val res = repository.fetchCommandStatus(cid)) {
+                is Resource.Success -> {
+                    val st = res.data.status.uppercase()
+                    commandStatus = st
+                    val resultObj = res.data.result ?: emptyMap()
+                    val rawDna = (resultObj["visual_dna"] as? Map<*, *>)
+                        ?: ((resultObj["n8n_response"] as? Map<*, *>)?.get("visual_dna") as? Map<*, *>)
 
-    LaunchedEffect(activeProjectId) {
-        if (activeProjectId.isNotBlank()) {
-            val res = repository.fetchCharacters(activeProjectId)
-            if (res is Resource.Success && res.data.isNotEmpty()) {
-                characters = res.data
-                selectedCharacterCode = res.data.first().id
+                    if (rawDna != null && rawDna.isNotEmpty()) {
+                        extractedDna = rawDna.entries.associate { (k, v) ->
+                            k.toString() to (v?.toString() ?: "")
+                        }
+                        providerUsed = (resultObj["vision_provider_used"] ?: "Configured Vision Provider").toString()
+                    }
+
+                    if (st in listOf("SUCCEEDED", "COMPLETED", "VISION_EXTRACTION_SAVED", "QUICK_VISION_PREVIEW_READY")) {
+                        if (extractedDna.isEmpty()) {
+                            errorOrReviewMsg = "Vision workflow finished without returning structured DNA fields."
+                        }
+                        break
+                    } else if (st in listOf("FAILED", "ERROR", "MANUAL_REVIEW", "MANUAL_REVIEW_QUEUED", "CANCELLED")) {
+                        errorOrReviewMsg = res.data.error
+                            ?: "Vision analysis ended with status: $st. No visual attributes were fabricated."
+                        break
+                    }
+                }
+                is Resource.Error -> {
+                    errorOrReviewMsg = res.message
+                    break
+                }
+                else -> {}
             }
+            delay(3000)
         }
     }
+
+    val isProcessing = activeCommandId != null &&
+        commandStatus !in listOf("SUCCEEDED", "COMPLETED", "VISION_EXTRACTION_SAVED", "QUICK_VISION_PREVIEW_READY", "FAILED", "ERROR", "MANUAL_REVIEW", "MANUAL_REVIEW_QUEUED", "CANCELLED")
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
-            .verticalScroll(rememberScrollState()),
+            .verticalScroll(rememberScrollState())
+            .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Text("Vision DNA Extractor", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
+        ProjectSelectorBar()
 
-        ProjectSelectorBar(
-            onProjectChanged = { newPid -> activeProjectId = newPid }
-        )
-
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            FilterChip(
-                selected = !saveToCharacterMode,
-                onClick = { saveToCharacterMode = false },
-                label = { Text("Preview Only") }
-            )
-            FilterChip(
-                selected = saveToCharacterMode,
-                onClick = { saveToCharacterMode = true },
-                label = { Text("Save to Character") }
-            )
-        }
-
-        if (saveToCharacterMode && characters.isNotEmpty()) {
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                characters.take(4).forEach { ch ->
-                    FilterChip(
-                        selected = selectedCharacterCode == ch.id,
-                        onClick = { selectedCharacterCode = ch.id },
-                        label = { Text(ch.name) }
-                    )
-                }
-            }
-        }
-
-        OutlinedTextField(
-            value = imageUrl,
-            onValueChange = { imageUrl = it },
-            label = { Text("Reference Image URL or Upload Path") },
-            modifier = Modifier.fillMaxWidth()
+        ScreenHeader(
+            title = "Vision DNA Analyzer",
+            subtitle = "Extract verified 11-field Character Visual DNA via WF-05 (Zero fabricated attributes)"
         )
 
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            OutlinedButton(
-                onClick = { galleryLauncher.launch("image/*") },
-                modifier = Modifier.weight(1f)
-            ) {
-                Icon(Icons.Default.Upload, contentDescription = null, modifier = Modifier.size(16.dp))
-                Spacer(modifier = Modifier.width(6.dp))
-                Text("Upload / Gallery")
+            FilterChip(
+                selected = mode == "QUICK",
+                onClick = { mode = "QUICK" },
+                label = { Text("QUICK Preview (Zero DB Writes)") }
+            )
+            FilterChip(
+                selected = mode == "SAVE",
+                onClick = { mode = "SAVE" },
+                label = { Text("SAVE to Character & R4 History") }
+            )
+        }
+
+        StandardCard {
+            OutlinedTextField(
+                value = imageUrl,
+                onValueChange = { imageUrl = it },
+                label = { Text("Source Image / Reference URL (https://...)") },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth()
+            )
+            OutlinedTextField(
+                value = characterCode,
+                onValueChange = { characterCode = it },
+                label = { Text("Target Character Code (e.g. CHAR_001)") },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            if (imageUrl.isNotBlank()) {
+                AsyncMediaPreview(
+                    mediaUrl = imageUrl,
+                    contentDescription = "Source reference image",
+                    height = 150.dp
+                )
             }
 
-            Button(
+            PrimaryButton(
+                text = "Start Vision DNA Analysis",
+                isLoading = isSubmitting || isProcessing,
+                enabled = imageUrl.startsWith("http") && !isSubmitting && !isProcessing,
                 onClick = {
-                    if (activeProjectId.isBlank()) return@Button
-                    isScanning = true
-                    scanStatusText = "Extracting 11-field Visual DNA..."
+                    val pid = repository.currentProjectId()
+                    if (pid.isBlank()) return@PrimaryButton
+                    isSubmitting = true
+                    extractedDna = emptyMap()
+                    errorOrReviewMsg = null
                     scope.launch {
-                        when (val res = repository.triggerVisionAnalysis(
-                            projectId = activeProjectId,
-                            mediaUrl = imageUrl,
-                            characterCode = if (saveToCharacterMode) selectedCharacterCode else null,
-                            saveToCharacter = saveToCharacterMode
-                        )) {
-                            is Resource.Success -> {
-                                val cmdId = res.data.command_id.orEmpty()
-                                if (cmdId.isNotBlank()) {
-                                    repeat(4) {
-                                        delay(2000)
-                                        val poll = repository.fetchCommandStatus(cmdId)
-                                        if (poll is Resource.Success && poll.data.status in listOf("SUCCEEDED", "COMPLETED")) {
-                                            return@repeat
-                                        }
-                                    }
-                                }
-                                extractedDna = mapOf(
-                                    "Face Structure" to "Sharp angular jawline, expressive anime eyes",
-                                    "Eyes" to "Crimson iris with subtle golden ring",
-                                    "Hair Style & Color" to "Silver-white tousled layers, forehead bangs",
-                                    "Skin Tone" to "Fair porcelain with warm rim-light",
-                                    "Body Build" to "Lean athletic swordsman physique",
-                                    "Primary Outfit" to "High-collar obsidian trench coat with silver clasps",
-                                    "Accessories" to "Crimson ear stud, fingerless combat gloves",
-                                    "Color Palette" to "#111827, #EF4444, #E5E7EB",
-                                    "Lighting Signature" to "High-contrast sakuga rim lighting",
-                                    "Expression Baseline" to "Calm, calculating, stoic intensity",
-                                    "Distinguishing Marks" to "Faint crescent scar along left cheekbone"
-                                )
-                                scanStatusText = "11-Field Visual DNA Extracted"
-                            }
-                            is Resource.Error -> {
-                                scanStatusText = "Queued for manual review (${res.message})"
-                            }
-                            else -> Unit
+                        val res = repository.submitVisionAnalysis(
+                            projectId = pid,
+                            imageUrl = imageUrl.trim(),
+                            analysisType = mode,
+                            characterId = characterCode.trim().ifBlank { "CHAR_001" }
+                        )
+                        isSubmitting = false
+                        if (res is Resource.Success && res.data.command_id.isNotBlank()) {
+                            activeCommandId = res.data.command_id
+                            commandStatus = res.data.status
+                            Toast.makeText(context, "Vision job queued (#${res.data.command_id.take(6)})", Toast.LENGTH_SHORT).show()
+                        } else if (res is Resource.Error) {
+                            errorOrReviewMsg = res.message
                         }
-                        isScanning = false
-                    }
-                },
-                enabled = !isScanning && imageUrl.isNotBlank(),
-                modifier = Modifier.weight(1f)
-            ) {
-                Text(if (isScanning) "Scanning..." else "Analyze & Extract DNA")
-            }
-        }
-
-        if (isScanning) {
-            LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
-        }
-
-        scanStatusText?.let { st ->
-            StatusBadge(st)
-        }
-
-        if (extractedDna.isNotEmpty()) {
-            Text("Extracted 11-Field Visual DNA", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
-            extractedDna.forEach { (field, value) ->
-                Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(10.dp)) {
-                    Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        Text(field, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
-                        Text(value, style = MaterialTheme.typography.bodyLarge)
-                    }
-                }
-            }
-
-            Button(
-                onClick = {
-                    scope.launch {
-                        val dnaPrompt = extractedDna.entries.joinToString(", ") { "${it.key}: ${it.value}" }
-                        repository.triggerQuickMedia(activeProjectId, isVideo = false, prompt = dnaPrompt)
-                        Toast.makeText(context, "Test keyframe generation triggered from DNA!", Toast.LENGTH_SHORT).show()
                     }
                 },
                 modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("🖼️ Generate Test Image from Extracted DNA")
+            )
+        }
+
+        if (activeCommandId != null) {
+            StandardCard {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("Command #${activeCommandId?.take(8)}", fontWeight = FontWeight.Bold)
+                    StatusChip(label = commandStatus ?: "QUEUED")
+                }
+                if (isProcessing) {
+                    Text(
+                        text = "Vision pipeline is processing (${friendlyPipelineStatus(commandStatus)}). Waiting for real provider response...",
+                        fontSize = 12.sp
+                    )
+                    LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+                }
             }
         }
+
+        if (errorOrReviewMsg != null) {
+            StandardCard {
+                Text("Vision Analysis Status Notice", fontWeight = FontWeight.Bold, color = StudioTokens.Error)
+                Text(errorOrReviewMsg ?: "", fontSize = 13.sp)
+            }
+        }
+
+        if (extractedDna.isNotEmpty()) {
+            SectionHeader(
+                title = "Verified Visual DNA Output",
+                badgeText = providerUsed ?: mode
+            )
+            extractedDna.forEach { (fieldKey, fieldVal) ->
+                StandardCard {
+                    Text(
+                        text = fieldKey.replace("_", " ").uppercase(),
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = StudioTokens.Primary
+                    )
+                    Text(text = fieldVal.ifBlank { "Not specified by provider" }, fontSize = 14.sp)
+                }
+            }
+        }
+        Spacer(modifier = Modifier.height(64.dp))
     }
 }

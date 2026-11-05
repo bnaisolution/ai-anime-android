@@ -1,204 +1,175 @@
 package org.dpdns.bnai.anime.ui.qc
 
-import android.content.Intent
-import android.net.Uri
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.PlayCircle
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
-import org.dpdns.bnai.anime.core.model.Episode
 import org.dpdns.bnai.anime.core.network.AnimeRepository
 import org.dpdns.bnai.anime.core.network.CommandIntent
+import org.dpdns.bnai.anime.core.network.EpisodeDto
 import org.dpdns.bnai.anime.core.network.Resource
 import org.dpdns.bnai.anime.ui.components.ProjectSelectorBar
-import org.dpdns.bnai.anime.ui.components.StatusBadge
+import org.dpdns.bnai.anime.ui.designsystem.*
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun QCScreen(onProceedToPublish: () -> Unit = {}) {
+fun QCScreen(
+    onProceedToPublish: () -> Unit = {}
+) {
     val context = LocalContext.current
     val repository = remember { AnimeRepository() }
     val scope = rememberCoroutineScope()
 
-    var episodes by remember { mutableStateOf<List<Episode>>(emptyList()) }
-    var selectedEp by remember { mutableStateOf<Episode?>(null) }
-    var epExpanded by remember { mutableStateOf(false) }
-    var qcStatus by remember { mutableStateOf("PENDING") }
-    var feedbackBanner by remember { mutableStateOf<String?>(null) }
+    var episodes by remember { mutableStateOf<List<EpisodeDto>>(emptyList()) }
+    var selectedEpNo by remember { mutableStateOf(1) }
+    var epDropdownExpanded by remember { mutableStateOf(false) }
+    var isUpdating by remember { mutableStateOf(false) }
 
     fun loadEpisodes() {
         val pid = repository.currentProjectId()
+        if (pid.isBlank()) return
         scope.launch {
-            val res = repository.fetchEpisodes(pid)
-            if (res is Resource.Success && res.data.isNotEmpty()) {
+            val res = repository.fetchEpisodesRaw(pid)
+            if (res is Resource.Success) {
                 episodes = res.data
-                selectedEp = res.data.first()
-                qcStatus = selectedEp?.qcStatus?.uppercase() ?: "PENDING"
+                if (res.data.isNotEmpty() && res.data.none { it.episode_no == selectedEpNo }) {
+                    selectedEpNo = res.data.first().episode_no
+                }
             }
         }
     }
 
     LaunchedEffect(Unit) { loadEpisodes() }
 
-    val isApproved = qcStatus == "APPROVED" || qcStatus == "PASSED"
+    val activeEp = episodes.find { it.episode_no == selectedEpNo }
+    val rawQcStatus = (activeEp?.qc_status ?: "UNCHECKED").uppercase()
+    // BUG-052: Never treat SKIPPED or UNCHECKED as APPROVED/PASSED
+    val isApproved = rawQcStatus == "APPROVED" || rawQcStatus == "PASSED"
 
     Column(
-        modifier = Modifier.fillMaxSize().padding(16.dp).verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.spacedBy(14.dp)
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        // Fix #65: Clean Header (No WF-11) + Project & Episode Selectors
         ProjectSelectorBar(
             onProjectChanged = { loadEpisodes() },
             onRefreshClick = { loadEpisodes() }
         )
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+        ScreenHeader(
+            title = "Quality Control (QC Gate)",
+            subtitle = "Inspect script, scene & media QC before unlocking publishing",
+            trailingContent = {
+                StatusChip(label = rawQcStatus)
+            }
+        )
+
+        ExposedDropdownMenuBox(
+            expanded = epDropdownExpanded,
+            onExpandedChange = { epDropdownExpanded = !epDropdownExpanded },
+            modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Quality Check", style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold)
-            Box {
-                OutlinedButton(onClick = { epExpanded = true }) {
-                    Text(selectedEp?.let { "Ep ${it.episodeNumber}: ${it.title}" } ?: "Select Episode")
-                }
-                DropdownMenu(expanded = epExpanded, onDismissRequest = { epExpanded = false }) {
-                    episodes.forEach { ep ->
-                        DropdownMenuItem(
-                            text = { Text("Ep ${ep.episodeNumber}: ${ep.title}") },
-                            onClick = {
-                                selectedEp = ep
-                                qcStatus = ep.qcStatus?.uppercase() ?: "PENDING"
-                                epExpanded = false
-                            }
-                        )
-                    }
-                }
-            }
-        }
-
-        // Fix #67: Master Video Preview Card (Lightweight Stream Opener)
-        Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp)) {
-            Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text("Master Episode Render", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
-                    StatusBadge(qcStatus)
-                }
-                val videoUrl = selectedEp?.masterVideoUrl
-                Text(
-                    text = if (!videoUrl.isNullOrBlank()) "Master Stream Ready: $videoUrl" else "Master video stream bridged via Telegram CDN.",
-                    color = MaterialTheme.colorScheme.secondary
-                )
-                OutlinedButton(
-                    onClick = {
-                        val targetUrl = videoUrl ?: "https://api.bnai.dpdns.org/v1/media/telegram"
-                        runCatching { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(targetUrl))) }
-                    },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Icon(Icons.Default.PlayCircle, contentDescription = null)
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text("Play Master Video Stream")
-                }
-            }
-        }
-
-        // Fix #68: Read-Only Backend Automated QC Results Checklist
-        Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp)) {
-            Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                Text("Automated Quality Gate Results", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
-                listOf(
-                    "Master File Integrity (> 1MB Validation)" to "PASSED",
-                    "Voice & Lip-Sync Timing Alignment" to "PASSED",
-                    "Character Visual DNA Consistency" to "PASSED",
-                    "1080p Aspect Ratio & Loudness Normalization" to if (isApproved) "APPROVED" else "READY"
-                ).forEach { (checkName, checkResult) ->
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            Icon(Icons.Default.CheckCircle, contentDescription = null, tint = Color(0xFF10B981), modifier = Modifier.size(18.dp))
-                            Text(checkName)
+            OutlinedTextField(
+                value = "Episode $selectedEpNo: ${activeEp?.title ?: "Untitled"}",
+                onValueChange = {},
+                readOnly = true,
+                label = { Text("Select Episode for QC") },
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = epDropdownExpanded) },
+                singleLine = true,
+                modifier = Modifier.menuAnchor().fillMaxWidth()
+            )
+            ExposedDropdownMenu(
+                expanded = epDropdownExpanded,
+                onDismissRequest = { epDropdownExpanded = false }
+            ) {
+                val epNums = (episodes.map { it.episode_no } + listOf(1, 2, 3)).distinct().sorted()
+                epNums.forEach { num ->
+                    DropdownMenuItem(
+                        text = { Text("Episode $num") },
+                        onClick = {
+                            selectedEpNo = num
+                            epDropdownExpanded = false
                         }
-                        StatusBadge(checkResult)
-                    }
+                    )
                 }
             }
         }
 
-        feedbackBanner?.let {
-            Text(it, color = MaterialTheme.colorScheme.secondary)
+        StandardCard {
+            SectionHeader(title = "Episode $selectedEpNo QC Summary", badgeText = rawQcStatus)
+            Text(
+                text = when (rawQcStatus) {
+                    "APPROVED", "PASSED" -> "All mandatory QC gates passed. Publishing is unlocked."
+                    "SKIPPED" -> "QC was marked SKIPPED. Skipped checks are never treated as passed."
+                    "FAILED", "REJECTED" -> "QC reported critical issues. Fix scenes or re-run QC."
+                    else -> "QC has not been verified for this episode yet."
+                },
+                fontSize = 13.sp
+            )
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                SecondaryButton(
+                    text = "Re-Run Automated QC",
+                    enabled = !isUpdating,
+                    onClick = {
+                        val pid = repository.currentProjectId()
+                        scope.launch {
+                            val res = repository.submitStudioCommand(
+                                projectId = pid,
+                                intent = CommandIntent.RUN_QC,
+                                episodeNo = selectedEpNo
+                            )
+                            if (res is Resource.Success) {
+                                Toast.makeText(context, "QC job queued (#${res.data.command_id.take(6)})", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    },
+                    modifier = Modifier.weight(1f)
+                )
+
+                PrimaryButton(
+                    text = "Approve QC Gate",
+                    isLoading = isUpdating,
+                    onClick = {
+                        val pid = repository.currentProjectId()
+                        isUpdating = true
+                        scope.launch {
+                            val res = repository.updateEpisodeSync(
+                                projectId = pid,
+                                episodeNo = selectedEpNo,
+                                updates = mapOf("qc_status" to "APPROVED")
+                            )
+                            isUpdating = false
+                            if (res is Resource.Success) {
+                                loadEpisodes()
+                                Toast.makeText(context, "Episode $selectedEpNo QC marked APPROVED", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    },
+                    modifier = Modifier.weight(1f)
+                )
+            }
         }
 
-        // Fix #69: Approve (unlocks Publish) & Reject (triggers Auto-Heal / Retry) actions
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            Button(
-                onClick = {
-                    scope.launch {
-                        repository.submitStudioCommand(
-                            repository.currentProjectId(),
-                            CommandIntent.RUN_QC,
-                            "SAVE",
-                            episodeNo = selectedEp?.episodeNumber ?: 1,
-                            payload = mapOf("decision" to "APPROVED")
-                        )
-                        qcStatus = "APPROVED"
-                        feedbackBanner = "✅ Episode QC Approved! Publish Studio is now unlocked."
-                    }
-                },
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF10B981)),
-                modifier = Modifier.weight(1f).height(48.dp)
-            ) {
-                Text("✅ Approve QC")
-            }
-
-            OutlinedButton(
-                onClick = {
-                    scope.launch {
-                        repository.submitStudioCommand(
-                            repository.currentProjectId(),
-                            CommandIntent.RETRY_FAILED,
-                            "QUICK",
-                            episodeNo = selectedEp?.episodeNumber ?: 1,
-                            payload = mapOf("reason" to "QC Rejected by Director")
-                        )
-                        qcStatus = "REJECTED"
-                        Toast.makeText(context, "Rejected: Sent to Auto-Heal Retry Queue", Toast.LENGTH_SHORT).show()
-                    }
-                },
-                colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error),
-                modifier = Modifier.weight(1f).height(48.dp)
-            ) {
-                Text("❌ Reject & Heal")
-            }
-        }
-
-        // Fix #66: Disable Publish button until qc_status == APPROVED
-        Button(
-            onClick = onProceedToPublish,
+        PrimaryButton(
+            text = if (isApproved) "Proceed to Publish Studio" else "Publish Locked (Requires QC APPROVED)",
             enabled = isApproved,
-            modifier = Modifier.fillMaxWidth().height(52.dp),
-            shape = RoundedCornerShape(10.dp)
-        ) {
-            Text(if (isApproved) "Proceed to Publish Studio" else "🔒 Approve QC First to Unlock Publishing")
-        }
+            onClick = onProceedToPublish,
+            modifier = Modifier.fillMaxWidth()
+        )
     }
 }

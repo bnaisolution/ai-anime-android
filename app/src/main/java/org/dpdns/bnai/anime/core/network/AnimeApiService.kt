@@ -472,4 +472,50 @@ interface AnimeApiService {
         @Path("id") projectId: String,
         @Path("category") category: String
     ): Response<ApiEnvelope<List<JsonMap>>>
+
+    // === STUDIO V2 SYNCHRONOUS CRUD & JOB CANCELLATION CONTRACTS ===
+    @POST("v1/anime/projects")
+    suspend fun createProjectSync(
+        @Body body: JsonMap
+    ): Response<ApiEnvelope<ProjectDto>>
+
+    @PATCH("v1/anime/projects/{id}/bible")
+    suspend fun updateProjectBible(
+        @Path("id") projectId: String,
+        @Body body: JsonMap
+    ): Response<ApiEnvelope<JsonMap>>
+
+    @POST("v1/anime/projects/{id}/characters")
+    suspend fun createCharacter(
+        @Path("id") projectId: String,
+        @Body body: JsonMap
+    ): Response<ApiEnvelope<CharacterDto>>
+
+    @PATCH("v1/anime/projects/{id}/characters/{cid}")
+    suspend fun updateCharacter(
+        @Path("id") projectId: String,
+        @Path("cid") characterIdOrCode: String,
+        @Body body: JsonMap
+    ): Response<ApiEnvelope<CharacterDto>>
+
+    @PATCH("v1/anime/projects/{id}/episodes/{episodeNo}")
+    suspend fun updateEpisode(
+        @Path("id") projectId: String,
+        @Path("episodeNo") episodeNo: Int,
+        @Body body: JsonMap
+    ): Response<ApiEnvelope<EpisodeDto>>
+
+    @PATCH("v1/anime/projects/{id}/episodes/{episodeNo}/scenes/{sceneId}")
+    suspend fun updateScene(
+        @Path("id") projectId: String,
+        @Path("episodeNo") episodeNo: Int,
+        @Path("sceneId") sceneId: String,
+        @Body body: JsonMap
+    ): Response<ApiEnvelope<SceneDto>>
+
+    @POST("v1/anime/projects/{id}/jobs/{jobId}/cancel")
+    suspend fun cancelJob(
+        @Path("id") projectId: String,
+        @Path("jobId") jobId: String
+    ): Response<ApiEnvelope<JsonMap>>
 }

@@ -1,50 +1,63 @@
 package org.dpdns.bnai.anime.ui.owner
 
-import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
 import org.dpdns.bnai.anime.core.network.AnimeRepository
-import org.dpdns.bnai.anime.core.network.CommandIntent
-import org.dpdns.bnai.anime.core.network.JsonMap
 import org.dpdns.bnai.anime.core.network.Resource
-import org.dpdns.bnai.anime.ui.components.ProjectSelectorBar
-import org.dpdns.bnai.anime.ui.components.ResourceStateBox
-import org.dpdns.bnai.anime.ui.components.StatusBadge
+import org.dpdns.bnai.anime.ui.components.formatInt
+import org.dpdns.bnai.anime.ui.components.formatRelativeTime
+import org.dpdns.bnai.anime.ui.designsystem.*
+
+private data class CanonicalWfInfo(
+    val code: String,
+    val name: String,
+    val responsibility: String
+)
+
+private val FROZEN_14_WORKFLOWS = listOf(
+    CanonicalWfInfo("WF-00", "Main Router", "Central request ingestion, preflight gate & sub-workflow dispatch"),
+    CanonicalWfInfo("WF-01", "Bible Architect", "Master Story Bible, world rules & character foundations"),
+    CanonicalWfInfo("WF-02", "Story Generator", "Episode narrative outline & multi-scene screenplay generation"),
+    CanonicalWfInfo("WF-03", "Production Pipeline", "Scene batching, image/audio/video synthesis & FFmpeg assembly"),
+    CanonicalWfInfo("WF-04", "Admin Panel", "Operational inspection & administrative overrides"),
+    CanonicalWfInfo("WF-05", "Vision Pipeline", "11-field Character Visual DNA extraction & R4 reference history"),
+    CanonicalWfInfo("WF-06", "Continuity Engine", "Cross-episode plot, character status & timeline continuity checks"),
+    CanonicalWfInfo("WF-07", "Publisher", "Idempotent multi-platform publishing & metadata packaging"),
+    CanonicalWfInfo("WF-08", "Analytics", "Production throughput & published episode telemetry aggregation"),
+    CanonicalWfInfo("WF-09", "Canon Engine", "Authoritative Canon validation, proposals & lock enforcement"),
+    CanonicalWfInfo("WF-10", "State Machine Manager", "Episode & scene lifecycle state transitions"),
+    CanonicalWfInfo("WF-11", "QC Gate", "Automated quality-control inspection & approval gating"),
+    CanonicalWfInfo("WF-12", "Quota Governor", "Provider quota verification & project budget ceiling guard"),
+    CanonicalWfInfo("WF-13", "Retry Manager", "Exponential backoff retry scheduling & dead-letter recovery")
+)
 
 @Composable
 fun WorkflowManagerScreen() {
-    val context = LocalContext.current
     val repository = remember { AnimeRepository() }
     val scope = rememberCoroutineScope()
 
-    var activeProjectId by remember { mutableStateOf(repository.currentProjectId()) }
-    var searchQuery by remember { mutableStateOf("") }
-    var workflowsState by remember { mutableStateOf<Resource<List<JsonMap>>>(Resource.Loading) }
-    val enabledOverrides = remember { mutableStateMapOf<String, Boolean>() }
+    var wfSummaryRes by remember { mutableStateOf<Resource<List>>>(Resource.Loading) }
+    var lastCheckedIso by remember { mutableStateOf<String?>(null) }
 
-    fun loadWorkflows(pid: String) {
-        if (pid.isBlank()) return
+    fun loadWorkflowSummary() {
         scope.launch {
-            workflowsState = Resource.Loading
-            workflowsState = repository.fetchAdminWorkflows(pid)
+            wfSummaryRes = Resource.Loading
+            wfSummaryRes = repository.fetchAdminWorkflows()
+            lastCheckedIso = java.time.Instant.now().toString()
         }
     }
 
-    LaunchedEffect(activeProjectId) {
-        loadWorkflows(activeProjectId)
+    LaunchedEffect(Unit) {
+        loadWorkflowSummary()
     }
 
     Column(
@@ -53,86 +66,71 @@ fun WorkflowManagerScreen() {
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        // Fix #333 & #334: Clean header "Workflow Engine Status" with no dev disclaimer
-        Text("Workflow Engine Status", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
-
-        ProjectSelectorBar(
-            onProjectChanged = { newPid ->
-                activeProjectId = newPid
-                loadWorkflows(newPid)
-            },
-            onRefreshClick = { loadWorkflows(activeProjectId) }
-        )
-
-        // Fix #337: Search Bar
-        OutlinedTextField(
-            value = searchQuery,
-            onValueChange = { searchQuery = it },
-            leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
-            placeholder = { Text("Search workflows by name or intent...") },
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        ResourceStateBox(
-            resource = workflowsState,
-            emptyMessage = "No workflow definitions found.",
-            onRetry = { loadWorkflows(activeProjectId) }
-        ) { list ->
-            val filtered = list.filter {
-                searchQuery.isBlank() || it.toString().contains(searchQuery, ignoreCase = true)
+        ScreenHeader(
+            title = "Workflow Manager (14 Frozen Workflows)",
+            subtitle = "Separates Backend Command Activity from Live n8n Activation Status",
+            trailingContent = {
+                SecondaryButton(text = "Refresh", onClick = { loadWorkflowSummary() })
             }
-            LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(10.dp),
-                contentPadding = PaddingValues(bottom = 24.dp)
-            ) {
-                items(filtered) { wf ->
-                    val wfKey = (wf["wf_key"] ?: wf["id"] ?: "WF").toString()
-                    val name = (wf["name"] ?: wf["title"] ?: wfKey).toString()
-                    val isEnabled = enabledOverrides[wfKey] ?: (wf["is_active"] != false)
-                    val intentsRaw = (wf["intents"] as? List<*>)?.map { it.toString() }
-                        ?: listOf(wf["intent"]?.toString() ?: "PIPELINE_STEP")
+        )
 
-                    Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp)) {
-                        Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(name, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
-                                    Text("Engine Key: $wfKey", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.secondary)
-                                }
-                                // Fix #336 & #338: Active/Disabled Status Badge + Enable/Disable Toggle
-                                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                    StatusBadge(if (isEnabled) "ACTIVE" else "ONLINE")
-                                    Switch(
-                                        checked = isEnabled,
-                                        onCheckedChange = { enabledOverrides[wfKey] = it }
-                                    )
-                                }
-                            }
+        StandardCard {
+            Text(
+                text = "Source Disclosure: Command totals below reflect backend api_commands activity. Live n8n activation state is shown only when verified directly from the n8n API.",
+                fontSize = 12.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Text(
+                text = "Last checked: ${formatRelativeTime(lastCheckedIso)}",
+                fontSize = 11.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
 
-                            // Fix #335: Render arrays as Chips/Tags instead of raw JSON brackets
-                            LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                                items(intentsRaw) { tag ->
-                                    AssistChip(onClick = {}, label = { Text(tag.replace("_", " ")) })
-                                }
-                            }
+        val backendList = (wfSummaryRes as? Resource.Success)?.data ?: emptyList()
 
-                            // Fix #339: Test Webhook Button
-                            OutlinedButton(
-                                onClick = {
-                                    scope.launch {
-                                        repository.submitStudioCommand(activeProjectId, CommandIntent.SYSTEM_HEALTH, payload = mapOf("test_wf" to wfKey))
-                                        Toast.makeText(context, "Webhook ping sent to $name!", Toast.LENGTH_SHORT).show()
-                                    }
-                                }
-                            ) {
-                                Text("Test Webhook")
-                            }
-                        }
+        LazyColumn(
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+            contentPadding = PaddingValues(bottom = 80.dp)
+        ) {
+            items(FROZEN_14_WORKFLOWS, key = { it.code }) { wf ->
+                val matched = backendList.find {
+                    val k = (it["wf_key"] ?: it["workflow_name"] ?: it["code"] ?: "").toString().uppercase()
+                    k.contains(wf.code)
+                }
+                val totalCmds = formatInt(matched?.get("total_commands") ?: matched?.get("count") ?: 0)
+                val failedCmds = formatInt(matched?.get("failed_commands") ?: matched?.get("failed") ?: 0)
+                val verifiedLiveStatus = matched?.get("n8n_live_active")?.toString()
+                val liveBadge = when (verifiedLiveStatus?.lowercase()) {
+                    "true", "active" -> "N8N: ACTIVE"
+                    "false", "inactive" -> "N8N: INACTIVE"
+                    else -> "N8N STATE: UNKNOWN"
+                }
+
+                StandardCard {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text("${wf.code} — ${wf.name}", fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                        StatusChip(label = liveBadge)
+                    }
+                    Text(
+                        text = wf.responsibility,
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text("Backend Command Activity: $totalCmds", fontSize = 12.sp, fontWeight = FontWeight.Medium)
+                        Text(
+                            text = "Recent Failures: $failedCmds",
+                            fontSize = 12.sp,
+                            color = if (failedCmds != "0") StudioTokens.Error else MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
                 }
             }

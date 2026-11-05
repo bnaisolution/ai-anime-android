@@ -1,175 +1,164 @@
 package org.dpdns.bnai.anime.ui.analytics
 
-import android.content.Intent
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AutoAwesome
-import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
 import org.dpdns.bnai.anime.core.network.AnimeRepository
-import org.dpdns.bnai.anime.core.network.JsonMap
 import org.dpdns.bnai.anime.core.network.Resource
 import org.dpdns.bnai.anime.ui.components.ProjectSelectorBar
-import org.dpdns.bnai.anime.ui.components.ResourceStateBox
 import org.dpdns.bnai.anime.ui.components.formatInt
+import org.dpdns.bnai.anime.ui.components.formatRelativeTime
+import org.dpdns.bnai.anime.ui.designsystem.*
 
 @Composable
 fun AnalyticsScreen() {
-    val context = LocalContext.current
     val repository = remember { AnimeRepository() }
     val scope = rememberCoroutineScope()
 
-    var activeProjectId by remember { mutableStateOf(repository.currentProjectId()) }
-    var dateRange by remember { mutableStateOf("Last 30 Days") }
-    var analyticsState by remember { mutableStateOf<Resource<JsonMap>>(Resource.Loading) }
+    var dateRange by remember { mutableStateOf("LAST_30_DAYS") }
+    var analyticsRes by remember { mutableStateOf<Resource>>(Resource.Loading) }
+    var lastFetchedIso by remember { mutableStateOf<String?>(null) }
 
-    fun loadAnalytics(pid: String) {
-        if (pid.isBlank()) return
+    fun loadAnalytics() {
+        val pid = repository.currentProjectId()
+        if (pid.isBlank()) {
+            analyticsRes = Resource.Empty
+            return
+        }
         scope.launch {
-            analyticsState = Resource.Loading
-            val res = repository.fetchAnalytics(pid)
-            analyticsState = if (res is Resource.Empty) {
-                Resource.Success(mapOf("episodes_completed" to 1, "scenes_rendered" to 8, "gpu_minutes" to 42))
-            } else {
-                res
-            }
+            analyticsRes = Resource.Loading
+            analyticsRes = repository.fetchAnalytics(pid)
+            lastFetchedIso = java.time.Instant.now().toString()
         }
     }
 
-    LaunchedEffect(activeProjectId) {
-        loadAnalytics(activeProjectId)
+    LaunchedEffect(Unit) {
+        loadAnalytics()
     }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .verticalScroll(rememberScrollState())
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        // Fix #279 & #288: Header "Project Analytics" + Export/Share Icon
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text("Project Analytics", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
-            IconButton(onClick = {
-                val sendIntent = Intent(Intent.ACTION_SEND).apply {
-                    type = "text/plain"
-                    putExtra(Intent.EXTRA_TEXT, "AI Studio Project Analytics ($dateRange) — Project: $activeProjectId")
-                }
-                context.startActivity(Intent.createChooser(sendIntent, "Export Analytics"))
-            }) {
-                Icon(Icons.Default.Share, contentDescription = "Export Analytics")
-            }
-        }
-
         ProjectSelectorBar(
-            onProjectChanged = { newPid ->
-                activeProjectId = newPid
-                loadAnalytics(newPid)
-            },
-            onRefreshClick = { loadAnalytics(activeProjectId) }
+            onProjectChanged = { loadAnalytics() },
+            onRefreshClick = { loadAnalytics() }
         )
 
-        // Fix #285: Date Filter Chips
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            listOf("Last 7 Days", "Last 30 Days", "All Time").forEach { filter ->
+        ScreenHeader(
+            title = "Production & Audience Analytics",
+            subtitle = "Verified backend telemetry from episodes, jobs & budget ledger (Zero fabricated metrics)",
+            trailingContent = {
+                StatusChip(label = dateRange.replace("_", " "))
+            }
+        )
+
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            listOf("LAST_7_DAYS" to "7 Days", "LAST_30_DAYS" to "30 Days", "ALL_TIME" to "All Time").forEach { (key, label) ->
                 FilterChip(
-                    selected = dateRange == filter,
-                    onClick = { dateRange = filter },
-                    label = { Text(filter) }
+                    selected = dateRange == key,
+                    onClick = { dateRange = key },
+                    label = { Text(label) }
                 )
             }
         }
 
-        ResourceStateBox(
-            resource = analyticsState,
-            onRetry = { loadAnalytics(activeProjectId) }
-        ) { data ->
-            val episodesCount = formatInt(data["episodes_completed"] ?: data["total_episodes"] ?: 1)
-            val scenesCount = formatInt(data["scenes_rendered"] ?: data["total_scenes"] ?: 12)
-            val gpuCredits = formatInt(data["gpu_credits_used"] ?: data["gpu_minutes"] ?: 35)
+        org.dpdns.bnai.anime.ui.components.ResourceStateBox(
+            resource = analyticsRes,
+            emptyMessage = "No analytics records available for this project yet.",
+            onRetry = { loadAnalytics() }
+        ) { raw ->
+            // BUG-011: Map structured backend analytics contract (episodes, jobs, ledger, audience)
+            val episodesObj = (raw["episodes"] as? Map<*, *>) ?: raw
+            val jobsObj = (raw["jobs"] as? Map<*, *>) ?: raw
+            val ledgerObj = (raw["ledger"] as? Map<*, *>) ?: raw
+            val audienceObj = (raw["audience"] as? Map<*, *>)
 
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                // Fix #280 & #281: Integer KPIs + Visual Progress Bars
-                Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp)) {
-                    Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                        Text("Production Throughput ($dateRange)", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
-                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                            Column {
-                                Text("Episodes", style = MaterialTheme.typography.labelLarge)
-                                Text(episodesCount, style = MaterialTheme.typography.headlineLarge)
-                            }
-                            Column {
-                                Text("Rendered Scenes", style = MaterialTheme.typography.labelLarge)
-                                Text(scenesCount, style = MaterialTheme.typography.headlineLarge)
-                            }
-                            Column {
-                                Text("QC Pass Rate", style = MaterialTheme.typography.labelLarge)
-                                Text("94%", style = MaterialTheme.typography.headlineLarge, color = MaterialTheme.colorScheme.primary)
-                            }
-                        }
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text("Scene Render Completion (94%)", style = MaterialTheme.typography.labelLarge)
-                        LinearProgressIndicator(progress = { 0.94f }, modifier = Modifier.fillMaxWidth().height(8.dp))
-                    }
+            val epTotal = formatInt(episodesObj["total"] ?: raw["episodes_total"] ?: raw["episodes_count"] ?: 0)
+            val epPublished = formatInt(episodesObj["published"] ?: raw["episodes_published"] ?: 0)
+            val qcApproved = formatInt(episodesObj["qc_approved"] ?: raw["qc_approved_count"] ?: 0)
+            val qcFailed = formatInt(episodesObj["qc_failed"] ?: raw["qc_failed_count"] ?: 0)
+
+            val jobsTotal = formatInt(jobsObj["total"] ?: raw["jobs_total"] ?: 0)
+            val jobsSucceeded = formatInt(jobsObj["succeeded"] ?: raw["jobs_succeeded"] ?: 0)
+            val jobsFailed = formatInt(jobsObj["failed"] ?: raw["jobs_failed"] ?: 0)
+            val jobsManualReview = formatInt(jobsObj["manual_review"] ?: raw["manual_review_count"] ?: 0)
+
+            val consumedCredits = formatInt(ledgerObj["consumed"] ?: raw["credits_consumed"] ?: raw["total_spent"] ?: 0)
+            val reservedCredits = formatInt(ledgerObj["reserved"] ?: raw["credits_reserved"] ?: 0)
+
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                SectionHeader(
+                    title = "Episode & QC Throughput",
+                    badgeText = "Source: episodes"
+                )
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    MetricCard(label = "Total Episodes", value = epTotal, modifier = Modifier.weight(1f))
+                    MetricCard(label = "Published", value = epPublished, accentColor = StudioTokens.Success, modifier = Modifier.weight(1f))
+                }
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    MetricCard(label = "QC Approved", value = qcApproved, accentColor = StudioTokens.Success, modifier = Modifier.weight(1f))
+                    MetricCard(label = "QC Failed/Rejected", value = qcFailed, accentColor = StudioTokens.Error, modifier = Modifier.weight(1f))
                 }
 
-                // Fix #282: Audience Engagement Card
-                Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp)) {
-                    Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text("Audience Engagement", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
-                        Text(" Hook Retention (First 3s): 82%", style = MaterialTheme.typography.bodyLarge)
-                        LinearProgressIndicator(progress = { 0.82f }, modifier = Modifier.fillMaxWidth().height(6.dp))
-                        Text("Average Watch Duration: 48s / 60s", style = MaterialTheme.typography.bodyLarge)
-                        LinearProgressIndicator(progress = { 0.80f }, modifier = Modifier.fillMaxWidth().height(6.dp))
-                    }
+                SectionHeader(
+                    title = "Pipeline Job Reliability",
+                    badgeText = "Source: api_commands"
+                )
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    MetricCard(label = "Total Jobs", value = jobsTotal, modifier = Modifier.weight(1f))
+                    MetricCard(label = "Succeeded", value = jobsSucceeded, accentColor = StudioTokens.Success, modifier = Modifier.weight(1f))
+                }
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    MetricCard(label = "Failed Jobs", value = jobsFailed, accentColor = StudioTokens.Error, modifier = Modifier.weight(1f))
+                    MetricCard(label = "Manual Review", value = jobsManualReview, accentColor = StudioTokens.Warning, modifier = Modifier.weight(1f))
                 }
 
-                // Fix #284: Resource Usage (GPU/Compute) Card
-                Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp)) {
-                    Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text("Resource Usage (GPU/Compute)", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
-                        Text("Compute Credits Used: $gpuCredits Credits", style = MaterialTheme.typography.bodyLarge)
-                        LinearProgressIndicator(progress = { 0.35f }, modifier = Modifier.fillMaxWidth().height(6.dp))
-                        Text("Primary Runner: Kaggle Dual-GPU Pool (Free Tier)", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.secondary)
-                    }
+                SectionHeader(
+                    title = "Ledger & Resource Consumption",
+                    badgeText = "Source: resource_reservations"
+                )
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    MetricCard(label = "Consumed Credits", value = consumedCredits, modifier = Modifier.weight(1f))
+                    MetricCard(label = "Reserved Credits", value = reservedCredits, accentColor = StudioTokens.Warning, modifier = Modifier.weight(1f))
                 }
 
-                // Fix #283: AI Director's Advice Card
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
-                ) {
-                    Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            Icon(Icons.Default.AutoAwesome, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
-                            Text("AI Director's Advice", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
-                        }
+                // BUG-010: Honest Audience Telemetry Card (Never invents 82% retention or 48s/60s watch time)
+                StandardCard {
+                    SectionHeader(
+                        title = "Audience & Platform Telemetry",
+                        badgeText = if (audienceObj != null && audienceObj.isNotEmpty()) "LIVE" else "UNAVAILABLE"
+                    )
+                    if (audienceObj != null && audienceObj.isNotEmpty()) {
+                        val views = formatInt(audienceObj["views"] ?: 0)
+                        val watchSec = formatInt(audienceObj["watch_time_seconds"] ?: 0)
+                        Text("Total Verified Views: $views • Watch Time: ${watchSec}s", fontSize = 13.sp)
+                    } else {
                         Text(
-                            "Scenes with fast BGM transitions and close-up character eyes in Scene 1 show 24% higher retention. Consider adding a cliffhanger dialogue line at the 50-second mark in your next episode.",
-                            style = MaterialTheme.typography.bodyLarge
+                            text = "Audience retention and watch-time metrics are currently UNAVAILABLE. Metrics appear only after episodes are published and platform telemetry is ingested by WF-08.",
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
+                    Text(
+                        text = "Last checked: ${formatRelativeTime(lastFetchedIso)}",
+                        fontSize = 11.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
             }
         }
+        Spacer(modifier = Modifier.height(64.dp))
     }
 }

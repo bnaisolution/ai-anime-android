@@ -8,6 +8,12 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.unit.IntOffset
+import kotlin.math.roundToInt
+
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -324,15 +330,28 @@ fun AppNavGraph(navController: NavHostController) {
                             }
                         },
                         navigationIcon = {
+                        val isRootDestination = currentRoute in setOf("studio", "projects", "ai_brain", "production", "episodes")
+                        if (isRootDestination) {
                             IconButton(onClick = { scope.launch { drawerState.open() } }) {
-                                Icon(Icons.Default.Menu, contentDescription = "Open Menu")
+                                Icon(Icons.Default.Menu, contentDescription = "Open Navigation Drawer")
                             }
-                        },
+                        } else {
+                            IconButton(onClick = {
+                                if (!navController.popBackStack()) {
+                                    navController.navigate("studio") {
+                                        popUpTo("studio") { inclusive = true }
+                                    }
+                                }
+                            }) {
+                                Icon(Icons.Default.ArrowBack, contentDescription = "Navigate Back")
+                            }
+                        }
+                    },
                         actions = {
                             // Fix #197: Show active AI model badge in TopAppBar instead of Logout
                             AssistChip(
                                 onClick = { navController.navigate("settings") { launchSingleTop = true } },
-                                label = { Text("Groq • Gemini", fontSize = 11.sp) }
+                                label = { Text(activeProviderBadge, fontSize = 11.sp) }
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                         }
@@ -340,7 +359,7 @@ fun AppNavGraph(navController: NavHostController) {
                 },
                 floatingActionButton = {
                     // Fix #77: Global AI Director FAB on screens (except when already on AI Director or Studio Home which has Create FAB)
-                    if (currentRoute !in listOf("ai_brain", "studio")) {
+                    if (currentRoute != "ai_brain") {
                         FloatingActionButton(
                             onClick = { showGlobalAiSheet = true },
                             containerColor = MaterialTheme.colorScheme.primary

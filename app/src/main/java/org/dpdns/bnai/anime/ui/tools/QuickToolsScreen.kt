@@ -1,20 +1,14 @@
 package org.dpdns.bnai.anime.ui.tools
 
-import android.content.Intent
-import android.net.Uri
 import android.widget.Toast
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -24,18 +18,9 @@ import kotlinx.coroutines.launch
 import org.dpdns.bnai.anime.core.network.AnimeRepository
 import org.dpdns.bnai.anime.core.network.CommandIntent
 import org.dpdns.bnai.anime.core.network.Resource
-import org.dpdns.bnai.anime.ui.components.InfoTooltipButton
 import org.dpdns.bnai.anime.ui.components.ProjectSelectorBar
-import org.dpdns.bnai.anime.ui.components.StatusBadge
 import org.dpdns.bnai.anime.ui.components.friendlyPipelineStatus
-
-data class QuickGenHistoryItem(
-    val commandId: String,
-    val prompt: String,
-    val isVideo: Boolean,
-    val status: String,
-    val mediaUrl: String? = null
-)
+import org.dpdns.bnai.anime.ui.designsystem.*
 
 @Composable
 fun QuickToolsScreen(
@@ -45,274 +30,212 @@ fun QuickToolsScreen(
     val repository = remember { AnimeRepository() }
     val scope = rememberCoroutineScope()
 
-    var prompt by remember { mutableStateOf("") }
-    var stylePreset by remember { mutableStateOf("anime_cinematic") }
-    var aspectRatio by remember { mutableStateOf("16:9") }
+    var mode by rememberSaveable { mutableStateOf("IMAGE") } // IMAGE | VIDEO
+    var promptText by rememberSaveable { mutableStateOf("") }
+    var stylePreset by rememberSaveable { mutableStateOf("Cinematic Anime") }
+    var aspectRatio by rememberSaveable { mutableStateOf("16:9") }
 
-    var isGenerating by remember { mutableStateOf(false) }
-    var isVideoMode by remember { mutableStateOf(false) }
-    var activeCommandId by remember { mutableStateOf<String?>(null) }
-    var pollStatus by remember { mutableStateOf<String?>(null) }
-    var generatedMediaUrl by remember { mutableStateOf<String?>(null) }
-    var recentHistory by remember { mutableStateOf<List<QuickGenHistoryItem>>(emptyList()) }
+    var activeCommandId by rememberSaveable { mutableStateOf<String?>(null) }
+    var activeStatus by remember { mutableStateOf<String?>(null) }
+    var resultMediaUrl by remember { mutableStateOf<String?>(null) }
+    var elapsedSeconds by remember { mutableStateOf(0) }
+    var isSubmitting by remember { mutableStateOf(false) }
+    var isCancelling by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
 
-    // Fix #104, #123, #129: Poll fetchCommandStatus every 3s after submit
-    LaunchedEffect(activeCommandId, isGenerating) {
-        val cmdId = activeCommandId
-        if (!isGenerating || cmdId.isNullOrBlank()) return@LaunchedEffect
-
-        var attempts = 0
-        while (isGenerating && attempts < 30) {
-            attempts++
-            when (val res = repository.fetchCommandStatus(cmdId)) {
+    // BUG-023: Poll real backend command status without fake percentages or fixed 45s ETA
+    LaunchedEffect(activeCommandId) {
+        val cid = activeCommandId ?: return@LaunchedEffect
+        elapsedSeconds = 0
+        while (true) {
+            when (val res = repository.fetchCommandStatus(cid)) {
                 is Resource.Success -> {
-                    val st = res.data.status?.uppercase() ?: "QUEUED"
-                    pollStatus = st
-                    val resultUrl = (res.data.result?.get("media_url")
-                        ?: res.data.result?.get("clip_url")
-                        ?: res.data.result?.get("image_url"))?.toString()
-
-                    if (!resultUrl.isNullOrBlank()) {
-                        generatedMediaUrl = resultUrl
+                    val st = res.data.status.uppercase()
+                    activeStatus = st
+                    val outUrl = (res.data.result?.get("media_url") ?: res.data.result?.get("url") ?: res.data.result?.get("working_storage_url"))?.toString()
+                    if (!outUrl.isNullOrBlank() && outUrl != "null") {
+                        resultMediaUrl = outUrl
                     }
-
-                    if (st in setOf("SUCCEEDED", "COMPLETED", "FAILED", "MANUAL_REVIEW")) {
-                        isGenerating = false
-                        if (generatedMediaUrl == null && st in setOf("SUCCEEDED", "COMPLETED")) {
-                            generatedMediaUrl = "[https://api.bnai.dpdns.org/v1/media/telegram](https://api.bnai.dpdns.org/v1/media/telegram)"
-                        }
-                        recentHistory = listOf(
-                            QuickGenHistoryItem(cmdId, prompt, isVideoMode, st, generatedMediaUrl)
-                        ) + recentHistory.filterNot { it.commandId == cmdId }
+                    if (st in listOf("SUCCEEDED", "COMPLETED", "FAILED", "ERROR", "CANCELLED")) {
                         break
                     }
                 }
-                else -> Unit
-            }
-            delay(3000L)
-        }
-        isGenerating = false
-    }
-
-    fun startQuickGen(video: Boolean) {
-        val clean = prompt.trim()
-        if (clean.isBlank()) return
-        isVideoMode = video
-        isGenerating = true
-        pollStatus = "QUEUED"
-        generatedMediaUrl = null
-
-        scope.launch {
-            val pid = repository.currentProjectId()
-            when (val res = repository.triggerQuickMedia(pid, video, clean)) {
-                is Resource.Success -> {
-                    val cmdId = res.data.command?.id ?: res.data.command_id ?: ""
-                    activeCommandId = cmdId
-                    recentHistory = listOf(
-                        QuickGenHistoryItem(cmdId, clean, video, res.data.status ?: "QUEUED")
-                    ) + recentHistory
-                }
                 is Resource.Error -> {
-                    isGenerating = false
-                    pollStatus = "FAILED: ${res.message}"
+                    errorMessage = res.message
+                    break
                 }
-                else -> isGenerating = false
+                else -> {}
             }
+            delay(3000)
+            elapsedSeconds += 3
         }
     }
+
+    val isJobRunning = activeCommandId != null && activeStatus !in listOf("SUCCEEDED", "COMPLETED", "FAILED", "ERROR", "CANCELLED")
 
     Column(
-        modifier = Modifier.fillMaxSize().padding(16.dp).verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.spacedBy(14.dp)
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         ProjectSelectorBar()
 
-        // Fix #127 & #131: Renamed to "Quick Generate" + (i) Help Tooltip
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("Quick Generate", style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold)
-                InfoTooltipButton(
-                    title = "How Quick Generate Works",
-                    explanation = "Instantly test visual prompts on Kaggle GPU workers without creating a full episode. You can save any generated asset directly to your active project."
-                )
-            }
-            // Fix #126: GPU Credit Cost Badge
-            AssistChip(onClick = {}, label = { Text("⚡ Uses 1 GPU credit", fontSize = 11.sp) })
-        }
-
-        OutlinedTextField(
-            value = prompt,
-            onValueChange = { prompt = it },
-            label = { Text("Visual Scene / Character Prompt") },
-            placeholder = { Text("e.g. Cyberpunk samurai standing under neon rain, Makoto Shinkai lighting...") },
-            minLines = 3,
-            modifier = Modifier.fillMaxWidth()
+        ScreenHeader(
+            title = "Quick Tools (Ad-Hoc Preview)",
+            subtitle = "Runs in QUICK zero-persistence mode until you explicitly click Save to Project"
         )
 
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            listOf("16:9", "9:16", "1:1").forEach { ratio ->
-                FilterChip(
-                    selected = aspectRatio == ratio,
-                    onClick = { aspectRatio = ratio },
-                    label = { Text(ratio) }
-                )
-            }
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             FilterChip(
-                selected = stylePreset == "anime_cinematic",
-                onClick = { stylePreset = if (stylePreset == "anime_cinematic") "dark_fantasy" else "anime_cinematic" },
-                label = { Text("🎨 $stylePreset") }
+                selected = mode == "IMAGE",
+                onClick = { mode = "IMAGE" },
+                label = { Text("Image Generation") }
+            )
+            FilterChip(
+                selected = mode == "VIDEO",
+                onClick = { mode = "VIDEO" },
+                label = { Text("Video Clip Generation") }
             )
         }
 
-        // Fix #125: Icons on Generate Image & Generate Video buttons
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            Button(
-                onClick = { startQuickGen(false) },
-                enabled = prompt.isNotBlank() && !isGenerating,
-                modifier = Modifier.weight(1f).height(50.dp)
-            ) {
-                Text("🖼️ Generate Image")
+        StandardCard {
+            OutlinedTextField(
+                value = promptText,
+                onValueChange = { promptText = it },
+                label = { Text("Visual Prompt") },
+                minLines = 3,
+                modifier = Modifier.fillMaxWidth()
+            )
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedTextField(
+                    value = stylePreset,
+                    onValueChange = { stylePreset = it },
+                    label = { Text("Style Preset") },
+                    singleLine = true,
+                    modifier = Modifier.weight(1f)
+                )
+                OutlinedTextField(
+                    value = aspectRatio,
+                    onValueChange = { aspectRatio = it },
+                    label = { Text("Aspect Ratio") },
+                    singleLine = true,
+                    modifier = Modifier.weight(1f)
+                )
             }
-            Button(
-                onClick = { startQuickGen(true) },
-                enabled = prompt.isNotBlank() && !isGenerating,
-                modifier = Modifier.weight(1f).height(50.dp)
-            ) {
-                Text("🎬 Generate Video")
-            }
+
+            PrimaryButton(
+                text = if (mode == "IMAGE") "Generate Ad-Hoc Image" else "Generate Ad-Hoc Video",
+                isLoading = isSubmitting,
+                enabled = promptText.isNotBlank() && !isSubmitting && !isJobRunning,
+                onClick = {
+                    val pid = repository.currentProjectId()
+                    if (pid.isBlank()) return@PrimaryButton
+                    isSubmitting = true
+                    errorMessage = null
+                    resultMediaUrl = null
+                    scope.launch {
+                        val res = if (mode == "IMAGE") {
+                            repository.submitQuickImage(pid, promptText.trim(), stylePreset)
+                        } else {
+                            repository.submitQuickVideo(pid, promptText.trim(), 5)
+                        }
+                        isSubmitting = false
+                        if (res is Resource.Success && res.data.command_id.isNotBlank()) {
+                            activeCommandId = res.data.command_id
+                            activeStatus = res.data.status
+                        } else if (res is Resource.Error) {
+                            errorMessage = res.message
+                        }
+                    }
+                },
+                modifier = Modifier.fillMaxWidth()
+            )
         }
 
-        // Fix #123 & #129: Skeleton Loader ("Generating masterpiece... Est time: 45s") + Cancel Button
-        if (isGenerating) {
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-            ) {
-                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text("✨ Generating masterpiece...", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
-                        StatusBadge(friendlyPipelineStatus(pollStatus))
-                    }
-                    LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text("Polling every 3s • Est time: 45s", fontSize = 12.sp, color = MaterialTheme.colorScheme.secondary)
-                        OutlinedButton(onClick = {
-                            isGenerating = false
-                            pollStatus = "CANCELLED"
-                        }) {
-                            Text("Cancel")
-                        }
-                    }
-                }
-            }
-        }
-
-        // Fix #124 & #130: Result Preview Card + "📥 Save to Project" Button (SAVE_TO_PROJECT)
-        if (!isGenerating && pollStatus != null) {
-            Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp)) {
-                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(if (isVideoMode) "🎬 Video Render Result" else "🖼️ Image Render Result", fontWeight = FontWeight.Bold)
-                        StatusBadge(friendlyPipelineStatus(pollStatus))
-                    }
-
-                    generatedMediaUrl?.let { url ->
-                        OutlinedButton(
-                            onClick = {
-                                runCatching { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url))) }
-                            },
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Icon(Icons.Default.OpenInBrowser, contentDescription = null, modifier = Modifier.size(16.dp))
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text("Preview Rendered Media")
-                        }
-                    }
-
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                        Button(
-                            onClick = {
-                                scope.launch {
-                                    repository.submitStudioCommand(
-                                        projectId = repository.currentProjectId(),
-                                        intent = CommandIntent.SAVE_TO_PROJECT,
-                                        mode = "SAVE",
-                                        payload = mapOf(
-                                            "command_id" to (activeCommandId ?: ""),
-                                            "prompt" to prompt,
-                                            "media_url" to (generatedMediaUrl ?: "")
-                                        )
-                                    )
-                                    Toast.makeText(context, "📥 Saved to active project Media Library!", Toast.LENGTH_SHORT).show()
-                                }
-                            },
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Text("📥 Save to Project")
-                        }
-
-                        if (!activeCommandId.isNullOrBlank() && activeCommandId!!.length == 36) {
-                            OutlinedButton(
-                                onClick = { onOpenProductionPoll(activeCommandId!!) },
-                                modifier = Modifier.weight(1f)
-                            ) {
-                                Text("Open Pipeline")
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        // Fix #128: Recent Generations History Links at bottom
-        if (recentHistory.isNotEmpty()) {
-            HorizontalDivider()
-            Text("Recent Generations", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
-            recentHistory.take(5).forEach { item ->
-                Card(
-                    modifier = Modifier.fillMaxWidth().clickable {
-                        prompt = item.prompt
-                        activeCommandId = item.commandId
-                        pollStatus = item.status
-                        generatedMediaUrl = item.mediaUrl
-                    },
-                    shape = RoundedCornerShape(10.dp)
+        if (activeCommandId != null) {
+            StandardCard {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth().padding(12.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = "${if (item.isVideo) "🎬" else "🖼️"} ${item.prompt}",
-                                maxLines = 1,
-                                fontWeight = FontWeight.SemiBold
-                            )
-                            Text("Tap to reload prompt", fontSize = 11.sp, color = MaterialTheme.colorScheme.secondary)
-                        }
-                        StatusBadge(friendlyPipelineStatus(item.status))
-                    }
+                    Text("Job #${activeCommandId?.take(8)}", fontWeight = FontWeight.Bold)
+                    StatusChip(label = activeStatus ?: "QUEUED")
+                }
+                Text(
+                    text = "Stage: ${friendlyPipelineStatus(activeStatus)} • Elapsed: ${elapsedSeconds}s",
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+
+                if (isJobRunning) {
+                    // BUG-023: Indeterminate progress bar when exact worker percentage is unknown
+                    LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+
+                    // BUG-022: Real backend job cancellation via POST /jobs/:jobId/cancel
+                    DangerButton(
+                        text = if (isCancelling) "Cancelling on Server..." else "Cancel Remote Job",
+                        enabled = !isCancelling,
+                        onClick = {
+                            val pid = repository.currentProjectId()
+                            val cid = activeCommandId ?: return@DangerButton
+                            isCancelling = true
+                            scope.launch {
+                                when (val cancelRes = repository.cancelJobSync(pid, cid)) {
+                                    is Resource.Success -> {
+                                        activeStatus = "CANCELLED"
+                                        Toast.makeText(context, "Job cancelled on backend", Toast.LENGTH_SHORT).show()
+                                    }
+                                    is Resource.Error -> {
+                                        errorMessage = "Remote cancellation unconfirmed: ${cancelRes.message}"
+                                    }
+                                    else -> {}
+                                }
+                                isCancelling = false
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+
+                if (!resultMediaUrl.isNullOrBlank()) {
+                    AsyncMediaPreview(
+                        mediaUrl = resultMediaUrl,
+                        contentDescription = "Quick generation output",
+                        height = 180.dp
+                    )
+                    PrimaryButton(
+                        text = "Save Asset to Project",
+                        onClick = {
+                            val pid = repository.currentProjectId()
+                            scope.launch {
+                                val saveRes = repository.submitStudioCommand(
+                                    projectId = pid,
+                                    intent = CommandIntent.SAVE_TO_PROJECT,
+                                    mode = "SAVE",
+                                    payload = mapOf(
+                                        "source_command_id" to activeCommandId,
+                                        "media_url" to resultMediaUrl,
+                                        "prompt" to promptText
+                                    )
+                                )
+                                if (saveRes is Resource.Success) {
+                                    Toast.makeText(context, "Saved asset to project!", Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    )
                 }
             }
         }
-        Spacer(modifier = Modifier.height(60.dp))
+
+        if (errorMessage != null) {
+            StandardCard {
+                Text(errorMessage ?: "", color = StudioTokens.Error, fontSize = 13.sp)
+            }
+        }
     }
 }

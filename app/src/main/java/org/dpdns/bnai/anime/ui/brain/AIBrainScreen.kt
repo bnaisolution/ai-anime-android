@@ -1,360 +1,256 @@
 package org.dpdns.bnai.anime.ui.brain
 
-import android.app.Activity
-import android.content.Intent
-import android.net.Uri
-import android.speech.RecognizerIntent
 import android.widget.Toast
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.DeleteSweep
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import org.dpdns.bnai.anime.core.auth.PersistedChatMessage
+import org.dpdns.bnai.anime.core.auth.TokenManager
 import org.dpdns.bnai.anime.core.network.AnimeRepository
 import org.dpdns.bnai.anime.core.network.CommandIntent
 import org.dpdns.bnai.anime.core.network.Resource
 import org.dpdns.bnai.anime.ui.components.ProjectSelectorBar
-import org.dpdns.bnai.anime.ui.components.StatusBadge
-import java.util.UUID
-
-data class DirectorChatMessage(
-    val id: String = UUID.randomUUID().toString(),
-    val sender: String, // "USER", "AI", "ERROR"
-    val text: String,
-    val mediaUrl: String? = null,
-    val triggeredCommandId: String? = null,
-    val modelUsed: String? = null
-)
+import org.dpdns.bnai.anime.ui.components.detectSuggestedIntentFromReply
+import org.dpdns.bnai.anime.ui.components.friendlyPipelineStatus
+import org.dpdns.bnai.anime.ui.designsystem.*
 
 @Composable
-fun AIBrainScreen(
-    onTrackCommand: (String) -> Unit = {}
-) {
+fun AIBrainScreen() {
     val context = LocalContext.current
+    val tokenManager = remember { TokenManager(context) }
     val repository = remember { AnimeRepository() }
     val scope = rememberCoroutineScope()
     val listState = rememberLazyListState()
 
-    // Fix #118: Persistent conversation_id for session context memory
-    var conversationId by remember { mutableStateOf("conv-${UUID.randomUUID().toString().take(8)}") }
-    var inputPrompt by remember { mutableStateOf("") }
-    var isThinking by remember { mutableStateOf(false) }
-    var webSearchEnabled by remember { mutableStateOf(false) }
-    var activeModelBadge by remember { mutableStateOf("Groq Llama-3.3 • Gemini") }
-    var messages by remember { mutableStateOf<List<DirectorChatMessage>>(emptyList()) }
+    var projectId by remember { mutableStateOf(repository.currentProjectId()) }
+    var providerBadge by remember { mutableStateOf(tokenManager.getConfiguredProviderLabel()) }
+    var messages by remember(projectId) {
+        mutableStateOf(tokenManager.getProjectChatHistory(projectId))
+    }
+    var inputPrompt by rememberSaveable(projectId) { mutableStateOf("") }
+    var isSending by remember { mutableStateOf(false) }
 
-    val starterChips = listOf(
-        "Create Project" to "Help me create a new dark fantasy anime project and outline its core hook.",
-        "Discuss Bible" to "Review my current Story Bible and suggest 3 unique power system rules.",
-        "Check Canon" to "Check locked canon facts and character consistency for Episode 1.",
-        "Generate Episode" to "Plan Episode 1 scene breakdown and trigger GENERATE_EPISODE."
-    )
+    var activeCmdId by remember(projectId) {
+        mutableStateOf(tokenManager.getActiveCommandId(projectId, "ai_brain_cmd"))
+    }
+    var activeCmdStatus by remember { mutableStateOf<String?>(null) }
 
-    // Fix #115: Speech-to-Text Mic Launcher
-    val speechLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.StartActivityForResult()
-    ) { result ->
-        if (result.resultCode == Activity.RESULT_OK) {
-            val spoken = result.data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)?.firstOrNull()
-            if (!spoken.isNullOrBlank()) {
-                inputPrompt = if (inputPrompt.isBlank()) spoken else "$inputPrompt$spoken"
-            }
-        }
+    LaunchedEffect(projectId) {
+        providerBadge = repository.resolveConfiguredAiProviderBadge()
+        messages = tokenManager.getProjectChatHistory(projectId)
     }
 
-    // Fix #116: File Picker to attach reference image & trigger Vision (WF-05)
-    val fileLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
-    ) { uri: Uri? ->
-        uri?.let {
-            val refUri = it.toString()
-            messages = messages + DirectorChatMessage(
-                sender = "USER",
-                text = "📎 Attached Reference Media for Vision DNA Analysis",
-                mediaUrl = refUri
-            )
-            scope.launch {
-                val res = repository.triggerVisionAnalysis(
-                    projectId = repository.currentProjectId(),
-                    mediaUrl = refUri,
-                    prompt = "Extract 11-field Visual DNA from attached reference"
-                )
-                val cmdId = (res as? Resource.Success)?.data?.command_id
-                messages = messages + DirectorChatMessage(
-                    sender = "AI",
-                    text = "Vision DNA extraction triggered on your attached reference image.",
-                    triggeredCommandId = cmdId
-                )
-            }
-        }
-    }
-
-    // Fix #108: Auto-scroll to newest message
-    LaunchedEffect(messages.size, isThinking) {
-        if (messages.isNotEmpty()) {
-            listState.animateScrollToItem(messages.size - 1)
-        }
-    }
-
-    fun sendMessage(rawText: String) {
-        val clean = rawText.trim()
-        if (clean.isBlank() || isThinking) return
-        inputPrompt = ""
-        messages = messages + DirectorChatMessage(sender = "USER", text = clean)
-        isThinking = true
-
-        scope.launch {
-            val augmentedPrompt = buildString {
-                append("[Anime Studio Director Scope: StoryWF-00..13 Only] ")
-                if (webSearchEnabled) append("[WebSearch: ON] ")
-                append(clean)
-            }
-            // Fix #113 & #118: Pass current_screen and conversation_id
-            when (val res = repository.chatWithBrain(
-                message = augmentedPrompt,
-                projectId = repository.currentProjectId(),
-                currentScreen = "ai_director",
-                conversationId = conversationId
-            )) {
+    LaunchedEffect(activeCmdId, projectId) {
+        val cid = activeCmdId ?: return@LaunchedEffect
+        while (true) {
+            when (val res = repository.fetchCommandStatus(cid)) {
                 is Resource.Success -> {
-                    val replyText = res.data.reply ?: res.data.message ?: "Action processed."
-                    res.data.model?.let { activeModelBadge = it }
-
-                    // Fix #119: Detect media URLs inside AI response
-                    val urlRegex = Regex("(https?://[^\\s\"'>]+)")
-                    val detectedUrl = urlRegex.find(replyText)?.value
-
-                    // Fix #114 & #120: Action Agent parser for hidden JSON / command intents
-                    var dispatchedCmdId: String? = null
-                    val upperReply = (replyText + " " + (res.data.action ?: "")).uppercase()
-                    val matchedIntent = when {
-                        upperReply.contains("GENERATE_EPISODE") -> CommandIntent.GENERATE_EPISODE
-                        upperReply.contains("SAVE_BIBLE") -> CommandIntent.SAVE_BIBLE
-                        upperReply.contains("CHECK_CONTINUITY") -> CommandIntent.CHECK_CONTINUITY
-                        upperReply.contains("CHECK_CANON") -> CommandIntent.CHECK_CANON
-                        else -> null
+                    val st = res.data.status.uppercase()
+                    activeCmdStatus = st
+                    if (st in listOf("SUCCEEDED", "COMPLETED", "FAILED", "ERROR", "CANCELLED")) {
+                        tokenManager.saveActiveCommandId(projectId, "ai_brain_cmd", null)
+                        break
                     }
-                    if (matchedIntent != null) {
-                        val cmdRes = repository.submitStudioCommand(
-                            projectId = repository.currentProjectId(),
-                            intent = matchedIntent,
-                            mode = "SAVE",
-                            payload = mapOf("user_prompt" to clean)
+                }
+                else -> break
+            }
+            delay(3000)
+        }
+    }
+
+    fun sendMessage(textToSend: String) {
+        val clean = textToSend.trim()
+        if (clean.isEmpty() || isSending) return
+        inputPrompt = ""
+        isSending = true
+        messages = tokenManager.appendProjectChatMessage(
+            projectId,
+            PersistedChatMessage(role = "user", content = clean)
+        )
+        scope.launch {
+            if (messages.isNotEmpty()) {
+                listState.animateScrollToItem(messages.lastIndex)
+            }
+            val convId = tokenManager.getProjectConversationId(projectId)
+            when (val res = repository.askAiDirector(clean, "AI_BRAIN", convId)) {
+                is Resource.Success -> {
+                    val suggested = detectSuggestedIntentFromReply(res.data.reply)?.name
+                    messages = tokenManager.appendProjectChatMessage(
+                        projectId,
+                        PersistedChatMessage(
+                            role = "assistant",
+                            content = res.data.reply,
+                            suggestedIntent = suggested
                         )
-                        dispatchedCmdId = (cmdRes as? Resource.Success)?.data?.command_id
-                            ?: (cmdRes as? Resource.Success)?.data?.command?.id
-                    }
-
-                    messages = messages + DirectorChatMessage(
-                        sender = "AI",
-                        text = replyText,
-                        mediaUrl = detectedUrl,
-                        triggeredCommandId = dispatchedCmdId,
-                        modelUsed = res.data.model ?: res.data.provider
                     )
                 }
                 is Resource.Error -> {
-                    // Fix #121: Explicit red error bubble (Quota 429, network, etc.)
-                    messages = messages + DirectorChatMessage(
-                        sender = "ERROR",
-                        text = "⚠️ ${res.message}"
+                    messages = tokenManager.appendProjectChatMessage(
+                        projectId,
+                        PersistedChatMessage(
+                            role = "assistant",
+                            content = "**Error:** ${res.message}"
+                        )
                     )
                 }
-                else -> Unit
+                else -> {}
             }
-            isThinking = false
+            isSending = false
+            if (messages.isNotEmpty()) {
+                listState.animateScrollToItem(messages.lastIndex)
+            }
         }
     }
 
     Column(
-        modifier = Modifier.fillMaxSize().padding(16.dp),
+        modifier = Modifier
+            .fillMaxSize()
+            .imePadding()
+            .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         ProjectSelectorBar(
-            onRefreshClick = {
-                conversationId = "conv-${UUID.randomUUID().toString().take(8)}"
-                messages = emptyList()
-                Toast.makeText(context, "New AI Director session started", Toast.LENGTH_SHORT).show()
+            onProjectChanged = { newPid ->
+                projectId = newPid
+                messages = tokenManager.getProjectChatHistory(newPid)
             }
         )
 
-        // Fix #106, #117, #197: Header "AI Director" + Active Model Badge + Web Search Toggle
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column {
-                Text("AI Director", style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold)
-                Text("Model: $activeModelBadge", fontSize = 11.sp, color = MaterialTheme.colorScheme.secondary)
-            }
-            FilterChip(
-                selected = webSearchEnabled,
-                onClick = { webSearchEnabled = !webSearchEnabled },
-                label = { Text(if (webSearchEnabled) "🌐 Search ON" else "🌐 Web Search", fontSize = 11.sp) }
-            )
-        }
-
-        // Fix #110: Quick Starter Chips
-        LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            items(starterChips) { (label, promptText) ->
-                AssistChip(
-                    onClick = { sendMessage(promptText) },
-                    label = { Text(label) }
-                )
-            }
-        }
-
-        // Chat Messages Area
-        Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
-            if (messages.isEmpty() && !isThinking) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Icon(
-                            Icons.Default.AutoAwesome,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(42.dp)
-                        )
-                        Text("Your Anime AI Director is Ready", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
-                        Text(
-                            "Ask about Story Bible, Character DNA, Canon rules, or tap a chip above to dispatch studio workflows.",
-                            color = MaterialTheme.colorScheme.secondary,
-                            fontSize = 13.sp
-                        )
+        ScreenHeader(
+            title = "AI Studio Director",
+            subtitle = "Project-isolated conversation with Markdown & explicit command confirmation",
+            trailingContent = {
+                StatusChip(label = providerBadge)
+                if (messages.isNotEmpty()) {
+                    IconButton(onClick = {
+                        tokenManager.clearProjectChatHistory(projectId)
+                        messages = emptyList()
+                    }) {
+                        Icon(Icons.Default.DeleteSweep, contentDescription = "Clear project chat")
                     }
                 }
-            } else {
-                LazyColumn(
-                    state = listState,
-                    modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.spacedBy(10.dp),
-                    contentPadding = PaddingValues(bottom = 12.dp)
+            }
+        )
+
+        if (!activeCmdId.isNullOrBlank()) {
+            StandardCard {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    items(messages, key = { it.id }) { msg ->
-                        val isUser = msg.sender == "USER"
-                        val isError = msg.sender == "ERROR"
-                        val bgColor = when {
-                            isError -> Color(0xFFEF4444).copy(alpha = 0.16f)
-                            isUser -> MaterialTheme.colorScheme.primaryContainer
-                            else -> MaterialTheme.colorScheme.surfaceVariant
-                        }
+                    Text(
+                        text = "Dispatched Command #${activeCmdId?.take(8)}: ${friendlyPipelineStatus(activeCmdStatus ?: "QUEUED")}",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    StatusChip(label = activeCmdStatus ?: "QUEUED")
+                }
+            }
+        }
 
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = if (isUser) Arrangement.End else Arrangement.Start
-                        ) {
-                            Card(
-                                modifier = Modifier.widthIn(max = 320.dp),
-                                shape = RoundedCornerShape(14.dp),
-                                colors = CardDefaults.cardColors(containerColor = bgColor)
-                            ) {
-                                Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        // Quick Suggestion Chips when conversation is empty
+        if (messages.isEmpty()) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                listOf(
+                    "Audit Story Bible",
+                    "Check Continuity",
+                    "Plan Next Episode"
+                ).forEach { chipText ->
+                    SuggestionChip(
+                        onClick = { sendMessage(chipText) },
+                        label = { Text(chipText, fontSize = 12.sp) }
+                    )
+                }
+            }
+        }
+
+        LazyColumn(
+            state = listState,
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            items(messages, key = { it.id }) { msg ->
+                val isUser = msg.role == "user"
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = if (isUser) StudioTokens.Primary.copy(alpha = 0.14f)
+                        else MaterialTheme.colorScheme.surfaceVariant
+                    )
+                ) {
+                    Column(
+                        modifier = Modifier.padding(12.dp),
+                        verticalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        Text(
+                            text = if (isUser) "You" else "AI Studio Director",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = if (isUser) StudioTokens.Primary else StudioTokens.Secondary
+                        )
+                        MarkdownText(markdown = msg.content)
+
+                        // EXTRA-BUG-01: Explicit user confirmation before running any command
+                        if (!isUser && !msg.suggestedIntent.isNullOrBlank()) {
+                            val intentEnum = runCatching { CommandIntent.valueOf(msg.suggestedIntent) }.getOrNull()
+                            if (intentEnum != null) {
+                                HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
                                     Text(
-                                        text = if (isUser) "You" else if (isError) "System Alert" else "AI Director",
-                                        fontSize = 11.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = if (isError) Color(0xFFEF4444) else MaterialTheme.colorScheme.primary
+                                        text = "Suggested Studio Action: ${intentEnum.name}",
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.SemiBold
                                     )
-
-                                    // Fix #107: Clean formatted markdown-style rendering (headers/bullets/code blocks)
-                                    msg.text.lines().forEach { line ->
-                                        val trimmed = line.trim()
-                                        when {
-                                            trimmed.startsWith("###") || trimmed.startsWith("##") -> {
-                                                Text(
-                                                    trimmed.trimStart('#', ' '),
-                                                    fontWeight = FontWeight.Bold,
-                                                    style = MaterialTheme.typography.headlineMedium
-                                                )
-                                            }
-                                            trimmed.startsWith("```") -> Unit
-                                            trimmed.startsWith("- ") || trimmed.startsWith("* ") -> {
-                                                Text("• ${trimmed.drop(2).replace("**", "")}", style = MaterialTheme.typography.bodyLarge)
-                                            }
-                                            else -> {
-                                                Text(
-                                                    line.replace("**", ""),
-                                                    color = if (isError) Color(0xFFEF4444) else MaterialTheme.colorScheme.onSurface,
-                                                    style = MaterialTheme.typography.bodyLarge
-                                                )
-                                            }
-                                        }
-                                    }
-
-                                    // Fix #119: Clickable Media Preview Card when URL is detected
-                                    msg.mediaUrl?.let { url ->
-                                        OutlinedButton(
-                                            onClick = {
-                                                runCatching { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url))) }
-                                            },
-                                            modifier = Modifier.fillMaxWidth()
-                                        ) {
-                                            Icon(Icons.Default.PlayCircle, contentDescription = null, modifier = Modifier.size(16.dp))
-                                            Spacer(modifier = Modifier.width(6.dp))
-                                            Text("Open Media Preview", fontSize = 12.sp)
-                                        }
-                                    }
-
-                                    // Fix #120: Command Dispatched Feedback Card with "Track Progress" CTA
-                                    msg.triggeredCommandId?.let { cmdId ->
-                                        Surface(
-                                            color = Color(0xFF10B981).copy(alpha = 0.15f),
-                                            shape = RoundedCornerShape(8.dp),
-                                            modifier = Modifier.fillMaxWidth()
-                                        ) {
-                                            Row(
-                                                modifier = Modifier.padding(8.dp),
-                                                horizontalArrangement = Arrangement.SpaceBetween,
-                                                verticalAlignment = Alignment.CenterVertically
-                                            ) {
-                                                Text("✅ Workflow Queued", color = Color(0xFF10B981), fontWeight = FontWeight.Bold, fontSize = 12.sp)
-                                                TextButton(onClick = { onTrackCommand(cmdId) }) {
-                                                    Text("Track Progress")
+                                    Button(
+                                        onClick = {
+                                            scope.launch {
+                                                val res = repository.submitStudioCommand(projectId, intentEnum)
+                                                if (res is Resource.Success && res.data.command_id.isNotBlank()) {
+                                                    activeCmdId = res.data.command_id
+                                                    activeCmdStatus = res.data.status
+                                                    tokenManager.saveActiveCommandId(projectId, "ai_brain_cmd", res.data.command_id)
+                                                    Toast.makeText(context, "Command #${res.data.command_id.take(6)} dispatched", Toast.LENGTH_SHORT).show()
                                                 }
                                             }
                                         }
+                                    ) {
+                                        Icon(Icons.Default.PlayArrow, contentDescription = null, modifier = Modifier.size(16.dp))
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                        Text("Confirm & Execute", fontSize = 12.sp)
                                     }
-                                }
-                            }
-                        }
-                    }
-
-                    // Fix #109: "AI is thinking..." bubble loader
-                    if (isThinking) {
-                        item {
-                            Card(
-                                shape = RoundedCornerShape(14.dp),
-                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-                            ) {
-                                Row(
-                                    modifier = Modifier.padding(12.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(10.dp)
-                                ) {
-                                    CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
-                                    Text("AI Director is thinking...", fontSize = 13.sp)
                                 }
                             }
                         }
@@ -363,39 +259,31 @@ fun AIBrainScreen(
             }
         }
 
-        // Fix #111, #115, #116: Aligned Input Row with Attach (📎), Mic (🎤), and Send button
         Row(
             modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(6.dp)
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            IconButton(onClick = { fileLauncher.launch("image/*") }) {
-                Icon(Icons.Default.AttachFile, contentDescription = "Attach Reference Image")
-            }
-            IconButton(onClick = {
-                val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
-                    putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
-                    putExtra(RecognizerIntent.EXTRA_PROMPT, "Speak to AI Director...")
-                }
-                runCatching { speechLauncher.launch(intent) }.onFailure {
-                    Toast.makeText(context, "Speech recognition not available on this device", Toast.LENGTH_SHORT).show()
-                }
-            }) {
-                Icon(Icons.Default.Mic, contentDescription = "Voice Input")
-            }
             OutlinedTextField(
                 value = inputPrompt,
                 onValueChange = { inputPrompt = it },
-                placeholder = { Text("Ask AI Director...") },
-                singleLine = true,
-                modifier = Modifier.weight(1f)
+                placeholder = { Text("Ask AI Director about this project...") },
+                modifier = Modifier.weight(1f),
+                maxLines = 4
             )
-            Button(
+            IconButton(
                 onClick = { sendMessage(inputPrompt) },
-                enabled = inputPrompt.isNotBlank() && !isThinking,
-                modifier = Modifier.height(52.dp)
+                enabled = inputPrompt.isNotBlank() && !isSending,
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(CircleShape)
+                    .background(if (inputPrompt.isNotBlank() && !isSending) StudioTokens.Primary else Color.Gray.copy(alpha = 0.3f))
             ) {
-                Icon(Icons.Default.Send, contentDescription = "Send")
+                if (isSending) {
+                    CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp, color = Color.White)
+                } else {
+                    Icon(Icons.Default.Send, contentDescription = "Send", tint = Color.White)
+                }
             }
         }
     }

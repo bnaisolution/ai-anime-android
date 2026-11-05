@@ -1,5 +1,8 @@
 package org.dpdns.bnai.anime.core.network
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+
 import org.dpdns.bnai.anime.core.auth.TokenManager
 import org.dpdns.bnai.anime.core.model.*
 import retrofit2.Response
@@ -104,9 +107,9 @@ class AnimeRepository(private val apiService: AnimeApiService = RetrofitClient.g
                     ?.filter { it.value != null && it.value.toString().isNotBlank() }
                     ?.joinToString("\n") { "${it.key}: ${it.value}" }
                     ?: dto.description
-                    ?: "Visual DNA ready for extraction"
-                val voiceText = dto.voice_config?.get("voice_id")?.toString() ?: "svara_hi_male_hero_01"
-                val roleText = dto.role ?: dto.visual_dna?.get("role")?.toString() ?: "Main Cast"
+                    ?: "Visual DNA not extracted yet"
+                val voiceText = dto.voice_config?.get("voice_id")?.toString() ?: "UNSET"
+                val roleText = dto.role ?: dto.visual_dna?.get("role")?.toString() ?: "UNASSIGNED"
                 val statusText = dto.initial_status ?: "alive"
                 Character(
                     id = resolvedCode,
@@ -404,4 +407,412 @@ class AnimeRepository(private val apiService: AnimeApiService = RetrofitClient.g
 
     suspend fun checkBackendHealth(): Boolean =
         (fetchHealthDetail() as? Resource.Success)?.data?.ok == true
+
+    
+    // === STUDIO V2 SYNCHRONOUS CRUD, CANCELLATION & COMPLETE BRIDGE METHODS (C12..C17 FIXED) ===
+
+    suspend fun createProjectSync(
+        name: String,
+        genre: String = "Action / Fantasy",
+        visualMedium: String = "ANIME",
+        premise: String = "",
+        autoApprove: Boolean = false
+    ): Resource<Project> = withContext(Dispatchers.IO) {
+        try {
+            val payload: JsonMap = mapOf(
+                "name" to name.trim(),
+                "genre" to genre,
+                "visual_medium" to visualMedium,
+                "premise" to premise,
+                "auto_approve" to autoApprove
+            )
+            val response = apiService.createProjectSync(payload)
+            if (response.isSuccessful) {
+                val dto = response.body()?.data
+                if (dto != null) {
+                    TokenManager.cachedProjectId = dto.id
+                    Resource.Success(
+                        Project(
+                            id = dto.id,
+                            name = dto.name,
+                            activeEpisode = "Season ${dto.current_season ?: 1} • Episode ${dto.current_episode ?: 0}",
+                            status = if (dto.is_active == false) "INACTIVE" else "ACTIVE"
+                        )
+                    )
+                } else {
+                    Resource.Error("Empty project response from server")
+                }
+            } else {
+                Resource.Error("Create project failed (${response.code()})", response.code())
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.localizedMessage ?: "Failed to create project")
+        }
+    }
+
+    suspend fun updateProjectBible(
+        projectId: String = currentProjectId(),
+        bibleUpdates: JsonMap
+    ): Resource<JsonMap> = withContext(Dispatchers.IO) {
+        try {
+            val response = apiService.updateProjectBible(projectId, mapOf("story_bible" to bibleUpdates))
+            if (response.isSuccessful) {
+                Resource.Success(response.body()?.data ?: bibleUpdates)
+            } else {
+                Resource.Error("Save Bible draft failed (${response.code()})", response.code())
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.localizedMessage ?: "Failed to save Bible draft")
+        }
+    }
+
+    suspend fun createCharacterSync(
+        projectId: String = currentProjectId(),
+        name: String,
+        role: String,
+        status: String = "alive",
+        voiceId: String = "UNSET",
+        visualDnaSummary: String = ""
+    ): Resource<CharacterDto> = withContext(Dispatchers.IO) {
+        try {
+            val payload: JsonMap = mapOf(
+                "name" to name.trim(),
+                "role" to role.trim().ifBlank { "SUPPORTING" },
+                "status" to status.lowercase(),
+                "voice_id" to voiceId,
+                "visual_dna" to mapOf("summary" to visualDnaSummary, "role" to role.trim().ifBlank { "SUPPORTING" })
+            )
+            val response = apiService.createCharacter(projectId, payload)
+            if (response.isSuccessful && response.body()?.data != null) {
+                Resource.Success(response.body()!!.data!!)
+            } else {
+                Resource.Error("Character creation failed (${response.code()})", response.code())
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.localizedMessage ?: "Character creation error")
+        }
+    }
+
+    suspend fun updateCharacterSync(
+        projectId: String = currentProjectId(),
+        characterIdOrCode: String,
+        updates: JsonMap
+    ): Resource<CharacterDto> = withContext(Dispatchers.IO) {
+        try {
+            val response = apiService.updateCharacter(projectId, characterIdOrCode, updates)
+            if (response.isSuccessful && response.body()?.data != null) {
+                Resource.Success(response.body()!!.data!!)
+            } else {
+                Resource.Error("Update character failed (${response.code()})", response.code())
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.localizedMessage ?: "Update character error")
+        }
+    }
+
+    suspend fun updateEpisodeSync(
+        projectId: String = currentProjectId(),
+        episodeNo: Int,
+        updates: JsonMap
+    ): Resource<EpisodeDto> = withContext(Dispatchers.IO) {
+        try {
+            val response = apiService.updateEpisode(projectId, episodeNo, updates)
+            if (response.isSuccessful && response.body()?.data != null) {
+                Resource.Success(response.body()!!.data!!)
+            } else {
+                Resource.Error("Episode update failed (${response.code()})", response.code())
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.localizedMessage ?: "Episode update error")
+        }
+    }
+
+    suspend fun updateSceneSync(
+        projectId: String = currentProjectId(),
+        episodeNo: Int,
+        sceneId: String,
+        updates: JsonMap
+    ): Resource<SceneDto> = withContext(Dispatchers.IO) {
+        try {
+            val response = apiService.updateScene(projectId, episodeNo, sceneId, updates)
+            if (response.isSuccessful && response.body()?.data != null) {
+                Resource.Success(response.body()!!.data!!)
+            } else {
+                Resource.Error("Scene update failed (${response.code()})", response.code())
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.localizedMessage ?: "Scene update error")
+        }
+    }
+
+    suspend fun cancelJobSync(
+        projectId: String = currentProjectId(),
+        jobId: String
+    ): Resource<JsonMap> = withContext(Dispatchers.IO) {
+        try {
+            val response = apiService.cancelJob(projectId, jobId)
+            if (response.isSuccessful) {
+                Resource.Success(response.body()?.data ?: mapOf("status" to "CANCELLED"))
+            } else {
+                Resource.Error("Job cancellation failed (${response.code()})", response.code())
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.localizedMessage ?: "Job cancellation error")
+        }
+    }
+
+    // C14 FIX: Convert ProjectOverviewDto to JsonMap
+    suspend fun fetchProjectOverviewRaw(
+        projectId: String = currentProjectId()
+    ): Resource<JsonMap> {
+        return when (val res = fetchProjectOverview(projectId)) {
+            is Resource.Success -> {
+                val dto = res.data
+                Resource.Success(mapOf(
+                    "project" to mapOf(
+                        "id" to dto.project?.id,
+                        "name" to dto.project?.name,
+                        "is_active" to dto.project?.is_active
+                    ),
+                    "stats" to (dto.stats ?: emptyMap<String, Any?>()),
+                    "episodes_count" to (dto.episodes_count ?: 0),
+                    "characters_count" to (dto.characters_count ?: 0),
+                    "pending_approvals" to (dto.pending_approvals ?: 0),
+                    "pending_approvals_count" to (dto.pending_approvals ?: 0),
+                    "active_jobs" to (dto.active_jobs ?: 0),
+                    "active_jobs_count" to (dto.active_jobs ?: 0),
+                    "canon_status" to dto.canon_status,
+                    "continuity_status" to dto.continuity_status
+                ))
+            }
+            is Resource.Error -> res
+            else -> Resource.Empty
+        }
+    }
+
+    suspend fun fetchEpisodesRaw(projectId: String = currentProjectId()): Resource<List<EpisodeDto>> = withContext(Dispatchers.IO) {
+        try {
+            val response = apiService.getProjectEpisodes(projectId)
+            if (response.isSuccessful) {
+                val list = response.body()?.data ?: emptyList()
+                if (list.isEmpty()) Resource.Empty else Resource.Success(list)
+            } else {
+                Resource.Error("Failed to fetch episodes (${response.code()})", response.code())
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.localizedMessage ?: "Failed to fetch episodes")
+        }
+    }
+
+    suspend fun fetchScenesRaw(projectId: String = currentProjectId(), episodeNo: Int = 1): Resource<List<SceneDto>> {
+        return fetchScenes(projectId, episodeNo)
+    }
+
+    // C17 FIX: Use takeIf { it.isNotBlank() } instead of ifBlank { null }
+    suspend fun fetchSystemPrompts(projectId: String = currentProjectId()): Resource<List<SystemPromptDto>> = withContext(Dispatchers.IO) {
+        try {
+            val response = apiService.getSystemPrompts(projectId.takeIf { it.isNotBlank() })
+            if (response.isSuccessful) {
+                Resource.Success(response.body()?.data ?: emptyList())
+            } else {
+                Resource.Error("Failed to load prompts (${response.code()})", response.code())
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.localizedMessage ?: "Failed to load prompts")
+        }
+    }
+
+    // C17 FIX: Use takeIf { it.isNotBlank() } instead of ifBlank { null }
+    suspend fun saveSystemPrompt(
+        projectId: String = currentProjectId(),
+        title: String,
+        promptText: String,
+        visualMedium: String = "ANIME",
+        promptCategory: String = "BIBLE"
+    ): Resource<SystemPromptDto> = withContext(Dispatchers.IO) {
+        try {
+            val req = CreateSystemPromptRequest(
+                project_id = projectId.takeIf { it.isNotBlank() },
+                title = title,
+                prompt_text = promptText,
+                visual_medium = visualMedium,
+                prompt_category = promptCategory
+            )
+            val response = apiService.createSystemPrompt(req)
+            if (response.isSuccessful && response.body()?.data != null) {
+                Resource.Success(response.body()!!.data!!)
+            } else {
+                Resource.Error("Failed to save prompt (${response.code()})", response.code())
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.localizedMessage ?: "Failed to save prompt")
+        }
+    }
+
+    // C16 FIX: Return Resource<AiChatResponse> and pass projectId to chatWithBrain
+    suspend fun askAiDirector(
+        message: String,
+        currentScreen: String = "STUDIO",
+        conversationId: String? = null,
+        projectId: String = currentProjectId()
+    ): Resource<AiChatResponse> {
+        return chatWithBrain(
+            message = message,
+            projectId = projectId,
+            currentScreen = currentScreen,
+            conversationId = conversationId
+        )
+    }
+
+    // C12 FIX: Return Resource<SubmitCommandResultDto> with exact triggerQuickMedia params
+    suspend fun submitQuickImage(
+        projectId: String = currentProjectId(),
+        prompt: String,
+        stylePreset: String = "ANIME"
+    ): Resource<SubmitCommandResultDto> {
+        return triggerQuickMedia(
+            projectId = projectId,
+            isVideo = false,
+            prompt = "$prompt [Style: $stylePreset]"
+        )
+    }
+
+    suspend fun submitQuickVideo(
+        projectId: String = currentProjectId(),
+        prompt: String,
+        durationSec: Int = 5
+    ): Resource<SubmitCommandResultDto> {
+        return triggerQuickMedia(
+            projectId = projectId,
+            isVideo = true,
+            prompt = prompt
+        )
+    }
+
+    // C13 FIX: Return Resource<SubmitCommandResultDto> with mediaUrl & saveToCharacter params
+    suspend fun submitVisionAnalysis(
+        projectId: String = currentProjectId(),
+        imageUrl: String,
+        analysisType: String = "QUICK",
+        characterId: String = "CHAR_001"
+    ): Resource<SubmitCommandResultDto> {
+        return triggerVisionAnalysis(
+            projectId = projectId,
+            mediaUrl = imageUrl,
+            prompt = "Extract 11-field Character Visual DNA",
+            characterCode = characterId,
+            saveToCharacter = analysisType.equals("SAVE", ignoreCase = true)
+        )
+    }
+
+    suspend fun fetchGpuInfrastructure(): Resource<JsonMap> = withContext(Dispatchers.IO) {
+        try {
+            val response = apiService.getGpuConfig()
+            if (response.isSuccessful) {
+                Resource.Success(response.body()?.data ?: emptyMap())
+            } else {
+                Resource.Error("Failed to fetch infrastructure config (${response.code()})", response.code())
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.localizedMessage ?: "Failed to fetch infrastructure config")
+        }
+    }
+
+    suspend fun saveGpuInfrastructure(payload: JsonMap): Resource<JsonMap> = withContext(Dispatchers.IO) {
+        try {
+            val req = GpuSetupRequest(
+                preferred_mode = (payload["preferred_mode"] as? String) ?: "KAGGLE_AUTO",
+                models_dataset_slug = payload["models_dataset_slug"] as? String,
+                auto_deploy_kaggle = (payload["auto_deploy_kaggle"] as? Boolean) ?: true,
+                custom_gpu = payload["custom_gpu"] as? CustomGpuConfigDto,
+                kaggle_primary = payload["kaggle_primary"] as? KaggleAccountConfigDto,
+                kaggle_secondary = payload["kaggle_secondary"] as? KaggleAccountConfigDto,
+                telegram_storage = payload["telegram_storage"] as? TelegramStorageConfigDto,
+                github_worker_url = payload["github_worker_url"] as? String
+            )
+            val response = apiService.saveGpuConfig(req)
+            if (response.isSuccessful) {
+                Resource.Success(payload)
+            } else {
+                Resource.Error("Failed to save infrastructure config (${response.code()})", response.code())
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.localizedMessage ?: "Failed to save infrastructure config")
+        }
+    }
+
+    suspend fun fetchProjectQuota(projectId: String = currentProjectId()): Resource<JsonMap> {
+        return fetchQuota(projectId)
+    }
+
+    suspend fun fetchAdminLedgerSummary(): Resource<JsonMap> {
+        return fetchLedgerSummary(currentProjectId())
+    }
+
+    suspend fun fetchAdminWorkflows(): Resource<List<JsonMap>> {
+        return fetchAdminWorkflows(currentProjectId())
+    }
+
+    suspend fun fetchAdminWorkers(): Resource<List<JsonMap>> {
+        return fetchAdminWorkers(currentProjectId())
+    }
+
+    // C15 FIX: Map JsonMap to UpdateProjectSettingsRequest DTO
+    suspend fun updateProjectSettings(
+        projectId: String = currentProjectId(),
+        updates: JsonMap
+    ): Resource<JsonMap> = withContext(Dispatchers.IO) {
+        try {
+            val req = UpdateProjectSettingsRequest(
+                name = updates["name"] as? String,
+                visual_medium = updates["visual_medium"] as? String,
+                genre = updates["genre"] as? String,
+                auto_approve = updates["auto_approve"] as? Boolean,
+                cover_image_url = updates["cover_image_url"] as? String,
+                budget_ceiling = (updates["budget_ceiling"] as? Number)?.toInt()
+            )
+            val response = apiService.updateProjectSettings(projectId, req)
+            if (response.isSuccessful) {
+                Resource.Success(updates)
+            } else {
+                Resource.Error("Failed (${response.code()})", response.code())
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.localizedMessage ?: "Update failed")
+        }
+    }
+
+    suspend fun updateBudgetLimit(
+        projectId: String = currentProjectId(),
+        limit: Double
+    ): Resource<JsonMap> {
+        return updateBudgetLimit(projectId, limit.toInt())
+    }
+
+    suspend fun resolveConfiguredAiProviderBadge(): String = withContext(Dispatchers.IO) {
+        try {
+            val isUp = checkBackendHealth()
+            if (!isUp) {
+                return@withContext "AI: Disconnected"
+            }
+            val gpuRes = fetchGpuInfrastructure()
+            if (gpuRes is Resource.Success) {
+                val data = gpuRes.data
+                val primary = (data["primary_llm_provider"] ?: data["llm_provider"] ?: data["preferred_mode"])?.toString()?.trim()
+                val fallback = (data["fallback_llm_provider"] ?: data["vision_provider"])?.toString()?.trim()
+                if (!primary.isNullOrBlank() && primary != "null") {
+                    val cleanPrimary = primary.replace("_", " ")
+                    val cleanFallback = if (!fallback.isNullOrBlank() && fallback != "null" && !fallback.equals(primary, ignoreCase = true)) {
+                        " • ${fallback.replace("_", " ")}"
+                    } else ""
+                    val label = "$cleanPrimary$cleanFallback"
+                    TokenManager.cachedProviderLabel = label
+                    return@withContext label
+                }
+            }
+            return@withContext TokenManager.cachedProviderLabel ?: "AI: Configured"
+        } catch (_: Exception) {
+            return@withContext "AI: Disconnected"
+        }
+    }
 }

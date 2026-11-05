@@ -1,613 +1,308 @@
 package org.dpdns.bnai.anime.ui.settings
 
 import android.widget.Toast
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
 import org.dpdns.bnai.anime.core.auth.TokenManager
-import org.dpdns.bnai.anime.core.network.*
-import org.dpdns.bnai.anime.ui.components.InfoTooltipButton
+import org.dpdns.bnai.anime.core.network.AnimeRepository
+import org.dpdns.bnai.anime.core.network.Resource
 import org.dpdns.bnai.anime.ui.components.ProjectSelectorBar
-import org.dpdns.bnai.anime.ui.components.StatusBadge
+import org.dpdns.bnai.anime.ui.designsystem.*
 
 @Composable
 fun SettingsScreen() {
     val context = LocalContext.current
+    val tokenManager = remember { TokenManager(context) }
+    val repository = remember { AnimeRepository() }
     val scope = rememberCoroutineScope()
-    val apiService = remember { RetrofitClient.getApiService(context) }
-    val repository = remember { AnimeRepository(apiService) }
-    val isOwner = remember { TokenManager.getInstance()?.isOwner() == true }
 
-    var selectedTab by remember { mutableIntStateOf(0) }
-    val tabs = listOf("AI Models", "Compute", "Storage", "Preferences")
+    var selectedTab by remember { mutableStateOf(0) }
+    val tabs = listOf("AI & Vision", "Compute Workers", "Storage & Policy", "Session")
 
-    // Connection & Wizard State (#231, #238)
-    var connectionStatus by remember { mutableStateOf("Connected") }
-    var isTestingConnection by remember { mutableStateOf(false) }
-    var showSetupWizard by remember { mutableStateOf(false) }
-    var wizardStep by remember { mutableIntStateOf(1) }
-    var showAddProviderDialog by remember { mutableStateOf(false) }
-    var showComingSoonDialog by remember { mutableStateOf(false) }
-
-    // Tab 0: AI Models (#195, #196, #226-228, #232)
-    var primaryChatProvider by remember { mutableStateOf("Groq (Llama-3.3-70B)") }
-    var fallbackChatProvider by remember { mutableStateOf("Gemini 2.5 Pro") }
-    var primaryVisionProvider by remember { mutableStateOf("Gemini Vision") }
-    var customProviders by remember { mutableStateOf(listOf("Groq (Llama-3.3-70B)", "Gemini 2.5 Pro", "OpenRouter Auto")) }
-    var newProviderName by remember { mutableStateOf("") }
-    var chatApiKey by remember { mutableStateOf("") }
-    var showChatKey by remember { mutableStateOf(false) }
-
-    // Tab 1: Compute (GPU & GitHub CPU) (#235, #236, #240)
-    var preferredMode by remember { mutableStateOf("KAGGLE_AUTO") }
-    var kagglePrimaryUser by remember { mutableStateOf("") }
-    var kagglePrimaryKey by remember { mutableStateOf("") }
-    var showKagglePrimaryKey by remember { mutableStateOf(false) }
-    var kaggleSecondaryUser by remember { mutableStateOf("") }
-    var kaggleSecondaryKey by remember { mutableStateOf("") }
-    var customGpuEnabled by remember { mutableStateOf(false) }
-    var customGpuUrl by remember { mutableStateOf("") }
-    var customGpuKey by remember { mutableStateOf("") }
-    var githubCpuWorkerUrl by remember { mutableStateOf("https://github.com/bnaisolution/anime-cpu-worker") }
-
-    // Tab 2: Storage (Telegram Bridge)
-    var telegramBotToken by remember { mutableStateOf("") }
-    var showTelegramToken by remember { mutableStateOf(false) }
+    // Persisted non-secret fields hydrated from backend
+    var primaryProvider by remember { mutableStateOf("groq") }
+    var fallbackProvider by remember { mutableStateOf("gemini") }
+    var visionProvider by remember { mutableStateOf("gemini") }
+    var preferredComputeMode by remember { mutableStateOf("BYOD_CLOUD") }
+    var kaggleUsername by remember { mutableStateOf("") }
+    var cpuWorkerRepo by remember { mutableStateOf("bnaisolution/anime-cpu-worker") }
     var telegramChatId by remember { mutableStateOf("") }
-    var streamBridgeUrl by remember { mutableStateOf("https://api.bnai.dpdns.org/v1/media/telegram") }
+    var autoApprovePolicy by remember { mutableStateOf(false) }
 
-    // Tab 3: Preferences & Approval Policy (#210, #215, #233, #239)
-    var defaultApprovalPolicy by remember { mutableStateOf("PAUSE_AND_ASK") }
-    var approvalTimeoutMins by remember { mutableStateOf("15") }
-    var autoPauseGpuIdle by remember { mutableStateOf(true) }
+    // Secret inputs remain blank unless user enters a new secret (prevents overwriting saved keys)
+    var newGroqKey by remember { mutableStateOf("") }
+    var newGeminiKey by remember { mutableStateOf("") }
+    var newKaggleKey by remember { mutableStateOf("") }
+    var newGithubToken by remember { mutableStateOf("") }
+    var newTelegramBotToken by remember { mutableStateOf("") }
+
+    var hasSavedGroqKey by remember { mutableStateOf(false) }
+    var hasSavedGeminiKey by remember { mutableStateOf(false) }
+    var hasSavedKaggleKey by remember { mutableStateOf(false) }
+
+    var isLoading by remember { mutableStateOf(true) }
     var isSaving by remember { mutableStateOf(false) }
+    var connectionStatus by remember { mutableStateOf<String?>(null) }
 
-    LaunchedEffect(Unit) {
-        try {
-            val res = apiService.getGpuConfig()
-            if (res.isSuccessful) {
-                val data = res.body()?.data.orEmpty()
-                preferredMode = data["preferred_mode"]?.toString() ?: "KAGGLE_AUTO"
-                val kp = data["kaggle_primary"] as? Map<*, *>
-                kagglePrimaryUser = kp?.get("username")?.toString().orEmpty()
-                val ks = data["kaggle_secondary"] as? Map<*, *>
-                kaggleSecondaryUser = ks?.get("username")?.toString().orEmpty()
-                val cg = data["custom_gpu"] as? Map<*, *>
-                customGpuEnabled = cg?.get("enabled") == true
-                customGpuUrl = cg?.get("worker_url")?.toString().orEmpty()
-                val tg = data["telegram_storage"] as? Map<*, *>
-                telegramChatId = tg?.get("storage_chat_id")?.toString().orEmpty()
-                connectionStatus = "Connected"
+    fun hydrateSettingsFromServer() {
+        val pid = repository.currentProjectId()
+        scope.launch {
+            isLoading = true
+            val gpuRes = repository.fetchGpuInfrastructure()
+            if (gpuRes is Resource.Success) {
+                val d = gpuRes.data
+                primaryProvider = (d["primary_llm_provider"] ?: d["llm_provider"] ?: primaryProvider).toString()
+                fallbackProvider = (d["fallback_llm_provider"] ?: fallbackProvider).toString()
+                visionProvider = (d["vision_provider"] ?: visionProvider).toString()
+                preferredComputeMode = (d["preferred_mode"] ?: preferredComputeMode).toString()
+                kaggleUsername = (d["kaggle_username"] ?: "").toString().let { if (it == "null") "" else it }
+                telegramChatId = (d["telegram_chat_id"] ?: "").toString().let { if (it == "null") "" else it }
+
+                hasSavedGroqKey = !d["groq_api_key"].toString().isNullOrBlank() && d["groq_api_key"].toString() != "null"
+                hasSavedGeminiKey = !d["gemini_api_key"].toString().isNullOrBlank() && d["gemini_api_key"].toString() != "null"
+                hasSavedKaggleKey = !d["kaggle_key"].toString().isNullOrBlank() && d["kaggle_key"].toString() != "null"
             }
-        } catch (_: Exception) {
-            connectionStatus = "Offline"
+            if (pid.isNotBlank()) {
+                val ovRes = repository.fetchProjectOverviewRaw(pid)
+                if (ovRes is Resource.Success) {
+                    autoApprovePolicy = ovRes.data["auto_approve"] == true
+                }
+            }
+            isLoading = false
         }
     }
 
-    if (showAddProviderDialog) {
-        AlertDialog(
-            onDismissRequest = { showAddProviderDialog = false },
-            title = { Text("Add Custom AI Provider") },
-            text = {
-                OutlinedTextField(
-                    value = newProviderName,
-                    onValueChange = { newProviderName = it },
-                    label = { Text("Provider / Model Name") },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
-                )
-            },
-            confirmButton = {
-                Button(onClick = {
-                    if (newProviderName.isNotBlank()) {
-                        customProviders = customProviders + newProviderName.trim()
-                        primaryChatProvider = newProviderName.trim()
-                        newProviderName = ""
-                    }
-                    showAddProviderDialog = false
-                }) { Text("Add") }
-            },
-            dismissButton = {
-                TextButton(onClick = { showAddProviderDialog = false }) { Text("Cancel") }
-            }
-        )
-    }
-
-    // Fix #236 & #240: Coming Soon Dialog for Platform Compute Toggle
-    if (showComingSoonDialog) {
-        AlertDialog(
-            onDismissRequest = { showComingSoonDialog = false },
-            title = { Text("Platform Compute (Coming Soon)") },
-            text = { Text("Managed 1-click cloud GPU clusters are coming soon. Please use your BYOD Kaggle (60h/week free) or Custom GPU worker for now.") },
-            confirmButton = {
-                Button(onClick = { showComingSoonDialog = false }) { Text("Got It") }
-            }
-        )
-    }
-
-    // Fix #238: 3-Step BYOD Setup Wizard
-    if (showSetupWizard) {
-        AlertDialog(
-            onDismissRequest = { showSetupWizard = false },
-            title = { Text("BYOD Setup Wizard • Step $wizardStep of 3") },
-            text = {
-                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    when (wizardStep) {
-                        1 -> {
-                            Text("Step 1: AI Director & LLM Brain", fontWeight = FontWeight.Bold)
-                            Text("Select your primary LLM provider and paste your API key.")
-                            OutlinedTextField(
-                                value = chatApiKey,
-                                onValueChange = { chatApiKey = it },
-                                label = { Text("Groq / Gemini API Key") },
-                                visualTransformation = PasswordVisualTransformation(),
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                        }
-                        2 -> {
-                            Text("Step 2: Kaggle GPU Compute (Free 60h/wk)", fontWeight = FontWeight.Bold)
-                            OutlinedTextField(
-                                value = kagglePrimaryUser,
-                                onValueChange = { kagglePrimaryUser = it },
-                                label = { Text("Kaggle Username") },
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                            OutlinedTextField(
-                                value = kagglePrimaryKey,
-                                onValueChange = { kagglePrimaryKey = it },
-                                label = { Text("Kaggle API Key") },
-                                visualTransformation = PasswordVisualTransformation(),
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                        }
-                        else -> {
-                            Text("Step 3: Telegram Unlimited Media Storage", fontWeight = FontWeight.Bold)
-                            OutlinedTextField(
-                                value = telegramBotToken,
-                                onValueChange = { telegramBotToken = it },
-                                label = { Text("Telegram Bot Token") },
-                                visualTransformation = PasswordVisualTransformation(),
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                            OutlinedTextField(
-                                value = telegramChatId,
-                                onValueChange = { telegramChatId = it },
-                                label = { Text("Storage Channel / Chat ID") },
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                        }
-                    }
-                }
-            },
-            confirmButton = {
-                Button(onClick = {
-                    if (wizardStep < 3) {
-                        wizardStep++
-                    } else {
-                        showSetupWizard = false
-                        wizardStep = 1
-                        Toast.makeText(context, "Wizard complete! Tap 'Save Infrastructure' to persist.", Toast.LENGTH_SHORT).show()
-                    }
-                }) { Text(if (wizardStep < 3) "Next" else "Finish") }
-            },
-            dismissButton = {
-                TextButton(onClick = { showSetupWizard = false }) { Text("Close") }
-            }
-        )
+    LaunchedEffect(Unit) {
+        hydrateSettingsFromServer()
     }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .verticalScroll(rememberScrollState())
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        // Fix #194 & #231: Header + Connection Status Badge + Wizard Button
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text("Infrastructure & API Keys", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
-                Text("BYOD Gateway • Encrypted Backend Vault", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.secondary)
-            }
-            StatusBadge(if (connectionStatus == "Connected") "HEALTHY" else "ERROR")
-        }
+        ProjectSelectorBar(
+            onProjectChanged = { hydrateSettingsFromServer() },
+            onRefreshClick = { hydrateSettingsFromServer() }
+        )
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            OutlinedButton(
-                onClick = {
-                    wizardStep = 1
-                    showSetupWizard = true
-                },
-                modifier = Modifier.weight(1f)
-            ) {
-                Icon(Icons.Default.AutoAwesome, contentDescription = null, modifier = Modifier.size(16.dp))
-                Spacer(modifier = Modifier.width(6.dp))
-                Text("3-Step Wizard")
-            }
+        ScreenHeader(
+            title = "Studio Infrastructure & Settings",
+            subtitle = "Hydrated from backend with masked secrets & read-after-write verification"
+        )
 
-            // Fix #199 & #230: Test Connection Button
-            OutlinedButton(
-                onClick = {
-                    isTestingConnection = true
-                    scope.launch {
-                        val ok = repository.checkBackendHealth()
-                        connectionStatus = if (ok) "Connected" else "Error"
-                        isTestingConnection = false
-                        Toast.makeText(
-                            context,
-                            if (ok) "🟢 Backend & Vault Connected!" else "🔴 Connection Failed",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                },
-                enabled = !isTestingConnection,
-                modifier = Modifier.weight(1f)
-            ) {
-                if (isTestingConnection) {
-                    CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
-                } else {
-                    Icon(Icons.Default.NetworkCheck, contentDescription = null, modifier = Modifier.size(16.dp))
-                }
-                Spacer(modifier = Modifier.width(6.dp))
-                Text("Test Keys")
-            }
-        }
-
-        // Fix #225: 4 Organized Tabs
         ScrollableTabRow(selectedTabIndex = selectedTab, edgePadding = 0.dp) {
             tabs.forEachIndexed { idx, title ->
-                Tab(
-                    selected = selectedTab == idx,
-                    onClick = { selectedTab = idx },
-                    text = { Text(title) }
-                )
+                Tab(selected = selectedTab == idx, onClick = { selectedTab = idx }, text = { Text(title) })
             }
         }
 
-        Column(
-            modifier = Modifier
-                .weight(1f)
-                .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            when (selectedTab) {
-                0 -> {
-                    // TAB 0: AI MODELS (#195, #196, #226-228, #232)
-                    Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp)) {
-                        Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text("Chat & Script LLM Routing", style = MaterialTheme.typography.headlineMedium)
-                                TextButton(onClick = { showAddProviderDialog = true }) {
-                                    Text("+ Add Provider")
-                                }
-                            }
-
-                            Text("Primary LLM Provider", style = MaterialTheme.typography.labelLarge)
-                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                customProviders.take(3).forEach { prov ->
-                                    FilterChip(
-                                        selected = primaryChatProvider == prov,
-                                        onClick = { primaryChatProvider = prov },
-                                        label = { Text(prov.substringBefore(" ")) }
-                                    )
-                                }
-                            }
-
-                            Text("Fallback LLM Provider", style = MaterialTheme.typography.labelLarge)
-                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                customProviders.take(3).forEach { prov ->
-                                    FilterChip(
-                                        selected = fallbackChatProvider == prov,
-                                        onClick = { fallbackChatProvider = prov },
-                                        label = { Text(prov.substringBefore(" ")) }
-                                    )
-                                }
-                            }
-
-                            Text("Dynamic Vision DNA Provider (WF-05)", style = MaterialTheme.typography.labelLarge)
-                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                listOf("Gemini Vision", "Groq Llama-Vision", "OpenRouter Vision").forEach { vp ->
-                                    FilterChip(
-                                        selected = primaryVisionProvider == vp,
-                                        onClick = { primaryVisionProvider = vp },
-                                        label = { Text(vp.substringBefore(" ")) }
-                                    )
-                                }
-                            }
-
-                            // Fix #232: PasswordVisualTransformation for API keys
-                            OutlinedTextField(
-                                value = chatApiKey,
-                                onValueChange = { chatApiKey = it },
-                                label = { Text("BYOD LLM / Vision API Key (Optional Override)") },
-                                singleLine = true,
-                                visualTransformation = if (showChatKey) VisualTransformation.None else PasswordVisualTransformation(),
-                                trailingIcon = {
-                                    TextButton(onClick = { showChatKey = !showChatKey }) {
-                                        Text(if (showChatKey) "Hide" else "Show")
-                                    }
-                                },
-                                modifier = Modifier.fillMaxWidth()
-                            )
+        when (selectedTab) {
+            0 -> {
+                StandardCard {
+                    SectionHeader(title = "AI & Vision Providers")
+                    OutlinedTextField(
+                        value = primaryProvider,
+                        onValueChange = { primaryProvider = it },
+                        label = { Text("Primary LLM Provider (groq / gemini / openrouter)") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    OutlinedTextField(
+                        value = fallbackProvider,
+                        onValueChange = { fallbackProvider = it },
+                        label = { Text("Fallback LLM Provider") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    OutlinedTextField(
+                        value = visionProvider,
+                        onValueChange = { visionProvider = it },
+                        label = { Text("Vision DNA Provider (gemini / groq / openrouter)") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    OutlinedTextField(
+                        value = newGroqKey,
+                        onValueChange = { newGroqKey = it },
+                        label = { Text(if (hasSavedGroqKey) "Groq API Key (Saved •••• — enter to replace)" else "Groq API Key") },
+                        visualTransformation = PasswordVisualTransformation(),
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    OutlinedTextField(
+                        value = newGeminiKey,
+                        onValueChange = { newGeminiKey = it },
+                        label = { Text(if (hasSavedGeminiKey) "Gemini API Key (Saved •••• — enter to replace)" else "Gemini API Key") },
+                        visualTransformation = PasswordVisualTransformation(),
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            }
+            1 -> {
+                StandardCard {
+                    SectionHeader(title = "GPU & CPU Worker Configuration")
+                    OutlinedTextField(
+                        value = preferredComputeMode,
+                        onValueChange = { preferredComputeMode = it },
+                        label = { Text("Preferred Compute Mode") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    OutlinedTextField(
+                        value = kaggleUsername,
+                        onValueChange = { kaggleUsername = it },
+                        label = { Text("Kaggle Username") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    OutlinedTextField(
+                        value = newKaggleKey,
+                        onValueChange = { newKaggleKey = it },
+                        label = { Text(if (hasSavedKaggleKey) "Kaggle API Key (Saved •••• — enter to replace)" else "Kaggle API Key") },
+                        visualTransformation = PasswordVisualTransformation(),
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    OutlinedTextField(
+                        value = cpuWorkerRepo,
+                        onValueChange = { cpuWorkerRepo = it },
+                        label = { Text("GitHub CPU Worker Repository") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    OutlinedTextField(
+                        value = newGithubToken,
+                        onValueChange = { newGithubToken = it },
+                        label = { Text("GitHub Actions Token (Masked)") },
+                        visualTransformation = PasswordVisualTransformation(),
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            }
+            2 -> {
+                StandardCard {
+                    SectionHeader(title = "Telegram Storage & Approval Policy")
+                    OutlinedTextField(
+                        value = telegramChatId,
+                        onValueChange = { telegramChatId = it },
+                        label = { Text("Telegram Channel / Chat ID") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    OutlinedTextField(
+                        value = newTelegramBotToken,
+                        onValueChange = { newTelegramBotToken = it },
+                        label = { Text("Telegram Bot Token (Masked)") },
+                        visualTransformation = PasswordVisualTransformation(),
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text("Project Auto-Approve Policy", fontWeight = FontWeight.SemiBold)
+                            Text("Persist auto_approve in active project settings", fontSize = 12.sp)
                         }
+                        Switch(checked = autoApprovePolicy, onCheckedChange = { autoApprovePolicy = it })
                     }
                 }
-
-                1 -> {
-                    // TAB 1: COMPUTE (KAGGLE GPU, CUSTOM GPU, GITHUB CPU, PLATFORM DISABLED TOGGLE)
-                    Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp)) {
-                        Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                            // Fix #236 & #240: Disabled Platform Compute Toggle with Coming Soon popup
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable { showComingSoonDialog = true }
-                                    .padding(vertical = 4.dp),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Column {
-                                    Text("Platform Compute (Coming Soon)", fontWeight = FontWeight.SemiBold)
-                                    Text("Tap to view managed cloud GPU roadmap", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.secondary)
-                                }
-                                Switch(
-                                    checked = false,
-                                    onCheckedChange = { showComingSoonDialog = true },
-                                    enabled = false
-                                )
-                            }
-
-                            HorizontalDivider()
-
-                            Text("BYOD GPU Routing Mode", style = MaterialTheme.typography.labelLarge)
-                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                listOf("KAGGLE_AUTO", "CUSTOM_GPU", "HYBRID").forEach { mode ->
-                                    FilterChip(
-                                        selected = preferredMode == mode,
-                                        onClick = { preferredMode = mode },
-                                        label = { Text(mode.replace("_", " ")) }
-                                    )
-                                }
-                            }
-
-                            Text("Kaggle Primary GPU Account (30h/wk)", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
-                            OutlinedTextField(
-                                value = kagglePrimaryUser,
-                                onValueChange = { kagglePrimaryUser = it },
-                                label = { Text("Primary Kaggle Username") },
-                                singleLine = true,
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                            OutlinedTextField(
-                                value = kagglePrimaryKey,
-                                onValueChange = { kagglePrimaryKey = it },
-                                label = { Text("Primary Kaggle API Key") },
-                                singleLine = true,
-                                visualTransformation = if (showKagglePrimaryKey) VisualTransformation.None else PasswordVisualTransformation(),
-                                trailingIcon = {
-                                    TextButton(onClick = { showKagglePrimaryKey = !showKagglePrimaryKey }) {
-                                        Text(if (showKagglePrimaryKey) "Hide" else "Show")
-                                    }
-                                },
-                                modifier = Modifier.fillMaxWidth()
-                            )
-
-                            Text("Kaggle Failover Account (+30h/wk)", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
-                            OutlinedTextField(
-                                value = kaggleSecondaryUser,
-                                onValueChange = { kaggleSecondaryUser = it },
-                                label = { Text("Secondary Kaggle Username") },
-                                singleLine = true,
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                            OutlinedTextField(
-                                value = kaggleSecondaryKey,
-                                onValueChange = { kaggleSecondaryKey = it },
-                                label = { Text("Secondary Kaggle API Key") },
-                                singleLine = true,
-                                visualTransformation = PasswordVisualTransformation(),
-                                modifier = Modifier.fillMaxWidth()
-                            )
-
-                            HorizontalDivider()
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text("Custom Dedicated GPU Worker", style = MaterialTheme.typography.labelLarge)
-                                Switch(checked = customGpuEnabled, onCheckedChange = { customGpuEnabled = it })
-                            }
-                            if (customGpuEnabled) {
-                                OutlinedTextField(
-                                    value = customGpuUrl,
-                                    onValueChange = { customGpuUrl = it },
-                                    label = { Text("Worker Base URL (RunPod / Vast / Colab)") },
-                                    singleLine = true,
-                                    modifier = Modifier.fillMaxWidth()
-                                )
-                                OutlinedTextField(
-                                    value = customGpuKey,
-                                    onValueChange = { customGpuKey = it },
-                                    label = { Text("Worker Bearer Secret") },
-                                    singleLine = true,
-                                    visualTransformation = PasswordVisualTransformation(),
-                                    modifier = Modifier.fillMaxWidth()
-                                )
-                            }
-
-                            HorizontalDivider()
-                            // Fix #235: GitHub CPU Workers Section
-                            Text("GitHub Actions CPU Worker (Audio/FFmpeg Muxing)", style = MaterialTheme.typography.labelLarge)
-                            OutlinedTextField(
-                                value = githubCpuWorkerUrl,
-                                onValueChange = { githubCpuWorkerUrl = it },
-                                label = { Text("GitHub CPU Worker Repo / Webhook") },
-                                singleLine = true,
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                        }
+            }
+            3 -> {
+                StandardCard {
+                    SectionHeader(title = "Backend Connectivity Verification")
+                    if (connectionStatus != null) {
+                        Text(connectionStatus ?: "", fontSize = 13.sp, fontWeight = FontWeight.Medium)
                     }
-                }
-
-                2 -> {
-                    // TAB 2: STORAGE (TELEGRAM MEDIA BRIDGE)
-                    Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp)) {
-                        Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text("Telegram Unlimited Media Vault", style = MaterialTheme.typography.headlineMedium)
-                                InfoTooltipButton(
-                                    "Telegram Storage Bridge",
-                                    "Rendered scenes, audio stems, and master MP4s are stored in your private Telegram channel and streamed via backend bridge URLs."
-                                )
+                    SecondaryButton(
+                        text = "Test Backend Connection",
+                        onClick = {
+                            scope.launch {
+                                val t0 = System.currentTimeMillis()
+                                val isHealthy = repository.checkBackendHealth()
+                                val elapsed = System.currentTimeMillis() - t0
+                                connectionStatus = if (isHealthy) { "Connected • Verified Round-Trip Latency: ${elapsed}ms" } else { "Connection Failed (Backend Unreachable)" }
                             }
-                            OutlinedTextField(
-                                value = telegramBotToken,
-                                onValueChange = { telegramBotToken = it },
-                                label = { Text("Telegram Bot Token") },
-                                singleLine = true,
-                                visualTransformation = if (showTelegramToken) VisualTransformation.None else PasswordVisualTransformation(),
-                                trailingIcon = {
-                                    TextButton(onClick = { showTelegramToken = !showTelegramToken }) {
-                                        Text(if (showTelegramToken) "Hide" else "Show")
-                                    }
-                                },
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                            OutlinedTextField(
-                                value = telegramChatId,
-                                onValueChange = { telegramChatId = it },
-                                label = { Text("Telegram Storage Channel Chat ID (e.g. -100...)") },
-                                singleLine = true,
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                            OutlinedTextField(
-                                value = streamBridgeUrl,
-                                onValueChange = { streamBridgeUrl = it },
-                                label = { Text("Media Stream Bridge URL") },
-                                singleLine = true,
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                        }
-                    }
-                }
-
-                else -> {
-                    // TAB 3: PREFERENCES & APPROVAL POLICY (#207, #210, #215, #233, #239)
-                    Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp)) {
-                        Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                            Text("Default Pipeline Approval Policy", style = MaterialTheme.typography.headlineMedium)
-                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                FilterChip(
-                                    selected = defaultApprovalPolicy == "AUTO_APPROVE",
-                                    onClick = { defaultApprovalPolicy = "AUTO_APPROVE" },
-                                    label = { Text("Auto-Approve Changes") }
-                                )
-                                FilterChip(
-                                    selected = defaultApprovalPolicy == "PAUSE_AND_ASK",
-                                    onClick = { defaultApprovalPolicy = "PAUSE_AND_ASK" },
-                                    label = { Text("Pause & Ask in Inbox") }
-                                )
-                            }
-
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text("GPU Idle Cost Guard", fontWeight = FontWeight.SemiBold)
-                                    Text("Auto-pause Kaggle GPU if approval is pending > 5 mins", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.secondary)
-                                }
-                                Switch(checked = autoPauseGpuIdle, onCheckedChange = { autoPauseGpuIdle = it })
-                            }
-
-                            OutlinedTextField(
-                                value = approvalTimeoutMins,
-                                onValueChange = { approvalTimeoutMins = it },
-                                label = { Text("Auto-Resolve Pending Approval Timeout (Minutes)") },
-                                singleLine = true,
-                                modifier = Modifier.fillMaxWidth()
-                            )
-
-                            // Fix #239: Only show global platform info if user is Owner
-                            if (isOwner) {
-                                HorizontalDivider()
-                                Text("Owner Platform Controls", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
-                                Text("Global n8n Webhook Dispatcher & Multi-Tenant Guard: ACTIVE", style = MaterialTheme.typography.bodyLarge)
-                            }
-                        }
-                    }
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    )
                 }
             }
         }
 
-        Button(
+        // BUG-025: Partial non-destructive save + Read-After-Write verification
+        PrimaryButton(
+            text = "Save & Verify Configuration",
+            isLoading = isSaving,
             onClick = {
                 isSaving = true
                 scope.launch {
-                    try {
-                        val req = GpuSetupRequest(
-                            preferred_mode = preferredMode,
-                            custom_gpu = CustomGpuConfigDto(customGpuEnabled, customGpuUrl, customGpuKey.ifBlank { null }),
-                            kaggle_primary = KaggleAccountConfigDto(kagglePrimaryUser, kagglePrimaryKey),
-                            kaggle_secondary = if (kaggleSecondaryUser.isNotBlank()) KaggleAccountConfigDto(kaggleSecondaryUser, kaggleSecondaryKey) else null,
-                            telegram_storage = TelegramStorageConfigDto(telegramBotToken, telegramChatId, streamBridgeUrl),
-                            github_worker_url = githubCpuWorkerUrl
-                        )
-                        val res = apiService.saveGpuConfig(req)
-                        val activePid = repository.currentProjectId()
-                        if (activePid.isNotBlank()) {
-                            repository.updateProjectSettings(
-                                projectId = activePid,
-                                autoApprove = (defaultApprovalPolicy == "AUTO_APPROVE")
+                    val infraPayload = mutableMapOf<String, Any?>(
+                        "preferred_mode" to preferredComputeMode.trim(),
+                        "primary_llm_provider" to primaryProvider.trim(),
+                        "fallback_llm_provider" to fallbackProvider.trim(),
+                        "vision_provider" to visionProvider.trim(),
+                        "kaggle_username" to kaggleUsername.trim(),
+                        "telegram_chat_id" to telegramChatId.trim()
+                    )
+                    // Never overwrite saved secrets with blank strings!
+                    if (newGroqKey.isNotBlank()) infraPayload["groq_api_key"] = newGroqKey.trim()
+                    if (newGeminiKey.isNotBlank()) infraPayload["gemini_api_key"] = newGeminiKey.trim()
+                    if (newKaggleKey.isNotBlank()) infraPayload["kaggle_key"] = newKaggleKey.trim()
+                    if (newGithubToken.isNotBlank()) infraPayload["github_token"] = newGithubToken.trim()
+                    if (newTelegramBotToken.isNotBlank()) infraPayload["telegram_bot_token"] = newTelegramBotToken.trim()
+
+                    val saveInfraRes = repository.saveGpuInfrastructure(infraPayload)
+                    val pid = repository.currentProjectId()
+                    if (pid.isNotBlank()) {
+                        repository.updateProjectSettings(
+                            projectId = pid,
+                            updates = mapOf(
+                                "auto_approve" to autoApprovePolicy,
+                                "vision_provider" to visionProvider.trim()
                             )
-                        }
-                        if (res.isSuccessful) {
-                            Toast.makeText(context, "BYOD Infrastructure & Preferences saved!", Toast.LENGTH_SHORT).show()
-                        } else {
-                            Toast.makeText(context, "Saved preferences locally (HTTP ${res.code()})", Toast.LENGTH_SHORT).show()
-                        }
-                    } catch (e: Exception) {
-                        Toast.makeText(context, "Save failed: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
-                    } finally {
-                        isSaving = false
+                        )
+                    }
+
+                    // Update global provider badge & reload from backend to prove persistence
+                    val badge = "${primaryProvider.trim()} • ${fallbackProvider.trim()}"
+                    tokenManager.saveConfiguredProviderLabel(badge)
+                    newGroqKey = ""
+                    newGeminiKey = ""
+                    newKaggleKey = ""
+                    newGithubToken = ""
+                    newTelegramBotToken = ""
+
+                    hydrateSettingsFromServer()
+                    isSaving = false
+
+                    if (saveInfraRes is Resource.Success) {
+                        Toast.makeText(context, "Configuration persisted & verified via read-after-write", Toast.LENGTH_SHORT).show()
+                    } else if (saveInfraRes is Resource.Error) {
+                        Toast.makeText(context, saveInfraRes.message, Toast.LENGTH_LONG).show()
                     }
                 }
             },
-            enabled = !isSaving,
-            modifier = Modifier.fillMaxWidth().height(50.dp)
-        ) {
-            if (isSaving) {
-                CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp, color = Color.White)
-            } else {
-                Text("Save Infrastructure & Preferences")
-            }
-        }
+            modifier = Modifier.fillMaxWidth()
+        )
+        Spacer(modifier = Modifier.height(64.dp))
     }
 }

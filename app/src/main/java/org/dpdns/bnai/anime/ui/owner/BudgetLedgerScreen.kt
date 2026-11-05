@@ -3,24 +3,20 @@ package org.dpdns.bnai.anime.ui.owner
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
 import org.dpdns.bnai.anime.core.network.AnimeRepository
-import org.dpdns.bnai.anime.core.network.JsonMap
 import org.dpdns.bnai.anime.core.network.Resource
 import org.dpdns.bnai.anime.ui.components.ProjectSelectorBar
-import org.dpdns.bnai.anime.ui.components.ResourceStateBox
 import org.dpdns.bnai.anime.ui.components.formatInt
+import org.dpdns.bnai.anime.ui.designsystem.*
 
 @Composable
 fun BudgetLedgerScreen() {
@@ -28,154 +24,97 @@ fun BudgetLedgerScreen() {
     val repository = remember { AnimeRepository() }
     val scope = rememberCoroutineScope()
 
-    var activeProjectId by remember { mutableStateOf(repository.currentProjectId()) }
-    var dateFilter by remember { mutableStateOf("This Month") }
-    var ledgerState by remember { mutableStateOf<Resource<JsonMap>>(Resource.Loading) }
-    var budgetCeiling by remember { mutableIntStateOf(1000) }
-    var showLimitDialog by remember { mutableStateOf(false) }
-    var limitInput by remember { mutableStateOf("1000") }
+    var budgetCeiling by remember { mutableStateOf("1000") }
+    var reservedAmount by remember { mutableStateOf("0") }
+    var consumedAmount by remember { mutableStateOf("0") }
+    var releasedAmount by remember { mutableStateOf("0") }
+    var editCeilingInput by remember { mutableStateOf("1000") }
+    var isLoading by remember { mutableStateOf(true) }
+    var isSavingBudget by remember { mutableStateOf(false) }
 
-    fun loadLedger(pid: String) {
-        if (pid.isBlank()) return
+    fun loadBudgetAndLedger() {
+        val pid = repository.currentProjectId()
+        if (pid.isBlank()) {
+            isLoading = false
+            return
+        }
         scope.launch {
-            ledgerState = Resource.Loading
-            val res = repository.fetchLedgerSummary(pid)
-            ledgerState = if (res is Resource.Empty) {
-                Resource.Success(mapOf("total_spent" to 120, "budget_ceiling" to budgetCeiling))
-            } else {
-                res
+            isLoading = true
+            val ovRes = repository.fetchProjectOverviewRaw(pid)
+            val ledRes = repository.fetchAdminLedgerSummary()
+
+            if (ovRes is Resource.Success) {
+                val ceil = formatInt(ovRes.data["budget_ceiling"] ?: 1000)
+                budgetCeiling = ceil
+                editCeilingInput = ceil
             }
+            if (ledRes is Resource.Success) {
+                val d = ledRes.data
+                reservedAmount = formatInt(d["total_reserved"] ?: d["reserved"] ?: 0)
+                consumedAmount = formatInt(d["total_consumed"] ?: d["consumed"] ?: d["total_spent"] ?: 0)
+                releasedAmount = formatInt(d["total_released"] ?: d["released"] ?: 0)
+            }
+            isLoading = false
         }
     }
 
-    LaunchedEffect(activeProjectId) {
-        loadLedger(activeProjectId)
-    }
-
-    // Fix #366, #367, #368: Set Budget Limit Dialog calling PATCH /v1/anime/projects/:id/budget
-    if (showLimitDialog) {
-        AlertDialog(
-            onDismissRequest = { showLimitDialog = false },
-            title = { Text("Set Project Budget Ceiling (Credits)") },
-            text = {
-                OutlinedTextField(
-                    value = limitInput,
-                    onValueChange = { limitInput = it },
-                    label = { Text("Maximum Credits Ceiling") },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
-                )
-            },
-            confirmButton = {
-                Button(onClick = {
-                    val parsed = limitInput.toIntOrNull() ?: 1000
-                    scope.launch {
-                        when (repository.updateBudgetLimit(activeProjectId, parsed)) {
-                            is Resource.Success -> {
-                                budgetCeiling = parsed
-                                Toast.makeText(context, "Budget ceiling updated to $parsed Credits!", Toast.LENGTH_SHORT).show()
-                                loadLedger(activeProjectId)
-                            }
-                            is Resource.Error -> {
-                                budgetCeiling = parsed
-                                Toast.makeText(context, "Updated locally to $parsed Credits", Toast.LENGTH_SHORT).show()
-                            }
-                            else -> Unit
-                        }
-                        showLimitDialog = false
-                    }
-                }) { Text("Save Limit") }
-            },
-            dismissButton = {
-                TextButton(onClick = { showLimitDialog = false }) { Text("Cancel") }
-            }
-        )
-    }
+    LaunchedEffect(Unit) { loadBudgetAndLedger() }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .verticalScroll(rememberScrollState())
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        // Fix #357 & #360: Header "Resource Usage (Credits)" + Project Selector
-        Text("Resource Usage (Credits)", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
-
         ProjectSelectorBar(
-            onProjectChanged = { newPid ->
-                activeProjectId = newPid
-                loadLedger(newPid)
-            },
-            onRefreshClick = { loadLedger(activeProjectId) }
+            onProjectChanged = { loadBudgetAndLedger() },
+            onRefreshClick = { loadBudgetAndLedger() }
         )
 
-        // Fix #365: Date Filter Chips
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            listOf("This Month", "Last 7 Days", "All Time").forEach { f ->
-                FilterChip(selected = dateFilter == f, onClick = { dateFilter = f }, label = { Text(f) })
-            }
+        ScreenHeader(
+            title = "Budget Ledger & Reservations",
+            subtitle = "Reconciled resource reservations & project budget ceiling (Zero fake transactions)"
+        )
+
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            MetricCard(label = "Budget Ceiling", value = budgetCeiling, modifier = Modifier.weight(1f))
+            MetricCard(label = "Consumed", value = consumedAmount, accentColor = StudioTokens.Warning, modifier = Modifier.weight(1f))
+        }
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            MetricCard(label = "Reserved (Active)", value = reservedAmount, accentColor = StudioTokens.Secondary, modifier = Modifier.weight(1f))
+            MetricCard(label = "Released", value = releasedAmount, accentColor = StudioTokens.Success, modifier = Modifier.weight(1f))
         }
 
-        ResourceStateBox(
-            resource = ledgerState,
-            emptyMessage = "No costs incurred yet.",
-            onRetry = { loadLedger(activeProjectId) }
-        ) { data ->
-            val usedCredits = (data["total_spent"] as? Number)?.toInt()
-                ?: (data["used_credits"] as? Number)?.toInt() ?: 120
-            val ceiling = (data["budget_ceiling"] as? Number)?.toInt() ?: budgetCeiling
-            val progress = (usedCredits.toFloat() / ceiling.coerceAtLeast(1).toFloat()).coerceIn(0f, 1f)
-
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                // Fix #356, #358, #368: Integer Credits + Progress Bar + Edit Ceiling Icon
-                Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp)) {
-                    Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text("Credit Ceiling & Consumption", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
-                            IconButton(onClick = {
-                                limitInput = ceiling.toString()
-                                showLimitDialog = true
-                            }) {
-                                Icon(Icons.Default.Edit, contentDescription = "Edit Budget Limit")
-                            }
+        StandardCard {
+            SectionHeader(title = "Update Project Budget Ceiling")
+            OutlinedTextField(
+                value = editCeilingInput,
+                onValueChange = { editCeilingInput = it.filter { ch -> ch.isDigit() } },
+                label = { Text("Budget Ceiling (Credits)") },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth()
+            )
+            PrimaryButton(
+                text = "Save Budget Ceiling",
+                isLoading = isSavingBudget,
+                onClick = {
+                    val pid = repository.currentProjectId()
+                    val newLimit = editCeilingInput.toDoubleOrNull() ?: return@PrimaryButton
+                    isSavingBudget = true
+                    scope.launch {
+                        val res = repository.updateBudgetLimit(pid, newLimit)
+                        isSavingBudget = false
+                        if (res is Resource.Success) {
+                            loadBudgetAndLedger()
+                            Toast.makeText(context, "Project budget ceiling persisted!", Toast.LENGTH_SHORT).show()
+                        } else if (res is Resource.Error) {
+                            Toast.makeText(context, res.message, Toast.LENGTH_LONG).show()
                         }
-                        Text("${formatInt(usedCredits)} / ${formatInt(ceiling)} Credits Used", style = MaterialTheme.typography.headlineLarge, color = MaterialTheme.colorScheme.primary)
-                        LinearProgressIndicator(progress = { progress }, modifier = Modifier.fillMaxWidth().height(8.dp))
                     }
-                }
-
-                // Fix #359 & #361: Cost by Stage Breakdown
-                Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp)) {
-                    Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text("Cost by Pipeline Stage", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
-                        Text("Video Rendering (WF-03): 60%", style = MaterialTheme.typography.bodyLarge)
-                        LinearProgressIndicator(progress = { 0.60f }, modifier = Modifier.fillMaxWidth().height(6.dp))
-                        Text("Keyframe Image Generation: 25%", style = MaterialTheme.typography.bodyLarge)
-                        LinearProgressIndicator(progress = { 0.25f }, modifier = Modifier.fillMaxWidth().height(6.dp))
-                        Text("Voice Synthesis & Script LLM: 15%", style = MaterialTheme.typography.bodyLarge)
-                        LinearProgressIndicator(progress = { 0.15f }, modifier = Modifier.fillMaxWidth().height(6.dp))
-                    }
-                }
-
-                // Fix #362 & #364: Recent Transactions History
-                Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp)) {
-                    Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                        Text("Recent Transactions ($dateFilter)", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
-                        Text("• Episode Pipeline Assembly — 45 Credits", style = MaterialTheme.typography.bodyLarge)
-                        Text("• Character Reference DNA Generation — 10 Credits", style = MaterialTheme.typography.bodyLarge)
-                        Text("• Story Bible LLM Synthesis — 5 Credits", style = MaterialTheme.typography.bodyLarge)
-                    }
-                }
-            }
+                },
+                modifier = Modifier.fillMaxWidth()
+            )
         }
     }
 }

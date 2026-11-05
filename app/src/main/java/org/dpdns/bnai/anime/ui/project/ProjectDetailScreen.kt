@@ -1,80 +1,206 @@
 package org.dpdns.bnai.anime.ui.project
 
 import android.widget.Toast
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.dpdns.bnai.anime.core.auth.TokenManager
+import org.dpdns.bnai.anime.core.network.AnimeRepository
+import org.dpdns.bnai.anime.core.network.CommandIntent
+import org.dpdns.bnai.anime.core.network.Resource
 import org.dpdns.bnai.anime.ui.components.ProjectSelectorBar
-import org.dpdns.bnai.anime.ui.components.ResourceStateBox
-import org.dpdns.bnai.anime.ui.components.StatusBadge
 import org.dpdns.bnai.anime.ui.components.formatInt
+import org.dpdns.bnai.anime.ui.components.friendlyPipelineStatus
+import org.dpdns.bnai.anime.ui.designsystem.*
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProjectDetailScreen(
-    projectId: String = TokenManager.getInstance()?.getActiveProjectId().orEmpty(),
+    projectId: String = "",
     onOpenBible: () -> Unit = {},
     onOpenCharacters: () -> Unit = {},
     onOpenEpisodes: () -> Unit = {},
-    onOpenReviews: () -> Unit = {},
+    onOpenProduction: () -> Unit = {},
+    onOpenScenes: () -> Unit = {},
+    onOpenQC: () -> Unit = {},
+    onOpenPublish: () -> Unit = {},
+    onOpenReviewInbox: () -> Unit = {},
+    onOpenAiBrain: () -> Unit = {},
+    onOpenQuickTools: () -> Unit = {},
+    onOpenVision: () -> Unit = {},
+    onOpenCanon: () -> Unit = {},
+    onOpenContinuity: () -> Unit = {},
+    onOpenLore: () -> Unit = {},
+    onOpenCharDeepDive: () -> Unit = {},
+    onOpenMediaLibrary: () -> Unit = {},
     onOpenAnalytics: () -> Unit = {},
+    onOpenJobsMonitor: () -> Unit = {},
+    onOpenQuota: () -> Unit = {},
+    onOpenBudget: () -> Unit = {},
+    onOpenNotifications: () -> Unit = {},
     viewModel: ProjectViewModel = viewModel()
 ) {
     val context = LocalContext.current
-    val overviewState by viewModel.overviewState.collectAsState()
-    var showSettingsDialog by remember { mutableStateOf(false) }
-    var visualMedium by remember { mutableStateOf("ANIME") }
-    var genre by remember { mutableStateOf("Dark Fantasy") }
-    var autoApprove by remember { mutableStateOf(false) }
-    var coverUrl by remember { mutableStateOf("") }
+    val tokenManager = remember { TokenManager(context) }
+    val repository = remember { AnimeRepository() }
+    val scope = rememberCoroutineScope()
 
-    LaunchedEffect(projectId) {
-        viewModel.fetchOverview(projectId)
+    val activePid = projectId.ifBlank { repository.currentProjectId() }
+    var overviewMap by remember { mutableStateOf>(emptyMap()) }
+    var isLoading by remember { mutableStateOf(true) }
+    var loadError by remember { mutableStateOf<String?>(null) }
+
+    // BUG-013: Track active episode generation command & prevent duplicate taps
+    var activeCmdId by remember(activePid) {
+        mutableStateOf(tokenManager.getActiveCommandId(activePid, "quick_gen_episode"))
+    }
+    var activeCmdStatus by remember { mutableStateOf<String?>(null) }
+    var isSubmittingGen by remember { mutableStateOf(false) }
+    var idempotencyKey by remember(activePid) {
+        mutableStateOf("ep_gen_${activePid.take(8)}_${System.currentTimeMillis() / 60000}")
     }
 
-    // Fix #15 & #17: Project Settings Dialog (Visual Medium, Genre, Auto-Approve, Cover Banner URL)
+    // BUG-014: Hydrated Project Settings Dialog State
+    var showSettingsDialog by remember { mutableStateOf(false) }
+    var editName by remember { mutableStateOf("") }
+    var editGenre by remember { mutableStateOf("Action / Fantasy") }
+    var editMedium by remember { mutableStateOf("ANIME") }
+    var editCoverUrl by remember { mutableStateOf("") }
+    var editAutoApprove by remember { mutableStateOf(false) }
+    var isSavingSettings by remember { mutableStateOf(false) }
+
+    fun loadProjectOverviewData(targetPid: String = repository.currentProjectId()) {
+        if (targetPid.isBlank()) {
+            isLoading = false
+            loadError = "No active project selected."
+            return
+        }
+        scope.launch {
+            isLoading = true
+            loadError = null
+            when (val res = repository.fetchProjectOverviewRaw(targetPid)) {
+                is Resource.Success -> {
+                    overviewMap = res.data
+                    val projObj = (res.data["project"] as? Map<*, *>) ?: res.data
+                    val bibleObj = (projObj["story_bible"] as? Map<*, *>) ?: emptyMap<String, Any?>()
+
+                    editName = (projObj["name"] ?: res.data["name"] ?: "Studio Project").toString()
+                    editGenre = (res.data["genre"] ?: projObj["genre"] ?: bibleObj["genre"] ?: "Action / Fantasy").toString()
+                    editMedium = (res.data["visual_medium"] ?: projObj["visual_medium"] ?: bibleObj["visual_medium"] ?: "ANIME").toString()
+                    editCoverUrl = (res.data["cover_image_url"] ?: projObj["cover_image_url"] ?: bibleObj["cover_image_url"] ?: "").toString()
+                        .let { if (it == "null") "" else it }
+                    editAutoApprove = (res.data["auto_approve"] ?: projObj["auto_approve"] ?: bibleObj["auto_approve"]) == true
+
+                    val backendActiveCmd = (res.data["status"] as? Map<*, *>)?.get("active_command_id")?.toString()
+                    if (!backendActiveCmd.isNullOrBlank() && backendActiveCmd != "null") {
+                        activeCmdId = backendActiveCmd
+                        tokenManager.saveActiveCommandId(targetPid, "quick_gen_episode", backendActiveCmd)
+                    }
+                    isLoading = false
+                }
+                is Resource.Error -> {
+                    loadError = res.message
+                    isLoading = false
+                }
+                else -> {
+                    isLoading = false
+                }
+            }
+        }
+    }
+
+    LaunchedEffect(activePid) {
+        loadProjectOverviewData(activePid)
+    }
+
+    // Poll active episode generation command
+    LaunchedEffect(activeCmdId, activePid) {
+        val cid = activeCmdId ?: return@LaunchedEffect
+        while (true) {
+            when (val st = repository.fetchCommandStatus(cid)) {
+                is Resource.Success -> {
+                    val statusUpper = st.data.status.uppercase()
+                    activeCmdStatus = statusUpper
+                    if (statusUpper in listOf("SUCCEEDED", "COMPLETED", "FAILED", "ERROR", "CANCELLED")) {
+                        tokenManager.saveActiveCommandId(activePid, "quick_gen_episode", null)
+                        activeCmdId = null
+                        loadProjectOverviewData(activePid)
+                        break
+                    }
+                }
+                else -> break
+            }
+            delay(3000)
+        }
+    }
+
+    val projName = ((overviewMap["project"] as? Map<*, *>)?.get("name") ?: overviewMap["name"] ?: "Project Detail").toString()
+    val coverUrl = (overviewMap["cover_image_url"] ?: (overviewMap["project"] as? Map<*, *>)?.get("cover_image_url"))
+        ?.toString()?.takeIf { it.isNotBlank() && it != "null" }
+
+    // BUG-012 FIX: Never turn null into LOCKED or OK; preserve UNSET and UNCHECKED honestly
+    val canonStatus = (overviewMap["canon_status"] ?: (overviewMap["status"] as? Map<*, *>)?.get("canon_status"))
+        ?.toString()?.takeIf { it.isNotBlank() && it != "null" } ?: "UNSET"
+    val continuityStatus = (overviewMap["continuity_status"] ?: (overviewMap["status"] as? Map<*, *>)?.get("continuity_status"))
+        ?.toString()?.takeIf { it.isNotBlank() && it != "null" } ?: "UNCHECKED"
+
+    // BUG-016 FIX: Separate Pending Approvals from Pending Operational Actions
+    val countsObj = (overviewMap["counts"] as? Map<*, *>) ?: overviewMap
+    val episodesCount = formatInt(countsObj["episodes_count"] ?: overviewMap["episodes_count"] ?: 0)
+    val charactersCount = formatInt(countsObj["characters_count"] ?: overviewMap["characters_count"] ?: 0)
+    val scenesCount = formatInt(countsObj["scenes_count"] ?: overviewMap["scenes_count"] ?: 0)
+    val activeJobsCount = formatInt(countsObj["active_jobs_count"] ?: overviewMap["active_jobs_count"] ?: 0)
+    val pendingApprovalsCount = formatInt(countsObj["pending_approvals_count"] ?: overviewMap["pending_approvals_count"] ?: 0)
+    val pendingActionsCount = formatInt(countsObj["pending_actions_count"] ?: overviewMap["pending_actions_count"] ?: 0)
+
     if (showSettingsDialog) {
         AlertDialog(
-            onDismissRequest = { showSettingsDialog = false },
+            onDismissRequest = { if (!isSavingSettings) showSettingsDialog = false },
             title = { Text("Project Settings", fontWeight = FontWeight.Bold) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    Text("Visual Medium", style = MaterialTheme.typography.labelLarge)
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        listOf("ANIME", "REAL_HUMAN").forEach { med ->
-                            FilterChip(
-                                selected = visualMedium == med,
-                                onClick = { visualMedium = med },
-                                label = { Text(if (med == "ANIME") "🎨 Anime" else "📷 Realistic") }
-                            )
-                        }
-                    }
                     OutlinedTextField(
-                        value = genre,
-                        onValueChange = { genre = it },
-                        label = { Text("Genre (e.g. Dark Fantasy, Cyberpunk)") },
+                        value = editName,
+                        onValueChange = { editName = it },
+                        label = { Text("Project Title") },
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth()
                     )
                     OutlinedTextField(
-                        value = coverUrl,
-                        onValueChange = { coverUrl = it },
-                        label = { Text("Project Cover Banner URL (Optional)") },
+                        value = editGenre,
+                        onValueChange = { editGenre = it },
+                        label = { Text("Genre") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    OutlinedTextField(
+                        value = editMedium,
+                        onValueChange = { editMedium = it },
+                        label = { Text("Visual Medium (ANIME / MANHWA / 3D)") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    OutlinedTextField(
+                        value = editCoverUrl,
+                        onValueChange = { editCoverUrl = it },
+                        label = { Text("Cover Image URL (https://...)") },
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth()
                     )
@@ -83,21 +209,52 @@ fun ProjectDetailScreen(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text("Auto-Approve Pipeline Changes")
-                        Switch(checked = autoApprove, onCheckedChange = { autoApprove = it })
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text("Auto-Approve Policy", fontWeight = FontWeight.SemiBold)
+                            Text("Automatically approve QC & Canon gates when checks pass", fontSize = 11.sp)
+                        }
+                        Switch(checked = editAutoApprove, onCheckedChange = { editAutoApprove = it })
                     }
                 }
             },
             confirmButton = {
-                Button(onClick = {
-                    viewModel.updateSettings(projectId, visualMedium, genre, autoApprove, coverUrl.ifBlank { null }) { msg ->
-                        Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+                PrimaryButton(
+                    text = "Save Settings",
+                    isLoading = isSavingSettings,
+                    onClick = {
+                        val pid = repository.currentProjectId()
+                        if (pid.isBlank()) return@PrimaryButton
+                        isSavingSettings = true
+                        scope.launch {
+                            val res = repository.updateProjectSettings(
+                                projectId = pid,
+                                updates = mapOf(
+                                    "name" to editName.trim(),
+                                    "genre" to editGenre.trim(),
+                                    "visual_medium" to editMedium.trim(),
+                                    "cover_image_url" to editCoverUrl.trim(),
+                                    "auto_approve" to editAutoApprove
+                                )
+                            )
+                            isSavingSettings = false
+                            if (res is Resource.Success) {
+                                showSettingsDialog = false
+                                loadProjectOverviewData(pid)
+                                Toast.makeText(context, "Project settings saved", Toast.LENGTH_SHORT).show()
+                            } else if (res is Resource.Error) {
+                                Toast.makeText(context, res.message, Toast.LENGTH_LONG).show()
+                            }
+                        }
                     }
-                    showSettingsDialog = false
-                }) { Text("Save") }
+                )
             },
             dismissButton = {
-                TextButton(onClick = { showSettingsDialog = false }) { Text("Cancel") }
+                TextButton(
+                    onClick = { showSettingsDialog = false },
+                    enabled = !isSavingSettings
+                ) {
+                    Text("Cancel")
+                }
             }
         )
     }
@@ -105,138 +262,171 @@ fun ProjectDetailScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
-            .verticalScroll(rememberScrollState()),
+            .verticalScroll(rememberScrollState())
+            .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
         ProjectSelectorBar(
-            onProjectChanged = { newId -> viewModel.fetchOverview(newId) },
-            onRefreshClick = { viewModel.fetchOverview(projectId) }
+            onProjectChanged = { newPid -> loadProjectOverviewData(newPid) },
+            onRefreshClick = { loadProjectOverviewData(repository.currentProjectId()) }
         )
 
-        ResourceStateBox(
-            resource = overviewState,
-            onRetry = { viewModel.fetchOverview(projectId) }
-        ) { overview ->
-            val stats = overview.stats.orEmpty()
-            // Fix #10: Format all numeric stats as integers (no 1.0)
-            val totalEps = formatInt(stats["total_episodes"] ?: overview.episodes_count ?: 0)
-            val totalScenes = formatInt(stats["total_scenes"] ?: 0)
-            val pendingActs = formatInt(stats["pending_actions_count"] ?: overview.pending_approvals ?: 0)
-            val activeJobs = formatInt(stats["active_jobs_count"] ?: overview.active_jobs ?: 0)
-
-            Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
-                // Fix #13, #17, #101: Active Project Cover Banner + Canon/Continuity/Jobs Badges
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(125.dp)
-                        .clip(RoundedCornerShape(14.dp))
-                        .background(MaterialTheme.colorScheme.primaryContainer)
-                        .padding(16.dp),
-                    contentAlignment = Alignment.BottomStart
-                ) {
-                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        Text("ACTIVE PROJECT", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-                        Text(overview.project?.name ?: "Anime Studio Project", style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold)
-                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            StatusBadge(if (overview.project?.is_active == true) "ACTIVE" else "INACTIVE")
-                            StatusBadge("Canon: ${overview.canon_status ?: "LOCKED"}")
-                            StatusBadge("Continuity: ${overview.continuity_status ?: "OK"}")
-                        }
-                    }
-                }
-
-                Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp)) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth().padding(14.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text("Episodes: $totalEps", fontWeight = FontWeight.SemiBold)
-                        Text("Scenes: $totalScenes", fontWeight = FontWeight.SemiBold)
-                        Text("Jobs: $activeJobs", fontWeight = FontWeight.SemiBold)
-                        Text("Reviews: $pendingActs", fontWeight = FontWeight.SemiBold)
-                    }
-                }
-
-                // Fix #16: Primary Quick Generate Button
-                Button(
-                    onClick = {
-                        viewModel.quickGenerateEpisode(projectId) { msg ->
-                            Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
-                        }
-                    },
-                    modifier = Modifier.fillMaxWidth().height(48.dp),
-                    shape = RoundedCornerShape(10.dp)
-                ) {
-                    Icon(Icons.Default.AutoAwesome, contentDescription = null)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Quick Generate Next Episode")
-                }
-
-                // Fix #11 & #14: 2x2 Grid/Card Layout without WF-xx technical labels
-                Text("Studio Modules", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
-
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    Card(
-                        modifier = Modifier.weight(1f).clickable { onOpenBible() },
-                        shape = RoundedCornerShape(12.dp)
-                    ) {
-                        Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                            Icon(Icons.Default.Book, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
-                            Text("Story Bible", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
-                            Text("Universe rules & lore", fontSize = 12.sp, color = MaterialTheme.colorScheme.secondary)
-                        }
-                    }
-                    Card(
-                        modifier = Modifier.weight(1f).clickable { onOpenCharacters() },
-                        shape = RoundedCornerShape(12.dp)
-                    ) {
-                        Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                            Icon(Icons.Default.People, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
-                            Text("Characters", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
-                            Text("Cast & Voice DNA", fontSize = 12.sp, color = MaterialTheme.colorScheme.secondary)
-                        }
-                    }
-                }
-
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    Card(
-                        modifier = Modifier.weight(1f).clickable { onOpenEpisodes() },
-                        shape = RoundedCornerShape(12.dp)
-                    ) {
-                        Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                            Icon(Icons.Default.VideoLibrary, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
-                            Text("Episodes", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
-                            Text("Scripts & production", fontSize = 12.sp, color = MaterialTheme.colorScheme.secondary)
-                        }
-                    }
-                    Card(
-                        modifier = Modifier.weight(1f).clickable { onOpenReviews() },
-                        shape = RoundedCornerShape(12.dp)
-                    ) {
-                        Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                            Icon(Icons.Default.CheckCircle, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
-                            Text("Review Inbox", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
-                            Text("$pendingActs pending", fontSize = 12.sp, color = MaterialTheme.colorScheme.secondary)
-                        }
-                    }
-                }
-
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    OutlinedButton(onClick = onOpenAnalytics, modifier = Modifier.weight(1f)) {
-                        Icon(Icons.Default.BarChart, contentDescription = null, modifier = Modifier.size(18.dp))
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text("Analytics")
-                    }
-                    OutlinedButton(onClick = { showSettingsDialog = true }, modifier = Modifier.weight(1f)) {
-                        Icon(Icons.Default.Settings, contentDescription = null, modifier = Modifier.size(18.dp))
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text("Project Settings")
-                    }
-                }
-                Spacer(modifier = Modifier.height(60.dp))
+        if (isLoading) {
+            Box(modifier = Modifier.fillMaxWidth().padding(32.dp), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator(color = StudioTokens.Primary)
             }
+        } else if (loadError != null) {
+            StandardCard {
+                Text("Error Loading Project", color = StudioTokens.Error, fontWeight = FontWeight.Bold)
+                Text(loadError ?: "Unknown error", fontSize = 13.sp)
+                SecondaryButton(text = "Retry", onClick = { loadProjectOverviewData(repository.currentProjectId()) })
+            }
+        } else {
+            // BUG-015: Rendered Cover Image with Loading, Broken & No-Cover Fallback states
+            AsyncMediaPreview(
+                mediaUrl = coverUrl,
+                contentDescription = "$projName Cover Banner",
+                height = 150.dp,
+                emptyLabel = "$projName • $editMedium ($editGenre)"
+            )
+
+            ScreenHeader(
+                title = projName,
+                subtitle = "Medium: $editMedium • Genre: $editGenre • Policy: ${if (editAutoApprove) "Auto-Approve" else "Review Gate"}",
+                trailingContent = {
+                    IconButton(onClick = { showSettingsDialog = true }) {
+                        Icon(Icons.Default.Edit, contentDescription = "Edit Project Settings")
+                    }
+                }
+            )
+
+            // BUG-012: Distinct Canon (UNSET | DRAFT | LOCKED) and Continuity (UNCHECKED | PASSED | ISSUES_FOUND)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                StandardCard(modifier = Modifier.weight(1f), onClick = onOpenCanon) {
+                    Text("Canon Status", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    StatusChip(label = canonStatus)
+                }
+                StandardCard(modifier = Modifier.weight(1f), onClick = onOpenContinuity) {
+                    Text("Continuity Check", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    StatusChip(label = continuityStatus)
+                }
+            }
+
+            // Metrics Grid (BUG-016: Separate Pending Approvals vs Pending Operational Actions)
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                MetricCard(label = "Episodes", value = episodesCount, modifier = Modifier.weight(1f), onClick = onOpenEpisodes)
+                MetricCard(label = "Scenes", value = scenesCount, modifier = Modifier.weight(1f), onClick = onOpenScenes)
+                MetricCard(label = "Characters", value = charactersCount, modifier = Modifier.weight(1f), onClick = onOpenCharacters)
+            }
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                MetricCard(
+                    label = "Active Jobs",
+                    value = activeJobsCount,
+                    accentColor = if (activeJobsCount != "0") StudioTokens.Warning else StudioTokens.Primary,
+                    modifier = Modifier.weight(1f),
+                    onClick = onOpenJobsMonitor
+                )
+                MetricCard(
+                    label = "Pending Approvals",
+                    value = pendingApprovalsCount,
+                    accentColor = if (pendingApprovalsCount != "0") StudioTokens.Warning else StudioTokens.Success,
+                    modifier = Modifier.weight(1f),
+                    onClick = onOpenReviewInbox
+                )
+                MetricCard(
+                    label = "Queued Actions",
+                    value = pendingActionsCount,
+                    accentColor = StudioTokens.Secondary,
+                    modifier = Modifier.weight(1f),
+                    onClick = onOpenJobsMonitor
+                )
+            }
+
+            // BUG-013: Duplicate-safe Quick Generate Next Episode with active command monitoring
+            StandardCard {
+                SectionHeader(
+                    title = "Episode Production Control",
+                    badgeText = if (!activeCmdId.isNullOrBlank()) friendlyPipelineStatus(activeCmdStatus ?: "RUNNING") else "READY"
+                )
+                if (!activeCmdId.isNullOrBlank()) {
+                    Text(
+                        text = "Active Job #${activeCmdId?.take(8)} is currently ${friendlyPipelineStatus(activeCmdStatus ?: "RUNNING")}. Duplicate submission is locked.",
+                        fontSize = 12.sp,
+                        color = StudioTokens.Warning
+                    )
+                    SecondaryButton(
+                        text = "Open Active Job in Pipeline Monitor",
+                        onClick = onOpenProduction,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                } else {
+                    PrimaryButton(
+                        text = "Generate Next Episode",
+                        isLoading = isSubmittingGen,
+                        enabled = !isSubmittingGen && activeJobsCount == "0",
+                        onClick = {
+                            val pid = repository.currentProjectId()
+                            if (pid.isBlank() || isSubmittingGen) return@PrimaryButton
+                            isSubmittingGen = true
+                            scope.launch {
+                                val nextEp = (episodesCount.toIntOrNull() ?: 0) + 1
+                                val res = repository.submitStudioCommand(
+                                    projectId = pid,
+                                    intent = CommandIntent.GENERATE_EPISODE,
+                                    episodeNo = nextEp,
+                                    payload = mapOf("idempotency_key" to idempotencyKey)
+                                )
+                                isSubmittingGen = false
+                                if (res is Resource.Success && res.data.command_id.isNotBlank()) {
+                                    activeCmdId = res.data.command_id
+                                    activeCmdStatus = res.data.status
+                                    tokenManager.saveActiveCommandId(pid, "quick_gen_episode", res.data.command_id)
+                                    Toast.makeText(context, "Episode $nextEp queued (#${res.data.command_id.take(6)})", Toast.LENGTH_SHORT).show()
+                                } else if (res is Resource.Error) {
+                                    Toast.makeText(context, res.message, Toast.LENGTH_LONG).show()
+                                }
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            }
+
+            // Studio Modules Navigation Grid
+            SectionHeader(title = "Studio Modules")
+            val modules = listOf(
+                "Story Bible" to onOpenBible,
+                "Episode Planner" to onOpenEpisodes,
+                "Scene Inspector" to onOpenScenes,
+                "Characters" to onOpenCharacters,
+                "Character Deep Dive" to onOpenCharDeepDive,
+                "World Wiki" to onOpenLore,
+                "Vision DNA" to onOpenVision,
+                "Quick Generate" to onOpenQuickTools,
+                "Media Library" to onOpenMediaLibrary,
+                "Quality Control (QC)" to onOpenQC,
+                "Review Inbox" to onOpenReviewInbox,
+                "Publish Studio" to onOpenPublish,
+                "Analytics" to onOpenAnalytics,
+                "Quota & Budget" to onOpenBudget
+            )
+            modules.chunked(2).forEach { pair ->
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    pair.forEach { (label, action) ->
+                        OutlinedButton(
+                            onClick = action,
+                            modifier = Modifier.weight(1f).heightIn(min = 48.dp),
+                            shape = RoundedCornerShape(10.dp)
+                        ) {
+                            Text(label, fontSize = 12.sp, maxLines = 1)
+                        }
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(64.dp))
         }
     }
 }

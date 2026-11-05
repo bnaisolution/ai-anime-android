@@ -4,271 +4,369 @@ import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.dpdns.bnai.anime.core.auth.TokenManager
+import org.dpdns.bnai.anime.core.network.AnimeRepository
+import org.dpdns.bnai.anime.core.network.CommandIntent
 import org.dpdns.bnai.anime.core.network.Resource
-import org.dpdns.bnai.anime.ui.components.InfoTooltipButton
 import org.dpdns.bnai.anime.ui.components.ProjectSelectorBar
-import org.dpdns.bnai.anime.ui.components.ResourceStateBox
+import org.dpdns.bnai.anime.ui.components.friendlyPipelineStatus
+import org.dpdns.bnai.anime.ui.designsystem.*
 
 @Composable
-fun BibleScreen(
-    projectId: String = TokenManager.getInstance()?.getActiveProjectId().orEmpty(),
-    viewModel: ProjectViewModel = viewModel()
-) {
+fun BibleScreen() {
     val context = LocalContext.current
-    val bibleResource by viewModel.bibleState.collectAsState()
+    val tokenManager = remember { TokenManager(context) }
+    val repository = remember { AnimeRepository() }
+    val scope = rememberCoroutineScope()
 
-    var selectedTab by remember { mutableStateOf(0) } // 0: Draft, 1: Universe, 2: History
-    var universeTitle by remember { mutableStateOf("") }
-    var worldRules by remember { mutableStateOf("") }
-    var magicSystem by remember { mutableStateOf("") }
-    var toneAndTheme by remember { mutableStateOf("") }
+    var projectId by remember { mutableStateOf(repository.currentProjectId()) }
+    var selectedTab by rememberSaveable { mutableStateOf(0) }
+    val tabs = listOf(
+        "Overview & Tone",
+        "World & Rules",
+        "Power System",
+        "Characters & Timeline"
+    )
 
-    var savedWorldRules by remember { mutableStateOf("") }
-    var savedMagicSystem by remember { mutableStateOf("") }
-    var savedTone by remember { mutableStateOf("") }
+    var premise by rememberSaveable(projectId) { mutableStateOf("") }
+    var toneGenre by rememberSaveable(projectId) { mutableStateOf("") }
+    var worldSetting by rememberSaveable(projectId) { mutableStateOf("") }
+    var worldRules by rememberSaveable(projectId) { mutableStateOf("") }
+    var powerSystem by rememberSaveable(projectId) { mutableStateOf("") }
+    var characterFoundations by rememberSaveable(projectId) { mutableStateOf("") }
+    var timelineFoundation by rememberSaveable(projectId) { mutableStateOf("") }
 
-    var showChatBox by remember { mutableStateOf(false) }
-    var aiChatPrompt by remember { mutableStateOf("") }
-    var isSaving by remember { mutableStateOf(false) }
-    var showUnsavedDialog by remember { mutableStateOf(false) }
+    var savedSnapshot by remember { mutableStateOf("") }
+    var isLoading by remember { mutableStateOf(true) }
+    var isSavingDraft by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+    var showDiscardDialog by remember { mutableStateOf(false) }
 
-    val isDirty = worldRules != savedWorldRules || magicSystem != savedMagicSystem || toneAndTheme != savedTone
+    // BUG-001: Persistent async WF-01 command tracking
+    var activeWf01CmdId by remember(projectId) {
+        mutableStateOf(tokenManager.getActiveCommandId(projectId, "wf01_bible_gen"))
+    }
+    var activeWf01Status by remember { mutableStateOf<String?>(null) }
+    var isSubmittingWf01 by remember { mutableStateOf(false) }
 
-    // Fix #27: Warn on back press if there are unsaved changes
-    BackHandler(enabled = isDirty) {
-        showUnsavedDialog = true
+    fun currentEditorSnapshot(): String {
+        return listOf(
+            premise, toneGenre, worldSetting, worldRules,
+            powerSystem, characterFoundations, timelineFoundation
+        ).joinToString("||")
     }
 
-    if (showUnsavedDialog) {
-        AlertDialog(
-            onDismissRequest = { showUnsavedDialog = false },
-            title = { Text("Unsaved Story Bible Changes") },
-            text = { Text("You have unsaved edits in your Story Bible draft. Discard changes?") },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        worldRules = savedWorldRules
-                        magicSystem = savedMagicSystem
-                        toneAndTheme = savedTone
-                        showUnsavedDialog = false
-                    },
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
-                ) { Text("Discard") }
-            },
-            dismissButton = {
-                TextButton(onClick = { showUnsavedDialog = false }) { Text("Keep Editing") }
+    val hasUnsavedChanges = !isLoading && savedSnapshot.isNotEmpty() && currentEditorSnapshot() != savedSnapshot
+
+    BackHandler(enabled = hasUnsavedChanges) {
+        showDiscardDialog = true
+    }
+
+    fun hydrateFromBibleMap(map: Map<String, Any?>) {
+        val bible = (map["story_bible"] as? Map<*, *>) ?: map
+        premise = (bible["premise"] ?: bible["logline"] ?: bible["overview"] ?: "").toString()
+        toneGenre = (bible["genre"] ?: bible["tone"] ?: "Dark Fantasy / Action").toString()
+        worldSetting = (bible["world_setting"] ?: bible["world"] ?: bible["setting"] ?: "").toString()
+        worldRules = (bible["world_rules"] ?: bible["rules"] ?: "").toString()
+        powerSystem = (bible["power_system"] ?: bible["magic_system"] ?: "").toString()
+        characterFoundations = (bible["character_foundations"] ?: bible["main_cast_notes"] ?: "").toString()
+        timelineFoundation = (bible["timeline"] ?: bible["season_arc"] ?: "").toString()
+        savedSnapshot = currentEditorSnapshot()
+    }
+
+    fun loadBibleFromServer(targetPid: String = repository.currentProjectId()) {
+        if (targetPid.isBlank()) {
+            isLoading = false
+            return
+        }
+        scope.launch {
+            isLoading = true
+            errorMessage = null
+            when (val res = repository.fetchBible(targetPid)) {
+                is Resource.Success -> {
+                    hydrateFromBibleMap(res.data)
+                    isLoading = false
+                }
+                is Resource.Error -> {
+                    errorMessage = res.message
+                    isLoading = false
+                }
+                else -> {
+                    isLoading = false
+                }
             }
-        )
-    }
-
-    LaunchedEffect(projectId) { viewModel.fetchBible(projectId) }
-
-    LaunchedEffect(bibleResource) {
-        if (bibleResource is Resource.Success) {
-            val data = (bibleResource as Resource.Success<StoryBibleData>).data
-            universeTitle = data.universeTitle
-            worldRules = data.worldRules
-            magicSystem = data.magicSystem
-            toneAndTheme = data.toneAndTheme
-            savedWorldRules = data.worldRules
-            savedMagicSystem = data.magicSystem
-            savedTone = data.toneAndTheme
         }
     }
 
-    Column(modifier = Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        // Fix #19 & #25: Project Selector + Auto-Generate Universe button
-        ProjectSelectorBar(
-            onProjectChanged = { newId -> viewModel.fetchBible(newId) },
-            onRefreshClick = { viewModel.fetchBible(projectId) }
+    LaunchedEffect(projectId) {
+        loadBibleFromServer(projectId)
+    }
+
+    // BUG-001 FIX: Poll WF-01 command status until terminal state; fetch Bible ONLY after confirmed SUCCEEDED!
+    LaunchedEffect(activeWf01CmdId, projectId) {
+        val cmdId = activeWf01CmdId ?: return@LaunchedEffect
+        while (true) {
+            when (val st = repository.fetchCommandStatus(cmdId)) {
+                is Resource.Success -> {
+                    val statusUpper = st.data.status.uppercase()
+                    activeWf01Status = statusUpper
+                    if (statusUpper in listOf("SUCCEEDED", "COMPLETED", "BIBLE_SAVED")) {
+                        tokenManager.saveActiveCommandId(projectId, "wf01_bible_gen", null)
+                        activeWf01CmdId = null
+                        Toast.makeText(context, "Story Bible AI generation completed!", Toast.LENGTH_SHORT).show()
+                        loadBibleFromServer(projectId)
+                        break
+                    } else if (statusUpper in listOf("FAILED", "ERROR", "CANCELLED", "DEAD_LETTER")) {
+                        tokenManager.saveActiveCommandId(projectId, "wf01_bible_gen", null)
+                        activeWf01CmdId = null
+                        errorMessage = st.data.error ?: "Story Bible AI generation failed."
+                        break
+                    }
+                }
+                is Resource.Error -> {
+                    break
+                }
+                else -> {}
+            }
+            delay(3000)
+        }
+    }
+
+    if (showDiscardDialog) {
+        UnsavedChangesDialog(
+            onDiscard = {
+                showDiscardDialog = false
+                loadBibleFromServer(projectId)
+            },
+            onKeepEditing = { showDiscardDialog = false }
         )
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        ProjectSelectorBar(
+            onProjectChanged = { newPid ->
+                projectId = newPid
+                loadBibleFromServer(newPid)
+            },
+            onRefreshClick = { loadBibleFromServer(projectId) }
+        )
+
+        ScreenHeader(
+            title = "Story Bible",
+            subtitle = "Master universe foundation, world rules, power scaling & character anchors",
+            trailingContent = {
+                if (hasUnsavedChanges) {
+                    StatusChip(label = "UNSAVED EDITS")
+                } else {
+                    StatusChip(label = "SYNCED")
+                }
+            }
+        )
+
+        // Active WF-01 AI Generation Progress Banner (BUG-001)
+        if (!activeWf01CmdId.isNullOrBlank()) {
+            StandardCard {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "AI Bible Architect Active (#${activeWf01CmdId?.take(8)})",
+                            fontWeight = FontWeight.Bold,
+                            color = StudioTokens.Primary
+                        )
+                        Text(
+                            text = "Status: ${friendlyPipelineStatus(activeWf01Status ?: "QUEUED")} — Bible will refresh automatically upon completion.",
+                            fontSize = 12.sp
+                        )
+                    }
+                    CircularProgressIndicator(modifier = Modifier.size(22.dp), strokeWidth = 2.dp)
+                }
+            }
+        }
+
+        if (errorMessage != null) {
+            StandardCard {
+                Text(errorMessage ?: "", color = StudioTokens.Error, fontSize = 13.sp)
+            }
+        }
+
+        ScrollableTabRow(selectedTabIndex = selectedTab, edgePadding = 0.dp) {
+            tabs.forEachIndexed { idx, label ->
+                Tab(
+                    selected = selectedTab == idx,
+                    onClick = { selectedTab = idx },
+                    text = { Text(label) }
+                )
+            }
+        }
+
+        when (selectedTab) {
+            0 -> {
+                StandardCard {
+                    SectionHeader(title = "Series Premise & Tone")
+                    OutlinedTextField(
+                        value = premise,
+                        onValueChange = { premise = it },
+                        label = { Text("Master Premise / Logline") },
+                        minLines = 4,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    OutlinedTextField(
+                        value = toneGenre,
+                        onValueChange = { toneGenre = it },
+                        label = { Text("Tone & Genre") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            }
+            1 -> {
+                StandardCard {
+                    SectionHeader(title = "World Building & Immutable Laws")
+                    OutlinedTextField(
+                        value = worldSetting,
+                        onValueChange = { worldSetting = it },
+                        label = { Text("World Setting & Geography") },
+                        minLines = 4,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    OutlinedTextField(
+                        value = worldRules,
+                        onValueChange = { worldRules = it },
+                        label = { Text("Immutable World Rules (Enforced by Canon)") },
+                        minLines = 4,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            }
+            2 -> {
+                StandardCard {
+                    SectionHeader(title = "Power System & Combat Limits")
+                    OutlinedTextField(
+                        value = powerSystem,
+                        onValueChange = { powerSystem = it },
+                        label = { Text("Power System Rules, Costs & Ceilings") },
+                        minLines = 6,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            }
+            3 -> {
+                StandardCard {
+                    SectionHeader(title = "Character Foundations & Story Timeline")
+                    OutlinedTextField(
+                        value = characterFoundations,
+                        onValueChange = { characterFoundations = it },
+                        label = { Text("Core Cast Foundations & Factions") },
+                        minLines = 4,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    OutlinedTextField(
+                        value = timelineFoundation,
+                        onValueChange = { timelineFoundation = it },
+                        label = { Text("Timeline & Season Arc Structure") },
+                        minLines = 4,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            }
+        }
 
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            Text("Story Bible", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                // Fix #24: Chat with AI toggle
-                OutlinedButton(onClick = { showChatBox = !showChatBox }) {
-                    Icon(Icons.Default.Chat, contentDescription = null, modifier = Modifier.size(16.dp))
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text("Chat AI")
-                }
-                // Fix #25: Auto-Generate Universe
-                Button(onClick = {
-                    isSaving = true
-                    viewModel.proposeBibleChange(projectId, "✨ Auto-Generate complete anime universe, rules, and power system") { msg ->
-                        Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
-                        isSaving = false
-                        viewModel.fetchBible(projectId)
+            PrimaryButton(
+                text = "Save Bible Draft",
+                isLoading = isSavingDraft,
+                onClick = {
+                    if (projectId.isBlank()) return@PrimaryButton
+                    isSavingDraft = true
+                    scope.launch {
+                        val payload = mapOf(
+                            "premise" to premise,
+                            "genre" to toneGenre,
+                            "world_setting" to worldSetting,
+                            "world_rules" to worldRules,
+                            "power_system" to powerSystem,
+                            "character_foundations" to characterFoundations,
+                            "timeline" to timelineFoundation
+                        )
+                        when (val res = repository.updateProjectBible(projectId, payload)) {
+                            is Resource.Success -> {
+                                savedSnapshot = currentEditorSnapshot()
+                                Toast.makeText(context, "Story Bible saved to database", Toast.LENGTH_SHORT).show()
+                            }
+                            is Resource.Error -> {
+                                errorMessage = res.message
+                            }
+                            else -> {}
+                        }
+                        isSavingDraft = false
                     }
-                }) {
-                    Icon(Icons.Default.AutoAwesome, contentDescription = null, modifier = Modifier.size(16.dp))
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text("Auto-Generate")
-                }
+                },
+                modifier = Modifier.weight(1f)
+            )
+
+            OutlinedButton(
+                onClick = {
+                    if (projectId.isBlank() || isSubmittingWf01 || !activeWf01CmdId.isNullOrBlank()) return@OutlinedButton
+                    isSubmittingWf01 = true
+                    scope.launch {
+                        val res = repository.submitStudioCommand(
+                            projectId = projectId,
+                            intent = CommandIntent.SAVE_BIBLE,
+                            payload = mapOf(
+                                "premise" to premise,
+                                "genre" to toneGenre,
+                                "world_setting" to worldSetting,
+                                "world_rules" to worldRules,
+                                "power_system" to powerSystem
+                            )
+                        )
+                        isSubmittingWf01 = false
+                        if (res is Resource.Success && res.data.command_id.isNotBlank()) {
+                            activeWf01CmdId = res.data.command_id
+                            activeWf01Status = res.data.status
+                            tokenManager.saveActiveCommandId(projectId, "wf01_bible_gen", res.data.command_id)
+                            Toast.makeText(context, "AI Bible Architect queued (#${res.data.command_id.take(6)})", Toast.LENGTH_SHORT).show()
+                        } else if (res is Resource.Error) {
+                            errorMessage = res.message
+                        }
+                    }
+                },
+                enabled = activeWf01CmdId.isNullOrBlank() && !isSubmittingWf01,
+                modifier = Modifier.weight(1f).heightIn(min = 48.dp)
+            ) {
+                Icon(Icons.Default.AutoAwesome, contentDescription = null, modifier = Modifier.size(16.dp))
+                Spacer(modifier = Modifier.width(6.dp))
+                Text("AI Expand Bible")
             }
         }
-
-        if (showChatBox) {
-            Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
-                Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text("Discuss Story Bible with AI Director", fontWeight = FontWeight.SemiBold)
-                    OutlinedTextField(
-                        value = aiChatPrompt,
-                        onValueChange = { aiChatPrompt = it },
-                        placeholder = { Text("e.g. Expand the forbidden bloodline rule...") },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    Button(
-                        onClick = {
-                            if (aiChatPrompt.isNotBlank()) {
-                                viewModel.proposeBibleChange(projectId, aiChatPrompt) { msg ->
-                                    Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
-                                    aiChatPrompt = ""
-                                    viewModel.fetchBible(projectId)
-                                }
-                            }
-                        },
-                        enabled = aiChatPrompt.isNotBlank()
-                    ) { Text("Apply via AI") }
-                }
-            }
-        }
-
-        // Fix #23: 3 Tabs (Draft, Universe Preview, History)
-        TabRow(selectedTabIndex = selectedTab) {
-            Tab(selected = selectedTab == 0, onClick = { selectedTab = 0 }, text = { Text("Draft") })
-            Tab(selected = selectedTab == 1, onClick = { selectedTab = 1 }, text = { Text("Universe") })
-            Tab(selected = selectedTab == 2, onClick = { selectedTab = 2 }, text = { Text("History") })
-        }
-
-        ResourceStateBox(
-            resource = bibleResource,
-            emptyMessage = "No Story Bible saved yet. Tap 'Auto-Generate' or fill out the Draft tab.",
-            onRetry = { viewModel.fetchBible(projectId) }
-        ) { _ ->
-            when (selectedTab) {
-                0 -> {
-                    Column(
-                        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        // Fix #20: (i) Info Tooltip Icons next to field labels
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text("World Rules & Premise", style = MaterialTheme.typography.labelLarge)
-                            InfoTooltipButton("World Rules", "Core premise, setting laws, eras, and immutable facts of your anime world.")
-                        }
-                        OutlinedTextField(value = worldRules, onValueChange = { worldRules = it }, minLines = 3, modifier = Modifier.fillMaxWidth())
-
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text("Magic / Power System", style = MaterialTheme.typography.labelLarge)
-                            InfoTooltipButton("Power System", "Energy sources, combat tiers, elemental affinities, and drawbacks/costs.")
-                        }
-                        OutlinedTextField(value = magicSystem, onValueChange = { magicSystem = it }, minLines = 3, modifier = Modifier.fillMaxWidth())
-
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text("Tone & Visual Theme", style = MaterialTheme.typography.labelLarge)
-                            InfoTooltipButton("Tone & Theme", "Emotional atmosphere, lighting mood, and storytelling pacing.")
-                        }
-                        OutlinedTextField(value = toneAndTheme, onValueChange = { toneAndTheme = it }, modifier = Modifier.fillMaxWidth())
-
-                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                            // Fix #28: Reset button to clear/revert fields
-                            OutlinedButton(
-                                onClick = {
-                                    worldRules = ""
-                                    magicSystem = ""
-                                    toneAndTheme = ""
-                                },
-                                modifier = Modifier.weight(1f).height(48.dp)
-                            ) { Text("Clear / Reset") }
-
-                            // Fix #21 & #22: Disabled if no changes + CircularProgressIndicator + state retention
-                            Button(
-                                onClick = {
-                                    isSaving = true
-                                    val combined = "World: $worldRules | Magic: $magicSystem | Tone: $toneAndTheme"
-                                    viewModel.proposeBibleChange(projectId, combined) { msg ->
-                                        Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
-                                        savedWorldRules = worldRules
-                                        savedMagicSystem = magicSystem
-                                        savedTone = toneAndTheme
-                                        isSaving = false
-                                    }
-                                },
-                                enabled = isDirty && !isSaving,
-                                modifier = Modifier.weight(1f).height(48.dp)
-                            ) {
-                                if (isSaving) {
-                                    CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp, color = MaterialTheme.colorScheme.onPrimary)
-                                } else {
-                                    Text("Save Bible")
-                                }
-                            }
-                        }
-                        Spacer(modifier = Modifier.height(60.dp))
-                    }
-                }
-                1 -> {
-                    // Fix #26: Universe Preview Tab with Entity Edit/Delete action icons
-                    Column(
-                        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
-                        verticalArrangement = Arrangement.spacedBy(10.dp)
-                    ) {
-                        Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp)) {
-                            Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Text(universeTitle.ifBlank { "Universe Overview" }, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
-                                    Row {
-                                        IconButton(onClick = { selectedTab = 0 }) {
-                                            Icon(Icons.Default.Edit, contentDescription = "Edit Universe")
-                                        }
-                                        IconButton(onClick = {
-                                            worldRules = ""
-                                            Toast.makeText(context, "Draft cleared. Save to apply.", Toast.LENGTH_SHORT).show()
-                                        }) {
-                                            Icon(Icons.Default.Delete, contentDescription = "Clear")
-                                        }
-                                    }
-                                }
-                                Text("World Rules: ${worldRules.ifBlank { "Not defined yet" }}")
-                                Text("Power System: ${magicSystem.ifBlank { "Not defined yet" }}")
-                                Text("Tone: ${toneAndTheme.ifBlank { "Standard Anime" }}")
-                            }
-                        }
-                    }
-                }
-                else -> {
-                    Column(modifier = Modifier.fillMaxSize().padding(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Card(modifier = Modifier.fillMaxWidth()) {
-                            Column(modifier = Modifier.padding(14.dp)) {
-                                Text("Active Snapshot • Story Bible v1", fontWeight = FontWeight.Bold)
-                                Text("Status: Synced with Canon Engine", color = MaterialTheme.colorScheme.secondary)
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        Spacer(modifier = Modifier.height(64.dp))
     }
 }
