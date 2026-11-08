@@ -50,8 +50,7 @@ jobs:
           script: |
             ./gradlew installDebug --no-daemon --stacktrace
             curl -Ls "https://get.maestro.mobile.dev" | bash
-            export PATH="$PATH:$HOME/.maestro/bin"
-            maestro test .maestro
+            "$HOME/.maestro/bin/maestro" test .maestro
       - name: Upload Maestro artifacts
         if: always()
         uses: actions/upload-artifact@v4

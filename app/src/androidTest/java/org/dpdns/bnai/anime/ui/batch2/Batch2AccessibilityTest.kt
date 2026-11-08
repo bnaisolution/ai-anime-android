@@ -2,6 +2,7 @@ package org.dpdns.bnai.anime.ui.batch2
 
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
@@ -80,7 +81,7 @@ class Batch2AccessibilityTest {
 
     @Test
     fun projectRefreshControlHasAccessibleLabel() {
-        composeRule.setBatch2Content { ProjectSelectorBar() }
+        composeRule.setBatch2Content { ProjectSelectorBar(onRefreshClick = {}) }
         composeRule.onNodeWithContentDescription("Refresh project data").assertExists()
     }
 
@@ -96,7 +97,7 @@ class Batch2AccessibilityTest {
                 onDismiss = {}
             )
         }
-        composeRule.onNodeWithText("Delete").assertExists()
+        composeRule.onNodeWithTag(TestTags.Dialog.CONFIRM).assertTextEquals("Delete")
         composeRule.onNodeWithText("Keep").assertExists()
         composeRule.onNodeWithTag(TestTags.Dialog.CONFIRM).assertExists()
         composeRule.onNodeWithTag(TestTags.Dialog.CANCEL).assertExists()

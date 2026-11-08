@@ -133,7 +133,7 @@ class Batch2SharedComponentTest {
     @Test
     fun projectSelectorExposesNavigationTags() {
         composeRule.setBatch2Content {
-            ProjectSelectorBar()
+            ProjectSelectorBar(onRefreshClick = {})
         }
         composeRule.onNodeWithTag(TestTags.Navigation.PROJECT_SELECTOR).assertExists()
         composeRule.onNodeWithTag(TestTags.Navigation.PROJECT_REFRESH).assertExists()

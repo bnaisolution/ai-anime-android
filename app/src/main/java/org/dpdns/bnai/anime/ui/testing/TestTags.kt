@@ -25,6 +25,8 @@ object TestTags {
         const val AI_DIRECTOR_FAB = "nav.ai_director_fab"
         const val PROJECT_SELECTOR = "nav.project_selector"
         const val PROJECT_REFRESH = "nav.project_refresh"
+        const val BOTTOM_ITEM_PREFIX = "nav.bottom"
+        const val DRAWER_ITEM_PREFIX = "nav.drawer_item"
     }
 
     object Auth {

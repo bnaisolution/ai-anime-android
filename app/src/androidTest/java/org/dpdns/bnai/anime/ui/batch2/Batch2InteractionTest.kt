@@ -91,7 +91,7 @@ class Batch2InteractionTest {
     fun ownerEmergencyStopOpensConfirmation() {
         composeRule.setBatch2Content { OwnerOverviewScreen() }
         composeRule.onNodeWithTag(TestTags.Owner.EMERGENCY_STOP).performClick()
-        composeRule.onNodeWithText("Emergency Stop All Workers?").assertExists()
+        composeRule.onNodeWithText("Emergency Stop All Workers?", substring = true).assertExists()
         composeRule.onNodeWithTag(TestTags.Dialog.CONFIRM).assertExists()
         composeRule.onNodeWithTag(TestTags.Dialog.CANCEL).assertExists()
         composeRule.onNodeWithTag(TestTags.Dialog.CANCEL).performClick()

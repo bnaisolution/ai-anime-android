@@ -258,7 +258,9 @@ fun AppNavGraph(navController: NavHostController) {
                                             scope.launch { drawerState.close() }
                                             navController.navigate(route) { launchSingleTop = true }
                                         },
-                                        modifier = Modifier.padding(vertical = 2.dp)
+                                        modifier = Modifier
+                                            .padding(vertical = 2.dp)
+                                            .testTag(TestTags.item(TestTags.Navigation.DRAWER_ITEM_PREFIX, route))
                                     )
                                 }
                             }
@@ -375,7 +377,10 @@ fun AppNavGraph(navController: NavHostController) {
                                             overflow = TextOverflow.Ellipsis,
                                             fontSize = 11.sp
                                         )
-                                    }
+                                    },
+                                    modifier = Modifier.testTag(
+                                        TestTags.item(TestTags.Navigation.BOTTOM_ITEM_PREFIX, item.route)
+                                    )
                                 )
                             }
                         }
@@ -390,7 +395,10 @@ fun AppNavGraph(navController: NavHostController) {
                                     selected = currentRoute == item.route,
                                     onClick = { navController.navigate(item.route) { launchSingleTop = true } },
                                     icon = { Icon(item.icon, contentDescription = item.label) },
-                                    label = { Text(item.label, maxLines = 1) }
+                                    label = { Text(item.label, maxLines = 1) },
+                                    modifier = Modifier.testTag(
+                                        TestTags.item(TestTags.Navigation.BOTTOM_ITEM_PREFIX, item.route)
+                                    )
                                 )
                             }
                         }

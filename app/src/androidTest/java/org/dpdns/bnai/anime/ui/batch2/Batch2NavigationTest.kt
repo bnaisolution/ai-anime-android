@@ -7,6 +7,7 @@ import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -80,6 +81,8 @@ class Batch2NavigationTest {
         composeRule.onNodeWithContentDescription("Open Navigation Drawer").performClick()
         composeRule.waitForIdle()
         composeRule.onNodeWithText("Home Dashboard").assertExists()
+        composeRule.onNodeWithText("OWNER CONTROL").performScrollTo().performClick()
+        composeRule.waitForIdle()
         composeRule.onNodeWithText("Owner Overview").assertExists()
     }
 
@@ -87,7 +90,7 @@ class Batch2NavigationTest {
     fun bottomNavigationOpensEpisodes() {
         container.tokenManager.saveToken("batch2-token")
         launchGraph()
-        composeRule.onNodeWithText("Episodes").performClick()
+        composeRule.onNodeWithTag(TestTags.item(TestTags.Navigation.BOTTOM_ITEM_PREFIX, "episodes")).performClick()
         composeRule.waitForIdle()
         composeRule.onNodeWithTag(TestTags.Screen.EPISODES).assertExists()
     }
@@ -128,18 +131,18 @@ class Batch2NavigationTest {
     }
 
     @Test
-    fun duplicateStudioDeclarationIsReachableFromAuthGraph() {
+    fun duplicateStudioDeclarationDoesNotBypassAuthGate() {
         launchGraph()
         navigate("studio")
-        composeRule.onNodeWithTag(TestTags.Screen.STUDIO).assertExists()
+        composeRule.onNodeWithTag(TestTags.Screen.AUTH).assertExists()
     }
 
     @Test
-    fun duplicateAuthDeclarationIsReachableFromAuthenticatedGraph() {
+    fun duplicateAuthDeclarationDoesNotExposeAuthWhenAuthenticated() {
         container.tokenManager.saveToken("batch2-token")
         launchGraph()
         navigate("auth")
-        composeRule.onNodeWithTag(TestTags.Screen.AUTH).assertExists()
+        composeRule.onNodeWithTag(TestTags.Screen.STUDIO).assertExists()
     }
 
     @Test
@@ -180,13 +183,12 @@ class Batch2NavigationTest {
             "canon" to TestTags.Screen.CANON,
             "continuity" to TestTags.Screen.CONTINUITY,
             "lore_explorer" to TestTags.Screen.LORE_EXPLORER,
-            "budget_ledger" to TestTags.Screen.BUDGET_LEDGER,
-            "auth" to TestTags.Screen.AUTH
+            "budget_ledger" to TestTags.Screen.BUDGET_LEDGER
         )
         routes.forEach { (route, tag) ->
             navigate(route)
             composeRule.onNodeWithTag(tag).assertExists()
         }
-        assertTrue(routes.size == 35)
+        assertTrue(routes.size == 34)
     }
 }

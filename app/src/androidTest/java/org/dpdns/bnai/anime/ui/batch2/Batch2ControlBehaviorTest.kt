@@ -107,10 +107,11 @@ class Batch2ControlBehaviorTest {
         composeRule.setBatch2Content(container) { PromptStudioScreen() }
         waitForCall(container, "fetchSystemPrompts")
 
-        composeRule.onNodeWithTag(TestTags.PromptStudio.EDIT).performClick()
+        composeRule.onNodeWithTag(TestTags.PromptStudio.EDIT).performScrollTo().performClick()
         composeRule.onNodeWithTag(TestTags.PromptStudio.TEXT_FIELD)
+            .performScrollTo()
             .performTextReplacement("Edited prompt")
-        composeRule.onNodeWithTag(TestTags.PromptStudio.SAVE).performClick()
+        composeRule.onNodeWithTag(TestTags.PromptStudio.SAVE).performScrollTo().performClick()
 
         waitForCall(container, "saveSystemPrompt")
         val call = container.recorder.lastCall("saveSystemPrompt")
