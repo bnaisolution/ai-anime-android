@@ -1,0 +1,405 @@
+11-08 23:51:55.460  6313  6334 I TestRunner: started: confirmationDialogExposesDecisionTags(org.dpdns.bnai.anime.ui.P0ComposeSemanticsTest)
+11-08 23:51:55.556  6313  6334 W FileTestStorage: Output properties is not supported.
+11-08 23:51:55.557  6313  6334 I Tracing : Tracer added: class androidx.test.platform.tracing.AndroidXTracer
+11-08 23:51:55.569  6313  6313 D EventInjectionStrategy: Creating injection strategy with input manager.
+11-08 23:51:55.571  6313  6313 W pdns.bnai.anime: Accessing hidden method Landroid/hardware/input/InputManager;->getInstance()Landroid/hardware/input/InputManager; (unsupported, reflection, allowed)
+11-08 23:51:55.572  6313  6313 W pdns.bnai.anime: Accessing hidden method Landroid/hardware/input/InputManager;->injectInputEvent(Landroid/view/InputEvent;I)Z (unsupported, reflection, allowed)
+11-08 23:51:55.572  6313  6313 W pdns.bnai.anime: Accessing hidden field Landroid/hardware/input/InputManager;->INJECT_INPUT_EVENT_MODE_WAIT_FOR_FINISH:I (unsupported, reflection, allowed)
+11-08 23:51:55.578  6313  6313 W pdns.bnai.anime: Accessing hidden method Landroid/os/MessageQueue;->next()Landroid/os/Message; (unsupported, reflection, allowed)
+11-08 23:51:55.578  6313  6313 W pdns.bnai.anime: Accessing hidden field Landroid/os/MessageQueue;->mMessages:Landroid/os/Message; (unsupported, reflection, allowed)
+11-08 23:51:55.579  6313  6313 W pdns.bnai.anime: Accessing hidden method Landroid/os/Message;->recycleUnchecked()V (unsupported, reflection, allowed)
+11-08 23:51:55.580  6313  6334 D IdlingRegistry: Registering idling resources: [androidx.compose.ui.test.junit4.EspressoLink@3710145]
+11-08 23:51:55.614  6313  6334 W Settings: Setting always_finish_activities has moved from android.provider.Settings.System to android.provider.Settings.Global, returning read-only value.
+11-08 23:51:55.679   837   880 D SplashScreenView: Build android.window.SplashScreenView{3ab8188 V.E...... ......ID 0,0-0,0}
+11-08 23:51:55.679   837   880 D SplashScreenView: Icon: view: null drawable: null size: 0
+11-08 23:51:55.679   837   880 D SplashScreenView: Branding: view: android.view.View{8adc721 G.ED..... ......I. 0,0-0,0 #10204ef android:id/splashscreen_branding_view} drawable: null size w: 0 h: 0
+11-08 23:51:55.722  6313  6339 D libEGL  : loaded /vendor/lib64/egl/libEGL_emulation.so
+11-08 23:51:55.724  6313  6339 D libEGL  : loaded /vendor/lib64/egl/libGLESv1_CM_emulation.so
+11-08 23:51:55.728   402   402 I BpBinder: onLastStrongRef automatically unlinking death recipients:
+11-08 23:51:55.753  6313  6339 D libEGL  : loaded /vendor/lib64/egl/libGLESv2_emulation.so
+11-08 23:51:55.828  1739  1739 I BgTaskExecutorImpl: Starting EXCLUSIVE background task UPLOAD_ASSISTANT_DEVICE_SETTINGS.
+11-08 23:51:55.871  1739  6344 I NetworkRecognitionRnr: Using pair HTTP connection
+11-08 23:51:55.871  1739  3136 W LocationOracle: getBestLocation(): no location is available
+11-08 23:51:55.873  1739  3137 I A       : [Upload] Connected
+11-08 23:51:55.878  1739  2258 W CronetNetworkRqstWrppr: Upload request without a content type.
+11-08 23:51:55.884  1739  2253 W LocationOracle: No location returned by GMS core getLastLocation()
+11-08 23:51:55.887  1739  1739 E A       : onError
+11-08 23:51:55.887  1739  1739 E A       : com.google.android.apps.gsa.shared.speech.a.m: errorCode: 65561, engine: 2
+11-08 23:51:55.887  1739  1739 E A       : 	at com.google.android.apps.gsa.staticplugins.dc.a.e.a(PG:3)
+11-08 23:51:55.887  1739  1739 E A       : 	at com.google.android.apps.gsa.s3.n.hh(PG:1)
+11-08 23:51:55.887  1739  1739 E A       : 	at com.google.cd.g.a.f.e(PG:2)
+11-08 23:51:55.887  1739  1739 E A       : 	at com.google.android.apps.gsa.speech.k.a.g.d(PG:22)
+11-08 23:51:55.887  1739  1739 E A       : 	at com.google.android.apps.gsa.speech.k.a.g.ks(PG:6)
+11-08 23:51:55.887  1739  1739 E A       : 	at com.google.android.apps.gsa.s3.o.e(PG:14)
+11-08 23:51:55.887  1739  1739 E A       : 	at com.google.android.apps.gsa.s3.p.run(PG:1)
+11-08 23:51:55.887  1739  1739 E A       : 	at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:487)
+11-08 23:51:55.887  1739  1739 E A       : 	at java.util.concurrent.FutureTask.run(FutureTask.java:264)
+11-08 23:51:55.887  1739  1739 E A       : 	at com.google.android.apps.gsa.shared.util.c.a.e.run(PG:2)
+11-08 23:51:55.887  1739  1739 E A       : 	at com.google.android.apps.gsa.shared.util.c.a.bi.run(PG:1)
+11-08 23:51:55.887  1739  1739 E A       : 	at com.google.android.apps.gsa.shared.util.c.a.bi.run(PG:1)
+11-08 23:51:55.887  1739  1739 E A       : 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)
+11-08 23:51:55.887  1739  1739 E A       : 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:644)
+11-08 23:51:55.887  1739  1739 E A       : 	at java.lang.Thread.run(Thread.java:1012)
+11-08 23:51:55.887  1739  1739 E A       : 	at com.google.android.apps.gsa.shared.util.c.a.l.run(PG:5)
+11-08 23:51:55.887  1739  1739 E A       : Caused by: com.google.android.apps.gsa.shared.speech.a.o: errorCode: 65586, engine: 2
+11-08 23:51:55.887  1739  1739 E A       : 	... 15 more
+11-08 23:51:55.887  1739  1739 E A       : Caused by: com.google.android.apps.gsa.shared.speech.a.k: errorCode: 401, engine: 2
+11-08 23:51:55.887  1739  1739 E A       : 	at com.google.android.apps.gsa.assistant.shared.n.h.a(PG:5)
+11-08 23:51:55.887  1739  1739 E A       : 	at com.google.android.apps.gsa.s3.producers.j.hE(PG:2)
+11-08 23:51:55.887  1739  1739 E A       : 	at com.google.android.apps.gsa.speech.k.a.g.d(PG:16)
+11-08 23:51:55.887  1739  1739 E A       : 	... 12 more
+11-08 23:51:55.894  1739  2335 E cr_CronetUrlRequestContext: Exception in upload method
+11-08 23:51:55.894  1739  2335 E cr_CronetUrlRequestContext: com.google.android.apps.gsa.shared.r.d: Error code: 262182
+11-08 23:51:55.894  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.android.apps.gsa.shared.ab.bk.d(PG:5)
+11-08 23:51:55.894  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.android.libraries.gsa.c.a.ar.d(PG:1)
+11-08 23:51:55.894  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.android.libraries.gsa.c.a.bo.b(PG:5)
+11-08 23:51:55.894  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.android.libraries.gsa.c.a.e.a(PG:2)
+11-08 23:51:55.894  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.android.libraries.gsa.c.a.a.run(PG:2)
+11-08 23:51:55.894  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.common.util.concurrent.bf.execute(PG:1)
+11-08 23:51:55.894  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.common.util.concurrent.d.i(PG:1)
+11-08 23:51:55.894  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.common.util.concurrent.d.l(PG:12)
+11-08 23:51:55.894  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.common.util.concurrent.d.cancel(PG:8)
+11-08 23:51:55.894  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.common.util.concurrent.d.m(PG:2)
+11-08 23:51:55.894  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.common.util.concurrent.j.a(PG:1)
+11-08 23:51:55.894  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.common.util.concurrent.d.l(PG:3)
+11-08 23:51:55.894  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.common.util.concurrent.d.cancel(PG:8)
+11-08 23:51:55.894  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.common.util.concurrent.d.m(PG:2)
+11-08 23:51:55.894  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.common.util.concurrent.j.a(PG:1)
+11-08 23:51:55.894  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.common.util.concurrent.d.l(PG:3)
+11-08 23:51:55.894  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.common.util.concurrent.d.cancel(PG:8)
+11-08 23:51:55.894  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.common.util.concurrent.d.m(PG:2)
+11-08 23:51:55.894  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.common.util.concurrent.j.a(PG:1)
+11-08 23:51:55.894  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.common.util.concurrent.d.l(PG:3)
+11-08 23:51:55.894  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.common.util.concurrent.d.cancel(PG:8)
+11-08 23:51:55.894  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.common.util.concurrent.d.m(PG:2)
+11-08 23:51:55.894  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.common.util.concurrent.j.a(PG:1)
+11-08 23:51:55.894  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.common.util.concurrent.d.l(PG:3)
+11-08 23:51:55.894  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.common.util.concurrent.d.cancel(PG:8)
+11-08 23:51:55.894  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.common.util.concurrent.d.m(PG:2)
+11-08 23:51:55.894  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.common.util.concurrent.c.a(PG:1)
+11-08 23:51:55.894  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.common.util.concurrent.d.l(PG:3)
+11-08 23:51:55.894  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.common.util.concurrent.d.cancel(PG:8)
+11-08 23:51:55.894  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.common.util.concurrent.bu.cancel(PG:1)
+11-08 23:51:55.894  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.common.util.concurrent.d.cancel(PG:17)
+11-08 23:51:55.894  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.android.apps.gsa.staticplugins.bk.b.h.run(PG:2)
+11-08 23:51:55.894  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.common.util.concurrent.bf.execute(PG:1)
+11-08 23:51:55.894  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.common.util.concurrent.d.i(PG:1)
+11-08 23:51:55.894  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.common.util.concurrent.d.l(PG:12)
+11-08 23:51:55.894  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.common.util.concurrent.d.cancel(PG:8)
+11-08 23:51:55.894  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.common.util.concurrent.d.m(PG:2)
+11-08 23:51:55.894  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.common.util.concurrent.j.a(PG:1)
+11-08 23:51:55.894  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.common.util.concurrent.d.l(PG:3)
+11-08 23:51:55.894  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.common.util.concurrent.d.cancel(PG:8)
+11-08 23:51:55.894  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.android.apps.gsa.shared.util.c.aj.a(PG:2)
+11-08 23:51:55.894  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.common.util.concurrent.d.l(PG:3)
+11-08 23:51:55.894  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.common.util.concurrent.d.cancel(PG:8)
+11-08 23:51:55.894  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.common.util.concurrent.d.m(PG:2)
+11-08 23:51:55.894  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.common.util.concurrent.c.a(PG:1)
+11-08 23:51:55.894  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.common.util.concurrent.d.l(PG:3)
+11-08 23:51:55.894  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.common.util.concurrent.d.cancel(PG:8)
+11-08 23:51:55.894  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.android.apps.gsa.s3.o.c(PG:2)
+11-08 23:51:55.894  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.android.apps.gsa.s3.r.a(PG:1)
+11-08 23:51:55.894  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.android.apps.gsa.staticplugins.dc.a.c.e(PG:2)
+11-08 23:51:55.894  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.android.apps.gsa.staticplugins.dc.a.c.c(PG:3)
+11-08 23:51:55.894  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.android.apps.gsa.staticplugins.dc.a.e.a(PG:5)
+11-08 23:51:55.894  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.android.apps.gsa.s3.n.hh(PG:1)
+11-08 23:51:55.894  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.cd.g.a.f.e(PG:2)
+11-08 23:51:55.894  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.android.apps.gsa.speech.k.a.g.d(PG:22)
+11-08 23:51:55.894  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.android.apps.gsa.speech.k.a.g.ks(PG:6)
+11-08 23:51:55.894  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.android.apps.gsa.s3.o.e(PG:14)
+11-08 23:51:55.894  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.android.apps.gsa.s3.p.run(PG:1)
+11-08 23:51:55.894  1739  2335 E cr_CronetUrlRequestContext: 	at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:487)
+11-08 23:51:55.894  1739  2335 E cr_CronetUrlRequestContext: 	at java.util.concurrent.FutureTask.run(FutureTask.java:264)
+11-08 23:51:55.894  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.android.apps.gsa.shared.util.c.a.e.run(PG:2)
+11-08 23:51:55.894  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.android.apps.gsa.shared.util.c.a.bi.run(PG:1)
+11-08 23:51:55.894  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.android.apps.gsa.shared.util.c.a.bi.run(PG:1)
+11-08 23:51:55.894  1739  2335 E cr_CronetUrlRequestContext: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)
+11-08 23:51:55.894  1739  2335 E cr_CronetUrlRequestContext: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:644)
+11-08 23:51:55.894  1739  2335 E cr_CronetUrlRequestContext: 	at java.lang.Thread.run(Thread.java:1012)
+11-08 23:51:55.894  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.android.apps.gsa.shared.util.c.a.l.run(PG:5)
+11-08 23:51:55.897  1739  3137 I NetworkRecognitionRnr: Using pair HTTP connection
+11-08 23:51:55.912  1739  3136 I A       : [Upload] Connected
+11-08 23:51:55.918  1739  2253 W CronetNetworkRqstWrppr: Upload request without a content type.
+11-08 23:51:55.926  6313  6313 D LifecycleMonitor: Lifecycle status change: androidx.activity.ComponentActivity@c38844a in: PRE_ON_CREATE
+11-08 23:51:55.927  6313  6313 V ActivityScenario: Activity lifecycle changed event received but ignored because the reported transition was not ON_CREATE while the last known transition was PRE_ON_CREATE
+11-08 23:51:55.930  1739  2335 E cr_CronetUrlRequestContext: Exception in upload method
+11-08 23:51:55.930  1739  2335 E cr_CronetUrlRequestContext: com.google.android.apps.gsa.shared.r.d: Error code: 262182
+11-08 23:51:55.930  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.android.apps.gsa.shared.ab.bk.d(PG:5)
+11-08 23:51:55.930  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.android.libraries.gsa.c.a.ar.d(PG:1)
+11-08 23:51:55.930  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.android.libraries.gsa.c.a.bo.b(PG:5)
+11-08 23:51:55.930  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.android.libraries.gsa.c.a.e.a(PG:2)
+11-08 23:51:55.930  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.android.libraries.gsa.c.a.a.run(PG:2)
+11-08 23:51:55.930  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.common.util.concurrent.bf.execute(PG:1)
+11-08 23:51:55.930  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.common.util.concurrent.d.i(PG:1)
+11-08 23:51:55.930  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.common.util.concurrent.d.l(PG:12)
+11-08 23:51:55.930  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.common.util.concurrent.d.cancel(PG:8)
+11-08 23:51:55.930  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.common.util.concurrent.d.m(PG:2)
+11-08 23:51:55.930  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.common.util.concurrent.j.a(PG:1)
+11-08 23:51:55.930  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.common.util.concurrent.d.l(PG:3)
+11-08 23:51:55.930  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.common.util.concurrent.d.cancel(PG:8)
+11-08 23:51:55.930  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.common.util.concurrent.d.m(PG:2)
+11-08 23:51:55.930  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.common.util.concurrent.j.a(PG:1)
+11-08 23:51:55.930  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.common.util.concurrent.d.l(PG:3)
+11-08 23:51:55.930  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.common.util.concurrent.d.cancel(PG:8)
+11-08 23:51:55.930  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.common.util.concurrent.d.m(PG:2)
+11-08 23:51:55.930  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.common.util.concurrent.j.a(PG:1)
+11-08 23:51:55.930  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.common.util.concurrent.d.l(PG:3)
+11-08 23:51:55.930  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.common.util.concurrent.d.cancel(PG:8)
+11-08 23:51:55.930  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.common.util.concurrent.d.m(PG:2)
+11-08 23:51:55.930  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.common.util.concurrent.j.a(PG:1)
+11-08 23:51:55.930  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.common.util.concurrent.d.l(PG:3)
+11-08 23:51:55.930  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.common.util.concurrent.d.cancel(PG:8)
+11-08 23:51:55.930  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.common.util.concurrent.d.m(PG:2)
+11-08 23:51:55.930  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.common.util.concurrent.c.a(PG:1)
+11-08 23:51:55.930  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.common.util.concurrent.d.l(PG:3)
+11-08 23:51:55.930  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.common.util.concurrent.d.cancel(PG:8)
+11-08 23:51:55.930  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.common.util.concurrent.bu.cancel(PG:1)
+11-08 23:51:55.930  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.common.util.concurrent.d.cancel(PG:17)
+11-08 23:51:55.930  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.android.apps.gsa.staticplugins.bk.b.h.run(PG:2)
+11-08 23:51:55.930  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.common.util.concurrent.bf.execute(PG:1)
+11-08 23:51:55.930  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.common.util.concurrent.d.i(PG:1)
+11-08 23:51:55.930  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.common.util.concurrent.d.l(PG:12)
+11-08 23:51:55.930  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.common.util.concurrent.d.cancel(PG:8)
+11-08 23:51:55.930  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.common.util.concurrent.d.m(PG:2)
+11-08 23:51:55.930  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.common.util.concurrent.j.a(PG:1)
+11-08 23:51:55.930  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.common.util.concurrent.d.l(PG:3)
+11-08 23:51:55.930  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.common.util.concurrent.d.cancel(PG:8)
+11-08 23:51:55.930  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.android.apps.gsa.shared.util.c.aj.a(PG:2)
+11-08 23:51:55.930  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.common.util.concurrent.d.l(PG:3)
+11-08 23:51:55.930  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.common.util.concurrent.d.cancel(PG:8)
+11-08 23:51:55.930  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.common.util.concurrent.d.m(PG:2)
+11-08 23:51:55.930  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.common.util.concurrent.c.a(PG:1)
+11-08 23:51:55.930  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.common.util.concurrent.d.l(PG:3)
+11-08 23:51:55.930  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.common.util.concurrent.d.cancel(PG:8)
+11-08 23:51:55.930  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.android.apps.gsa.s3.r.c(PG:1)
+11-08 23:51:55.930  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.android.apps.gsa.s3.n.e(PG:1)
+11-08 23:51:55.930  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.android.apps.gsa.s3.n.hh(PG:2)
+11-08 23:51:55.930  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.cd.g.a.f.e(PG:2)
+11-08 23:51:55.930  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.android.apps.gsa.speech.k.a.g.d(PG:22)
+11-08 23:51:55.930  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.android.apps.gsa.speech.k.a.g.ks(PG:6)
+11-08 23:51:55.930  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.android.apps.gsa.s3.o.e(PG:14)
+11-08 23:51:55.930  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.android.apps.gsa.s3.p.run(PG:1)
+11-08 23:51:55.930  1739  2335 E cr_CronetUrlRequestContext: 	at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:487)
+11-08 23:51:55.930  1739  2335 E cr_CronetUrlRequestContext: 	at java.util.concurrent.FutureTask.run(FutureTask.java:264)
+11-08 23:51:55.930  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.android.apps.gsa.shared.util.c.a.e.run(PG:2)
+11-08 23:51:55.930  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.android.apps.gsa.shared.util.c.a.bi.run(PG:1)
+11-08 23:51:55.930  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.android.apps.gsa.shared.util.c.a.bi.run(PG:1)
+11-08 23:51:55.930  1739  2335 E cr_CronetUrlRequestContext: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)
+11-08 23:51:55.930  1739  2335 E cr_CronetUrlRequestContext: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:644)
+11-08 23:51:55.930  1739  2335 E cr_CronetUrlRequestContext: 	at java.lang.Thread.run(Thread.java:1012)
+11-08 23:51:55.930  1739  2335 E cr_CronetUrlRequestContext: 	at com.google.android.apps.gsa.shared.util.c.a.l.run(PG:5)
+11-08 23:51:55.933  1739  1739 W A       : Failed to sync device settings.
+11-08 23:51:55.933  1739  1739 I A       : Retrying to sync device settings.
+11-08 23:51:56.007  6313  6313 D LifecycleMonitor: Lifecycle status change: androidx.activity.ComponentActivity@c38844a in: CREATED
+11-08 23:51:56.008  6313  6313 V ActivityScenario: Update currentActivityStage to CREATED, currentActivity=androidx.activity.ComponentActivity@c38844a
+11-08 23:51:56.012  6313  6313 D LifecycleMonitor: Lifecycle status change: androidx.activity.ComponentActivity@c38844a in: STARTED
+11-08 23:51:56.012  6313  6313 V ActivityScenario: Update currentActivityStage to STARTED, currentActivity=androidx.activity.ComponentActivity@c38844a
+11-08 23:51:56.037  6313  6313 D LifecycleMonitor: Lifecycle status change: androidx.activity.ComponentActivity@c38844a in: RESUMED
+11-08 23:51:56.040  6313  6313 V ActivityScenario: Update currentActivityStage to RESUMED, currentActivity=androidx.activity.ComponentActivity@c38844a
+11-08 23:51:56.112  6313  6313 D CompatibilityChangeReporter: Compat change id reported: 237531167; UID 10192; state: DISABLED
+11-08 23:51:56.114  6313  6313 W OpenGLRenderer: Unknown dataspace 0
+11-08 23:51:56.138   402   569 W ServiceManagerCppClient: Permission failure: android.permission.ROTATE_SURFACE_FLINGER from uid=10192 pid=6313
+11-08 23:51:56.138   402   569 D PermissionCache: checking android.permission.ROTATE_SURFACE_FLINGER for uid=10192 => denied (151 us)
+11-08 23:51:56.139   402   569 W ServiceManagerCppClient: Permission failure: android.permission.INTERNAL_SYSTEM_WINDOW from uid=10192 pid=6313
+11-08 23:51:56.139   402   569 D PermissionCache: checking android.permission.INTERNAL_SYSTEM_WINDOW for uid=10192 => denied (549 us)
+11-08 23:51:56.139   402   569 W ServiceManagerCppClient: Permission failure: android.permission.ACCESS_SURFACE_FLINGER from uid=10192 pid=6313
+11-08 23:51:56.139   402   569 D PermissionCache: checking android.permission.ACCESS_SURFACE_FLINGER for uid=10192 => denied (326 us)
+11-08 23:51:56.142   402  1083 W ServiceManagerCppClient: Permission failure: android.permission.ROTATE_SURFACE_FLINGER from uid=10192 pid=0
+11-08 23:51:56.142   402  1083 D PermissionCache: checking android.permission.ROTATE_SURFACE_FLINGER for uid=10192 => denied (3776 us)
+11-08 23:51:56.244  6313  6337 W OpenGLRenderer: Failed to initialize 101010-2 format, error = EGL_SUCCESS
+11-08 23:51:56.289   134   134 I hwservicemanager: getTransport: Cannot find entry android.hardware.graphics.mapper@4.0::IMapper/default in either framework or device VINTF manifest.
+11-08 23:51:56.289  6313  6337 I Gralloc4: mapper 4.x is not supported
+11-08 23:51:56.462   521  2260 W ServiceManagerCppClient: Permission failure: android.permission.ROTATE_SURFACE_FLINGER from uid=10192 pid=0
+11-08 23:51:56.462   521  2260 D PermissionCache: checking android.permission.ROTATE_SURFACE_FLINGER for uid=10192 => denied (788 us)
+11-08 23:51:56.463   521  2260 W ServiceManagerCppClient: Permission failure: android.permission.INTERNAL_SYSTEM_WINDOW from uid=10192 pid=0
+11-08 23:51:56.463   521  2260 D PermissionCache: checking android.permission.INTERNAL_SYSTEM_WINDOW for uid=10192 => denied (239 us)
+11-08 23:51:56.463   521  2260 W ServiceManagerCppClient: Permission failure: android.permission.ACCESS_SURFACE_FLINGER from uid=10192 pid=0
+11-08 23:51:56.463   521  2260 D PermissionCache: checking android.permission.ACCESS_SURFACE_FLINGER for uid=10192 => denied (77 us)
+11-08 23:51:56.471   521   538 W ziparchive: Unable to open '/data/app/~~X-LgaU6zbIcpZde_NyYmDw==/org.dpdns.bnai.anime-24nZ24IfQyQnXkxCM4uqFA==/base.dm': No such file or directory
+11-08 23:51:56.477   521   538 I ActivityTaskManager: Displayed org.dpdns.bnai.anime/androidx.activity.ComponentActivity for user 0: +848ms
+11-08 23:51:56.486  1107  1107 I ActivityThread: Schedule relaunch activity: com.google.android.apps.nexuslauncher.NexusLauncherActivity
+11-08 23:51:56.487  1107  1107 I ActivityThread: Schedule relaunch activity: com.google.android.apps.nexuslauncher.NexusLauncherActivity
+11-08 23:51:56.489  1107  2110 D OneSearchSuggestProvider: Shut down the binder channel
+11-08 23:51:56.507  1107  1162 I ImeTracker: com.google.android.apps.nexuslauncher:d4df028a: onRequestHide at ORIGIN_CLIENT_HIDE_SOFT_INPUT reason HIDE_SOFT_INPUT
+11-08 23:51:56.507  1107  1162 I ImeTracker: com.google.android.apps.nexuslauncher:d4df028a: onFailed at PHASE_CLIENT_VIEW_SERVED
+11-08 23:51:56.510  1107  1406 I IPCThreadState: oneway function results for code 2 on binder at 0x7da80ac65e90 will be dropped but finished with status UNKNOWN_TRANSACTION
+11-08 23:51:56.513  1023  1305 D BtGatt.ScanManager: uid 10131 isForeground true scanMode -1
+11-08 23:51:56.517  1023  1305 D BtGatt.ScanManager: uid 10131 isForeground true scanMode -1
+11-08 23:51:56.530  1107  1107 D b/254119092: clearActivity
+11-08 23:51:56.530  1107  1107 D b/254119092: mActivity and mContext agree taskbarIsPresent=false
+11-08 23:51:56.537   837   879 W WindowOnBackDispatcher: sendCancelIfRunning: isInProgress=falsecallback=android.view.ViewRootImpl$$ExternalSyntheticLambda17@33b2e34
+11-08 23:51:56.538  1739  3136 I PBSessionCacheImpl: Deleted sessionId[7649997064422231] from persistence.
+11-08 23:51:56.540   521  1678 W InputManager-JNI: Input channel object '724217 Splash Screen org.dpdns.bnai.anime (client)' was disposed without first being removed with the input manager!
+11-08 23:51:56.741  1107  1107 W WindowOnBackDispatcher: sendCancelIfRunning: isInProgress=falsecallback=android.view.ViewRootImpl$$ExternalSyntheticLambda17@e987bc0
+11-08 23:51:56.762  1107  1107 W WindowOnBackDispatcher: OnBackInvokedCallback is not enabled for the application.
+11-08 23:51:56.762  1107  1107 W WindowOnBackDispatcher: Set 'android:enableOnBackInvokedCallback="true"' in the application manifest.
+11-08 23:51:56.822  1739  2468 W SearchServiceCore: Abort, client detached.
+11-08 23:51:56.823  1107  1162 I AiAiSuggestUi: Connecting to system intelligence module.
+11-08 23:51:56.825  1620  1620 I AiAiOverview: Created AiAiContentSuggestionsService.
+11-08 23:51:56.836  1107  2079 I AiAiSuggestUi: Successfully connected to system intelligence:
+11-08 23:51:56.855  1107  1107 D AutofillManager: Fill dialog is enabled:false, hints=[password, passwordAuto, creditCardNumber, creditCardSecurityCode, creditCardExpirationDate]
+11-08 23:51:56.860  6313  6313 W WindowOnBackDispatcher: OnBackInvokedCallback is not enabled for the application.
+11-08 23:51:56.860  6313  6313 W WindowOnBackDispatcher: Set 'android:enableOnBackInvokedCallback="true"' in the application manifest.
+11-08 23:51:56.860  1107  1107 D DeviceSearchAlg: search timeout = %d200
+11-08 23:51:56.861  1107  1107 W PageIndicator: Total number of pages invalid: 0. Assuming 1 page.
+11-08 23:51:56.861  1107  1107 W BcSmartspaceView: Current card is not present in the Adapter; cannot log.
+11-08 23:51:56.876  1107  1107 I OverviewComponentObserver: updateOverviewTargets: mIsHomeDisabled=false, isDefaultHomeNull=false, mIsDefaultHome=true
+11-08 23:51:56.919  1023  1305 D BtGatt.ScanManager: uid 10131 isForeground true scanMode -1
+11-08 23:51:56.919  1023  1305 D BtGatt.ScanManager: uid 10131 isForeground true scanMode -1
+11-08 23:51:56.946  1620  1620 I AiAiEcho: SearchContextManagerImpl::setSearchContext resultTypes=[141151] extras=[Bundle[mParcelledData.dataSize=684]] sessionId=[com.google.android.apps.nexuslauncher:b5e5bfe4-aa60-4487-8983-505c82bfbe52,0]
+11-08 23:51:56.950  1107  1162 D SearchTargetUtil:  query= size=1
+11-08 23:51:56.950  1107  1162 D SearchTargetUtil: layoutType=icon_row resultType=4096 packageName= extras=Bundle{icon_container_enabled=true,zero_state_all_apps_web_suggest_count=3,rank=1.0,key_ipc_start=352292,hide_subtitle=true,zero_state_qsb_web_suggest_count=10,}ParentID: null targetID: SESSION_INFO:0::zero_state_flags
+11-08 23:51:56.971  1739  1781 W earchbox:search: Cleared Reference was only reachable from finalizer (only reported once)
+11-08 23:51:56.974  1107  1107 D AutofillManager: view is not autofillable - activity denied for autofill
+11-08 23:51:57.012  6313  6313 W pdns.bnai.anime: Method boolean androidx.compose.runtime.snapshots.SnapshotStateList.conditionalUpdate(boolean, kotlin.jvm.functions.Function1) failed lock verification and will run slower.
+11-08 23:51:57.012  6313  6313 W pdns.bnai.anime: Common causes for lock verification issues are non-optimized dex code
+11-08 23:51:57.012  6313  6313 W pdns.bnai.anime: and incorrect proguard optimizations.
+11-08 23:51:57.012  6313  6313 W pdns.bnai.anime: Method boolean androidx.compose.runtime.snapshots.SnapshotStateList.conditionalUpdate$default(androidx.compose.runtime.snapshots.SnapshotStateList, boolean, kotlin.jvm.functions.Function1, int, java.lang.Object) failed lock verification and will run slower.
+11-08 23:51:57.013  6313  6313 W pdns.bnai.anime: Method java.lang.Object androidx.compose.runtime.snapshots.SnapshotStateList.mutate(kotlin.jvm.functions.Function1) failed lock verification and will run slower.
+11-08 23:51:57.013  6313  6313 W pdns.bnai.anime: Method void androidx.compose.runtime.snapshots.SnapshotStateList.update(boolean, kotlin.jvm.functions.Function1) failed lock verification and will run slower.
+11-08 23:51:57.013  6313  6313 W pdns.bnai.anime: Method void androidx.compose.runtime.snapshots.SnapshotStateList.update$default(androidx.compose.runtime.snapshots.SnapshotStateList, boolean, kotlin.jvm.functions.Function1, int, java.lang.Object) failed lock verification and will run slower.
+11-08 23:51:57.018  5445  5456 I FontLog : Updating from directory version 0 to 25 from disk [CONTEXT service_id=132 ]
+11-08 23:51:57.021  5445  5469 I FontLog : Using directory in FlatBuffer format [CONTEXT service_id=132 ]
+11-08 23:51:57.035  5445  5456 I FontLog : Received query Noto Color Emoji Compat, URI content://com.google.android.gms.fonts [CONTEXT service_id=132 ]
+11-08 23:51:57.036  5445  5456 I FontLog : Query [emojicompat-emoji-font] resolved to {Noto Color Emoji Compat, wdth 100.0, wght 400, ital 0.0, bestEffort false} [CONTEXT service_id=132 ]
+11-08 23:51:57.041  1107  1107 I ContentCaptureHelper: Setting logging level to DEBUG
+11-08 23:51:57.041  1107  1107 D ContentCaptureManager: setFlushViewTreeAppearingEventDisabled(): setting to false
+11-08 23:51:57.042  5445  5456 I FontLog : Fetch {Noto Color Emoji Compat, wdth 100.0, wght 400, ital 0.0, bestEffort false} end status Status{statusCode=SUCCESS, resolution=null} [CONTEXT service_id=132 ]
+11-08 23:51:57.045  1107  1107 D ContentCaptureManager: updateWindowAttributes(): window flags=-2137980672
+11-08 23:51:57.047  5445  5456 I FontLog : Pulling font file for id = 1, cache size = 1 [CONTEXT service_id=132 ]
+11-08 23:51:57.051  1107  1107 D ContentCaptureManager: updateWindowAttributes(): window flags=-2137980672
+11-08 23:51:57.055  5445  5456 I FontLog : Pulling font file for id = 1, cache size = 1 [CONTEXT service_id=132 ]
+11-08 23:51:57.056  1107  1162 I ImeTracker: com.google.android.apps.nexuslauncher:1938cbbf: onRequestHide at ORIGIN_CLIENT_HIDE_SOFT_INPUT reason HIDE_SOFT_INPUT
+11-08 23:51:57.056  1107  1162 I ImeTracker: com.google.android.apps.nexuslauncher:1938cbbf: onFailed at PHASE_CLIENT_VIEW_SERVED
+11-08 23:51:57.057  1107  1107 I Choreographer: Skipped 33 frames!  The application may be doing too much work on its main thread.
+11-08 23:51:57.062  1620  2294 I AiAiStatsd: Successfully logged feature usage for VISUAL_CORTEX.
+11-08 23:51:57.065  1107  1162 I ImeTracker: com.google.android.apps.nexuslauncher:dc32f9a3: onRequestHide at ORIGIN_CLIENT_HIDE_SOFT_INPUT reason HIDE_SOFT_INPUT
+11-08 23:51:57.065  1107  1162 I ImeTracker: com.google.android.apps.nexuslauncher:dc32f9a3: onFailed at PHASE_CLIENT_VIEW_SERVED
+11-08 23:51:57.083  1107  1107 W BcSmartspaceCard: No title view to update
+11-08 23:51:57.083  1107  1107 I BcSmartspaceCard: setFormattedContentDescription: text=null, iconDescription=null, contentDescription=null
+11-08 23:51:57.099  1739  1739 I ImeTracker: com.google.android.googlequicksearchbox:search:d63aaadb: onRequestHide at ORIGIN_CLIENT_HIDE_SOFT_INPUT reason HIDE_SOFT_INPUT
+11-08 23:51:57.099  1739  1739 I ImeTracker: com.google.android.googlequicksearchbox:search:d63aaadb: onFailed at PHASE_CLIENT_VIEW_SERVED
+11-08 23:51:57.103  1107  1107 D TISBindHelper: TIS service connected
+11-08 23:51:57.103  1107  1107 D b/254119092: Set mActivity=com.google.android.apps.nexuslauncher.NexusLauncherActivity@16f4bb5
+11-08 23:51:57.103  1107  1107 D b/254119092: mActivity and mContext agree taskbarIsPresent=false
+11-08 23:51:57.165  1739  1739 I ImeTracker: com.google.android.googlequicksearchbox:search:e0e1df23: onRequestHide at ORIGIN_CLIENT_HIDE_SOFT_INPUT reason HIDE_SOFT_INPUT
+11-08 23:51:57.165  1739  1739 I ImeTracker: com.google.android.googlequicksearchbox:search:e0e1df23: onFailed at PHASE_CLIENT_VIEW_SERVED
+11-08 23:51:57.177  1739  1739 W WindowOnBackDispatcher: sendCancelIfRunning: isInProgress=falsecallback=android.view.ViewRootImpl$$ExternalSyntheticLambda17@c6c091e
+11-08 23:51:57.186   521  1678 W InputManager-JNI: Input channel object '81a3967 com.google.android.apps.nexuslauncher/com.google.android.apps.nexuslauncher.NexusLauncherActivity (client)' was disposed without first being removed with the input manager!
+11-08 23:51:57.191  5445  5451 I .gms.persistent: Background young concurrent copying GC freed 262207(10173KB) AllocSpace objects, 14(416KB) LOS objects, 38% free, 16MB/26MB, paused 61us,26us total 194.620ms
+11-08 23:51:57.236  1739  1739 W WindowOnBackDispatcher: sendCancelIfRunning: isInProgress=falsecallback=android.view.ViewRootImpl$$ExternalSyntheticLambda17@38ed107
+11-08 23:51:57.238   521  2265 W InputManager-JNI: Input channel object 'b8d9919 com.google.android.googlequicksearchbox/android.app.ContextImpl (client)' was disposed without first being removed with the input manager!
+11-08 23:51:57.538  6313  6313 I Choreographer: Skipped 36 frames!  The application may be doing too much work on its main thread.
+11-08 23:51:57.551  6313  6361 I OpenGLRenderer: Davey! duration=960ms; Flags=1, FrameTimelineVsyncId=7157, IntendedVsync=351904695896, Vsync=352204695884, InputEventId=0, HandleInputStart=352210969069, AnimationStart=352210974988, PerformTraversalsStart=352226419555, DrawStart=352584359135, FrameDeadline=351921362562, FrameInterval=352210229875, FrameStartTime=16666666, SyncQueued=352590594741, SyncStart=352599360298, IssueDrawCommandsStart=352599415665, SwapBuffers=352746693319, FrameCompleted=352873575542, DequeueBufferDuration=4902, QueueBufferDuration=1047475, GpuCompleted=352873486523, SwapBuffersCompleted=352873575542, DisplayPresentTime=10179072493889, CommandSubmissionCompleted=352746693319,
+11-08 23:51:57.734  6313  6361 I OpenGLRenderer: Davey! duration=733ms; Flags=0, FrameTimelineVsyncId=7212, IntendedVsync=352271362548, Vsync=352871362524, InputEventId=0, HandleInputStart=352882605578, AnimationStart=352882608445, PerformTraversalsStart=352882610409, DrawStart=352912684541, FrameDeadline=352904695856, FrameInterval=352881696057, FrameStartTime=16666666, SyncQueued=352917251846, SyncStart=352918310074, IssueDrawCommandsStart=352924129299, SwapBuffers=352931196203, FrameCompleted=353006213294, DequeueBufferDuration=5300, QueueBufferDuration=65521406, GpuCompleted=353005030195, SwapBuffersCompleted=353006213294, DisplayPresentTime=10771777980875, CommandSubmissionCompleted=352931196203,
+11-08 23:51:57.743   837   880 D SplashScreenView: Build android.window.SplashScreenView{c5fc800 V.E...... ......ID 0,0-0,0}
+11-08 23:51:57.743   837   880 D SplashScreenView: Icon: view: null drawable: null size: 0
+11-08 23:51:57.743   837   880 D SplashScreenView: Branding: view: android.view.View{3b85839 G.ED..... ......I. 0,0-0,0 #10204ef android:id/splashscreen_branding_view} drawable: null size w: 0 h: 0
+11-08 23:51:57.775   338   338 D Zygote  : Forked child process 6362
+11-08 23:51:57.801   402   402 I BpBinder: onLastStrongRef automatically unlinking death recipients:
+11-08 23:51:57.806  6313  6313 D LifecycleMonitor: Lifecycle status change: androidx.activity.ComponentActivity@c38844a in: PAUSED
+11-08 23:51:57.806  6313  6313 V ActivityScenario: Update currentActivityStage to PAUSED, currentActivity=androidx.activity.ComponentActivity@c38844a
+11-08 23:51:57.917  6362  6362 I bnai.anime.test: Late-enabling -Xcheck:jni
+11-08 23:51:57.987   521  1678 D ConnectivityService: requestNetwork for uid/pid:10132/1739 activeRequest: null callbackRequest: 158 [NetworkRequest [ REQUEST id=158, [ Transports: CELLULAR Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VPN&NOT_VCN_MANAGED Uid: 10132 RequestorUid: 10132 RequestorPkg: com.google.android.googlequicksearchbox UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+11-08 23:51:58.003   337   366 I netd    : networkSetPermissionForNetwork(101, 0) <1.22ms>
+11-08 23:51:58.048  6362  6362 I bnai.anime.test: Using CollectorTypeCC GC.
+11-08 23:51:58.049  6362  6362 W bnai.anime.test: Unexpected CPU variant for x86: x86_64.
+11-08 23:51:58.049  6362  6362 W bnai.anime.test: Known variants: atom, sandybridge, silvermont, goldmont, goldmont-plus, tremont, kabylake, default
+11-08 23:51:58.092   521   764 D ConnectivityService: NetReassign [158 : null → 101] [c 0] [a 8] [i 84]
+11-08 23:51:58.092   521   764 D ConnectivityService: reportNetworkConnectivity(100, false) by 10132
+11-08 23:51:58.098  1000  1992 D NetworkMonitor/100: Forcing reevaluation for UID 10132. Dns signal count: 0
+11-08 23:51:58.106   422   438 I adbd    : jdwp connection from 6362
+11-08 23:51:58.137  1000  6377 D TrafficStats: tagSocket(6) with statsTag=0xffffff81, statsUid=-1
+11-08 23:51:58.138  1000  6378 D TrafficStats: tagSocket(107) with statsTag=0xffffff81, statsUid=-1
+11-08 23:51:58.142  1000  6377 D TrafficStats: tagSocket(6) with statsTag=0xffffff81, statsUid=-1
+11-08 23:51:58.143  1000  6378 D TrafficStats: tagSocket(6) with statsTag=0xffffff81, statsUid=-1
+11-08 23:51:58.144   337  6380 I resolv  : ResNSendHandler::run: 0 / {100 983140 100 983140 1073 1}
+11-08 23:51:58.145   337  6379 I resolv  : ResNSendHandler::run: 0 / {100 983140 100 983140 1073 1}
+11-08 23:51:58.146   337  6381 I resolv  : ResNSendHandler::run: 0 / {100 983140 100 983140 1073 1}
+11-08 23:51:58.147   337  6382 I resolv  : ResNSendHandler::run: 0 / {100 983140 100 983140 1073 1}
+11-08 23:51:58.151   337  6380 I resolv  : res_nsend: used send_dg 75 terrno: 0
+11-08 23:51:58.155   337  6381 I resolv  : res_nsend: used send_dg 160 terrno: 0
+11-08 23:51:58.155   337  6382 I resolv  : res_nsend: used send_dg 63 terrno: 0
+11-08 23:51:58.157  1000  1000 D TrafficStats: tagSocket(6) with statsTag=0xffffffff, statsUid=-1
+11-08 23:51:58.158  1000  1000 D TrafficStats: tagSocket(6) with statsTag=0xffffffff, statsUid=-1
+11-08 23:51:58.159  1000  6378 D NetworkMonitor/100: PROBE_DNS connectivitycheck.gstatic.com 20ms OK 142.251.215.67,2607:f8b0:4007:80d::2003
+11-08 23:51:58.160   337  6383 I resolv  : GetAddrInfoHandler::run: {100 983140 100 983140 1073 1}
+11-08 23:51:58.161   337  6385 I resolv  : res_nmkquery: (QUERY, IN, A)
+11-08 23:51:58.161   337  6385 I resolv  : resolv_cache_lookup: FOUND IN CACHE entry=0x771b7d4d64d0
+11-08 23:51:58.161   337  6385 I resolv  : doQuery: rcode=0, ancount=1, return value=63
+11-08 23:51:58.277   337  6379 I resolv  : res_nsend: used send_dg 256 terrno: 0
+11-08 23:51:58.279   337  6384 I resolv  : res_nmkquery: (QUERY, IN, AAAA)
+11-08 23:51:58.280   337  6384 I resolv  : resolv_cache_lookup: FOUND IN CACHE entry=0x771b7d4d5970
+11-08 23:51:58.280   337  6384 I resolv  : doQuery: rcode=0, ancount=1, return value=75
+11-08 23:51:58.317  1000  1000 D TrafficStats: tagSocket(6) with statsTag=0xffffffff, statsUid=-1
+11-08 23:51:58.317  1000  6378 D TrafficStats: tagSocket(107) with statsTag=0xffffff81, statsUid=-1
+11-08 23:51:58.339  6362  6362 D CompatibilityChangeReporter: Compat change id reported: 171979766; UID 10193; state: ENABLED
+11-08 23:51:58.339  6362  6362 D CompatibilityChangeReporter: Compat change id reported: 242716250; UID 10193; state: ENABLED
+11-08 23:51:58.356  6362  6362 D ApplicationLoaders: Returning zygote-cached class loader: /system/framework/android.test.base.jar
+11-08 23:51:58.362  1000  1000 D TrafficStats: tagSocket(6) with statsTag=0xffffffff, statsUid=-1
+11-08 23:51:58.365  6362  6362 D nativeloader: Configuring clns-6 for other apk /system/framework/android.test.mock.jar. target_sdk_version=34, uses_libraries=ALL, library_path=/data/app/~~KSRme4HfuhZkYjy9aVejUQ==/org.dpdns.bnai.anime.test-fIUmPhMYs6cn5JzEYeQeJA==/lib/x86_64, permitted_path=/data:/mnt/expand:/data/user/0/org.dpdns.bnai.anime.test
+11-08 23:51:58.365  6362  6362 D ApplicationLoaders: Returning zygote-cached class loader: /system/framework/android.test.base.jar
+11-08 23:51:58.367  6362  6362 D nativeloader: Configuring clns-7 for other apk /system/framework/android.test.runner.jar. target_sdk_version=34, uses_libraries=ALL, library_path=/data/app/~~KSRme4HfuhZkYjy9aVejUQ==/org.dpdns.bnai.anime.test-fIUmPhMYs6cn5JzEYeQeJA==/lib/x86_64, permitted_path=/data:/mnt/expand:/data/user/0/org.dpdns.bnai.anime.test
+11-08 23:51:58.368  1000  1000 D TrafficStats: tagSocket(6) with statsTag=0xffffffff, statsUid=-1
+11-08 23:51:58.371  6362  6362 W ziparchive: Unable to open '/data/app/~~KSRme4HfuhZkYjy9aVejUQ==/org.dpdns.bnai.anime.test-fIUmPhMYs6cn5JzEYeQeJA==/base.dm': No such file or directory
+11-08 23:51:58.372  6362  6362 W ziparchive: Unable to open '/data/app/~~KSRme4HfuhZkYjy9aVejUQ==/org.dpdns.bnai.anime.test-fIUmPhMYs6cn5JzEYeQeJA==/base.dm': No such file or directory
+11-08 23:51:58.374  1000  1000 D TrafficStats: tagSocket(6) with statsTag=0xffffffff, statsUid=-1
+11-08 23:51:58.444  1000  1000 D TrafficStats: tagSocket(6) with statsTag=0xffffffff, statsUid=-1
+11-08 23:51:58.447  1000  1000 D TrafficStats: tagSocket(6) with statsTag=0xffffffff, statsUid=-1
+11-08 23:51:58.450  1000  1000 D TrafficStats: tagSocket(6) with statsTag=0xffffffff, statsUid=-1
+11-08 23:51:58.451  1000  1000 D TrafficStats: tagSocket(6) with statsTag=0xffffffff, statsUid=-1
+11-08 23:51:58.452  1000  1000 D TrafficStats: tagSocket(6) with statsTag=0xffffffff, statsUid=-1
+11-08 23:51:58.454  1000  1000 D TrafficStats: tagSocket(6) with statsTag=0xffffffff, statsUid=-1
+11-08 23:51:58.454  1000  1000 D TrafficStats: tagSocket(6) with statsTag=0xffffffff, statsUid=-1
+11-08 23:51:58.456  1000  1000 D TrafficStats: tagSocket(6) with statsTag=0xffffffff, statsUid=-1
+11-08 23:51:58.457  1000  1000 D TrafficStats: tagSocket(6) with statsTag=0xffffffff, statsUid=-1
+11-08 23:51:58.458  1000  1000 D TrafficStats: tagSocket(6) with statsTag=0xffffffff, statsUid=-1
+11-08 23:51:58.459  1000  1000 D TrafficStats: tagSocket(6) with statsTag=0xffffffff, statsUid=-1
+11-08 23:51:58.489  6362  6362 D nativeloader: Configuring clns-8 for other apk /data/app/~~KSRme4HfuhZkYjy9aVejUQ==/org.dpdns.bnai.anime.test-fIUmPhMYs6cn5JzEYeQeJA==/base.apk. target_sdk_version=34, uses_libraries=, library_path=/data/app/~~KSRme4HfuhZkYjy9aVejUQ==/org.dpdns.bnai.anime.test-fIUmPhMYs6cn5JzEYeQeJA==/lib/x86_64, permitted_path=/data:/mnt/expand:/data/user/0/org.dpdns.bnai.anime.test
+11-08 23:51:58.502  6362  6362 V GraphicsEnvironment: Currently set values for:
+11-08 23:51:58.502  6362  6362 V GraphicsEnvironment:   angle_gl_driver_selection_pkgs=[]
+11-08 23:51:58.502  6362  6362 V GraphicsEnvironment:   angle_gl_driver_selection_values=[]
+11-08 23:51:58.503  6362  6362 V GraphicsEnvironment: ANGLE GameManagerService for org.dpdns.bnai.anime.test: false
+11-08 23:51:58.503  6362  6362 V GraphicsEnvironment: org.dpdns.bnai.anime.test is not listed in per-application setting
+11-08 23:51:58.503  6362  6362 V GraphicsEnvironment: Neither updatable production driver nor prerelease driver is supported.
+11-08 23:51:58.521  1000  1000 D TrafficStats: tagSocket(6) with statsTag=0xffffffff, statsUid=-1
+11-08 23:51:58.524  1000  6377 D NetworkMonitor/100: PROBE_DNS www.google.com 386ms OK 142.251.153.119,142.251.157.119,142.251.150.119,142.251.151.119,142.251.156.119,142.251.155.119,142.251.154.119,142.251.152.119,2001:4860:4829:7700::,2001:4860:482c:7700::,2001:4860:4828:7700::,2001:4860:4827:7700::,2001:4860:4826:7700::,2001:4860:482b:7700::,2001:4860:482d:7700::,2001:4860:482a:7700::
+11-08 23:51:58.563  6313  6313 D LifecycleMonitor: Lifecycle status change: androidx.activity.ComponentActivity@c38844a in: STOPPED
+11-08 23:51:58.564  6313  6313 V ActivityScenario: Update currentActivityStage to STOPPED, currentActivity=androidx.activity.ComponentActivity@c38844a
+11-08 23:51:58.564   337  6392 I resolv  : GetAddrInfoHandler::run: {100 983140 100 983140 1073 1}
+11-08 23:51:58.564   337  6393 I resolv  : res_nmkquery: (QUERY, IN, AAAA)
+11-08 23:51:58.565   337  6393 I resolv  : resolv_cache_lookup: FOUND IN CACHE entry=0x771c7d4d6510
+11-08 23:51:58.565   337  6393 I resolv  : doQuery: rcode=0, ancount=8, return value=256
+11-08 23:51:58.570   337  6394 I resolv  : res_nmkquery: (QUERY, IN, A)
+11-08 23:51:58.570   337  6394 I resolv  : resolv_cache_lookup: FOUND IN CACHE entry=0x771bad4d3330
+11-08 23:51:58.570   337  6394 I resolv  : doQuery: rcode=0, ancount=8, return value=160
+11-08 23:51:58.572  6362  6391 D libEGL  : loaded /vendor/lib64/egl/libEGL_emulation.so
+11-08 23:51:58.573  1000  6378 D NetworkMonitor/100: PROBE_HTTP http://connectivitycheck.gstatic.com/generate_204 time=414ms ret=204 request={Connection=[close], User-Agent=[Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.32 Safari/537.36]} headers={null=[HTTP/1.1 204 No Content], Connection=[close], Content-Length=[0], Cross-Origin-Resource-Policy=[cross-origin], Date=[Sun, 08 Nov 2026 23:51:58 GMT], X-Android-Received-Millis=[1794181918572], X-Android-Response-Source=[NETWORK 204], X-Android-Selected-Protocol=[http/1.1], X-Android-Sent-Millis=[1794181918363]}
+11-08 23:51:58.577  6362  6391 D libEGL  : loaded /vendor/lib64/egl/libGLESv1_CM_emulation.so
+11-08 23:51:58.582  1000  6377 D TrafficStats: tagSocket(6) with statsTag=0xffffff81, statsUid=-1
+11-08 23:51:58.582  6362  6391 D libEGL  : loaded /vendor/lib64/egl/libGLESv2_emulation.so
+11-08 23:51:58.594  1023  1305 D BtGatt.ScanManager: uid 10131 isForeground true scanMode -1
+11-08 23:51:58.595  1023  1305 D BtGatt.ScanManager: uid 10131 isForeground true scanMode -1
+11-08 23:51:58.610  6313  6313 W WindowOnBackDispatcher: sendCancelIfRunning: isInProgress=falsecallback=android.view.ViewRootImpl$$ExternalSyntheticLambda17@cce9c39
+11-08 23:51:58.622  6362  6362 D CompatibilityChangeReporter: Compat change id reported: 237531167; UID 10193; state: DISABLED
+11-08 23:51:58.624  6362  6362 W OpenGLRenderer: Unknown dataspace 0
+11-08 23:51:58.724   521  2265 W InputManager-JNI: Input channel object '2128a39 org.dpdns.bnai.anime/androidx.activity.ComponentActivity (client)' was disposed without first being removed with the input manager!
+11-08 23:51:58.735  6313  6313 D LifecycleMonitor: Lifecycle status change: androidx.activity.ComponentActivity@c38844a in: DESTROYED
+11-08 23:51:58.735  6313  6313 V ActivityScenario: Update currentActivityStage to DESTROYED, currentActivity=null
+11-08 23:51:58.741  6313  6313 W WindowOnBackDispatcher: sendCancelIfRunning: isInProgress=falsecallback=android.view.ViewRootImpl$$ExternalSyntheticLambda17@af496f
+11-08 23:51:58.776   521  2104 W InputManager-JNI: Input channel object 'f7a56b8 org.dpdns.bnai.anime/androidx.activity.ComponentActivity (client)' was disposed without first being removed with the input manager!
+11-08 23:51:58.785   402   569 W ServiceManagerCppClient: Permission failure: android.permission.ROTATE_SURFACE_FLINGER from uid=10193 pid=0
+11-08 23:51:58.785   402   569 D PermissionCache: checking android.permission.ROTATE_SURFACE_FLINGER for uid=10193 => denied (127 us)
+11-08 23:51:58.785   402   622 W ServiceManagerCppClient: Permission failure: android.permission.INTERNAL_SYSTEM_WINDOW from uid=10193 pid=6362
+11-08 23:51:58.785   402   622 D PermissionCache: checking android.permission.INTERNAL_SYSTEM_WINDOW for uid=10193 => denied (342 us)
+11-08 23:51:58.786   402   622 W ServiceManagerCppClient: Permission failure: android.permission.ACCESS_SURFACE_FLINGER from uid=10193 pid=6362
+11-08 23:51:58.786   402   622 D PermissionCache: checking android.permission.ACCESS_SURFACE_FLINGER for uid=10193 => denied (531 us)
+11-08 23:51:58.792   402   569 W ServiceManagerCppClient: Permission failure: android.permission.INTERNAL_SYSTEM_WINDOW from uid=10193 pid=0
+11-08 23:51:58.792   402   569 D PermissionCache: checking android.permission.INTERNAL_SYSTEM_WINDOW for uid=10193 => denied (6925 us)
+11-08 23:51:58.794  1000  6377 D NetworkMonitor/100: PROBE_HTTPS https://www.google.com/generate_204 time=269ms ret=204 request={Connection=[close], User-Agent=[Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.32 Safari/537.36]} headers={null=[HTTP/1.1 204 No Content], Alt-Svc=[h3=":443"; ma=2592000,h3-29=":443"; ma=2592000], Connection=[close], Content-Length=[0], Cross-Origin-Resource-Policy=[cross-origin], Date=[Sun, 08 Nov 2026 23:51:59 GMT], X-Android-Received-Millis=[1794181918794], X-Android-Response-Source=[NETWORK 204], X-Android-Selected-Protocol=[http/1.1], X-Android-Sent-Millis=[1794181918783]}
+11-08 23:51:58.796   402   402 I BpBinder: onLastStrongRef automatically unlinking death recipients:
+11-08 23:51:58.842  6362  6389 W OpenGLRenderer: Failed to initialize 101010-2 format, error = EGL_SUCCESS
+11-08 23:51:58.915  1000  6376 D NetworkMonitor/100: isCaptivePortal: isSuccessful()=true isPortal()=false RedirectUrl=null isPartialConnectivity()=false Time=669ms
+11-08 23:51:58.929   521   764 D ConnectivityService: [100 WIFI] validation passed
+11-08 23:51:58.952  6313  6334 D IdlingRegistry: Unregistering idling resources: [androidx.compose.ui.test.junit4.EspressoLink@3710145]
+11-08 23:51:58.968  6313  6334 I TestRunner: finished: confirmationDialogExposesDecisionTags(org.dpdns.bnai.anime.ui.P0ComposeSemanticsTest)

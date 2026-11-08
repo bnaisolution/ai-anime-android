@@ -1,0 +1,75 @@
+11-08 23:51:59.001  6313  6334 I TestRunner: started: projectSelectorExposesNavigationTags(org.dpdns.bnai.anime.ui.P0ComposeSemanticsTest)
+11-08 23:51:59.018  6313  6334 D IdlingRegistry: Registering idling resources: [androidx.compose.ui.test.junit4.EspressoLink@244517f]
+11-08 23:51:59.054   337   366 I netd    : setProcSysNet(4, 2, wlan0, retrans_time_ms, 750) <0.07ms>
+11-08 23:51:59.054   337   366 I netd    : setProcSysNet(4, 2, wlan0, ucast_solicit, 10) <0.03ms>
+11-08 23:51:59.055   337   366 I netd    : setProcSysNet(6, 2, wlan0, retrans_time_ms, 750) <0.03ms>
+11-08 23:51:59.056  6313  6334 W Settings: Setting always_finish_activities has moved from android.provider.Settings.System to android.provider.Settings.Global, returning read-only value.
+11-08 23:51:59.089   337   366 I netd    : setProcSysNet(6, 2, wlan0, ucast_solicit, 10) <0.06ms>
+11-08 23:51:59.136   837   880 D SplashScreenView: Build android.window.SplashScreenView{35e60b6 V.E...... ......ID 0,0-0,0}
+11-08 23:51:59.136   837   880 D SplashScreenView: Icon: view: null drawable: null size: 0
+11-08 23:51:59.136   837   880 D SplashScreenView: Branding: view: android.view.View{36ad1b7 G.ED..... ......I. 0,0-0,0 #10204ef android:id/splashscreen_branding_view} drawable: null size w: 0 h: 0
+11-08 23:51:59.208  6313  6313 D LifecycleMonitor: Lifecycle status change: androidx.activity.ComponentActivity@c552e13 in: PRE_ON_CREATE
+11-08 23:51:59.209  6313  6313 V ActivityScenario: Activity lifecycle changed event received but ignored because the reported transition was not ON_CREATE while the last known transition was PRE_ON_CREATE
+11-08 23:51:59.210  1023  1305 D BtGatt.ScanManager: uid 10131 isForeground true scanMode -1
+11-08 23:51:59.210  1023  1305 D BtGatt.ScanManager: uid 10131 isForeground true scanMode -1
+11-08 23:51:59.217  6313  6313 D LifecycleMonitor: Lifecycle status change: androidx.activity.ComponentActivity@c552e13 in: CREATED
+11-08 23:51:59.218  6313  6313 V ActivityScenario: Update currentActivityStage to CREATED, currentActivity=androidx.activity.ComponentActivity@c552e13
+11-08 23:51:59.219  6313  6313 D LifecycleMonitor: Lifecycle status change: androidx.activity.ComponentActivity@c552e13 in: STARTED
+11-08 23:51:59.220  6313  6313 V ActivityScenario: Update currentActivityStage to STARTED, currentActivity=androidx.activity.ComponentActivity@c552e13
+11-08 23:51:59.222  6313  6313 D LifecycleMonitor: Lifecycle status change: androidx.activity.ComponentActivity@c552e13 in: RESUMED
+11-08 23:51:59.222  6313  6313 V ActivityScenario: Update currentActivityStage to RESUMED, currentActivity=androidx.activity.ComponentActivity@c552e13
+11-08 23:51:59.391   521  2266 W ServiceManagerCppClient: Permission failure: android.permission.ROTATE_SURFACE_FLINGER from uid=10193 pid=0
+11-08 23:51:59.391   521  2266 D PermissionCache: checking android.permission.ROTATE_SURFACE_FLINGER for uid=10193 => denied (123 us)
+11-08 23:51:59.391   521  2266 W ServiceManagerCppClient: Permission failure: android.permission.INTERNAL_SYSTEM_WINDOW from uid=10193 pid=0
+11-08 23:51:59.391   521  2266 D PermissionCache: checking android.permission.INTERNAL_SYSTEM_WINDOW for uid=10193 => denied (34 us)
+11-08 23:51:59.391   521  2266 W ServiceManagerCppClient: Permission failure: android.permission.ACCESS_SURFACE_FLINGER from uid=10193 pid=0
+11-08 23:51:59.391   521  2266 D PermissionCache: checking android.permission.ACCESS_SURFACE_FLINGER for uid=10193 => denied (25 us)
+11-08 23:51:59.411  6362  6362 I Choreographer: Skipped 36 frames!  The application may be doing too much work on its main thread.
+11-08 23:51:59.447  6362  6375 I OpenGLRenderer: Davey! duration=771ms; Flags=1, FrameTimelineVsyncId=7700, IntendedVsync=353988029146, Vsync=354071362476, InputEventId=0, HandleInputStart=354082389671, AnimationStart=354082394714, PerformTraversalsStart=354082398210, DrawStart=354434812380, FrameDeadline=354004695812, FrameInterval=354082333250, FrameStartTime=16666666, SyncQueued=354435959447, SyncStart=354436265342, IssueDrawCommandsStart=354436973353, SwapBuffers=354569475321, FrameCompleted=354760174864, DequeueBufferDuration=4901, QueueBufferDuration=4117660, GpuCompleted=354760174864, SwapBuffersCompleted=354729946298, DisplayPresentTime=0, CommandSubmissionCompleted=354569475321,
+11-08 23:51:59.510  1739  4702 W A       : [Download] response code: 400
+11-08 23:51:59.560   393   393 I android.hardware.power-service.example: Power isModeSupported: 6
+11-08 23:51:59.596   837   879 W WindowOnBackDispatcher: sendCancelIfRunning: isInProgress=falsecallback=android.view.ViewRootImpl$$ExternalSyntheticLambda17@2644afb
+11-08 23:51:59.646   521  1678 W InputManager-JNI: Input channel object '79f9f2 Splash Screen org.dpdns.bnai.anime.test (client)' was disposed without first being removed with the input manager!
+11-08 23:51:59.666  6313  6313 D AutofillManager: Fill dialog is enabled:false, hints=[password, passwordAuto, creditCardNumber, creditCardSecurityCode, creditCardExpirationDate]
+11-08 23:51:59.675  6362  6362 W WindowOnBackDispatcher: sendCancelIfRunning: isInProgress=falsecallback=android.view.ViewRootImpl$$ExternalSyntheticLambda17@e69c6b7
+11-08 23:51:59.692   521   538 W ziparchive: Unable to open '/data/app/~~X-LgaU6zbIcpZde_NyYmDw==/org.dpdns.bnai.anime-24nZ24IfQyQnXkxCM4uqFA==/base.dm': No such file or directory
+11-08 23:51:59.693   521   538 I ActivityTaskManager: Displayed org.dpdns.bnai.anime/androidx.activity.ComponentActivity for user 0: +605ms
+11-08 23:51:59.693   521  1678 W InputManager-JNI: Input channel object 'a006c13 org.dpdns.bnai.anime.test/androidx.test.core.app.InstrumentationActivityInvoker$EmptyActivity (client)' was disposed without first being removed with the input manager!
+11-08 23:51:59.701   837   879 W WindowOnBackDispatcher: sendCancelIfRunning: isInProgress=falsecallback=android.view.ViewRootImpl$$ExternalSyntheticLambda17@9e7d242
+11-08 23:51:59.772   521  2265 W InputManager-JNI: Input channel object 'a8465b9 Splash Screen org.dpdns.bnai.anime (client)' was disposed without first being removed with the input manager!
+11-08 23:52:00.037  6313  6313 D CompatibilityChangeReporter: Compat change id reported: 289878283; UID 10192; state: ENABLED
+11-08 23:52:00.047   837   893 D EGL_emulation: app_time_stats: avg=59957.65ms min=59957.65ms max=59957.65ms count=1
+11-08 23:52:00.049  1620  2048 I AiAiEcho: Predicting[0]:
+11-08 23:52:00.049  1620  2048 I AiAiEcho: EchoTargets:
+11-08 23:52:00.049  1620  2048 I AiAiEcho: Filtered by AiAi flag check:
+11-08 23:52:00.049  1620  2048 I AiAiEcho: Ranked targets strategy: SORT, count: 0, ranking metadata:
+11-08 23:52:00.050  1620  2048 I AiAiEcho: #postPredictionTargets: Sending updates to UISurface lockscreen with targets# 0 (types=[])
+11-08 23:52:00.050  1620  2048 I AiAiEcho: Predicting[0]:
+11-08 23:52:00.050  1620  2048 I AiAiEcho: EchoTargets:
+11-08 23:52:00.050  1620  2048 I AiAiEcho: Filtered by AiAi flag check:
+11-08 23:52:00.050  1620  2048 I AiAiEcho: Ranked targets strategy: SORT, count: 0, ranking metadata:
+11-08 23:52:00.050  1620  2048 I AiAiEcho: #postPredictionTargets: Sending updates to UISurface lockscreen with targets# 0 (types=[])
+11-08 23:52:00.052   837   837 W PageIndicator: Total number of pages invalid: 0. Assuming 1 page.
+11-08 23:52:00.052   837   837 W PageIndicator: Total number of pages invalid: 0. Assuming 1 page.
+11-08 23:52:00.114  5445  5679 I NearbyDiscovery: FastPair: isDestroyable: Scanner is alive. [CONTEXT service_id=265 ]
+11-08 23:52:00.115  5445  5679 I NearbyDiscovery: DiscoveryService: Skip stopSelf(), fast pair controller is not destroyable. [CONTEXT service_id=265 ]
+11-08 23:52:00.291   837   880 D SplashScreenView: Build android.window.SplashScreenView{849b46f V.E...... ......ID 0,0-0,0}
+11-08 23:52:00.291   837   880 D SplashScreenView: Icon: view: null drawable: null size: 0
+11-08 23:52:00.291   837   880 D SplashScreenView: Branding: view: android.view.View{935d57c G.ED..... ......I. 0,0-0,0 #10204ef android:id/splashscreen_branding_view} drawable: null size w: 0 h: 0
+11-08 23:52:00.366  6313  6313 D LifecycleMonitor: Lifecycle status change: androidx.activity.ComponentActivity@c552e13 in: PAUSED
+11-08 23:52:00.367  6313  6313 V ActivityScenario: Update currentActivityStage to PAUSED, currentActivity=androidx.activity.ComponentActivity@c552e13
+11-08 23:52:00.395   402   402 I BpBinder: onLastStrongRef automatically unlinking death recipients:
+11-08 23:52:00.550  5520  5690 I FastPair: ServiceBindHelper: auto unpin triggered, uri = content://com.google.android.gms.nearby.fastpair/method_bind_service_for_discovery_item?is_bind=false
+11-08 23:52:00.550  5520  5690 I FastPair: ServiceBindHelper.onSliceUnpinned, unpin slice, uri = content://com.google.android.gms.nearby.fastpair/method_bind_service_for_discovery_item?is_bind=false
+11-08 23:52:00.655  6313  6409 D ProfileInstaller: Installing profile for org.dpdns.bnai.anime
+11-08 23:52:00.736  1023  1305 D BtGatt.ScanManager: uid 10131 isForeground true scanMode -1
+11-08 23:52:00.736  1023  1305 D BtGatt.ScanManager: uid 10131 isForeground true scanMode -1
+11-08 23:52:00.739  6313  6313 D LifecycleMonitor: Lifecycle status change: androidx.activity.ComponentActivity@c552e13 in: STOPPED
+11-08 23:52:00.740  6313  6313 V ActivityScenario: Update currentActivityStage to STOPPED, currentActivity=androidx.activity.ComponentActivity@c552e13
+11-08 23:52:00.764  6313  6313 D LifecycleMonitor: Lifecycle status change: androidx.activity.ComponentActivity@c552e13 in: DESTROYED
+11-08 23:52:00.765  6313  6313 V ActivityScenario: Update currentActivityStage to DESTROYED, currentActivity=null
+11-08 23:52:00.766  6313  6313 W WindowOnBackDispatcher: sendCancelIfRunning: isInProgress=falsecallback=android.view.ViewRootImpl$$ExternalSyntheticLambda17@4672667
+11-08 23:52:00.782   521  2265 W InputManager-JNI: Input channel object '173ec7b org.dpdns.bnai.anime/androidx.activity.ComponentActivity (client)' was disposed without first being removed with the input manager!
+11-08 23:52:00.787  6362  6389 W OpenGLRenderer: Failed to initialize 101010-2 format, error = EGL_SUCCESS
+11-08 23:52:00.878  6313  6334 D IdlingRegistry: Unregistering idling resources: [androidx.compose.ui.test.junit4.EspressoLink@244517f]
+11-08 23:52:00.931  6313  6334 I TestRunner: finished: projectSelectorExposesNavigationTags(org.dpdns.bnai.anime.ui.P0ComposeSemanticsTest)

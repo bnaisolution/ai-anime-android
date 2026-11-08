@@ -1,0 +1,86 @@
+11-08 23:52:00.944  6313  6334 I TestRunner: started: resourceStateBoxExposesStateTags(org.dpdns.bnai.anime.ui.P0ComposeSemanticsTest)
+11-08 23:52:00.957  6313  6334 D IdlingRegistry: Registering idling resources: [androidx.compose.ui.test.junit4.EspressoLink@4d39095]
+11-08 23:52:00.958  2757  2861 I WM-WorkerWrapper: Worker result SUCCESS for Work [ id=a559ce97-8528-4205-a740-754cf58b60ef, tags={ com.google.apps.tiktok.contrib.work.TikTokListenableWorker, TikTokWorker#com.android.dialer.calleridfeeback.impl.database.retention.CallerIdFeedbackDeletionWorker } ]
+11-08 23:52:00.988  2757  2901 I DialerCallerIdFeedbackDatabase: com.android.dialer.calleridfeedback.impl.database.CallerIdFeedbackDatabase.deleteAllMatching:409 feedbackCreationTimestamp list empty
+11-08 23:52:00.994  2757  2901 I DialerCallerIdFeedbackDatabase: com.android.dialer.calleridfeedback.impl.database.CallerIdFeedbackDatabase$1.onSuccess:351 Deleted old caller IDs.
+11-08 23:52:01.002  6313  6334 W Settings: Setting always_finish_activities has moved from android.provider.Settings.System to android.provider.Settings.Global, returning read-only value.
+11-08 23:52:01.012   837   880 D SplashScreenView: Build android.window.SplashScreenView{793f8ae V.E...... ......ID 0,0-0,0}
+11-08 23:52:01.012   837   880 D SplashScreenView: Icon: view: null drawable: null size: 0
+11-08 23:52:01.012   837   880 D SplashScreenView: Branding: view: android.view.View{45a164f G.ED..... ......I. 0,0-0,0 #10204ef android:id/splashscreen_branding_view} drawable: null size w: 0 h: 0
+11-08 23:52:01.176   402   402 I BpBinder: onLastStrongRef automatically unlinking death recipients:
+11-08 23:52:01.187   521   538 W ziparchive: Unable to open '/data/app/~~KSRme4HfuhZkYjy9aVejUQ==/org.dpdns.bnai.anime.test-fIUmPhMYs6cn5JzEYeQeJA==/base.dm': No such file or directory
+11-08 23:52:01.188  1023  1305 D BtGatt.ScanManager: uid 10131 isForeground true scanMode -1
+11-08 23:52:01.188  1023  1305 D BtGatt.ScanManager: uid 10131 isForeground true scanMode -1
+11-08 23:52:01.188   521   538 I ActivityTaskManager: Displayed org.dpdns.bnai.anime.test/androidx.test.core.app.InstrumentationActivityInvoker$EmptyActivity for user 0: +890ms
+11-08 23:52:01.438   837   879 W WindowOnBackDispatcher: sendCancelIfRunning: isInProgress=falsecallback=android.view.ViewRootImpl$$ExternalSyntheticLambda17@d98e626
+11-08 23:52:01.440  6313  6313 D LifecycleMonitor: Lifecycle status change: androidx.activity.ComponentActivity@6f66149 in: PRE_ON_CREATE
+11-08 23:52:01.441  6313  6313 V ActivityScenario: Activity lifecycle changed event received but ignored because the reported transition was not ON_CREATE while the last known transition was PRE_ON_CREATE
+11-08 23:52:01.451   521  2242 W InputManager-JNI: Input channel object 'cb1860d Splash Screen org.dpdns.bnai.anime.test (client)' was disposed without first being removed with the input manager!
+11-08 23:52:01.457  6313  6313 D LifecycleMonitor: Lifecycle status change: androidx.activity.ComponentActivity@6f66149 in: CREATED
+11-08 23:52:01.458  6313  6313 V ActivityScenario: Update currentActivityStage to CREATED, currentActivity=androidx.activity.ComponentActivity@6f66149
+11-08 23:52:01.460  6313  6313 D LifecycleMonitor: Lifecycle status change: androidx.activity.ComponentActivity@6f66149 in: STARTED
+11-08 23:52:01.460  6313  6313 V ActivityScenario: Update currentActivityStage to STARTED, currentActivity=androidx.activity.ComponentActivity@6f66149
+11-08 23:52:01.475  6313  6313 D LifecycleMonitor: Lifecycle status change: androidx.activity.ComponentActivity@6f66149 in: RESUMED
+11-08 23:52:01.475  6313  6313 V ActivityScenario: Update currentActivityStage to RESUMED, currentActivity=androidx.activity.ComponentActivity@6f66149
+11-08 23:52:01.750  6362  6362 W WindowOnBackDispatcher: sendCancelIfRunning: isInProgress=falsecallback=android.view.ViewRootImpl$$ExternalSyntheticLambda17@25b13fd
+11-08 23:52:01.755   521   538 W ziparchive: Unable to open '/data/app/~~X-LgaU6zbIcpZde_NyYmDw==/org.dpdns.bnai.anime-24nZ24IfQyQnXkxCM4uqFA==/base.dm': No such file or directory
+11-08 23:52:01.762  6313  6313 D AutofillManager: Fill dialog is enabled:false, hints=[password, passwordAuto, creditCardNumber, creditCardSecurityCode, creditCardExpirationDate]
+11-08 23:52:01.794   521   538 I ActivityTaskManager: Displayed org.dpdns.bnai.anime/androidx.activity.ComponentActivity for user 0: +747ms
+11-08 23:52:01.794   521   921 W InputManager-JNI: Input channel object '51d0c7d org.dpdns.bnai.anime.test/androidx.test.core.app.InstrumentationActivityInvoker$EmptyActivity (client)' was disposed without first being removed with the input manager!
+11-08 23:52:01.810   837   879 W WindowOnBackDispatcher: sendCancelIfRunning: isInProgress=falsecallback=android.view.ViewRootImpl$$ExternalSyntheticLambda17@437a861
+11-08 23:52:01.810   521  2104 W InputManager-JNI: Input channel object '723c122 Splash Screen org.dpdns.bnai.anime (client)' was disposed without first being removed with the input manager!
+11-08 23:52:02.156   837   880 D SplashScreenView: Build android.window.SplashScreenView{e6d660e V.E...... ......ID 0,0-0,0}
+11-08 23:52:02.156   837   880 D SplashScreenView: Icon: view: null drawable: null size: 0
+11-08 23:52:02.156   837   880 D SplashScreenView: Branding: view: android.view.View{680e82f G.ED..... ......I. 0,0-0,0 #10204ef android:id/splashscreen_branding_view} drawable: null size w: 0 h: 0
+11-08 23:52:02.197  6313  6313 D LifecycleMonitor: Lifecycle status change: androidx.activity.ComponentActivity@6f66149 in: PAUSED
+11-08 23:52:02.198  6313  6313 V ActivityScenario: Update currentActivityStage to PAUSED, currentActivity=androidx.activity.ComponentActivity@6f66149
+11-08 23:52:02.231   521   530 I system_server: NativeAlloc concurrent copying GC freed 453479(17MB) AllocSpace objects, 14(492KB) LOS objects, 48% free, 25MB/49MB, paused 78us,92us total 398.816ms
+11-08 23:52:02.231   521   531 W JavaBinder: BinderProxy is being destroyed but the application did not call unlinkToDeath to unlink all of its death recipients beforehand.  Releasing leaked death recipient: com.android.server.am.ActivityManagerService$14
+11-08 23:52:02.231   521   531 I BpBinder: onLastStrongRef automatically unlinking death recipients:
+11-08 23:52:02.232   521   531 W JavaBinder: BinderProxy is being destroyed but the application did not call unlinkToDeath to unlink all of its death recipients beforehand.  Releasing leaked death recipient: com.android.server.wm.ActivityRecord$$ExternalSyntheticLambda0
+11-08 23:52:02.232   521   531 I BpBinder: onLastStrongRef automatically unlinking death recipients:
+11-08 23:52:02.246   402   402 I BpBinder: onLastStrongRef automatically unlinking death recipients:
+11-08 23:52:02.423  6362  6389 W OpenGLRenderer: Failed to initialize 101010-2 format, error = EGL_SUCCESS
+11-08 23:52:02.451  1023  1305 D BtGatt.ScanManager: uid 10131 isForeground true scanMode -1
+11-08 23:52:02.451  1023  1305 D BtGatt.ScanManager: uid 10131 isForeground true scanMode -1
+11-08 23:52:02.587  2757  2757 I DialerXatuMetricsWorker: com.android.dialer.xatu.impl.storage.postcall.XatuMetricsWorker.startWork:66 enter
+11-08 23:52:02.664  2757  2865 I WM-WorkerWrapper: Worker result SUCCESS for Work [ id=b85741de-42b3-4f67-8a2b-1e769a36bc1f, tags={ com.google.apps.tiktok.contrib.work.TikTokListenableWorker, TikTokWorker#com.android.dialer.xatu.impl.storage.postcall.XatuMetricsWorker } ]
+11-08 23:52:02.679  2757  2757 W JobService: onNetworkChanged() not implemented in com.android.voicemail.impl.scheduling.TaskSchedulerJobService. Must override in a subclass.
+11-08 23:52:02.730  5445  6178 V NFC     : this device does not have NFC support
+11-08 23:52:02.730  5445  6178 W TapAndPay: NfcAdapter is null while obtaining CardEmulation instance. [CONTEXT service_id=79 ]
+11-08 23:52:02.730  5445  6178 W TapAndPay: java.lang.NullPointerException: NfcAdapter is null
+11-08 23:52:02.730  5445  6178 W TapAndPay: 	at android.nfc.cardemulation.CardEmulation.getInstance(CardEmulation.java:152)
+11-08 23:52:02.730  5445  6178 W TapAndPay: 	at cdoy.<init>(:com.google.android.gms@231818047@23.18.18 (190800-535401451):0)
+11-08 23:52:02.730  5445  6178 W TapAndPay: 	at com.google.android.gms.tapandpay.hce.task.TapAndPayAidRegistrationTaskOperation.a(:com.google.android.gms@231818047@23.18.18 (190800-535401451):5)
+11-08 23:52:02.730  5445  6178 W TapAndPay: 	at com.google.android.gms.tapandpay.gcmtask.TapAndPayGcmTaskChimeraService.a(:com.google.android.gms@231818047@23.18.18 (190800-535401451):4)
+11-08 23:52:02.730  5445  6178 W TapAndPay: 	at avzs.call(:com.google.android.gms@231818047@23.18.18 (190800-535401451):4)
+11-08 23:52:02.730  5445  6178 W TapAndPay: 	at java.util.concurrent.FutureTask.run(FutureTask.java:264)
+11-08 23:52:02.730  5445  6178 W TapAndPay: 	at aced.c(:com.google.android.gms@231818047@23.18.18 (190800-535401451):6)
+11-08 23:52:02.730  5445  6178 W TapAndPay: 	at aced.run(:com.google.android.gms@231818047@23.18.18 (190800-535401451):7)
+11-08 23:52:02.730  5445  6178 W TapAndPay: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)
+11-08 23:52:02.730  5445  6178 W TapAndPay: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:644)
+11-08 23:52:02.730  5445  6178 W TapAndPay: 	at acjn.run(:com.google.android.gms@231818047@23.18.18 (190800-535401451):0)
+11-08 23:52:02.730  5445  6178 W TapAndPay: 	at java.lang.Thread.run(Thread.java:1012)
+11-08 23:52:02.733  5445  6139 I NetworkScheduler.Stats: Task com.google.android.gms/com.google.android.gms.tapandpay.gcmtask.TapAndPayGcmTaskService started execution. cause:4 exec_start_elapsed_seconds: 358 [CONTEXT service_id=218 ]
+11-08 23:52:02.735  5445  6139 I NetworkScheduler.Stats: Task com.google.android.gms/com.google.android.gms.tapandpay.gcmtask.TapAndPayGcmTaskService finished executing. cause:4 result: 3 elapsed_millis: 49 uptime_millis: 49 exec_start_elapsed_seconds: 358 [CONTEXT service_id=218 ]
+11-08 23:52:02.750   837   837 D StatusBarIconController: ignoring old pipeline callbacks, because the new mobile icons are enabled
+11-08 23:52:02.772   521  3434 W system_server: Long monitor contention with owner android.anim (542) at android.content.res.Configuration com.android.server.wm.ActivityTaskManagerService.getGlobalConfigurationForPid(int)(ActivityTaskManagerService.java:1133) waiters=0 in void com.android.server.wm.TaskPersister$TaskWriteQueueItem.process() for 163ms
+11-08 23:52:02.782   837   893 D EGL_emulation: app_time_stats: avg=2734.47ms min=2734.47ms max=2734.47ms count=1
+11-08 23:52:02.904  6313  6313 D LifecycleMonitor: Lifecycle status change: androidx.activity.ComponentActivity@6f66149 in: STOPPED
+11-08 23:52:02.905  6313  6313 V ActivityScenario: Update currentActivityStage to STOPPED, currentActivity=androidx.activity.ComponentActivity@6f66149
+11-08 23:52:02.922  1107  1144 I s.nexuslauncher: NativeAlloc concurrent copying GC freed 41705(1876KB) AllocSpace objects, 5(288KB) LOS objects, 49% free, 6391KB/12MB, paused 38us,15us total 149.088ms
+11-08 23:52:02.953  1023  1305 D BtGatt.ScanManager: uid 10131 isForeground true scanMode -1
+11-08 23:52:02.955  1023  1305 D BtGatt.ScanManager: uid 10131 isForeground true scanMode -1
+11-08 23:52:02.986  6313  6313 D LifecycleMonitor: Lifecycle status change: androidx.activity.ComponentActivity@6f66149 in: DESTROYED
+11-08 23:52:02.987  6313  6313 V ActivityScenario: Update currentActivityStage to DESTROYED, currentActivity=null
+11-08 23:52:02.988  6313  6313 W WindowOnBackDispatcher: sendCancelIfRunning: isInProgress=falsecallback=android.view.ViewRootImpl$$ExternalSyntheticLambda17@a9e13bd
+11-08 23:52:03.000  1620  2048 I AiAiEcho: Predicting[0]:
+11-08 23:52:03.000  1620  2048 I AiAiEcho: EchoTargets:
+11-08 23:52:03.000  1620  2048 I AiAiEcho: Filtered by AiAi flag check:
+11-08 23:52:03.000  1620  2048 I AiAiEcho: Ranked targets strategy: SORT, count: 0, ranking metadata:
+11-08 23:52:03.001  1620  2048 I AiAiEcho: #postPredictionTargets: Sending updates to UISurface home with targets# 0 (types=[])
+11-08 23:52:03.001   521  1091 W InputManager-JNI: Input channel object 'cfc4ccc org.dpdns.bnai.anime/androidx.activity.ComponentActivity (client)' was disposed without first being removed with the input manager!
+11-08 23:52:03.043   521  1628 W AppSearchIcing: icing-search-engine.cc:283: Error: 5, Message: Document (com.google.android.googlequicksearchbox$OneSearchZeroStateGoogleSuggestions/default, zp) not found.
+11-08 23:52:03.190  1107  2110 D OneSearchSuggestProvider: Created the binder channel successfully for end point service =com.google.android.apps.search.googleapp.search.suggest.plugins.onesearch.server.OneSearchSuggestService , mChannel=z1{delegate=s1{logId=9, target=directaddress:///AndroidComponentAddress%5BIntent%20%7B%20act=grpc.io.action.BIND%20cmp=com.google.android.googlequicksearchbox/com.google.android.apps.search.googleapp.search.suggest.plugins.onesearch.server.OneSearchSuggestService%20%7D%5D}} , mOneSearchConnection=X1.T@36275fc
+11-08 23:52:03.257  6313  6334 D IdlingRegistry: Unregistering idling resources: [androidx.compose.ui.test.junit4.EspressoLink@4d39095]
+11-08 23:52:03.263  6313  6334 I TestRunner: finished: resourceStateBoxExposesStateTags(org.dpdns.bnai.anime.ui.P0ComposeSemanticsTest)

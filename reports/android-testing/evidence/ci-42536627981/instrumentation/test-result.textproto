@@ -1,0 +1,4228 @@
+# 2026-11-08T23:55:27.743714153Z:
+test_suite_meta_data {
+  scheduled_test_case_count: 81
+}
+test_status: PASSED
+test_result {
+  test_case {
+    test_class: "P0ComposeSemanticsTest"
+    test_package: "org.dpdns.bnai.anime.ui"
+    test_method: "confirmationDialogExposesDecisionTags"
+    start_time {
+      seconds: 1794181915
+      nanos: 905000000
+    }
+    end_time {
+      seconds: 1794181919
+      nanos: 405000000
+    }
+  }
+  test_status: PASSED
+  output_artifact {
+    label {
+      label: "logcat"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/logcat-org.dpdns.bnai.anime.ui.P0ComposeSemanticsTest-confirmationDialogExposesDecisionTags.txt"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/device-info.pb"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.meminfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/meminfo"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.cpuinfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/cpuinfo"
+    }
+  }
+}
+test_result {
+  test_case {
+    test_class: "P0ComposeSemanticsTest"
+    test_package: "org.dpdns.bnai.anime.ui"
+    test_method: "projectSelectorExposesNavigationTags"
+    start_time {
+      seconds: 1794181919
+      nanos: 475000000
+    }
+    end_time {
+      seconds: 1794181921
+      nanos: 345000000
+    }
+  }
+  test_status: PASSED
+  output_artifact {
+    label {
+      label: "logcat"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/logcat-org.dpdns.bnai.anime.ui.P0ComposeSemanticsTest-projectSelectorExposesNavigationTags.txt"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/device-info.pb"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.meminfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/meminfo"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.cpuinfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/cpuinfo"
+    }
+  }
+}
+test_result {
+  test_case {
+    test_class: "P0ComposeSemanticsTest"
+    test_package: "org.dpdns.bnai.anime.ui"
+    test_method: "resourceStateBoxExposesStateTags"
+    start_time {
+      seconds: 1794181921
+      nanos: 373000000
+    }
+    end_time {
+      seconds: 1794181923
+      nanos: 754000000
+    }
+  }
+  test_status: PASSED
+  output_artifact {
+    label {
+      label: "logcat"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/logcat-org.dpdns.bnai.anime.ui.P0ComposeSemanticsTest-resourceStateBoxExposesStateTags.txt"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/device-info.pb"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.meminfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/meminfo"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.cpuinfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/cpuinfo"
+    }
+  }
+}
+test_result {
+  test_case {
+    test_class: "P0ComposeSemanticsTest"
+    test_package: "org.dpdns.bnai.anime.ui"
+    test_method: "authScreenExposesP0Tags"
+    start_time {
+      seconds: 1794181923
+      nanos: 832000000
+    }
+    end_time {
+      seconds: 1794181926
+      nanos: 697000000
+    }
+  }
+  test_status: PASSED
+  output_artifact {
+    label {
+      label: "logcat"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/logcat-org.dpdns.bnai.anime.ui.P0ComposeSemanticsTest-authScreenExposesP0Tags.txt"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/device-info.pb"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.meminfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/meminfo"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.cpuinfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/cpuinfo"
+    }
+  }
+}
+test_result {
+  test_case {
+    test_class: "Batch2AccessibilityTest"
+    test_package: "org.dpdns.bnai.anime.ui.batch2"
+    test_method: "projectRefreshControlHasAccessibleLabel"
+    start_time {
+      seconds: 1794181926
+      nanos: 706000000
+    }
+    end_time {
+      seconds: 1794181928
+      nanos: 701000000
+    }
+  }
+  test_status: PASSED
+  output_artifact {
+    label {
+      label: "logcat"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/logcat-org.dpdns.bnai.anime.ui.batch2.Batch2AccessibilityTest-projectRefreshControlHasAccessibleLabel.txt"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/device-info.pb"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.meminfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/meminfo"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.cpuinfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/cpuinfo"
+    }
+  }
+}
+test_result {
+  test_case {
+    test_class: "Batch2AccessibilityTest"
+    test_package: "org.dpdns.bnai.anime.ui.batch2"
+    test_method: "errorRetryControlHasAccessibleLabel"
+    start_time {
+      seconds: 1794181928
+      nanos: 882000000
+    }
+    end_time {
+      seconds: 1794181930
+      nanos: 565000000
+    }
+  }
+  test_status: PASSED
+  output_artifact {
+    label {
+      label: "logcat"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/logcat-org.dpdns.bnai.anime.ui.batch2.Batch2AccessibilityTest-errorRetryControlHasAccessibleLabel.txt"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/device-info.pb"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.meminfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/meminfo"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.cpuinfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/cpuinfo"
+    }
+  }
+}
+test_result {
+  test_case {
+    test_class: "Batch2AccessibilityTest"
+    test_package: "org.dpdns.bnai.anime.ui.batch2"
+    test_method: "dialogButtonsExposeTextSemantics"
+    start_time {
+      seconds: 1794181930
+      nanos: 568000000
+    }
+    end_time {
+      seconds: 1794181933
+      nanos: 165000000
+    }
+  }
+  test_status: PASSED
+  output_artifact {
+    label {
+      label: "logcat"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/logcat-org.dpdns.bnai.anime.ui.batch2.Batch2AccessibilityTest-dialogButtonsExposeTextSemantics.txt"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/device-info.pb"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.meminfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/meminfo"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.cpuinfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/cpuinfo"
+    }
+  }
+}
+test_result {
+  test_case {
+    test_class: "Batch2AccessibilityTest"
+    test_package: "org.dpdns.bnai.anime.ui.batch2"
+    test_method: "sharedStateControlsAreDiscoverableByTag"
+    start_time {
+      seconds: 1794181933
+      nanos: 249000000
+    }
+    end_time {
+      seconds: 1794181935
+      nanos: 226000000
+    }
+  }
+  test_status: PASSED
+  output_artifact {
+    label {
+      label: "logcat"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/logcat-org.dpdns.bnai.anime.ui.batch2.Batch2AccessibilityTest-sharedStateControlsAreDiscoverableByTag.txt"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/device-info.pb"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.meminfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/meminfo"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.cpuinfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/cpuinfo"
+    }
+  }
+}
+test_result {
+  test_case {
+    test_class: "Batch2AccessibilityTest"
+    test_package: "org.dpdns.bnai.anime.ui.batch2"
+    test_method: "drawerAndNavigationIconsHaveAccessibleLabels"
+    start_time {
+      seconds: 1794181935
+      nanos: 229000000
+    }
+    end_time {
+      seconds: 1794181939
+      nanos: 299000000
+    }
+  }
+  test_status: PASSED
+  output_artifact {
+    label {
+      label: "logcat"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/logcat-org.dpdns.bnai.anime.ui.batch2.Batch2AccessibilityTest-drawerAndNavigationIconsHaveAccessibleLabels.txt"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/device-info.pb"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.meminfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/meminfo"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.cpuinfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/cpuinfo"
+    }
+  }
+}
+test_result {
+  test_case {
+    test_class: "Batch2ControlBehaviorTest"
+    test_package: "org.dpdns.bnai.anime.ui.batch2"
+    test_method: "reviewApproveSubmitsApprovedDecision"
+    start_time {
+      seconds: 1794181939
+      nanos: 305000000
+    }
+    end_time {
+      seconds: 1794181942
+      nanos: 995000000
+    }
+  }
+  test_status: PASSED
+  output_artifact {
+    label {
+      label: "logcat"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/logcat-org.dpdns.bnai.anime.ui.batch2.Batch2ControlBehaviorTest-reviewApproveSubmitsApprovedDecision.txt"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/device-info.pb"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.meminfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/meminfo"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.cpuinfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/cpuinfo"
+    }
+  }
+}
+test_result {
+  test_case {
+    test_class: "Batch2ControlBehaviorTest"
+    test_package: "org.dpdns.bnai.anime.ui.batch2"
+    test_method: "projectDetailSavePersistsSettings"
+    start_time {
+      seconds: 1794181943
+      nanos: 23000000
+    }
+    end_time {
+      seconds: 1794181947
+      nanos: 517000000
+    }
+  }
+  test_status: PASSED
+  output_artifact {
+    label {
+      label: "logcat"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/logcat-org.dpdns.bnai.anime.ui.batch2.Batch2ControlBehaviorTest-projectDetailSavePersistsSettings.txt"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/device-info.pb"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.meminfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/meminfo"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.cpuinfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/cpuinfo"
+    }
+  }
+}
+test_result {
+  test_case {
+    test_class: "Batch2ControlBehaviorTest"
+    test_package: "org.dpdns.bnai.anime.ui.batch2"
+    test_method: "characterAddDispatchesBibleCommandWithName"
+    start_time {
+      seconds: 1794181947
+      nanos: 524000000
+    }
+    end_time {
+      seconds: 1794181951
+      nanos: 560000000
+    }
+  }
+  test_status: PASSED
+  output_artifact {
+    label {
+      label: "logcat"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/logcat-org.dpdns.bnai.anime.ui.batch2.Batch2ControlBehaviorTest-characterAddDispatchesBibleCommandWithName.txt"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/device-info.pb"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.meminfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/meminfo"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.cpuinfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/cpuinfo"
+    }
+  }
+}
+test_result {
+  test_case {
+    test_class: "Batch2ControlBehaviorTest"
+    test_package: "org.dpdns.bnai.anime.ui.batch2"
+    test_method: "reviewRejectSubmitsReasonAndDecision"
+    start_time {
+      seconds: 1794181951
+      nanos: 613000000
+    }
+    end_time {
+      seconds: 1794181955
+      nanos: 527000000
+    }
+  }
+  test_status: PASSED
+  output_artifact {
+    label {
+      label: "logcat"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/logcat-org.dpdns.bnai.anime.ui.batch2.Batch2ControlBehaviorTest-reviewRejectSubmitsReasonAndDecision.txt"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/device-info.pb"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.meminfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/meminfo"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.cpuinfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/cpuinfo"
+    }
+  }
+}
+test_result {
+  test_case {
+    test_class: "Batch2ControlBehaviorTest"
+    test_package: "org.dpdns.bnai.anime.ui.batch2"
+    test_method: "promptStudioSaveSubmitsEditedPrompt"
+    start_time {
+      seconds: 1794181955
+      nanos: 529000000
+    }
+    end_time {
+      seconds: 1794181958
+      nanos: 992000000
+    }
+  }
+  test_status: PASSED
+  output_artifact {
+    label {
+      label: "logcat"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/logcat-org.dpdns.bnai.anime.ui.batch2.Batch2ControlBehaviorTest-promptStudioSaveSubmitsEditedPrompt.txt"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/device-info.pb"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.meminfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/meminfo"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.cpuinfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/cpuinfo"
+    }
+  }
+}
+test_result {
+  test_case {
+    test_class: "Batch2ControlBehaviorTest"
+    test_package: "org.dpdns.bnai.anime.ui.batch2"
+    test_method: "productionCancelDispatchesStopCommand"
+    start_time {
+      seconds: 1794181959
+      nanos: 19000000
+    }
+    end_time {
+      seconds: 1794181961
+      nanos: 106000000
+    }
+  }
+  test_status: PASSED
+  output_artifact {
+    label {
+      label: "logcat"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/logcat-org.dpdns.bnai.anime.ui.batch2.Batch2ControlBehaviorTest-productionCancelDispatchesStopCommand.txt"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/device-info.pb"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.meminfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/meminfo"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.cpuinfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/cpuinfo"
+    }
+  }
+}
+test_result {
+  test_case {
+    test_class: "Batch2ControlBehaviorTest"
+    test_package: "org.dpdns.bnai.anime.ui.batch2"
+    test_method: "settingsSavePersistsInfrastructureAndProjectPolicy"
+    start_time {
+      seconds: 1794181961
+      nanos: 115000000
+    }
+    end_time {
+      seconds: 1794181963
+      nanos: 445000000
+    }
+  }
+  test_status: PASSED
+  output_artifact {
+    label {
+      label: "logcat"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/logcat-org.dpdns.bnai.anime.ui.batch2.Batch2ControlBehaviorTest-settingsSavePersistsInfrastructureAndProjectPolicy.txt"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/device-info.pb"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.meminfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/meminfo"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.cpuinfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/cpuinfo"
+    }
+  }
+}
+test_result {
+  test_case {
+    test_class: "Batch2ControlBehaviorTest"
+    test_package: "org.dpdns.bnai.anime.ui.batch2"
+    test_method: "studioCreateProjectSubmitsEnteredName"
+    start_time {
+      seconds: 1794181963
+      nanos: 454000000
+    }
+    end_time {
+      seconds: 1794181967
+      nanos: 459000000
+    }
+  }
+  test_status: PASSED
+  output_artifact {
+    label {
+      label: "logcat"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/logcat-org.dpdns.bnai.anime.ui.batch2.Batch2ControlBehaviorTest-studioCreateProjectSubmitsEnteredName.txt"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/device-info.pb"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.meminfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/meminfo"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.cpuinfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/cpuinfo"
+    }
+  }
+}
+test_result {
+  test_case {
+    test_class: "Batch2ControlBehaviorTest"
+    test_package: "org.dpdns.bnai.anime.ui.batch2"
+    test_method: "episodePlannerSaveMetadataSubmitsPatch"
+    start_time {
+      seconds: 1794181967
+      nanos: 461000000
+    }
+    end_time {
+      seconds: 1794181970
+      nanos: 643000000
+    }
+  }
+  test_status: PASSED
+  output_artifact {
+    label {
+      label: "logcat"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/logcat-org.dpdns.bnai.anime.ui.batch2.Batch2ControlBehaviorTest-episodePlannerSaveMetadataSubmitsPatch.txt"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/device-info.pb"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.meminfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/meminfo"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.cpuinfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/cpuinfo"
+    }
+  }
+}
+test_result {
+  test_case {
+    test_class: "Batch2ControlBehaviorTest"
+    test_package: "org.dpdns.bnai.anime.ui.batch2"
+    test_method: "bibleSaveDraftSubmitsBiblePayload"
+    start_time {
+      seconds: 1794181970
+      nanos: 755000000
+    }
+    end_time {
+      seconds: 1794181972
+      nanos: 890000000
+    }
+  }
+  test_status: PASSED
+  output_artifact {
+    label {
+      label: "logcat"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/logcat-org.dpdns.bnai.anime.ui.batch2.Batch2ControlBehaviorTest-bibleSaveDraftSubmitsBiblePayload.txt"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/device-info.pb"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.meminfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/meminfo"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.cpuinfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/cpuinfo"
+    }
+  }
+}
+test_result {
+  test_case {
+    test_class: "Batch2InteractionTest"
+    test_package: "org.dpdns.bnai.anime.ui.batch2"
+    test_method: "productionControlTagsExist"
+    start_time {
+      seconds: 1794181972
+      nanos: 969000000
+    }
+    end_time {
+      seconds: 1794181975
+      nanos: 702000000
+    }
+  }
+  test_status: PASSED
+  output_artifact {
+    label {
+      label: "logcat"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/logcat-org.dpdns.bnai.anime.ui.batch2.Batch2InteractionTest-productionControlTagsExist.txt"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/device-info.pb"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.meminfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/meminfo"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.cpuinfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/cpuinfo"
+    }
+  }
+}
+test_result {
+  test_case {
+    test_class: "Batch2InteractionTest"
+    test_package: "org.dpdns.bnai.anime.ui.batch2"
+    test_method: "settingsTabsSwitchContent"
+    start_time {
+      seconds: 1794181975
+      nanos: 963000000
+    }
+    end_time {
+      seconds: 1794181978
+      nanos: 566000000
+    }
+  }
+  test_status: PASSED
+  output_artifact {
+    label {
+      label: "logcat"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/logcat-org.dpdns.bnai.anime.ui.batch2.Batch2InteractionTest-settingsTabsSwitchContent.txt"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/device-info.pb"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.meminfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/meminfo"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.cpuinfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/cpuinfo"
+    }
+  }
+}
+test_result {
+  test_case {
+    test_class: "Batch2InteractionTest"
+    test_package: "org.dpdns.bnai.anime.ui.batch2"
+    test_method: "ownerEmergencyStopOpensConfirmation"
+    start_time {
+      seconds: 1794181978
+      nanos: 720000000
+    }
+    end_time {
+      seconds: 1794181982
+      nanos: 353000000
+    }
+  }
+  test_status: PASSED
+  output_artifact {
+    label {
+      label: "logcat"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/logcat-org.dpdns.bnai.anime.ui.batch2.Batch2InteractionTest-ownerEmergencyStopOpensConfirmation.txt"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/device-info.pb"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.meminfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/meminfo"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.cpuinfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/cpuinfo"
+    }
+  }
+}
+test_result {
+  test_case {
+    test_class: "Batch2InteractionTest"
+    test_package: "org.dpdns.bnai.anime.ui.batch2"
+    test_method: "authEmptySubmitShowsValidationError"
+    start_time {
+      seconds: 1794181982
+      nanos: 434000000
+    }
+    end_time {
+      seconds: 1794181984
+      nanos: 589000000
+    }
+  }
+  test_status: PASSED
+  output_artifact {
+    label {
+      label: "logcat"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/logcat-org.dpdns.bnai.anime.ui.batch2.Batch2InteractionTest-authEmptySubmitShowsValidationError.txt"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/device-info.pb"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.meminfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/meminfo"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.cpuinfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/cpuinfo"
+    }
+  }
+}
+test_result {
+  test_case {
+    test_class: "Batch2InteractionTest"
+    test_package: "org.dpdns.bnai.anime.ui.batch2"
+    test_method: "studioCreateProjectDialogOpensAndCancels"
+    start_time {
+      seconds: 1794181984
+      nanos: 591000000
+    }
+    end_time {
+      seconds: 1794181987
+      nanos: 613000000
+    }
+  }
+  test_status: PASSED
+  output_artifact {
+    label {
+      label: "logcat"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/logcat-org.dpdns.bnai.anime.ui.batch2.Batch2InteractionTest-studioCreateProjectDialogOpensAndCancels.txt"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/device-info.pb"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.meminfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/meminfo"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.cpuinfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/cpuinfo"
+    }
+  }
+}
+test_result {
+  test_case {
+    test_class: "Batch2InteractionTest"
+    test_package: "org.dpdns.bnai.anime.ui.batch2"
+    test_method: "promptStudioCategoryTabSwitchesPrompt"
+    start_time {
+      seconds: 1794181987
+      nanos: 690000000
+    }
+    end_time {
+      seconds: 1794181990
+      nanos: 467000000
+    }
+  }
+  test_status: PASSED
+  output_artifact {
+    label {
+      label: "logcat"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/logcat-org.dpdns.bnai.anime.ui.batch2.Batch2InteractionTest-promptStudioCategoryTabSwitchesPrompt.txt"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/device-info.pb"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.meminfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/meminfo"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.cpuinfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/cpuinfo"
+    }
+  }
+}
+test_result {
+  test_case {
+    test_class: "Batch2InteractionTest"
+    test_package: "org.dpdns.bnai.anime.ui.batch2"
+    test_method: "projectSettingsDialogOpensAndCancels"
+    start_time {
+      seconds: 1794181990
+      nanos: 649000000
+    }
+    end_time {
+      seconds: 1794181993
+      nanos: 917000000
+    }
+  }
+  test_status: PASSED
+  output_artifact {
+    label {
+      label: "logcat"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/logcat-org.dpdns.bnai.anime.ui.batch2.Batch2InteractionTest-projectSettingsDialogOpensAndCancels.txt"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/device-info.pb"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.meminfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/meminfo"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.cpuinfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/cpuinfo"
+    }
+  }
+}
+test_result {
+  test_case {
+    test_class: "Batch2InteractionTest"
+    test_package: "org.dpdns.bnai.anime.ui.batch2"
+    test_method: "characterListAddDialogOpens"
+    start_time {
+      seconds: 1794181994
+      nanos: 25000000
+    }
+    end_time {
+      seconds: 1794181997
+      nanos: 39000000
+    }
+  }
+  test_status: PASSED
+  output_artifact {
+    label {
+      label: "logcat"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/logcat-org.dpdns.bnai.anime.ui.batch2.Batch2InteractionTest-characterListAddDialogOpens.txt"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/device-info.pb"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.meminfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/meminfo"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.cpuinfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/cpuinfo"
+    }
+  }
+}
+test_result {
+  test_case {
+    test_class: "Batch2NavigationTest"
+    test_package: "org.dpdns.bnai.anime.ui.batch2"
+    test_method: "bottomNavigationOpensEpisodes"
+    start_time {
+      seconds: 1794181997
+      nanos: 246000000
+    }
+    end_time {
+      seconds: 1794182000
+      nanos: 318000000
+    }
+  }
+  test_status: PASSED
+  output_artifact {
+    label {
+      label: "logcat"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/logcat-org.dpdns.bnai.anime.ui.batch2.Batch2NavigationTest-bottomNavigationOpensEpisodes.txt"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/device-info.pb"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.meminfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/meminfo"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.cpuinfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/cpuinfo"
+    }
+  }
+}
+test_result {
+  test_case {
+    test_class: "Batch2NavigationTest"
+    test_package: "org.dpdns.bnai.anime.ui.batch2"
+    test_method: "parameterizedScenesRouteOpensSceneInspector"
+    start_time {
+      seconds: 1794182000
+      nanos: 351000000
+    }
+    end_time {
+      seconds: 1794182003
+      nanos: 334000000
+    }
+  }
+  test_status: PASSED
+  output_artifact {
+    label {
+      label: "logcat"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/logcat-org.dpdns.bnai.anime.ui.batch2.Batch2NavigationTest-parameterizedScenesRouteOpensSceneInspector.txt"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/device-info.pb"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.meminfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/meminfo"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.cpuinfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/cpuinfo"
+    }
+  }
+}
+test_result {
+  test_case {
+    test_class: "Batch2NavigationTest"
+    test_package: "org.dpdns.bnai.anime.ui.batch2"
+    test_method: "backNavigationReturnsToStudio"
+    start_time {
+      seconds: 1794182003
+      nanos: 336000000
+    }
+    end_time {
+      seconds: 1794182005
+      nanos: 867000000
+    }
+  }
+  test_status: PASSED
+  output_artifact {
+    label {
+      label: "logcat"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/logcat-org.dpdns.bnai.anime.ui.batch2.Batch2NavigationTest-backNavigationReturnsToStudio.txt"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/device-info.pb"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.meminfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/meminfo"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.cpuinfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/cpuinfo"
+    }
+  }
+}
+test_result {
+  test_case {
+    test_class: "Batch2NavigationTest"
+    test_package: "org.dpdns.bnai.anime.ui.batch2"
+    test_method: "duplicateAuthDeclarationDoesNotExposeAuthWhenAuthenticated"
+    start_time {
+      seconds: 1794182005
+      nanos: 871000000
+    }
+    end_time {
+      seconds: 1794182008
+      nanos: 54000000
+    }
+  }
+  test_status: PASSED
+  output_artifact {
+    label {
+      label: "logcat"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/logcat-org.dpdns.bnai.anime.ui.batch2.Batch2NavigationTest-duplicateAuthDeclarationDoesNotExposeAuthWhenAuthenticated.txt"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/device-info.pb"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.meminfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/meminfo"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.cpuinfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/cpuinfo"
+    }
+  }
+}
+test_result {
+  test_case {
+    test_class: "Batch2NavigationTest"
+    test_package: "org.dpdns.bnai.anime.ui.batch2"
+    test_method: "invalidSceneArgumentFallsBackToEpisodeOne"
+    start_time {
+      seconds: 1794182008
+      nanos: 56000000
+    }
+    end_time {
+      seconds: 1794182010
+      nanos: 838000000
+    }
+  }
+  test_status: PASSED
+  output_artifact {
+    label {
+      label: "logcat"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/logcat-org.dpdns.bnai.anime.ui.batch2.Batch2NavigationTest-invalidSceneArgumentFallsBackToEpisodeOne.txt"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/device-info.pb"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.meminfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/meminfo"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.cpuinfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/cpuinfo"
+    }
+  }
+}
+test_result {
+  test_case {
+    test_class: "Batch2NavigationTest"
+    test_package: "org.dpdns.bnai.anime.ui.batch2"
+    test_method: "everyRegisteredRouteOpensItsExpectedScreen"
+    start_time {
+      seconds: 1794182010
+      nanos: 842000000
+    }
+    end_time {
+      seconds: 1794182020
+      nanos: 172000000
+    }
+  }
+  test_status: PASSED
+  output_artifact {
+    label {
+      label: "logcat"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/logcat-org.dpdns.bnai.anime.ui.batch2.Batch2NavigationTest-everyRegisteredRouteOpensItsExpectedScreen.txt"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/device-info.pb"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.meminfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/meminfo"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.cpuinfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/cpuinfo"
+    }
+  }
+}
+test_result {
+  test_case {
+    test_class: "Batch2NavigationTest"
+    test_package: "org.dpdns.bnai.anime.ui.batch2"
+    test_method: "parameterizedProductionRouteOpensProductionScreen"
+    start_time {
+      seconds: 1794182020
+      nanos: 254000000
+    }
+    end_time {
+      seconds: 1794182023
+      nanos: 348000000
+    }
+  }
+  test_status: PASSED
+  output_artifact {
+    label {
+      label: "logcat"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/logcat-org.dpdns.bnai.anime.ui.batch2.Batch2NavigationTest-parameterizedProductionRouteOpensProductionScreen.txt"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/device-info.pb"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.meminfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/meminfo"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.cpuinfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/cpuinfo"
+    }
+  }
+}
+test_result {
+  test_case {
+    test_class: "Batch2NavigationTest"
+    test_package: "org.dpdns.bnai.anime.ui.batch2"
+    test_method: "authStartDestinationWithoutToken"
+    start_time {
+      seconds: 1794182023
+      nanos: 477000000
+    }
+    end_time {
+      seconds: 1794182025
+      nanos: 248000000
+    }
+  }
+  test_status: PASSED
+  output_artifact {
+    label {
+      label: "logcat"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/logcat-org.dpdns.bnai.anime.ui.batch2.Batch2NavigationTest-authStartDestinationWithoutToken.txt"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/device-info.pb"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.meminfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/meminfo"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.cpuinfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/cpuinfo"
+    }
+  }
+}
+test_result {
+  test_case {
+    test_class: "Batch2NavigationTest"
+    test_package: "org.dpdns.bnai.anime.ui.batch2"
+    test_method: "drawerOpensAndExposesWorkspaceNavigation"
+    start_time {
+      seconds: 1794182025
+      nanos: 251000000
+    }
+    end_time {
+      seconds: 1794182028
+      nanos: 429000000
+    }
+  }
+  test_status: PASSED
+  output_artifact {
+    label {
+      label: "logcat"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/logcat-org.dpdns.bnai.anime.ui.batch2.Batch2NavigationTest-drawerOpensAndExposesWorkspaceNavigation.txt"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/device-info.pb"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.meminfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/meminfo"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.cpuinfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/cpuinfo"
+    }
+  }
+}
+test_result {
+  test_case {
+    test_class: "Batch2NavigationTest"
+    test_package: "org.dpdns.bnai.anime.ui.batch2"
+    test_method: "studioStartDestinationWithToken"
+    start_time {
+      seconds: 1794182028
+      nanos: 610000000
+    }
+    end_time {
+      seconds: 1794182030
+      nanos: 435000000
+    }
+  }
+  test_status: PASSED
+  output_artifact {
+    label {
+      label: "logcat"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/logcat-org.dpdns.bnai.anime.ui.batch2.Batch2NavigationTest-studioStartDestinationWithToken.txt"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/device-info.pb"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.meminfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/meminfo"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.cpuinfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/cpuinfo"
+    }
+  }
+}
+test_result {
+  test_case {
+    test_class: "Batch2NavigationTest"
+    test_package: "org.dpdns.bnai.anime.ui.batch2"
+    test_method: "duplicateStudioDeclarationDoesNotBypassAuthGate"
+    start_time {
+      seconds: 1794182030
+      nanos: 620000000
+    }
+    end_time {
+      seconds: 1794182033
+      nanos: 260000000
+    }
+  }
+  test_status: PASSED
+  output_artifact {
+    label {
+      label: "logcat"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/logcat-org.dpdns.bnai.anime.ui.batch2.Batch2NavigationTest-duplicateStudioDeclarationDoesNotBypassAuthGate.txt"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/device-info.pb"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.meminfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/meminfo"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.cpuinfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/cpuinfo"
+    }
+  }
+}
+test_result {
+  test_case {
+    test_class: "Batch2ScreenCoverageTest"
+    test_package: "org.dpdns.bnai.anime.ui.batch2"
+    test_method: "episodePlannerScreenRenders"
+    start_time {
+      seconds: 1794182033
+      nanos: 263000000
+    }
+    end_time {
+      seconds: 1794182035
+      nanos: 537000000
+    }
+  }
+  test_status: PASSED
+  output_artifact {
+    label {
+      label: "logcat"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/logcat-org.dpdns.bnai.anime.ui.batch2.Batch2ScreenCoverageTest-episodePlannerScreenRenders.txt"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/device-info.pb"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.meminfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/meminfo"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.cpuinfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/cpuinfo"
+    }
+  }
+}
+test_result {
+  test_case {
+    test_class: "Batch2ScreenCoverageTest"
+    test_package: "org.dpdns.bnai.anime.ui.batch2"
+    test_method: "quotaDashboardScreenRenders"
+    start_time {
+      seconds: 1794182035
+      nanos: 766000000
+    }
+    end_time {
+      seconds: 1794182037
+      nanos: 713000000
+    }
+  }
+  test_status: PASSED
+  output_artifact {
+    label {
+      label: "logcat"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/logcat-org.dpdns.bnai.anime.ui.batch2.Batch2ScreenCoverageTest-quotaDashboardScreenRenders.txt"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/device-info.pb"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.meminfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/meminfo"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.cpuinfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/cpuinfo"
+    }
+  }
+}
+test_result {
+  test_case {
+    test_class: "Batch2ScreenCoverageTest"
+    test_package: "org.dpdns.bnai.anime.ui.batch2"
+    test_method: "jobsMonitorScreenRenders"
+    start_time {
+      seconds: 1794182037
+      nanos: 715000000
+    }
+    end_time {
+      seconds: 1794182039
+      nanos: 521000000
+    }
+  }
+  test_status: PASSED
+  output_artifact {
+    label {
+      label: "logcat"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/logcat-org.dpdns.bnai.anime.ui.batch2.Batch2ScreenCoverageTest-jobsMonitorScreenRenders.txt"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/device-info.pb"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.meminfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/meminfo"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.cpuinfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/cpuinfo"
+    }
+  }
+}
+test_result {
+  test_case {
+    test_class: "Batch2ScreenCoverageTest"
+    test_package: "org.dpdns.bnai.anime.ui.batch2"
+    test_method: "projectDetailScreenRenders"
+    start_time {
+      seconds: 1794182039
+      nanos: 523000000
+    }
+    end_time {
+      seconds: 1794182041
+      nanos: 934000000
+    }
+  }
+  test_status: PASSED
+  output_artifact {
+    label {
+      label: "logcat"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/logcat-org.dpdns.bnai.anime.ui.batch2.Batch2ScreenCoverageTest-projectDetailScreenRenders.txt"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/device-info.pb"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.meminfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/meminfo"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.cpuinfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/cpuinfo"
+    }
+  }
+}
+test_result {
+  test_case {
+    test_class: "Batch2ScreenCoverageTest"
+    test_package: "org.dpdns.bnai.anime.ui.batch2"
+    test_method: "settingsScreenRenders"
+    start_time {
+      seconds: 1794182042
+      nanos: 136000000
+    }
+    end_time {
+      seconds: 1794182044
+      nanos: 792000000
+    }
+  }
+  test_status: PASSED
+  output_artifact {
+    label {
+      label: "logcat"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/logcat-org.dpdns.bnai.anime.ui.batch2.Batch2ScreenCoverageTest-settingsScreenRenders.txt"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/device-info.pb"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.meminfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/meminfo"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.cpuinfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/cpuinfo"
+    }
+  }
+}
+test_result {
+  test_case {
+    test_class: "Batch2ScreenCoverageTest"
+    test_package: "org.dpdns.bnai.anime.ui.batch2"
+    test_method: "auditLogScreenRenders"
+    start_time {
+      seconds: 1794182044
+      nanos: 880000000
+    }
+    end_time {
+      seconds: 1794182046
+      nanos: 992000000
+    }
+  }
+  test_status: PASSED
+  output_artifact {
+    label {
+      label: "logcat"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/logcat-org.dpdns.bnai.anime.ui.batch2.Batch2ScreenCoverageTest-auditLogScreenRenders.txt"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/device-info.pb"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.meminfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/meminfo"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.cpuinfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/cpuinfo"
+    }
+  }
+}
+test_result {
+  test_case {
+    test_class: "Batch2ScreenCoverageTest"
+    test_package: "org.dpdns.bnai.anime.ui.batch2"
+    test_method: "notificationScreenRenders"
+    start_time {
+      seconds: 1794182047
+      nanos: 145000000
+    }
+    end_time {
+      seconds: 1794182049
+      nanos: 746000000
+    }
+  }
+  test_status: PASSED
+  output_artifact {
+    label {
+      label: "logcat"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/logcat-org.dpdns.bnai.anime.ui.batch2.Batch2ScreenCoverageTest-notificationScreenRenders.txt"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/device-info.pb"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.meminfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/meminfo"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.cpuinfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/cpuinfo"
+    }
+  }
+}
+test_result {
+  test_case {
+    test_class: "Batch2ScreenCoverageTest"
+    test_package: "org.dpdns.bnai.anime.ui.batch2"
+    test_method: "qcScreenRenders"
+    start_time {
+      seconds: 1794182049
+      nanos: 748000000
+    }
+    end_time {
+      seconds: 1794182051
+      nanos: 794000000
+    }
+  }
+  test_status: PASSED
+  output_artifact {
+    label {
+      label: "logcat"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/logcat-org.dpdns.bnai.anime.ui.batch2.Batch2ScreenCoverageTest-qcScreenRenders.txt"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/device-info.pb"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.meminfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/meminfo"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.cpuinfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/cpuinfo"
+    }
+  }
+}
+test_result {
+  test_case {
+    test_class: "Batch2ScreenCoverageTest"
+    test_package: "org.dpdns.bnai.anime.ui.batch2"
+    test_method: "continuityScreenRenders"
+    start_time {
+      seconds: 1794182051
+      nanos: 824000000
+    }
+    end_time {
+      seconds: 1794182053
+      nanos: 744000000
+    }
+  }
+  test_status: PASSED
+  output_artifact {
+    label {
+      label: "logcat"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/logcat-org.dpdns.bnai.anime.ui.batch2.Batch2ScreenCoverageTest-continuityScreenRenders.txt"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/device-info.pb"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.meminfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/meminfo"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.cpuinfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/cpuinfo"
+    }
+  }
+}
+test_result {
+  test_case {
+    test_class: "Batch2ScreenCoverageTest"
+    test_package: "org.dpdns.bnai.anime.ui.batch2"
+    test_method: "aiBrainScreenRenders"
+    start_time {
+      seconds: 1794182053
+      nanos: 746000000
+    }
+    end_time {
+      seconds: 1794182055
+      nanos: 876000000
+    }
+  }
+  test_status: PASSED
+  output_artifact {
+    label {
+      label: "logcat"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/logcat-org.dpdns.bnai.anime.ui.batch2.Batch2ScreenCoverageTest-aiBrainScreenRenders.txt"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/device-info.pb"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.meminfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/meminfo"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.cpuinfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/cpuinfo"
+    }
+  }
+}
+test_result {
+  test_case {
+    test_class: "Batch2ScreenCoverageTest"
+    test_package: "org.dpdns.bnai.anime.ui.batch2"
+    test_method: "analyticsScreenRenders"
+    start_time {
+      seconds: 1794182055
+      nanos: 954000000
+    }
+    end_time {
+      seconds: 1794182057
+      nanos: 953000000
+    }
+  }
+  test_status: PASSED
+  output_artifact {
+    label {
+      label: "logcat"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/logcat-org.dpdns.bnai.anime.ui.batch2.Batch2ScreenCoverageTest-analyticsScreenRenders.txt"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/device-info.pb"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.meminfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/meminfo"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.cpuinfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/cpuinfo"
+    }
+  }
+}
+test_result {
+  test_case {
+    test_class: "Batch2ScreenCoverageTest"
+    test_package: "org.dpdns.bnai.anime.ui.batch2"
+    test_method: "sceneDetailScreenRenders"
+    start_time {
+      seconds: 1794182057
+      nanos: 954000000
+    }
+    end_time {
+      seconds: 1794182059
+      nanos: 930000000
+    }
+  }
+  test_status: PASSED
+  output_artifact {
+    label {
+      label: "logcat"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/logcat-org.dpdns.bnai.anime.ui.batch2.Batch2ScreenCoverageTest-sceneDetailScreenRenders.txt"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/device-info.pb"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.meminfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/meminfo"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.cpuinfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/cpuinfo"
+    }
+  }
+}
+test_result {
+  test_case {
+    test_class: "Batch2ScreenCoverageTest"
+    test_package: "org.dpdns.bnai.anime.ui.batch2"
+    test_method: "authScreenRenders"
+    start_time {
+      seconds: 1794182059
+      nanos: 932000000
+    }
+    end_time {
+      seconds: 1794182061
+      nanos: 778000000
+    }
+  }
+  test_status: PASSED
+  output_artifact {
+    label {
+      label: "logcat"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/logcat-org.dpdns.bnai.anime.ui.batch2.Batch2ScreenCoverageTest-authScreenRenders.txt"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/device-info.pb"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.meminfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/meminfo"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.cpuinfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/cpuinfo"
+    }
+  }
+}
+test_result {
+  test_case {
+    test_class: "Batch2ScreenCoverageTest"
+    test_package: "org.dpdns.bnai.anime.ui.batch2"
+    test_method: "mediaLibraryScreenRenders"
+    start_time {
+      seconds: 1794182061
+      nanos: 779000000
+    }
+    end_time {
+      seconds: 1794182064
+      nanos: 50000000
+    }
+  }
+  test_status: PASSED
+  output_artifact {
+    label {
+      label: "logcat"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/logcat-org.dpdns.bnai.anime.ui.batch2.Batch2ScreenCoverageTest-mediaLibraryScreenRenders.txt"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/device-info.pb"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.meminfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/meminfo"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.cpuinfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/cpuinfo"
+    }
+  }
+}
+test_result {
+  test_case {
+    test_class: "Batch2ScreenCoverageTest"
+    test_package: "org.dpdns.bnai.anime.ui.batch2"
+    test_method: "workflowManagerScreenRenders"
+    start_time {
+      seconds: 1794182064
+      nanos: 55000000
+    }
+    end_time {
+      seconds: 1794182066
+      nanos: 594000000
+    }
+  }
+  test_status: PASSED
+  output_artifact {
+    label {
+      label: "logcat"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/logcat-org.dpdns.bnai.anime.ui.batch2.Batch2ScreenCoverageTest-workflowManagerScreenRenders.txt"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/device-info.pb"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.meminfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/meminfo"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.cpuinfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/cpuinfo"
+    }
+  }
+}
+test_result {
+  test_case {
+    test_class: "Batch2ScreenCoverageTest"
+    test_package: "org.dpdns.bnai.anime.ui.batch2"
+    test_method: "ownerOverviewScreenRenders"
+    start_time {
+      seconds: 1794182066
+      nanos: 646000000
+    }
+    end_time {
+      seconds: 1794182068
+      nanos: 273000000
+    }
+  }
+  test_status: PASSED
+  output_artifact {
+    label {
+      label: "logcat"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/logcat-org.dpdns.bnai.anime.ui.batch2.Batch2ScreenCoverageTest-ownerOverviewScreenRenders.txt"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/device-info.pb"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.meminfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/meminfo"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.cpuinfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/cpuinfo"
+    }
+  }
+}
+test_result {
+  test_case {
+    test_class: "Batch2ScreenCoverageTest"
+    test_package: "org.dpdns.bnai.anime.ui.batch2"
+    test_method: "adminQueuesScreenRenders"
+    start_time {
+      seconds: 1794182068
+      nanos: 326000000
+    }
+    end_time {
+      seconds: 1794182070
+      nanos: 640000000
+    }
+  }
+  test_status: PASSED
+  output_artifact {
+    label {
+      label: "logcat"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/logcat-org.dpdns.bnai.anime.ui.batch2.Batch2ScreenCoverageTest-adminQueuesScreenRenders.txt"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/device-info.pb"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.meminfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/meminfo"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.cpuinfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/cpuinfo"
+    }
+  }
+}
+test_result {
+  test_case {
+    test_class: "Batch2ScreenCoverageTest"
+    test_package: "org.dpdns.bnai.anime.ui.batch2"
+    test_method: "databaseScreenRenders"
+    start_time {
+      seconds: 1794182070
+      nanos: 642000000
+    }
+    end_time {
+      seconds: 1794182073
+      nanos: 45000000
+    }
+  }
+  test_status: PASSED
+  output_artifact {
+    label {
+      label: "logcat"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/logcat-org.dpdns.bnai.anime.ui.batch2.Batch2ScreenCoverageTest-databaseScreenRenders.txt"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/device-info.pb"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.meminfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/meminfo"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.cpuinfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/cpuinfo"
+    }
+  }
+}
+test_result {
+  test_case {
+    test_class: "Batch2ScreenCoverageTest"
+    test_package: "org.dpdns.bnai.anime.ui.batch2"
+    test_method: "studioDashboardScreenRenders"
+    start_time {
+      seconds: 1794182073
+      nanos: 46000000
+    }
+    end_time {
+      seconds: 1794182075
+      nanos: 502000000
+    }
+  }
+  test_status: PASSED
+  output_artifact {
+    label {
+      label: "logcat"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/logcat-org.dpdns.bnai.anime.ui.batch2.Batch2ScreenCoverageTest-studioDashboardScreenRenders.txt"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/device-info.pb"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.meminfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/meminfo"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.cpuinfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/cpuinfo"
+    }
+  }
+}
+test_result {
+  test_case {
+    test_class: "Batch2ScreenCoverageTest"
+    test_package: "org.dpdns.bnai.anime.ui.batch2"
+    test_method: "visionAnalysisScreenRenders"
+    start_time {
+      seconds: 1794182075
+      nanos: 504000000
+    }
+    end_time {
+      seconds: 1794182077
+      nanos: 718000000
+    }
+  }
+  test_status: PASSED
+  output_artifact {
+    label {
+      label: "logcat"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/logcat-org.dpdns.bnai.anime.ui.batch2.Batch2ScreenCoverageTest-visionAnalysisScreenRenders.txt"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/device-info.pb"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.meminfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/meminfo"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.cpuinfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/cpuinfo"
+    }
+  }
+}
+test_result {
+  test_case {
+    test_class: "Batch2ScreenCoverageTest"
+    test_package: "org.dpdns.bnai.anime.ui.batch2"
+    test_method: "publishScreenRenders"
+    start_time {
+      seconds: 1794182077
+      nanos: 897000000
+    }
+    end_time {
+      seconds: 1794182079
+      nanos: 854000000
+    }
+  }
+  test_status: PASSED
+  output_artifact {
+    label {
+      label: "logcat"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/logcat-org.dpdns.bnai.anime.ui.batch2.Batch2ScreenCoverageTest-publishScreenRenders.txt"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/device-info.pb"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.meminfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/meminfo"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.cpuinfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/cpuinfo"
+    }
+  }
+}
+test_result {
+  test_case {
+    test_class: "Batch2ScreenCoverageTest"
+    test_package: "org.dpdns.bnai.anime.ui.batch2"
+    test_method: "characterDeepDiveScreenRenders"
+    start_time {
+      seconds: 1794182079
+      nanos: 981000000
+    }
+    end_time {
+      seconds: 1794182081
+      nanos: 886000000
+    }
+  }
+  test_status: PASSED
+  output_artifact {
+    label {
+      label: "logcat"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/logcat-org.dpdns.bnai.anime.ui.batch2.Batch2ScreenCoverageTest-characterDeepDiveScreenRenders.txt"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/device-info.pb"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.meminfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/meminfo"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.cpuinfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/cpuinfo"
+    }
+  }
+}
+test_result {
+  test_case {
+    test_class: "Batch2ScreenCoverageTest"
+    test_package: "org.dpdns.bnai.anime.ui.batch2"
+    test_method: "productionScreenRenders"
+    start_time {
+      seconds: 1794182081
+      nanos: 938000000
+    }
+    end_time {
+      seconds: 1794182083
+      nanos: 855000000
+    }
+  }
+  test_status: PASSED
+  output_artifact {
+    label {
+      label: "logcat"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/logcat-org.dpdns.bnai.anime.ui.batch2.Batch2ScreenCoverageTest-productionScreenRenders.txt"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/device-info.pb"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.meminfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/meminfo"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.cpuinfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/cpuinfo"
+    }
+  }
+}
+test_result {
+  test_case {
+    test_class: "Batch2ScreenCoverageTest"
+    test_package: "org.dpdns.bnai.anime.ui.batch2"
+    test_method: "loreExplorerScreenRenders"
+    start_time {
+      seconds: 1794182084
+      nanos: 59000000
+    }
+    end_time {
+      seconds: 1794182086
+      nanos: 484000000
+    }
+  }
+  test_status: PASSED
+  output_artifact {
+    label {
+      label: "logcat"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/logcat-org.dpdns.bnai.anime.ui.batch2.Batch2ScreenCoverageTest-loreExplorerScreenRenders.txt"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/device-info.pb"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.meminfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/meminfo"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.cpuinfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/cpuinfo"
+    }
+  }
+}
+test_result {
+  test_case {
+    test_class: "Batch2ScreenCoverageTest"
+    test_package: "org.dpdns.bnai.anime.ui.batch2"
+    test_method: "promptStudioScreenRenders"
+    start_time {
+      seconds: 1794182086
+      nanos: 536000000
+    }
+    end_time {
+      seconds: 1794182088
+      nanos: 698000000
+    }
+  }
+  test_status: PASSED
+  output_artifact {
+    label {
+      label: "logcat"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/logcat-org.dpdns.bnai.anime.ui.batch2.Batch2ScreenCoverageTest-promptStudioScreenRenders.txt"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/device-info.pb"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.meminfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/meminfo"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.cpuinfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/cpuinfo"
+    }
+  }
+}
+test_result {
+  test_case {
+    test_class: "Batch2ScreenCoverageTest"
+    test_package: "org.dpdns.bnai.anime.ui.batch2"
+    test_method: "workerManagerScreenRenders"
+    start_time {
+      seconds: 1794182088
+      nanos: 704000000
+    }
+    end_time {
+      seconds: 1794182091
+      nanos: 119000000
+    }
+  }
+  test_status: PASSED
+  output_artifact {
+    label {
+      label: "logcat"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/logcat-org.dpdns.bnai.anime.ui.batch2.Batch2ScreenCoverageTest-workerManagerScreenRenders.txt"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/device-info.pb"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.meminfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/meminfo"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.cpuinfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/cpuinfo"
+    }
+  }
+}
+test_result {
+  test_case {
+    test_class: "Batch2ScreenCoverageTest"
+    test_package: "org.dpdns.bnai.anime.ui.batch2"
+    test_method: "canonScreenRenders"
+    start_time {
+      seconds: 1794182091
+      nanos: 230000000
+    }
+    end_time {
+      seconds: 1794182092
+      nanos: 881000000
+    }
+  }
+  test_status: PASSED
+  output_artifact {
+    label {
+      label: "logcat"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/logcat-org.dpdns.bnai.anime.ui.batch2.Batch2ScreenCoverageTest-canonScreenRenders.txt"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/device-info.pb"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.meminfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/meminfo"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.cpuinfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/cpuinfo"
+    }
+  }
+}
+test_result {
+  test_case {
+    test_class: "Batch2ScreenCoverageTest"
+    test_package: "org.dpdns.bnai.anime.ui.batch2"
+    test_method: "reviewInboxScreenRenders"
+    start_time {
+      seconds: 1794182092
+      nanos: 959000000
+    }
+    end_time {
+      seconds: 1794182094
+      nanos: 563000000
+    }
+  }
+  test_status: PASSED
+  output_artifact {
+    label {
+      label: "logcat"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/logcat-org.dpdns.bnai.anime.ui.batch2.Batch2ScreenCoverageTest-reviewInboxScreenRenders.txt"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/device-info.pb"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.meminfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/meminfo"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.cpuinfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/cpuinfo"
+    }
+  }
+}
+test_result {
+  test_case {
+    test_class: "Batch2ScreenCoverageTest"
+    test_package: "org.dpdns.bnai.anime.ui.batch2"
+    test_method: "characterDetailScreenRenders"
+    start_time {
+      seconds: 1794182094
+      nanos: 689000000
+    }
+    end_time {
+      seconds: 1794182097
+      nanos: 2000000
+    }
+  }
+  test_status: PASSED
+  output_artifact {
+    label {
+      label: "logcat"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/logcat-org.dpdns.bnai.anime.ui.batch2.Batch2ScreenCoverageTest-characterDetailScreenRenders.txt"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/device-info.pb"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.meminfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/meminfo"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.cpuinfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/cpuinfo"
+    }
+  }
+}
+test_result {
+  test_case {
+    test_class: "Batch2ScreenCoverageTest"
+    test_package: "org.dpdns.bnai.anime.ui.batch2"
+    test_method: "quickToolsScreenRenders"
+    start_time {
+      seconds: 1794182097
+      nanos: 4000000
+    }
+    end_time {
+      seconds: 1794182098
+      nanos: 764000000
+    }
+  }
+  test_status: PASSED
+  output_artifact {
+    label {
+      label: "logcat"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/logcat-org.dpdns.bnai.anime.ui.batch2.Batch2ScreenCoverageTest-quickToolsScreenRenders.txt"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/device-info.pb"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.meminfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/meminfo"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.cpuinfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/cpuinfo"
+    }
+  }
+}
+test_result {
+  test_case {
+    test_class: "Batch2ScreenCoverageTest"
+    test_package: "org.dpdns.bnai.anime.ui.batch2"
+    test_method: "characterListScreenRenders"
+    start_time {
+      seconds: 1794182098
+      nanos: 766000000
+    }
+    end_time {
+      seconds: 1794182100
+      nanos: 737000000
+    }
+  }
+  test_status: PASSED
+  output_artifact {
+    label {
+      label: "logcat"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/logcat-org.dpdns.bnai.anime.ui.batch2.Batch2ScreenCoverageTest-characterListScreenRenders.txt"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/device-info.pb"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.meminfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/meminfo"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.cpuinfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/cpuinfo"
+    }
+  }
+}
+test_result {
+  test_case {
+    test_class: "Batch2ScreenCoverageTest"
+    test_package: "org.dpdns.bnai.anime.ui.batch2"
+    test_method: "bibleScreenRenders"
+    start_time {
+      seconds: 1794182100
+      nanos: 794000000
+    }
+    end_time {
+      seconds: 1794182102
+      nanos: 513000000
+    }
+  }
+  test_status: PASSED
+  output_artifact {
+    label {
+      label: "logcat"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/logcat-org.dpdns.bnai.anime.ui.batch2.Batch2ScreenCoverageTest-bibleScreenRenders.txt"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/device-info.pb"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.meminfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/meminfo"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.cpuinfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/cpuinfo"
+    }
+  }
+}
+test_result {
+  test_case {
+    test_class: "Batch2ScreenCoverageTest"
+    test_package: "org.dpdns.bnai.anime.ui.batch2"
+    test_method: "budgetLedgerScreenRenders"
+    start_time {
+      seconds: 1794182102
+      nanos: 539000000
+    }
+    end_time {
+      seconds: 1794182104
+      nanos: 627000000
+    }
+  }
+  test_status: PASSED
+  output_artifact {
+    label {
+      label: "logcat"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/logcat-org.dpdns.bnai.anime.ui.batch2.Batch2ScreenCoverageTest-budgetLedgerScreenRenders.txt"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/device-info.pb"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.meminfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/meminfo"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.cpuinfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/cpuinfo"
+    }
+  }
+}
+test_result {
+  test_case {
+    test_class: "Batch2SharedComponentTest"
+    test_package: "org.dpdns.bnai.anime.ui.batch2"
+    test_method: "projectSelectorExposesNavigationTags"
+    start_time {
+      seconds: 1794182104
+      nanos: 629000000
+    }
+    end_time {
+      seconds: 1794182106
+      nanos: 875000000
+    }
+  }
+  test_status: PASSED
+  output_artifact {
+    label {
+      label: "logcat"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/logcat-org.dpdns.bnai.anime.ui.batch2.Batch2SharedComponentTest-projectSelectorExposesNavigationTags.txt"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/device-info.pb"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.meminfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/meminfo"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.cpuinfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/cpuinfo"
+    }
+  }
+}
+test_result {
+  test_case {
+    test_class: "Batch2SharedComponentTest"
+    test_package: "org.dpdns.bnai.anime.ui.batch2"
+    test_method: "confirmationDialogCancelInvokesCallback"
+    start_time {
+      seconds: 1794182106
+      nanos: 977000000
+    }
+    end_time {
+      seconds: 1794182109
+      nanos: 983000000
+    }
+  }
+  test_status: PASSED
+  output_artifact {
+    label {
+      label: "logcat"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/logcat-org.dpdns.bnai.anime.ui.batch2.Batch2SharedComponentTest-confirmationDialogCancelInvokesCallback.txt"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/device-info.pb"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.meminfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/meminfo"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.cpuinfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/cpuinfo"
+    }
+  }
+}
+test_result {
+  test_case {
+    test_class: "Batch2SharedComponentTest"
+    test_package: "org.dpdns.bnai.anime.ui.batch2"
+    test_method: "successStateRendersContent"
+    start_time {
+      seconds: 1794182109
+      nanos: 984000000
+    }
+    end_time {
+      seconds: 1794182111
+      nanos: 609000000
+    }
+  }
+  test_status: PASSED
+  output_artifact {
+    label {
+      label: "logcat"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/logcat-org.dpdns.bnai.anime.ui.batch2.Batch2SharedComponentTest-successStateRendersContent.txt"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/device-info.pb"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.meminfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/meminfo"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.cpuinfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/cpuinfo"
+    }
+  }
+}
+test_result {
+  test_case {
+    test_class: "Batch2SharedComponentTest"
+    test_package: "org.dpdns.bnai.anime.ui.batch2"
+    test_method: "loadingStateExposesLoadingTag"
+    start_time {
+      seconds: 1794182111
+      nanos: 689000000
+    }
+    end_time {
+      seconds: 1794182113
+      nanos: 582000000
+    }
+  }
+  test_status: PASSED
+  output_artifact {
+    label {
+      label: "logcat"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/logcat-org.dpdns.bnai.anime.ui.batch2.Batch2SharedComponentTest-loadingStateExposesLoadingTag.txt"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/device-info.pb"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.meminfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/meminfo"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.cpuinfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/cpuinfo"
+    }
+  }
+}
+test_result {
+  test_case {
+    test_class: "Batch2SharedComponentTest"
+    test_package: "org.dpdns.bnai.anime.ui.batch2"
+    test_method: "confirmationDialogConfirmInvokesCallback"
+    start_time {
+      seconds: 1794182113
+      nanos: 584000000
+    }
+    end_time {
+      seconds: 1794182115
+      nanos: 555000000
+    }
+  }
+  test_status: PASSED
+  output_artifact {
+    label {
+      label: "logcat"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/logcat-org.dpdns.bnai.anime.ui.batch2.Batch2SharedComponentTest-confirmationDialogConfirmInvokesCallback.txt"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/device-info.pb"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.meminfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/meminfo"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.cpuinfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/cpuinfo"
+    }
+  }
+}
+test_result {
+  test_case {
+    test_class: "Batch2SharedComponentTest"
+    test_package: "org.dpdns.bnai.anime.ui.batch2"
+    test_method: "retryControlHasAccessibleDescription"
+    start_time {
+      seconds: 1794182115
+      nanos: 712000000
+    }
+    end_time {
+      seconds: 1794182116
+      nanos: 831000000
+    }
+  }
+  test_status: PASSED
+  output_artifact {
+    label {
+      label: "logcat"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/logcat-org.dpdns.bnai.anime.ui.batch2.Batch2SharedComponentTest-retryControlHasAccessibleDescription.txt"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/device-info.pb"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.meminfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/meminfo"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.cpuinfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/cpuinfo"
+    }
+  }
+}
+test_result {
+  test_case {
+    test_class: "Batch2SharedComponentTest"
+    test_package: "org.dpdns.bnai.anime.ui.batch2"
+    test_method: "unsavedDialogExposesBothDecisions"
+    start_time {
+      seconds: 1794182116
+      nanos: 834000000
+    }
+    end_time {
+      seconds: 1794182119
+      nanos: 429000000
+    }
+  }
+  test_status: PASSED
+  output_artifact {
+    label {
+      label: "logcat"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/logcat-org.dpdns.bnai.anime.ui.batch2.Batch2SharedComponentTest-unsavedDialogExposesBothDecisions.txt"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/device-info.pb"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.meminfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/meminfo"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.cpuinfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/cpuinfo"
+    }
+  }
+}
+test_result {
+  test_case {
+    test_class: "Batch2SharedComponentTest"
+    test_package: "org.dpdns.bnai.anime.ui.batch2"
+    test_method: "retryActionInvokesCallback"
+    start_time {
+      seconds: 1794182119
+      nanos: 508000000
+    }
+    end_time {
+      seconds: 1794182121
+      nanos: 884000000
+    }
+  }
+  test_status: PASSED
+  output_artifact {
+    label {
+      label: "logcat"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/logcat-org.dpdns.bnai.anime.ui.batch2.Batch2SharedComponentTest-retryActionInvokesCallback.txt"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/device-info.pb"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.meminfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/meminfo"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.cpuinfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/cpuinfo"
+    }
+  }
+}
+test_result {
+  test_case {
+    test_class: "Batch2SharedComponentTest"
+    test_package: "org.dpdns.bnai.anime.ui.batch2"
+    test_method: "emptyStateExposesEmptyAndRetry"
+    start_time {
+      seconds: 1794182121
+      nanos: 941000000
+    }
+    end_time {
+      seconds: 1794182123
+      nanos: 695000000
+    }
+  }
+  test_status: PASSED
+  output_artifact {
+    label {
+      label: "logcat"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/logcat-org.dpdns.bnai.anime.ui.batch2.Batch2SharedComponentTest-emptyStateExposesEmptyAndRetry.txt"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/device-info.pb"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.meminfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/meminfo"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.cpuinfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/cpuinfo"
+    }
+  }
+}
+test_result {
+  test_case {
+    test_class: "Batch2SharedComponentTest"
+    test_package: "org.dpdns.bnai.anime.ui.batch2"
+    test_method: "errorStateExposesErrorAndRetry"
+    start_time {
+      seconds: 1794182123
+      nanos: 696000000
+    }
+    end_time {
+      seconds: 1794182126
+      nanos: 76000000
+    }
+  }
+  test_status: PASSED
+  output_artifact {
+    label {
+      label: "logcat"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/logcat-org.dpdns.bnai.anime.ui.batch2.Batch2SharedComponentTest-errorStateExposesErrorAndRetry.txt"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/device-info.pb"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.meminfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/meminfo"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.cpuinfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/cpuinfo"
+    }
+  }
+}
+output_artifact {
+  label {
+    label: "test-results.log"
+    namespace: "com.google.testing.platform.runtime.android.driver.AndroidInstrumentationDriver"
+  }
+  source_path {
+    path: "/home/runner/work/ai-anime-android/ai-anime-android/app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 14/testlog/test-results.log"
+  }
+  type: TEST_DATA
+  mime_type: "text/plain"
+}

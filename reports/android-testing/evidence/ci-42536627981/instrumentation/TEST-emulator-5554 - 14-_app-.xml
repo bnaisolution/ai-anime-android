@@ -1,0 +1,89 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<testsuite name="org.dpdns.bnai.anime.ui.P0ComposeSemanticsTest" tests="81" failures="0" errors="0" skipped="0" time="211.734" timestamp="2026-11-08T23:55:27" hostname="localhost">
+  <properties>
+    <property name="device" value="emulator-5554 - 14" />
+    <property name="flavor" value="" />
+    <property name="project" value=":app" />
+  </properties>
+  <testcase name="confirmationDialogExposesDecisionTags" classname="org.dpdns.bnai.anime.ui.P0ComposeSemanticsTest" time="3.489" />
+  <testcase name="projectSelectorExposesNavigationTags" classname="org.dpdns.bnai.anime.ui.P0ComposeSemanticsTest" time="1.871" />
+  <testcase name="resourceStateBoxExposesStateTags" classname="org.dpdns.bnai.anime.ui.P0ComposeSemanticsTest" time="2.384" />
+  <testcase name="authScreenExposesP0Tags" classname="org.dpdns.bnai.anime.ui.P0ComposeSemanticsTest" time="2.884" />
+  <testcase name="projectRefreshControlHasAccessibleLabel" classname="org.dpdns.bnai.anime.ui.batch2.Batch2AccessibilityTest" time="1.986" />
+  <testcase name="errorRetryControlHasAccessibleLabel" classname="org.dpdns.bnai.anime.ui.batch2.Batch2AccessibilityTest" time="1.685" />
+  <testcase name="dialogButtonsExposeTextSemantics" classname="org.dpdns.bnai.anime.ui.batch2.Batch2AccessibilityTest" time="2.607" />
+  <testcase name="sharedStateControlsAreDiscoverableByTag" classname="org.dpdns.bnai.anime.ui.batch2.Batch2AccessibilityTest" time="1.979" />
+  <testcase name="drawerAndNavigationIconsHaveAccessibleLabels" classname="org.dpdns.bnai.anime.ui.batch2.Batch2AccessibilityTest" time="4.066" />
+  <testcase name="reviewApproveSubmitsApprovedDecision" classname="org.dpdns.bnai.anime.ui.batch2.Batch2ControlBehaviorTest" time="3.699" />
+  <testcase name="projectDetailSavePersistsSettings" classname="org.dpdns.bnai.anime.ui.batch2.Batch2ControlBehaviorTest" time="4.5" />
+  <testcase name="characterAddDispatchesBibleCommandWithName" classname="org.dpdns.bnai.anime.ui.batch2.Batch2ControlBehaviorTest" time="4.039" />
+  <testcase name="reviewRejectSubmitsReasonAndDecision" classname="org.dpdns.bnai.anime.ui.batch2.Batch2ControlBehaviorTest" time="3.906" />
+  <testcase name="promptStudioSaveSubmitsEditedPrompt" classname="org.dpdns.bnai.anime.ui.batch2.Batch2ControlBehaviorTest" time="3.469" />
+  <testcase name="productionCancelDispatchesStopCommand" classname="org.dpdns.bnai.anime.ui.batch2.Batch2ControlBehaviorTest" time="2.097" />
+  <testcase name="settingsSavePersistsInfrastructureAndProjectPolicy" classname="org.dpdns.bnai.anime.ui.batch2.Batch2ControlBehaviorTest" time="2.335" />
+  <testcase name="studioCreateProjectSubmitsEnteredName" classname="org.dpdns.bnai.anime.ui.batch2.Batch2ControlBehaviorTest" time="4.013" />
+  <testcase name="episodePlannerSaveMetadataSubmitsPatch" classname="org.dpdns.bnai.anime.ui.batch2.Batch2ControlBehaviorTest" time="3.175" />
+  <testcase name="bibleSaveDraftSubmitsBiblePayload" classname="org.dpdns.bnai.anime.ui.batch2.Batch2ControlBehaviorTest" time="2.134" />
+  <testcase name="productionControlTagsExist" classname="org.dpdns.bnai.anime.ui.batch2.Batch2InteractionTest" time="2.732" />
+  <testcase name="settingsTabsSwitchContent" classname="org.dpdns.bnai.anime.ui.batch2.Batch2InteractionTest" time="2.61" />
+  <testcase name="ownerEmergencyStopOpensConfirmation" classname="org.dpdns.bnai.anime.ui.batch2.Batch2InteractionTest" time="3.638" />
+  <testcase name="authEmptySubmitShowsValidationError" classname="org.dpdns.bnai.anime.ui.batch2.Batch2InteractionTest" time="2.158" />
+  <testcase name="studioCreateProjectDialogOpensAndCancels" classname="org.dpdns.bnai.anime.ui.batch2.Batch2InteractionTest" time="3.018" />
+  <testcase name="promptStudioCategoryTabSwitchesPrompt" classname="org.dpdns.bnai.anime.ui.batch2.Batch2InteractionTest" time="2.773" />
+  <testcase name="projectSettingsDialogOpensAndCancels" classname="org.dpdns.bnai.anime.ui.batch2.Batch2InteractionTest" time="3.272" />
+  <testcase name="characterListAddDialogOpens" classname="org.dpdns.bnai.anime.ui.batch2.Batch2InteractionTest" time="3.016" />
+  <testcase name="bottomNavigationOpensEpisodes" classname="org.dpdns.bnai.anime.ui.batch2.Batch2NavigationTest" time="3.069" />
+  <testcase name="parameterizedScenesRouteOpensSceneInspector" classname="org.dpdns.bnai.anime.ui.batch2.Batch2NavigationTest" time="2.981" />
+  <testcase name="backNavigationReturnsToStudio" classname="org.dpdns.bnai.anime.ui.batch2.Batch2NavigationTest" time="2.53" />
+  <testcase name="duplicateAuthDeclarationDoesNotExposeAuthWhenAuthenticated" classname="org.dpdns.bnai.anime.ui.batch2.Batch2NavigationTest" time="2.18" />
+  <testcase name="invalidSceneArgumentFallsBackToEpisodeOne" classname="org.dpdns.bnai.anime.ui.batch2.Batch2NavigationTest" time="2.779" />
+  <testcase name="everyRegisteredRouteOpensItsExpectedScreen" classname="org.dpdns.bnai.anime.ui.batch2.Batch2NavigationTest" time="9.329" />
+  <testcase name="parameterizedProductionRouteOpensProductionScreen" classname="org.dpdns.bnai.anime.ui.batch2.Batch2NavigationTest" time="3.093" />
+  <testcase name="authStartDestinationWithoutToken" classname="org.dpdns.bnai.anime.ui.batch2.Batch2NavigationTest" time="1.772" />
+  <testcase name="drawerOpensAndExposesWorkspaceNavigation" classname="org.dpdns.bnai.anime.ui.batch2.Batch2NavigationTest" time="3.173" />
+  <testcase name="studioStartDestinationWithToken" classname="org.dpdns.bnai.anime.ui.batch2.Batch2NavigationTest" time="1.835" />
+  <testcase name="duplicateStudioDeclarationDoesNotBypassAuthGate" classname="org.dpdns.bnai.anime.ui.batch2.Batch2NavigationTest" time="2.645" />
+  <testcase name="episodePlannerScreenRenders" classname="org.dpdns.bnai.anime.ui.batch2.Batch2ScreenCoverageTest" time="2.268" />
+  <testcase name="quotaDashboardScreenRenders" classname="org.dpdns.bnai.anime.ui.batch2.Batch2ScreenCoverageTest" time="1.941" />
+  <testcase name="jobsMonitorScreenRenders" classname="org.dpdns.bnai.anime.ui.batch2.Batch2ScreenCoverageTest" time="1.802" />
+  <testcase name="projectDetailScreenRenders" classname="org.dpdns.bnai.anime.ui.batch2.Batch2ScreenCoverageTest" time="2.411" />
+  <testcase name="settingsScreenRenders" classname="org.dpdns.bnai.anime.ui.batch2.Batch2ScreenCoverageTest" time="2.66" />
+  <testcase name="auditLogScreenRenders" classname="org.dpdns.bnai.anime.ui.batch2.Batch2ScreenCoverageTest" time="2.12" />
+  <testcase name="notificationScreenRenders" classname="org.dpdns.bnai.anime.ui.batch2.Batch2ScreenCoverageTest" time="2.603" />
+  <testcase name="qcScreenRenders" classname="org.dpdns.bnai.anime.ui.batch2.Batch2ScreenCoverageTest" time="2.042" />
+  <testcase name="continuityScreenRenders" classname="org.dpdns.bnai.anime.ui.batch2.Batch2ScreenCoverageTest" time="1.917" />
+  <testcase name="aiBrainScreenRenders" classname="org.dpdns.bnai.anime.ui.batch2.Batch2ScreenCoverageTest" time="2.13" />
+  <testcase name="analyticsScreenRenders" classname="org.dpdns.bnai.anime.ui.batch2.Batch2ScreenCoverageTest" time="2.0" />
+  <testcase name="sceneDetailScreenRenders" classname="org.dpdns.bnai.anime.ui.batch2.Batch2ScreenCoverageTest" time="1.975" />
+  <testcase name="authScreenRenders" classname="org.dpdns.bnai.anime.ui.batch2.Batch2ScreenCoverageTest" time="1.843" />
+  <testcase name="mediaLibraryScreenRenders" classname="org.dpdns.bnai.anime.ui.batch2.Batch2ScreenCoverageTest" time="2.274" />
+  <testcase name="workflowManagerScreenRenders" classname="org.dpdns.bnai.anime.ui.batch2.Batch2ScreenCoverageTest" time="2.539" />
+  <testcase name="ownerOverviewScreenRenders" classname="org.dpdns.bnai.anime.ui.batch2.Batch2ScreenCoverageTest" time="1.628" />
+  <testcase name="adminQueuesScreenRenders" classname="org.dpdns.bnai.anime.ui.batch2.Batch2ScreenCoverageTest" time="2.315" />
+  <testcase name="databaseScreenRenders" classname="org.dpdns.bnai.anime.ui.batch2.Batch2ScreenCoverageTest" time="2.398" />
+  <testcase name="studioDashboardScreenRenders" classname="org.dpdns.bnai.anime.ui.batch2.Batch2ScreenCoverageTest" time="2.46" />
+  <testcase name="visionAnalysisScreenRenders" classname="org.dpdns.bnai.anime.ui.batch2.Batch2ScreenCoverageTest" time="2.205" />
+  <testcase name="publishScreenRenders" classname="org.dpdns.bnai.anime.ui.batch2.Batch2ScreenCoverageTest" time="1.951" />
+  <testcase name="characterDeepDiveScreenRenders" classname="org.dpdns.bnai.anime.ui.batch2.Batch2ScreenCoverageTest" time="1.906" />
+  <testcase name="productionScreenRenders" classname="org.dpdns.bnai.anime.ui.batch2.Batch2ScreenCoverageTest" time="1.915" />
+  <testcase name="loreExplorerScreenRenders" classname="org.dpdns.bnai.anime.ui.batch2.Batch2ScreenCoverageTest" time="2.429" />
+  <testcase name="promptStudioScreenRenders" classname="org.dpdns.bnai.anime.ui.batch2.Batch2ScreenCoverageTest" time="2.164" />
+  <testcase name="workerManagerScreenRenders" classname="org.dpdns.bnai.anime.ui.batch2.Batch2ScreenCoverageTest" time="2.42" />
+  <testcase name="canonScreenRenders" classname="org.dpdns.bnai.anime.ui.batch2.Batch2ScreenCoverageTest" time="1.651" />
+  <testcase name="reviewInboxScreenRenders" classname="org.dpdns.bnai.anime.ui.batch2.Batch2ScreenCoverageTest" time="1.608" />
+  <testcase name="characterDetailScreenRenders" classname="org.dpdns.bnai.anime.ui.batch2.Batch2ScreenCoverageTest" time="2.323" />
+  <testcase name="quickToolsScreenRenders" classname="org.dpdns.bnai.anime.ui.batch2.Batch2ScreenCoverageTest" time="1.75" />
+  <testcase name="characterListScreenRenders" classname="org.dpdns.bnai.anime.ui.batch2.Batch2ScreenCoverageTest" time="1.978" />
+  <testcase name="bibleScreenRenders" classname="org.dpdns.bnai.anime.ui.batch2.Batch2ScreenCoverageTest" time="1.723" />
+  <testcase name="budgetLedgerScreenRenders" classname="org.dpdns.bnai.anime.ui.batch2.Batch2ScreenCoverageTest" time="2.087" />
+  <testcase name="projectSelectorExposesNavigationTags" classname="org.dpdns.bnai.anime.ui.batch2.Batch2SharedComponentTest" time="2.244" />
+  <testcase name="confirmationDialogCancelInvokesCallback" classname="org.dpdns.bnai.anime.ui.batch2.Batch2SharedComponentTest" time="3.011" />
+  <testcase name="successStateRendersContent" classname="org.dpdns.bnai.anime.ui.batch2.Batch2SharedComponentTest" time="1.62" />
+  <testcase name="loadingStateExposesLoadingTag" classname="org.dpdns.bnai.anime.ui.batch2.Batch2SharedComponentTest" time="1.895" />
+  <testcase name="confirmationDialogConfirmInvokesCallback" classname="org.dpdns.bnai.anime.ui.batch2.Batch2SharedComponentTest" time="1.974" />
+  <testcase name="retryControlHasAccessibleDescription" classname="org.dpdns.bnai.anime.ui.batch2.Batch2SharedComponentTest" time="1.124" />
+  <testcase name="unsavedDialogExposesBothDecisions" classname="org.dpdns.bnai.anime.ui.batch2.Batch2SharedComponentTest" time="2.594" />
+  <testcase name="retryActionInvokesCallback" classname="org.dpdns.bnai.anime.ui.batch2.Batch2SharedComponentTest" time="2.38" />
+  <testcase name="emptyStateExposesEmptyAndRetry" classname="org.dpdns.bnai.anime.ui.batch2.Batch2SharedComponentTest" time="1.758" />
+  <testcase name="errorStateExposesErrorAndRetry" classname="org.dpdns.bnai.anime.ui.batch2.Batch2SharedComponentTest" time="2.379" />
+</testsuite>

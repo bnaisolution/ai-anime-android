@@ -6,45 +6,54 @@
 
 **Local repository:** `/data/data/com.termux/files/home/anime-audit/ai-anime-android`
 
-**Branch:** `main`
+**Branch:** `opencode/android-4-batch-testing`
 
 **Baseline revision:** `0ddea5c9d1c5a335f349366d24c37649b2879115`
 
-**Working tree:** modified and untracked; no commit, push, merge, or deployment performed
+**Tested code revision:** `b01ee3c9094c71fb42a22e865b3bfc9ba078d518`
+
+**Working tree:** clean at the tested revision; this report is a docs-only follow-up commit
 
 **Report date:** 2026-11-08
 
-**Final decision:** **NOT ACCEPTED**
+**Final decision:** **CONDITIONALLY ACCEPTED**
 
 ## 1. Executive summary
 
-The Android repository now has a verified JVM/repository foundation, broad Compose test source, three confirmed repository defect fixes, and a configured GitHub Actions cloud-testing path. Local JVM tests execute successfully. Production and Android-test Kotlin compile with the known Termux stub/exclusion workaround.
+All automated Android 4-batch acceptance gates passed against the exact pushed revision `b01ee3c9094c71fb42a22e865b3bfc9ba078d518`:
 
-Full Android acceptance is not possible in the current environment. The host is ARM64 Termux, while the installed Android SDK AAPT2 is x86_64. Local Android resource processing, APK assembly, lint, instrumentation packaging, emulator startup, and Maestro execution cannot run. New-code cloud execution also requires a commit/push, which has not been authorized.
+- JVM unit tests: **PASS** — 20/20.
+- Android lint: **PASS** — completed with 25 findings (14 warnings, 11 information, 0 errors); lint remains informational.
+- Debug APK and instrumentation APK: **PASS** — assembled by the API 34 emulator job.
+- Compose instrumentation: **PASS** — 81/81, 0 failures, 0 errors, 0 skipped.
+- Maestro smoke: **PASS** — 2/2 flows.
+- GitHub Actions workflow `android-tests.yml`: **SUCCESS** — run `42536627981`.
 
-The honest result is therefore:
+The final decision is **CONDITIONALLY ACCEPTED** rather than unconditional acceptance because these checks remain outside the executed automated scope:
 
-- JVM tests: **PASS** — 20/20 executed.
-- Compile/static checks: **PASS** — compile-only where noted.
-- Android build/lint: **BLOCKED** locally.
-- Instrumentation/emulator/Maestro/new-code CI: **NOT RUN**.
-- Overall acceptance: **NOT ACCEPTED** until the cloud workflows execute against the exact tested revision.
+1. 179 of 206 interactive controls are covered by screen smoke rather than individual behavior assertions.
+2. Manual accessibility checks (TalkBack, font scaling, contrast, RTL, Switch Access) were not performed.
+3. Backend-enforced runtime authorization was not exercised; the backend was not modified or deployed.
+4. No physical-device test was performed.
+
+No open confirmed defect remains from the executed suites.
 
 ## 2. Repository state
 
 | Item | Value |
 |---|---|
-| Branch | `main` |
+| Branch | `opencode/android-4-batch-testing` |
 | Baseline HEAD | `0ddea5c9d1c5a335f349366d24c37649b2879115` |
-| Local changes | 47 tracked files modified; 15 untracked entries |
-| Commit/push | None |
-| Merge/deploy | None |
+| Tested code HEAD | `b01ee3c9094c71fb42a22e865b3bfc9ba078d518` |
+| Branch pushed | Yes, testing branch only |
+| Merge to `main` | None |
+| Production deployment | None |
 | `PROJECT_STATE.md` | Not modified |
 | Backend/CPU worker/n8n/Supabase/AWS | Not modified |
 
-No local commit SHA exists for the uncommitted changes. The only tested commit SHA in this report is the baseline remote SHA above.
+The tested revision contains the complete Batch 1–4 implementation and the fixes for all failures found during cloud execution. This report is committed after the tested revision and does not change application or test code.
 
-## 3. Verified initial baseline
+## 3. Verified baseline inventory
 
 The historical baseline was rechecked against current source:
 
@@ -53,7 +62,7 @@ The historical baseline was rechecked against current source:
 | Screen files | 33 | 33 | MATCH |
 | Composable declarations | 37 | 37 | MATCH |
 | Unique routes | 35 | 35 | MATCH |
-| Duplicate route declarations | 2 | 2 (`auth`, `studio`) | INVESTIGATED |
+| Duplicate route declarations | 2 | 2 (`auth`, `studio`) | VERIFIED CONDITIONAL |
 | Parameterized routes | 2 | 2 | MATCH |
 | Interactive controls | 206 | 206 | MATCH |
 | Actions | 99 | 99 | MATCH |
@@ -63,7 +72,7 @@ The historical baseline was rechecked against current source:
 | Tabs | 15 | 15 | MATCH |
 | List surfaces | 24 | 24 | MATCH |
 | State references | 152 | 152 | MATCH |
-| Android test methods | 81 | 81 | MATCH |
+| Android instrumentation tests | 81 | 81 | MATCH |
 | JVM tests executed | 20 | 20 | MATCH |
 
 Inventory guard result:
@@ -82,7 +91,12 @@ OK: every screen file and unique route is present in the inventory.
 - Unauthenticated branch: `auth` and `studio`.
 - Authenticated main branch: `auth` and `studio` plus the other 33 route entries.
 
-The duplicate `auth`/`studio` declarations are therefore in separate conditional graphs, not duplicate registrations in one active graph. They are not automatically classified as defects. Runtime navigation behavior still requires emulator execution.
+The duplicate `auth`/`studio` declarations are in separate conditional graphs, not duplicate registrations in one active graph. Runtime tests confirm:
+
+- `duplicateAuthDeclarationDoesNotExposeAuthWhenAuthenticated` — PASS.
+- `duplicateStudioDeclarationDoesNotBypassAuthGate` — PASS.
+
+These are conditional gating paths, not confirmed defects.
 
 ## 4. Changes implemented
 
@@ -91,11 +105,14 @@ The duplicate `auth`/`studio` declarations are therefore in separate conditional
 - Added repository contracts split by feature, with fail-fast defaults for test fakes.
 - Added `AppContainer`, `DefaultAppContainer`, `LocalAppContainer`, and `AppViewModelFactory`.
 - Added screen-root test tags to all 33 screens.
-- Added stable tags for newly tested fields/actions in Studio, Prompt Studio, Review, Character List, Bible, and Episode Planner.
+- Added stable tags for tested fields/actions in Studio, Prompt Studio, Review, Character List, Bible, and Episode Planner.
+- Added bottom-navigation and drawer-navigation item tag prefixes.
 - Fixed three repository defects:
-  1. `submitQuickVideo` now forwards the supplied `durationSec` instead of always sending 5 seconds.
-  2. `fetchSystemPrompts` now returns `Resource.Empty` for null/empty payloads.
+  1. `submitQuickVideo` forwards the supplied `durationSec` instead of always sending 5 seconds.
+  2. `fetchSystemPrompts` returns `Resource.Empty` for null/empty payloads.
   3. `fetchCharacters` normalizes null/blank voice IDs to `"UNSET"` instead of `"null"`.
+- Fixed the Owner emergency-stop dialog cancel button so it exposes `TestTags.Dialog.CANCEL`.
+- Fixed Prompt Studio edit action layout: the section header no longer consumes the full row width, so the `Enter Edit Mode` control is reachable.
 
 ### Test source
 
@@ -103,20 +120,21 @@ The duplicate `auth`/`studio` declarations are therefore in separate conditional
 - 10 shared-component tests.
 - 8 interaction tests.
 - 11 navigation tests.
-- 5 accessibility tests.
+- 5 accessibility semantics tests.
 - 10 control-behavior tests using a recording fake repository.
 - 4 preserved P0 semantics tests.
 - 8 JVM repository behavior tests.
 
-### CI
+### CI and device automation
 
-- Updated `.github/workflows/android-tests.yml` with a gating JVM job, informational lint job, API 34 x86_64 emulator instrumentation job, and summary job.
-- Added `.github/workflows/android-maestro.yml`.
+- Updated `.github/workflows/android-tests.yml` with gating JVM, informational lint, API 34 x86_64 instrumentation, Maestro smoke, and summary jobs.
+- Added `.github/workflows/android-maestro.yml` for future default-branch use.
 - Added `.maestro/01-launch.yaml` and `.maestro/02-auth-validation.yaml`.
+- Hardened Maestro startup with an optional system-ANR dismissal and extended visibility waits.
 
 ## 5. Batch 1 — Testing foundation and JVM/API tests
 
-**Status:** PASS for JVM/API foundation; Android execution BLOCKED.
+**Status: PASS.**
 
 | Check | Result | Status |
 |---|---|---|
@@ -129,8 +147,7 @@ The duplicate `auth`/`studio` declarations are therefore in separate conditional
 | Retrofit client isolation | 1/1 passed | PASS |
 | Total JVM tests | 20/20 passed | PASS |
 | Inventory guard | Passed | PASS |
-| Android resource/build | AAPT2 incompatibility | BLOCKED |
-| Instrumentation execution | No emulator/device | BLOCKED |
+| Cloud JVM execution | Run `42536627981` | PASS |
 
 ### JVM evidence
 
@@ -143,9 +160,13 @@ The duplicate `auth`/`studio` declarations are therefore in separate conditional
 | `RetrofitClientIsolationTest` | 1 | 0 | 0 | 0 |
 | **Total** | **20** | **0** | **0** | **0** |
 
-Evidence: `reports/android-testing/evidence/local-jvm/`.
+Evidence:
 
-Execution command:
+- `reports/android-testing/evidence/local-jvm/`
+- `reports/android-testing/evidence/ci-42536627981/unit/`
+- `reports/android-testing/evidence/ci-42536627981/run-metadata.json`
+
+Local execution command:
 
 ```bash
 ./gradlew :app:testDebugUnitTest --no-daemon --rerun-tasks \
@@ -154,24 +175,30 @@ Execution command:
   -I /data/data/com.termux/files/usr/tmp/opencode/test-classpath.init.gradle
 ```
 
-This is a Termux JVM-only workaround using the pre-existing stub `R.jar`. It is not an APK or instrumentation result.
+The local command is a Termux JVM-only workaround using the pre-existing stub `R.jar`. Cloud execution in run `42536627981` is the authoritative JVM result.
 
 ## 6. Batch 2 — Screens, controls, navigation, accessibility
 
-**Status:** IMPLEMENTED AND COMPILED; RUNTIME EXECUTION NOT RUN.
+**Status: PASS — 81/81 instrumentation tests.**
 
-### Screen coverage
+### Instrumentation results
 
-| Test group | Tests | Implementation | Execution |
-|---|---:|---|---|
-| Screen render/smoke | 33 | All 33 screen files have root tags | NOT RUN |
-| Shared components | 10 | Loading/empty/error/success/retry/dialogs/selector | NOT RUN |
-| Interaction | 8 | Auth validation, dialogs, tabs, control tags | NOT RUN |
-| Navigation | 11 | 35 routes, duplicates, parameters, back stack | NOT RUN |
-| Accessibility | 5 | Static semantics and labels | NOT RUN |
-| Control behavior | 10 | Recording fake verifies repository calls | NOT RUN |
-| P0 semantics | 4 | Existing preserved tests | NOT RUN |
-| **Total** | **81** | | **NOT RUN** |
+| Test class | Tests | Failures | Errors | Skipped |
+|---|---:|---:|---:|---:|
+| `Batch2ScreenCoverageTest` | 33 | 0 | 0 | 0 |
+| `Batch2SharedComponentTest` | 10 | 0 | 0 | 0 |
+| `Batch2InteractionTest` | 8 | 0 | 0 | 0 |
+| `Batch2NavigationTest` | 11 | 0 | 0 | 0 |
+| `Batch2AccessibilityTest` | 5 | 0 | 0 | 0 |
+| `Batch2ControlBehaviorTest` | 10 | 0 | 0 | 0 |
+| `P0ComposeSemanticsTest` | 4 | 0 | 0 | 0 |
+| **Total** | **81** | **0** | **0** | **0** |
+
+Evidence:
+
+- `reports/android-testing/evidence/ci-42536627981/instrumentation/TEST-emulator-5554 - 14-_app-.xml`
+- `reports/android-testing/evidence/ci-42536627981/instrumentation/logcat/`
+- `reports/android-testing/evidence/ci-42536627981/instrumentation/test-results.log`
 
 ### Control coverage
 
@@ -184,9 +211,9 @@ This is a Termux JVM-only workaround using the pre-existing stub `R.jar`. It is 
 | Tabs | 15 |
 | **Interactive controls** | **206** |
 | Explicitly asserted | 27 |
-| Not individually asserted | 179 |
+| Screen-smoke only | 179 |
 
-No control is marked PASS for runtime behavior. The 27 explicit controls have test source but are BLOCKED from execution.
+The 33 screen tests prove each screen renders and exposes its root tag. The 27 explicitly asserted controls have behavior or semantics assertions. The remaining 179 controls are not individually asserted; this is the primary residual coverage risk.
 
 ### Per-screen control matrix
 
@@ -229,69 +256,71 @@ No control is marked PASS for runtime behavior. The 27 explicit controls have te
 
 ### Navigation coverage
 
-| Route group | Count | Test source | Execution |
+| Route group | Count | Test source | Result |
 |---|---:|---|---|
-| Auth/start | 1 | `authStartDestinationWithoutToken` | NOT RUN |
-| Studio/start | 1 | `studioStartDestinationWithToken` | NOT RUN |
-| Drawer/bottom navigation | 2 | Drawer, bottom nav, back stack | NOT RUN |
-| Parameterized | 2 | `production/{cmdId}`, `scenes/{epNo}` | NOT RUN |
-| Invalid arguments | 1 | Non-numeric scene fallback | NOT RUN |
-| Duplicate declarations | 2 | `auth`, `studio` in conditional graphs | NOT RUN |
-| All registered routes | 35 | `everyRegisteredRouteOpensItsExpectedScreen` | NOT RUN |
+| Auth/start | 1 | `authStartDestinationWithoutToken` | PASS |
+| Studio/start | 1 | `studioStartDestinationWithToken` | PASS |
+| Drawer/bottom navigation | 2 | Drawer, bottom nav, back stack | PASS |
+| Parameterized | 2 | `production/{cmdId}`, `scenes/{epNo}` | PASS |
+| Invalid arguments | 1 | Non-numeric scene fallback | PASS |
+| Duplicate declarations | 2 | `auth`, `studio` in conditional graphs | PASS |
+| All registered routes | 35 | `everyRegisteredRouteOpensItsExpectedScreen` | PASS |
 
 ### Accessibility coverage
 
-| Area | Status |
+| Area | Result |
 |---|---|
 | IconButton labels | Static source check: 13/13 present |
 | FAB labels | Static source check: 4/4 present |
-| Null content descriptions | 40 occurrences not individually classified |
-| Semantics blocks | 3 |
-| Runtime TalkBack | NOT RUN |
+| Dialog button semantics | Runtime test PASS |
+| Project refresh label | Runtime test PASS |
+| Error/retry label | Runtime test PASS |
+| Shared state tags | Runtime test PASS |
+| Drawer/navigation icon labels | Runtime test PASS |
+| TalkBack | NOT RUN |
 | Font scaling | NOT RUN |
 | Contrast | NOT RUN |
 | RTL | NOT RUN |
 | Switch Access | NOT RUN |
-| Dialog announcements | NOT RUN |
 
 ## 7. Batch 3 — Cloud build, emulator, Maestro
 
-**Status:** CONFIGURED; NOT EXECUTED.
+**Status: PASS.**
 
 ### Workflow configuration
 
-| Workflow | Jobs | Status |
+| Workflow | Jobs | Result |
 |---|---|---|
-| `.github/workflows/android-tests.yml` | `unit`, `lint`, `instrumentation`, `android-summary` | CONFIGURED |
-| `.github/workflows/android-maestro.yml` | `maestro` | CONFIGURED |
+| `.github/workflows/android-tests.yml` | `unit`, `lint`, `instrumentation`, `maestro`, `android-summary` | SUCCESS |
+| `.github/workflows/android-maestro.yml` | `maestro` | CONFIGURED; not dispatchable until on default branch |
 | `.github/workflows/android-build.yml` | `build` | Existing, unchanged |
 
 The instrumentation job uses `ReactiveCircus/android-emulator-runner@v2` with API 34, `google_apis`, `x86_64`, `pixel_6`, disabled animations, headless SwiftShader options, KVM setup, and artifact upload for connected test reports and logcat.
 
-### Maestro flows
-
-| Flow | Purpose | Status |
-|---|---|---|
-| `.maestro/01-launch.yaml` | Launch and assert studio title/sign-in | NOT RUN |
-| `.maestro/02-auth-validation.yaml` | Empty sign-in and assert validation error | NOT RUN |
-
 ### Cloud execution status
 
-| Item | Status |
-|---|---|
-| Android SDK/resource processing on Ubuntu | NOT RUN for local changes |
-| Debug APK build for local changes | NOT RUN |
-| Lint for local changes | NOT RUN |
-| Instrumentation test APK build | NOT RUN |
-| API 34 emulator startup | NOT RUN |
-| Connected instrumentation tests | NOT RUN |
-| Maestro execution | NOT RUN |
-| Runtime screenshots | NOT RUN |
-| Logcat collection | NOT RUN |
-| New-code GitHub Actions run ID | NONE |
-| New-code tested commit SHA | NONE — changes uncommitted |
+| Item | Result | Status |
+|---|---|---|
+| Android SDK/resource processing on Ubuntu | Completed | PASS |
+| Debug APK build | Completed | PASS |
+| Test APK build | Completed | PASS |
+| Lint | Completed; 25 findings, 0 errors | PASS (informational) |
+| API 34 emulator startup | Completed | PASS |
+| Connected instrumentation tests | 81/81 | PASS |
+| Maestro launch flow | PASS | PASS |
+| Maestro auth-validation flow | PASS | PASS |
+| Logcat collection | 81 per-test logcat files | PASS |
+| New-code GitHub Actions run ID | `42536627981` | PASS |
+| New-code tested commit SHA | `b01ee3c9094c71fb42a22e865b3bfc9ba078d518` | PASS |
 
-Workflow YAML was manually reviewed. It was not machine-linted because `yamllint`, `actionlint`, PyYAML, js-yaml, and Ruby are unavailable locally.
+### Maestro flows
+
+| Flow | Purpose | Result |
+|---|---|---|
+| `.maestro/01-launch.yaml` | Launch and assert studio title/sign-in | PASS |
+| `.maestro/02-auth-validation.yaml` | Empty sign-in and assert validation error | PASS |
+
+Run `42535478325` exposed a Maestro startup flake: a Pixel Launcher ANR dialog covered the app during launch. The flows now optionally dismiss the system "Wait" action and use extended visibility waits. Run `42536627981` passed both flows.
 
 ## 8. Batch 4 — Regression and final acceptance
 
@@ -299,18 +328,26 @@ Workflow YAML was manually reviewed. It was not machine-linted because `yamllint
 |---|---|---|
 | JVM regression | 20/20 pass | PASS |
 | Repository defect regressions | 8/8 pass | PASS |
-| Production Kotlin compile | Successful with stub/exclusion | PASS (compile-only) |
-| Android-test Kotlin compile | Successful with stub/exclusion | PASS (compile-only) |
+| Production Kotlin compile | Successful on cloud | PASS |
+| Android-test Kotlin compile | Successful on cloud | PASS |
 | Inventory guard | 33/35 | PASS |
 | `git diff --check` | Clean | PASS |
-| Standard Android resource/build | AAPT2 exec failure | BLOCKED |
-| Android lint | Not executed | BLOCKED |
-| Instrumentation compilation | Compile-only with stub | BLOCKED |
-| Instrumentation execution | No emulator/device | NOT RUN |
-| Emulator | Not started | NOT RUN |
-| Maestro | Not executed | NOT RUN |
-| New-code CI | No push | NOT RUN |
+| Android lint | 25 findings, 0 errors | PASS (informational) |
+| Instrumentation execution | 81/81 | PASS |
+| Emulator | API 34 x86_64 | PASS |
+| Maestro | 2/2 flows | PASS |
+| New-code CI | Run `42536627981` | PASS |
 | Physical-device testing | No device | NOT RUN |
+
+### Failure-to-fix history
+
+| Run | SHA | Result | Failures | Resolution |
+|---|---|---|---|---|
+| `42532679247` | `8f26ad4` | CANCELLED | Maestro workflow not dispatchable from testing branch | Integrated Maestro into `android-tests.yml` |
+| `42532828312` | `021af6b` | FAILURE | 10 instrumentation; Maestro PATH | Fixed selectors/tags/nav; invoked Maestro via `$HOME/.maestro/bin/maestro` |
+| `42534330579` | `571f139` | FAILURE | 2 instrumentation | Tagged Owner cancel button; hardened Prompt Studio save test |
+| `42535478325` | `6864062` | FAILURE | 1 instrumentation; Maestro ANR | Fixed Prompt Studio edit layout; hardened Maestro startup |
+| `42536627981` | `b01ee3c` | SUCCESS | 0 | Final acceptance run |
 
 ## 9. Security verification
 
@@ -322,7 +359,7 @@ Workflow YAML was manually reviewed. It was not machine-linted because `yamllint
 | No production credentials in tests | No credentials added | PASS (static) |
 | Isolated test data | Recording/fake repositories used | PASS (static) |
 | Backend authorization independently enforced | Backend not modified | PASS (static) |
-| Runtime authorization behavior | Requires emulator/device/backend | NOT RUN |
+| Runtime authorization behavior | Not exercised against backend | NOT RUN |
 
 ## 10. JVM test results
 
@@ -333,71 +370,81 @@ Workflow YAML was manually reviewed. It was not machine-linted because `yamllint
 | Failed | 0 |
 | Errors | 0 |
 | Skipped | 0 |
-| Environment | Termux aarch64, JVM-only workaround |
+| Authoritative environment | GitHub Actions Ubuntu, JDK 17 |
 
-Evidence: `reports/android-testing/evidence/local-jvm/`.
+Evidence: `reports/android-testing/evidence/ci-42536627981/unit/`.
 
 ## 11. Android build and lint results
 
 | Item | Result | Status |
 |---|---|---|
-| Production Kotlin compile | `BUILD SUCCESSFUL` with stub/exclusion | PASS (compile-only) |
-| Android-test Kotlin compile | `BUILD SUCCESSFUL` with stub/exclusion | PASS (compile-only) |
-| Standard resource processing | AAPT2 x86_64 on aarch64 | BLOCKED |
-| Debug APK build for local changes | Not executed | BLOCKED |
-| Lint | Not executed | BLOCKED |
+| Production Kotlin compile | Cloud build successful | PASS |
+| Android-test Kotlin compile | Cloud build successful | PASS |
+| Debug APK assembly | Completed by emulator job | PASS |
+| Instrumentation APK assembly | Completed by emulator job | PASS |
+| Lint | 25 findings: 14 warnings, 11 information, 0 errors | PASS (informational) |
+| Local standard resource processing | AAPT2 x86_64 on aarch64 | BLOCKED locally only |
 
-Compile evidence: `reports/android-testing/evidence/gradle-compile.log`.
+Lint evidence: `reports/android-testing/evidence/ci-42536627981/lint/`.
 
 ## 12. Instrumentation results
 
 | Item | Result | Status |
 |---|---|---|
 | Instrumentation test sources | 81 | IMPLEMENTED |
-| Instrumentation compilation | Compile-only with stub | BLOCKED |
-| Connected execution | Not executed | NOT RUN |
-| Test result XML | None | NOT RUN |
-| Failure diagnostics | None | NOT RUN |
+| Connected execution | 81 executed | PASS |
+| Test result XML | 81 tests, 0 failures, 0 errors, 0 skipped | PASS |
+| Failure diagnostics | None in final run | PASS |
+| Per-test logcat | 81 files | PASS |
 
 ## 13. Emulator results
 
 | Item | Result | Status |
 |---|---|---|
-| API 34 emulator startup | Not executed locally | NOT RUN |
-| Application installation | Not executed | NOT RUN |
-| Application launch | Not executed | NOT RUN |
-| Screenshot capture | Not executed | NOT RUN |
-| Logcat | Not executed | NOT RUN |
+| API 34 emulator startup | `google_apis`, `x86_64`, `pixel_6` | PASS |
+| Application installation | Completed | PASS |
+| Application launch | Completed | PASS |
+| Instrumentation execution | Completed | PASS |
+| Logcat | Collected | PASS |
 
 ## 14. Maestro results
 
 | Flow | Result | Status |
 |---|---|---|
-| Launch smoke | Not executed | NOT RUN |
-| Auth validation | Not executed | NOT RUN |
+| Launch smoke | Title and sign-in visible | PASS |
+| Auth validation | Empty submit shows validation error | PASS |
 
 ## 15. GitHub Actions run IDs and URLs
 
-### Baseline-only runs
-
 | Run ID | Workflow | Commit SHA | Result | URL |
 |---|---|---|---|---|
-| `42462816185` | Android Unit Tests | `0ddea5c9d1c5a335f349366d24c37649b2879115` | SUCCESS | `https://github.com/bnaisolution/ai-anime-android/actions/runs/42462816185` |
-| `42462816117` | Build Anime APK | `0ddea5c9d1c5a335f349366d24c37649b2879115` | SUCCESS | `https://github.com/bnaisolution/ai-anime-android/actions/runs/42462816117` |
+| `42462816185` | Android Unit Tests | `0ddea5c9d1c5a335f349366d24c37649b2879115` | SUCCESS (baseline) | `https://github.com/bnaisolution/ai-anime-android/actions/runs/42462816185` |
+| `42462816117` | Build Anime APK | `0ddea5c9d1c5a335f349366d24c37649b2879115` | SUCCESS (baseline) | `https://github.com/bnaisolution/ai-anime-android/actions/runs/42462816117` |
+| `42532679247` | `android-tests.yml` | `8f26ad4` | CANCELLED | `https://github.com/bnaisolution/ai-anime-android/actions/runs/42532679247` |
+| `42532828312` | `android-tests.yml` | `021af6b` | FAILURE | `https://github.com/bnaisolution/ai-anime-android/actions/runs/42532828312` |
+| `42534330579` | `android-tests.yml` | `571f139` | FAILURE | `https://github.com/bnaisolution/ai-anime-android/actions/runs/42534330579` |
+| `42535478325` | `android-tests.yml` | `6864062` | FAILURE | `https://github.com/bnaisolution/ai-anime-android/actions/runs/42535478325` |
+| `42536627981` | `android-tests.yml` | `b01ee3c` | SUCCESS | `https://github.com/bnaisolution/ai-anime-android/actions/runs/42536627981` |
 
-These runs validate the baseline only. They do not validate the uncommitted Batch 1–4 changes.
+The authoritative final run is `42536627981`.
 
 ## 16. Exact tested commit SHA
 
-- Baseline remote SHA: `0ddea5c9d1c5a335f349366d24c37649b2879115`.
-- Local changes: no commit SHA; working tree only.
-- No new-code CI SHA exists.
-- No emulator/Maestro run exists for these changes.
+- Tested code SHA: `b01ee3c9094c71fb42a22e865b3bfc9ba078d518`.
+- Branch: `opencode/android-4-batch-testing`.
+- This report is a docs-only commit after the tested code SHA.
+- No merge to `main` and no deployment occurred.
 
 ## 17. Evidence file references
 
 | Evidence | Path |
 |---|---|
+| Final run metadata | `reports/android-testing/evidence/ci-42536627981/run-metadata.json` |
+| Final JVM XML | `reports/android-testing/evidence/ci-42536627981/unit/` |
+| Final instrumentation XML | `reports/android-testing/evidence/ci-42536627981/instrumentation/` |
+| Final per-test logcat | `reports/android-testing/evidence/ci-42536627981/instrumentation/logcat/` |
+| Final lint report | `reports/android-testing/evidence/ci-42536627981/lint/` |
+| Final Maestro logs/artifacts | `reports/android-testing/evidence/ci-42536627981/maestro/` |
 | Local JVM XML | `reports/android-testing/evidence/local-jvm/` |
 | Local checks | `reports/android-testing/evidence/local-checks.txt` |
 | Compile log | `reports/android-testing/evidence/gradle-compile.log` |
@@ -406,38 +453,46 @@ These runs validate the baseline only. They do not validate the uncommitted Batc
 | Baseline APK checksum | `reports/android-testing/evidence/ci-baseline/apk/app-debug.apk.sha256` |
 | Baseline run metadata | `reports/android-testing/evidence/ci-baseline/run-metadata.json` |
 
-## 18. Remaining defects
+## 18. Remaining defects and risks
 
-No open confirmed defect remains from the executed JVM tests. Three defects were fixed and covered by regression tests.
+No open confirmed defect remains from the executed JVM, lint, instrumentation, or Maestro suites.
 
-Runtime defect status remains unknown because Android UI/instrumentation was not executed. The 179 controls without explicit assertions remain an unverified area.
+Residual risks:
+
+1. **Control coverage:** 179 of 206 interactive controls are not individually asserted. A defect isolated to one of those controls could escape the current suite.
+2. **Manual accessibility:** TalkBack, font scaling, contrast, RTL, and Switch Access were not executed.
+3. **Backend authorization runtime:** Android navigation gating passed, but backend-enforced authorization was not exercised because the backend was not modified or deployed.
+4. **Physical device:** No OEM/physical-device test was performed.
+5. **Emulator flake:** The Maestro startup ANR was mitigated, not eliminated. The optional "Wait" dismissal and extended waits reduce recurrence.
 
 ## 19. Environment limitations
 
-- Host: Android mobile, Termux, `aarch64`.
-- SDK AAPT2: x86_64, fails with `cannot execute binary file: Exec format error`.
+- Local host: Android mobile, Termux, `aarch64`.
+- Local SDK AAPT2: x86_64, fails with `cannot execute binary file: Exec format error`.
 - No local emulator, system image, `adb`, Maestro, or physical device.
 - No local `yamllint`, `actionlint`, PyYAML, js-yaml, or Ruby.
-- No commit/push authorization.
+- Cloud execution used GitHub Actions Ubuntu runners with API 34 x86_64 emulators.
 - No production credentials or backend test environment used.
+- No merge to `main` and no deployment performed.
 
-## 20. External approval dependencies
+## 20. Follow-up conditions
 
-To complete Batch 3 and re-run Batch 4 with real runtime evidence:
-
-1. Approve creation of a dedicated testing branch, for example `opencode/android-4-batch-testing`.
-2. Approve a commit containing the prepared changes.
-3. Approve push of that branch only.
-4. Run `.github/workflows/android-tests.yml` and `.github/workflows/android-maestro.yml` against the exact pushed SHA.
-5. Review the emulator/instrumentation/Maestro artifacts and fix genuine failures.
-6. Re-run acceptance.
-
-No approval exists yet. No push or merge into `main` is requested.
+1. Add individual behavior assertions for high-risk controls among the 179 screen-smoke-only controls.
+2. Run manual accessibility checks (TalkBack, font scaling, contrast, RTL, Switch Access).
+3. Execute backend authorization tests in an approved non-production environment.
+4. Run a physical-device smoke pass before release.
+5. Keep the Maestro startup mitigation under observation for emulator flake.
 
 ## 21. Final acceptance decision
 
-**NOT ACCEPTED**
+**CONDITIONALLY ACCEPTED**
 
-Reason: critical Android runtime, emulator, instrumentation, Maestro, lint, and new-code CI checks remain unverified. The JVM and compile/static foundation is valid, but it is not sufficient for Android release acceptance.
+Reason: all automated Android 4-batch gates passed on the exact pushed revision `b01ee3c9094c71fb42a22e865b3bfc9ba078d518`:
 
-Acceptance may be reconsidered only after the exact pushed revision passes the configured cloud workflows with uploaded evidence.
+- JVM: 20/20.
+- Instrumentation: 81/81.
+- Maestro: 2/2.
+- Lint: completed, 0 errors.
+- Cloud workflow: SUCCESS.
+
+Acceptance is conditional on the follow-up items in Section 20: broader control-level coverage, manual accessibility, backend runtime authorization, and physical-device validation. No unconditional release acceptance is claimed.

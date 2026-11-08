@@ -1,0 +1,83 @@
+11-08 23:52:50.301  6313  6334 I TestRunner: started: bibleSaveDraftSubmitsBiblePayload(org.dpdns.bnai.anime.ui.batch2.Batch2ControlBehaviorTest)
+11-08 23:52:50.303  6362  6362 W WindowOnBackDispatcher: sendCancelIfRunning: isInProgress=falsecallback=android.view.ViewRootImpl$$ExternalSyntheticLambda17@a2d887
+11-08 23:52:50.304   521  1091 W InputManager-JNI: Input channel object '14724ee org.dpdns.bnai.anime.test/androidx.test.core.app.InstrumentationActivityInvoker$EmptyActivity (client)' was disposed without first being removed with the input manager!
+11-08 23:52:50.318  6313  6334 D IdlingRegistry: Registering idling resources: [androidx.compose.ui.test.junit4.EspressoLink@130783d]
+11-08 23:52:50.324  6313  6334 W Settings: Setting always_finish_activities has moved from android.provider.Settings.System to android.provider.Settings.Global, returning read-only value.
+11-08 23:52:50.343   837   880 D SplashScreenView: Build android.window.SplashScreenView{54488dd V.E...... ......ID 0,0-0,0}
+11-08 23:52:50.343   837   880 D SplashScreenView: Icon: view: null drawable: null size: 0
+11-08 23:52:50.343   837   880 D SplashScreenView: Branding: view: android.view.View{7cfcc52 G.ED..... ......I. 0,0-0,0 #10204ef android:id/splashscreen_branding_view} drawable: null size w: 0 h: 0
+11-08 23:52:50.363  2757  4036 I DialerOmtpVvmCarrierConfigHelper: com.android.voicemail.impl.OmtpVvmCarrierConfigHelper.handleEvent:527 OmtpEvent:CONFIG_STATUS_SMS_TIME_OUT PhoneAccountHandle: [ComponentName: com.android.phone/com.android.services.telephony.TelephonyConnectionService subId: 1] [CONTEXT enable_persistent_logger=true ]
+11-08 23:52:50.366   402   402 I BpBinder: onLastStrongRef automatically unlinking death recipients:
+11-08 23:52:50.454  2757  2757 I DialerRetryPolicy: com.android.voicemail.impl.scheduling.RetryPolicy.onCompleted:106 Retry limit for com.android.voicemail.impl.ActivationTask@9212188 reached [CONTEXT enable_persistent_logger=true ]
+11-08 23:52:50.454  2757  2757 I DialerRetryPolicy: com.android.voicemail.impl.scheduling.RetryPolicy.onCompleted:108 committing deferred status [CONTEXT enable_persistent_logger=true ]
+11-08 23:52:50.461   521   521 W InputManager-JNI: Input channel object '58bae6a Toast (client)' was disposed without first being removed with the input manager!
+11-08 23:52:50.470  6313  6313 D LifecycleMonitor: Lifecycle status change: androidx.activity.ComponentActivity@6a63871 in: PRE_ON_CREATE
+11-08 23:52:50.470  6313  6313 V ActivityScenario: Activity lifecycle changed event received but ignored because the reported transition was not ON_CREATE while the last known transition was PRE_ON_CREATE
+11-08 23:52:50.484  6313  6313 D LifecycleMonitor: Lifecycle status change: androidx.activity.ComponentActivity@6a63871 in: CREATED
+11-08 23:52:50.494  6313  6313 V ActivityScenario: Update currentActivityStage to CREATED, currentActivity=androidx.activity.ComponentActivity@6a63871
+11-08 23:52:50.496  6313  6313 D LifecycleMonitor: Lifecycle status change: androidx.activity.ComponentActivity@6a63871 in: STARTED
+11-08 23:52:50.506  6313  6313 V ActivityScenario: Update currentActivityStage to STARTED, currentActivity=androidx.activity.ComponentActivity@6a63871
+11-08 23:52:50.508  6313  6313 D LifecycleMonitor: Lifecycle status change: androidx.activity.ComponentActivity@6a63871 in: RESUMED
+11-08 23:52:50.508  6313  6313 V ActivityScenario: Update currentActivityStage to RESUMED, currentActivity=androidx.activity.ComponentActivity@6a63871
+11-08 23:52:50.511  2757  6646 I DialerVoicemailStatus: com.android.voicemail.impl.VoicemailStatus$Editor.apply:112 enter
+11-08 23:52:50.526   521  2265 D OpenGLRenderer: --- Failed to create image decoder with message 'unimplemented'
+11-08 23:52:50.538  2757  6646 I DialerVoicemailStatusDataServiceImpl: com.android.dialer.voicemailstatus.dataservice.impl.VoicemailStatusDataServiceImpl.insertOrUpdateVoicemailStatus:196 enter
+11-08 23:52:50.542  2757  6648 I DialerRestVoicemailEnabledFn: com.android.dialer.voicemail.service.impl.vvmclients.rest.RestVoicemailEnabledFn.isEnabled:51 disabled by flag [CONTEXT ratelimit_period="1 MINUTES [skipped: 23]" ]
+11-08 23:52:50.542  2757  6648 I DialerCvvmEnabledFn: com.android.dialer.voicemail.service.impl.vvmclients.omtp.protocol.cvvm.CvvmEnabledFn.isEnabled:37 disabled by flag [CONTEXT ratelimit_period="1 MINUTES [skipped: 11]" ]
+11-08 23:52:50.546  2757  6648 I DialerOmtpVvmCarrierConfigHelper: com.android.voicemail.impl.OmtpVvmCarrierConfigHelper.isCarrierAppInstalled:637 carrier app not installed in this device [CONTEXT ratelimit_period="1 MINUTES [skipped: 4]" ]
+11-08 23:52:50.555  2757  6648 W Settings: Setting airplane_mode_on has moved from android.provider.Settings.System to android.provider.Settings.Global, returning read-only value.
+11-08 23:52:50.555  2757  6648 I DialerVoicemailStatusDataServiceImpl: com.android.dialer.voicemailstatus.dataservice.impl.VoicemailStatusDataServiceImpl.lambda$insertOrUpdateVoicemailStatus$5:213 merged status: # kee@5cbbd7c4
+11-08 23:52:50.592  2757  2757 I DialerTaskExecutor: com.android.voicemail.impl.scheduling.TaskExecutor.prepareStop:371 no more tasks, stopping service if no task are added in 5000 millis [CONTEXT enable_persistent_logger=true ]
+11-08 23:52:51.049   521   538 W ziparchive: Unable to open '/data/app/~~X-LgaU6zbIcpZde_NyYmDw==/org.dpdns.bnai.anime-24nZ24IfQyQnXkxCM4uqFA==/base.dm': No such file or directory
+11-08 23:52:51.050   521   538 I ActivityTaskManager: Displayed org.dpdns.bnai.anime/androidx.activity.ComponentActivity for user 0: +697ms
+11-08 23:52:51.068  1107  1162 I ImeTracker: com.google.android.apps.nexuslauncher:b21da1a5: onRequestHide at ORIGIN_CLIENT_HIDE_SOFT_INPUT reason HIDE_SOFT_INPUT
+11-08 23:52:51.068  1107  1162 I ImeTracker: com.google.android.apps.nexuslauncher:b21da1a5: onFailed at PHASE_CLIENT_VIEW_SERVED
+11-08 23:52:51.082  1107  2110 D OneSearchSuggestProvider: Shut down the binder channel
+11-08 23:52:51.085  1739  4702 I PBSessionCacheImpl: Deleted sessionId[7649997064422482] from persistence.
+11-08 23:52:51.086  1739  2468 W SearchServiceCore: Abort, client detached.
+11-08 23:52:51.090  6313  6313 D AutofillManager: Fill dialog is enabled:false, hints=[password, passwordAuto, creditCardNumber, creditCardSecurityCode, creditCardExpirationDate]
+11-08 23:52:51.122  1107  2492 I IPCThreadState: oneway function results for code 2 on binder at 0x7da80ac5f4a0 will be dropped but finished with status UNKNOWN_TRANSACTION
+11-08 23:52:51.133   837   879 W WindowOnBackDispatcher: sendCancelIfRunning: isInProgress=falsecallback=android.view.ViewRootImpl$$ExternalSyntheticLambda17@624b64c
+11-08 23:52:51.133   521  1678 W InputManager-JNI: Input channel object 'e50825f Splash Screen org.dpdns.bnai.anime (client)' was disposed without first being removed with the input manager!
+11-08 23:52:51.662   837   837 W ToastPresenter: Error while attempting to show toast from org.dpdns.bnai.anime
+11-08 23:52:51.662   837   837 W ToastPresenter: android.view.WindowManager$BadTokenException: Unable to add window -- window android.view.ViewRootImpl$W@b0ca5ae has already been added
+11-08 23:52:51.662   837   837 W ToastPresenter: 	at android.view.ViewRootImpl.setView(ViewRootImpl.java:1407)
+11-08 23:52:51.662   837   837 W ToastPresenter: 	at android.view.WindowManagerGlobal.addView(WindowManagerGlobal.java:411)
+11-08 23:52:51.662   837   837 W ToastPresenter: 	at android.view.WindowManagerImpl.addView(WindowManagerImpl.java:150)
+11-08 23:52:51.662   837   837 W ToastPresenter: 	at android.widget.ToastPresenter.addToastView(ToastPresenter.java:339)
+11-08 23:52:51.662   837   837 W ToastPresenter: 	at android.widget.ToastPresenter.show(ToastPresenter.java:262)
+11-08 23:52:51.662   837   837 W ToastPresenter: 	at com.android.systemui.toast.ToastUI$$ExternalSyntheticLambda0.run(go/retraceme 19693c2b0a8439b7183751b64d60893829dbf56dc1e08e0669fc0cfc55754948:227)
+11-08 23:52:51.662   837   837 W ToastPresenter: 	at com.android.systemui.toast.ToastUI.showToast(go/retraceme 19693c2b0a8439b7183751b64d60893829dbf56dc1e08e0669fc0cfc55754948:37)
+11-08 23:52:51.662   837   837 W ToastPresenter: 	at com.android.systemui.statusbar.CommandQueue$H.handleMessage(go/retraceme 19693c2b0a8439b7183751b64d60893829dbf56dc1e08e0669fc0cfc55754948:79)
+11-08 23:52:51.662   837   837 W ToastPresenter: 	at android.os.Handler.dispatchMessage(Handler.java:106)
+11-08 23:52:51.662   837   837 W ToastPresenter: 	at android.os.Looper.loopOnce(Looper.java:205)
+11-08 23:52:51.662   837   837 W ToastPresenter: 	at android.os.Looper.loop(Looper.java:294)
+11-08 23:52:51.662   837   837 W ToastPresenter: 	at android.app.ActivityThread.main(ActivityThread.java:8177)
+11-08 23:52:51.662   837   837 W ToastPresenter: 	at java.lang.reflect.Method.invoke(Native Method)
+11-08 23:52:51.662   837   837 W ToastPresenter: 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:552)
+11-08 23:52:51.662   837   837 W ToastPresenter: 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:971)
+11-08 23:52:51.768   837   880 D SplashScreenView: Build android.window.SplashScreenView{6aa0961 V.E...... ......ID 0,0-0,0}
+11-08 23:52:51.768   837   880 D SplashScreenView: Icon: view: null drawable: null size: 0
+11-08 23:52:51.768   837   880 D SplashScreenView: Branding: view: android.view.View{747bc86 G.ED..... ......I. 0,0-0,0 #10204ef android:id/splashscreen_branding_view} drawable: null size w: 0 h: 0
+11-08 23:52:51.842   402   402 I BpBinder: onLastStrongRef automatically unlinking death recipients:
+11-08 23:52:51.937  6313  6313 D LifecycleMonitor: Lifecycle status change: androidx.activity.ComponentActivity@6a63871 in: PAUSED
+11-08 23:52:51.938  6313  6313 V ActivityScenario: Update currentActivityStage to PAUSED, currentActivity=androidx.activity.ComponentActivity@6a63871
+11-08 23:52:52.055   521   541 W system_server: Long monitor contention with owner binder:521_16 (2238) at void com.android.server.wm.ActivityClientController.activityPaused(android.os.IBinder)(ActivityClientController.java:219) waiters=0 in void com.android.server.wm.ActivityTaskSupervisor$ActivityTaskSupervisorHandler.handleMessage(android.os.Message) for 114ms
+11-08 23:52:52.207  1107  1146 W System  : A resource failed to call release.
+11-08 23:52:52.208  1107  1146 W System  : A resource failed to call release.
+11-08 23:52:52.208  1107  1146 W System  : A resource failed to call release.
+11-08 23:52:52.208  1107  1146 W System  : A resource failed to call release.
+11-08 23:52:52.208  1107  1146 W System  : A resource failed to call release.
+11-08 23:52:52.208  1107  1146 W System  : A resource failed to call release.
+11-08 23:52:52.208  1107  1146 W System  : A resource failed to call release.
+11-08 23:52:52.209  1107  1146 W System  : A resource failed to call release.
+11-08 23:52:52.209  1107  1146 W System  : A resource failed to call release.
+11-08 23:52:52.245  6313  6313 D LifecycleMonitor: Lifecycle status change: androidx.activity.ComponentActivity@6a63871 in: STOPPED
+11-08 23:52:52.246  6313  6313 V ActivityScenario: Update currentActivityStage to STOPPED, currentActivity=androidx.activity.ComponentActivity@6a63871
+11-08 23:52:52.373  6362  6389 W OpenGLRenderer: Failed to initialize 101010-2 format, error = EGL_SUCCESS
+11-08 23:52:52.409  6313  6313 D LifecycleMonitor: Lifecycle status change: androidx.activity.ComponentActivity@6a63871 in: DESTROYED
+11-08 23:52:52.410  6313  6313 V ActivityScenario: Update currentActivityStage to DESTROYED, currentActivity=null
+11-08 23:52:52.411  6313  6313 W WindowOnBackDispatcher: sendCancelIfRunning: isInProgress=falsecallback=android.view.ViewRootImpl$$ExternalSyntheticLambda17@95c265
+11-08 23:52:52.441   521  2261 W InputManager-JNI: Input channel object '2dadd44 org.dpdns.bnai.anime/androidx.activity.ComponentActivity (client)' was disposed without first being removed with the input manager!
+11-08 23:52:52.468  6313  6334 D IdlingRegistry: Unregistering idling resources: [androidx.compose.ui.test.junit4.EspressoLink@130783d]
+11-08 23:52:52.468  6313  6334 I TestRunner: finished: bibleSaveDraftSubmitsBiblePayload(org.dpdns.bnai.anime.ui.batch2.Batch2ControlBehaviorTest)

@@ -1,0 +1,31 @@
+{
+  "run_id": 42536627981,
+  "workflow": "android-tests.yml",
+  "branch": "opencode/android-4-batch-testing",
+  "commit_sha": "b01ee3c9094c71fb42a22e865b3bfc9ba078d518",
+  "url": "https://github.com/bnaisolution/ai-anime-android/actions/runs/42536627981",
+  "conclusion": "success",
+  "jobs": {
+    "unit": "success",
+    "lint": "success",
+    "instrumentation": "success",
+    "maestro": "success",
+    "android-summary": "success"
+  },
+  "instrumentation": {
+    "tests": 81,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "unit": {
+    "tests": 20,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "maestro": {
+    "flows": 2,
+    "failed": 0
+  }
+}

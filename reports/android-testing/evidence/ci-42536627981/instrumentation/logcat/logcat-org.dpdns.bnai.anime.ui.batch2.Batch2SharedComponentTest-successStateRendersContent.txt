@@ -1,0 +1,52 @@
+11-08 23:55:09.546  6313  6334 I TestRunner: started: successStateRendersContent(org.dpdns.bnai.anime.ui.batch2.Batch2SharedComponentTest)
+11-08 23:55:09.550  6313  6334 D IdlingRegistry: Registering idling resources: [androidx.compose.ui.test.junit4.EspressoLink@5b4b55c]
+11-08 23:55:09.555  6313  6334 W Settings: Setting always_finish_activities has moved from android.provider.Settings.System to android.provider.Settings.Global, returning read-only value.
+11-08 23:55:09.564   837   880 D SplashScreenView: Build android.window.SplashScreenView{b6c9d64 V.E...... ......ID 0,0-0,0}
+11-08 23:55:09.564   837   880 D SplashScreenView: Icon: view: null drawable: null size: 0
+11-08 23:55:09.564   837   880 D SplashScreenView: Branding: view: android.view.View{48babcd G.ED..... ......I. 0,0-0,0 #10204ef android:id/splashscreen_branding_view} drawable: null size w: 0 h: 0
+11-08 23:55:09.669   402   402 I BpBinder: onLastStrongRef automatically unlinking death recipients:
+11-08 23:55:09.859  6313  6313 D LifecycleMonitor: Lifecycle status change: androidx.activity.ComponentActivity@498bb60 in: PRE_ON_CREATE
+11-08 23:55:09.860  6313  6313 V ActivityScenario: Activity lifecycle changed event received but ignored because the reported transition was not ON_CREATE while the last known transition was PRE_ON_CREATE
+11-08 23:55:09.867  6313  6313 D LifecycleMonitor: Lifecycle status change: androidx.activity.ComponentActivity@498bb60 in: CREATED
+11-08 23:55:09.868  6313  6313 V ActivityScenario: Update currentActivityStage to CREATED, currentActivity=androidx.activity.ComponentActivity@498bb60
+11-08 23:55:09.869  6313  6313 D LifecycleMonitor: Lifecycle status change: androidx.activity.ComponentActivity@498bb60 in: STARTED
+11-08 23:55:09.869  6313  6313 V ActivityScenario: Update currentActivityStage to STARTED, currentActivity=androidx.activity.ComponentActivity@498bb60
+11-08 23:55:09.870  6313  6313 D LifecycleMonitor: Lifecycle status change: androidx.activity.ComponentActivity@498bb60 in: RESUMED
+11-08 23:55:09.870  6313  6313 V ActivityScenario: Update currentActivityStage to RESUMED, currentActivity=androidx.activity.ComponentActivity@498bb60
+11-08 23:55:10.085   521   538 W ziparchive: Unable to open '/data/app/~~X-LgaU6zbIcpZde_NyYmDw==/org.dpdns.bnai.anime-24nZ24IfQyQnXkxCM4uqFA==/base.dm': No such file or directory
+11-08 23:55:10.086   521   538 I ActivityTaskManager: Displayed org.dpdns.bnai.anime/androidx.activity.ComponentActivity for user 0: +527ms
+11-08 23:55:10.091  1107  1162 I ImeTracker: com.google.android.apps.nexuslauncher:eab113ae: onRequestHide at ORIGIN_CLIENT_HIDE_SOFT_INPUT reason HIDE_SOFT_INPUT
+11-08 23:55:10.091  1107  1162 I ImeTracker: com.google.android.apps.nexuslauncher:eab113ae: onFailed at PHASE_CLIENT_VIEW_SERVED
+11-08 23:55:10.091  1107  2110 D OneSearchSuggestProvider: Shut down the binder channel
+11-08 23:55:10.092  1107  2713 I IPCThreadState: oneway function results for code 2 on binder at 0x7da80ac6bd10 will be dropped but finished with status UNKNOWN_TRANSACTION
+11-08 23:55:10.102  1739  2409 I PBSessionCacheImpl: Deleted sessionId[7649997064422555] from persistence.
+11-08 23:55:10.136  1739  2468 W SearchServiceCore: Abort, client detached.
+11-08 23:55:10.157   837   879 W WindowOnBackDispatcher: sendCancelIfRunning: isInProgress=falsecallback=android.view.ViewRootImpl$$ExternalSyntheticLambda17@87e1ef
+11-08 23:55:10.158   521   535 W InputManager-JNI: Input channel object '626b90e Splash Screen org.dpdns.bnai.anime (client)' was disposed without first being removed with the input manager!
+11-08 23:55:10.161  6313  6313 D AutofillManager: Fill dialog is enabled:false, hints=[password, passwordAuto, creditCardNumber, creditCardSecurityCode, creditCardExpirationDate]
+11-08 23:55:10.269   837   880 D SplashScreenView: Build android.window.SplashScreenView{2d46856 V.E...... ......ID 0,0-0,0}
+11-08 23:55:10.269   837   880 D SplashScreenView: Icon: view: null drawable: null size: 0
+11-08 23:55:10.269   837   880 D SplashScreenView: Branding: view: android.view.View{4bed0d7 G.ED..... ......I. 0,0-0,0 #10204ef android:id/splashscreen_branding_view} drawable: null size w: 0 h: 0
+11-08 23:55:10.284  6313  6313 D LifecycleMonitor: Lifecycle status change: androidx.activity.ComponentActivity@498bb60 in: PAUSED
+11-08 23:55:10.284  6313  6313 V ActivityScenario: Update currentActivityStage to PAUSED, currentActivity=androidx.activity.ComponentActivity@498bb60
+11-08 23:55:10.313   402   402 I BpBinder: onLastStrongRef automatically unlinking death recipients:
+11-08 23:55:10.605  6362  6389 W OpenGLRenderer: Failed to initialize 101010-2 format, error = EGL_SUCCESS
+11-08 23:55:10.852   521   538 W ziparchive: Unable to open '/data/app/~~KSRme4HfuhZkYjy9aVejUQ==/org.dpdns.bnai.anime.test-fIUmPhMYs6cn5JzEYeQeJA==/base.dm': No such file or directory
+11-08 23:55:10.863   402   402 I BpBinder: onLastStrongRef automatically unlinking death recipients:
+11-08 23:55:10.876   521   538 I ActivityTaskManager: Displayed org.dpdns.bnai.anime.test/androidx.test.core.app.InstrumentationActivityInvoker$EmptyActivity for user 0: +587ms
+11-08 23:55:10.884  6313  6313 D LifecycleMonitor: Lifecycle status change: androidx.activity.ComponentActivity@498bb60 in: STOPPED
+11-08 23:55:10.886  6313  6313 V ActivityScenario: Update currentActivityStage to STOPPED, currentActivity=androidx.activity.ComponentActivity@498bb60
+11-08 23:55:10.940  6313  6313 D LifecycleMonitor: Lifecycle status change: androidx.activity.ComponentActivity@498bb60 in: DESTROYED
+11-08 23:55:10.941  6313  6313 V ActivityScenario: Update currentActivityStage to DESTROYED, currentActivity=null
+11-08 23:55:10.941  6313  6313 W WindowOnBackDispatcher: sendCancelIfRunning: isInProgress=falsecallback=android.view.ViewRootImpl$$ExternalSyntheticLambda17@22aa224
+11-08 23:55:11.098   521   535 W InputManager-JNI: Input channel object '30ea3d4 org.dpdns.bnai.anime/androidx.activity.ComponentActivity (client)' was disposed without first being removed with the input manager!
+11-08 23:55:11.109  1739  2468 I A       : Using proto config with mendel
+11-08 23:55:11.110  1739  2468 W A       : Queue length for executor EventBus is now 11. Perhaps some tasks are too long, or the pool is too small.
+11-08 23:55:11.112   521  1628 W AppSearchIcing: icing-search-engine.cc:283: Error: 5, Message: Document (com.google.android.googlequicksearchbox$OneSearchZeroStateGoogleSuggestions/default, zp) not found.
+11-08 23:55:11.133  1107  2110 D OneSearchSuggestProvider: Created the binder channel successfully for end point service =com.google.android.apps.search.googleapp.search.suggest.plugins.onesearch.server.OneSearchSuggestService , mChannel=z1{delegate=s1{logId=269, target=directaddress:///AndroidComponentAddress%5BIntent%20%7B%20act=grpc.io.action.BIND%20cmp=com.google.android.googlequicksearchbox/com.google.android.apps.search.googleapp.search.suggest.plugins.onesearch.server.OneSearchSuggestService%20%7D%5D}} , mOneSearchConnection=X1.T@8d9e84b
+11-08 23:55:11.181  6313  6334 D IdlingRegistry: Unregistering idling resources: [androidx.compose.ui.test.junit4.EspressoLink@5b4b55c]
+11-08 23:55:11.185  1620  2048 I AiAiEcho: Predicting[0]:
+11-08 23:55:11.185  1620  2048 I AiAiEcho: EchoTargets:
+11-08 23:55:11.185  1620  2048 I AiAiEcho: Filtered by AiAi flag check:
+11-08 23:55:11.186  1739  1739 I A       : Created gRPC endpoint to "search" for service class com.google.android.apps.search.googleapp.search.suggest.plugins.onesearch.server.OneSearchSuggestService
+11-08 23:55:11.188  6313  6334 I TestRunner: finished: successStateRendersContent(org.dpdns.bnai.anime.ui.batch2.Batch2SharedComponentTest)

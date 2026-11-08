@@ -1,0 +1,810 @@
+--------- beginning of system
+11-08 23:51:42.644 I/ActivityManager(  522): Force stopping org.dpdns.bnai.anime appid=10192 user=0: clear data
+11-08 23:51:42.644 D/DisplayManagerService(  522): Drop pending events for gone uid 10192
+11-08 23:51:42.644 I/ActivityManager(  522): Killing 6357:org.dpdns.bnai.anime/u0a192 (adj 0): stop org.dpdns.bnai.anime due to clear data
+11-08 23:51:42.645 W/ActivityTaskManager(  522): Force removing ActivityRecord{a684cb9 u0 org.dpdns.bnai.anime/.MainActivity t8 f}}: app died, no saved state
+11-08 23:51:42.646 V/WindowManagerShell(  838): Transition requested: android.os.BinderProxy@cffa734 TransitionRequestInfo { type = CLOSE, triggerTask = TaskInfo{userId=0 taskId=8 displayId=0 isRunning=false baseIntent=Intent { act=android.intent.action.MAIN cat=[android.intent.category.LAUNCHER] flg=0x10000000 pkg=org.dpdns.bnai.anime cmp=org.dpdns.bnai.anime/.MainActivity } baseActivity=null topActivity=null origActivity=null realActivity=ComponentInfo{org.dpdns.bnai.anime/org.dpdns.bnai.anime.MainActivity} numActivities=0 lastActiveTime=333699 supportsMultiWindow=true resizeMode=1 isResizeable=true minWidth=-1 minHeight=-1 defaultMinSize=220 token=WCT{android.window.IWindowContainerToken$Stub$Proxy@404395d} topActivityType=1 pictureInPictureParams=null shouldDockBigOverlays=false launchIntoPipHostTaskId=-1 lastParentTaskIdBeforePip=-1 displayCutoutSafeInsets=Rect(0, 128 - 0, 0) topActivityInfo=null launchCookies=[] positionInParent=Point(0, 0) parentTaskId=-1 isFocused=true isVisible=true isVisibleRequested=true isSleeping=false topActivityInSizeCompat=false topActivityEligibleForLetterboxEducation= false topActivityLetterboxed= false isFromDoubleTap= false topActivityLetterboxVerticalPosition= -1 topActivityLetterboxHorizontalPosition= -1 topActivityLetterboxWidth=-1 topActivityLetterboxHeight=-1 locusId=null displayAreaFeatureId=1 cameraCompatControlState=hidden}, remoteTransition = null, displayChange = null }
+11-08 23:51:42.660 E/TaskPersister(  522): File error accessing recents directory (directory doesn't exist?).
+11-08 23:51:42.661 W/ProcessStats(  522): Tracking association SourceState{1c3ff7e com.google.android.googlequicksearchbox:search/10132 BTop #12914} whose proc state 2 is better than process ProcessState{8c8471c com.google.android.googlequicksearchbox:interactor/10132 pkg=com.google.android.googlequicksearchbox} proc state 4 (78 skipped)
+--------- beginning of main
+11-08 23:51:42.661 I/BpBinder(  400): onLastStrongRef automatically unlinking death recipients: 
+11-08 23:51:42.681 W/AppSearchIcing(  522): icing-search-engine.cc:283: Error: 5, Message: Document (com.google.android.googlequicksearchbox$OneSearchZeroStateGoogleSuggestions/default, zp) not found.
+11-08 23:51:42.682 W/BcSmartspaceCard( 1110): No title view to update
+11-08 23:51:42.693 D/BtGatt.ScanManager( 1030): uid 10131 isForeground true scanMode -1
+11-08 23:51:42.694 D/BtGatt.ScanManager( 1030): uid 10131 isForeground true scanMode -1
+11-08 23:51:42.695 I/BcSmartspaceCard( 1110): setFormattedContentDescription: text=null, iconDescription=null, contentDescription=null
+11-08 23:51:42.711 D/OneSearchSuggestProvider( 1110): Created the binder channel successfully for end point service =com.google.android.apps.search.googleapp.search.suggest.plugins.onesearch.server.OneSearchSuggestService , mChannel=z1{delegate=s1{logId=9, target=directaddress:///AndroidComponentAddress%5BIntent%20%7B%20act=grpc.io.action.BIND%20cmp=com.google.android.googlequicksearchbox/com.google.android.apps.search.googleapp.search.suggest.plugins.onesearch.server.OneSearchSuggestService%20%7D%5D}} , mOneSearchConnection=X1.T@e0f1590
+11-08 23:51:42.723 V/ActivityManager(  522): Got obituary of 6357:org.dpdns.bnai.anime
+11-08 23:51:42.724 I/ImeTracker(  522): org.dpdns.bnai.anime:7259a320: onRequestHide at ORIGIN_SERVER_HIDE_INPUT reason HIDE_REMOVE_CLIENT
+11-08 23:51:42.725 I/Zygote  (  336): Process 6357 exited due to signal 9 (Killed)
+11-08 23:51:42.725 I/WindowManager(  522): WIN DEATH: Window{e6aadca u0 org.dpdns.bnai.anime/org.dpdns.bnai.anime.MainActivity}
+11-08 23:51:42.726 W/InputManager-JNI(  522): Input channel object 'e6aadca org.dpdns.bnai.anime/org.dpdns.bnai.anime.MainActivity (client)' was disposed without first being removed with the input manager!
+11-08 23:51:42.726 I/ImeTracker(  522): org.dpdns.bnai.anime:7259a320: onCancelled at PHASE_SERVER_SHOULD_HIDE
+--------- beginning of kernel
+11-08 23:51:42.921 I/binder  (    0): undelivered transaction 732727, process died.
+11-08 23:51:42.735 I/AiAiEcho( 1700): Predicting[0]: 
+11-08 23:51:42.746 I/AiAiEcho( 1700): EchoTargets: 
+11-08 23:51:42.746 I/AiAiEcho( 1700): Filtered by AiAi flag check: 
+11-08 23:51:42.747 I/AiAiEcho( 1700): Ranked targets strategy: SORT, count: 0, ranking metadata: 
+11-08 23:51:42.750 I/AiAiEcho( 1700): #postPredictionTargets: Sending updates to UISurface home with targets# 0 (types=[])
+11-08 23:51:42.751 I/ActivityManager(  522): Force stopping org.dpdns.bnai.anime appid=10192 user=-1: clearApplicationUserData
+11-08 23:51:42.751 I/WindowManager(  522):   Force removing ActivityRecord{a684cb9 u0 org.dpdns.bnai.anime/.MainActivity t8 f} isExiting}
+11-08 23:51:42.752 W/WindowManager(  522): removeAppToken: Attempted to remove non-existing token: Token{5dcd85f ActivityRecord{a684cb9 u0 org.dpdns.bnai.anime/.MainActivity t8 f} isExiting}}
+11-08 23:51:42.752 E/libprocessgroup(  522): No such cgroup attribute: /sys/fs/cgroup/uid_4294877488/cgroup.freeze
+11-08 23:51:42.752 W/libprocessgroup(  522): Failed to apply Frozen process profile: No such file or directory
+11-08 23:51:42.755 E/libprocessgroup(  522): No such cgroup attribute: /sys/fs/cgroup/uid_4294877488/cgroup.freeze
+11-08 23:51:42.755 W/libprocessgroup(  522): Failed to apply Unfrozen process profile: No such file or directory
+11-08 23:51:42.959 I/servicemanager(    0): Since 'artd' could not be found, trying to start it as a lazy AIDL service. (if it's not configured to be a lazy service, it may be stuck starting or still starting).
+11-08 23:51:42.992 I/init    (    0): starting service 'artd'...
+11-08 23:51:43.029 I/init    (    0): ... started service 'artd' has pid 6450
+11-08 23:51:43.030 I/init    (    0): Control message: Processed ctl.interface_start for 'aidl/artd' from pid: 133 (/system/bin/servicemanager)
+11-08 23:51:42.837 D/CompatibilityChangeReporter( 1110): Compat change id reported: 163400105; UID 10169; state: ENABLED
+11-08 23:51:42.837 W/TextView( 1110): onProvideContentCaptureStructure(): calling assumeLayout()
+11-08 23:51:42.855 I/artd    ( 6450): Starting artd
+11-08 23:51:42.856 I/AidlLazyServiceRegistrar( 6450): Registering service artd
+11-08 23:51:42.862 I/AidlLazyServiceRegistrar( 6450): Process has 1 (of 1 available) client(s) in use after notification artd has clients: 1
+11-08 23:51:43.054 I/BpBinder(    0): onLastStrongRef automatically unlinking death recipients:
+11-08 23:51:43.057 I/servicemanager(    0): Notifying artd they do (previously: don't) have clients when service is guaranteed to be in use
+11-08 23:51:42.973 W/TextView( 1110): onProvideContentCaptureStructure(): calling assumeLayout()
+11-08 23:51:42.978 V/WindowManager(  522): Sent Transition #9 createdAt=11-08 23:51:42.645 via request=TransitionRequestInfo { type = CLOSE, triggerTask = TaskInfo{userId=0 taskId=8 displayId=0 isRunning=false baseIntent=Intent { act=android.intent.action.MAIN cat=[android.intent.category.LAUNCHER] flg=0x10000000 pkg=org.dpdns.bnai.anime cmp=org.dpdns.bnai.anime/.MainActivity } baseActivity=null topActivity=null origActivity=null realActivity=ComponentInfo{org.dpdns.bnai.anime/org.dpdns.bnai.anime.MainActivity} numActivities=0 lastActiveTime=333699 supportsMultiWindow=true resizeMode=1 isResizeable=true minWidth=-1 minHeight=-1 defaultMinSize=220 token=WCT{RemoteToken{5842147 Task{5df38fe #8 type=standard A=10192:org.dpdns.bnai.anime}}} topActivityType=1 pictureInPictureParams=null shouldDockBigOverlays=false launchIntoPipHostTaskId=-1 lastParentTaskIdBeforePip=-1 displayCutoutSafeInsets=Rect(0, 128 - 0, 0) topActivityInfo=null launchCookies=[] positionInParent=Point(0, 0) parentTaskId=-1 isFocused=true isVisible=true isVisibleRequested=true isSleeping=false topActivityInSizeCompat=false topActivityEligibleForLetterboxEducation= false topActivityLetterboxed= false isFromDoubleTap= false topActivityLetterboxVerticalPosition= -1 topActivityLetterboxHorizontalPosition= -1 topActivityLetterboxWidth=-1 topActivityLetterboxHeight=-1 locusId=null displayAreaFeatureId=1 cameraCompatControlState=hidden}, remoteTransition = null, displayChange = null }
+11-08 23:51:42.978 V/WindowManager(  522):     startWCT=WindowContainerTransaction { changes = {} hops = [] errorCallbackToken=null taskFragmentOrganizer=null }
+11-08 23:51:42.980 V/WindowManagerShell(  838): onTransitionReady android.os.BinderProxy@cffa734: {id=9 t=CLOSE f=0x0 trk=0 r=[0@Point(0, 0)] c=[{WCT{android.window.IWindowContainerToken$Stub$Proxy@54b6a1e} m=CLOSE f=NONE leash=Surface(name=Task=8)/@0xa34f2d2 sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0},{WCT{android.window.IWindowContainerToken$Stub$Proxy@ca582ff} m=TO_FRONT f=SHOW_WALLPAPER leash=Surface(name=Task=1)/@0xaf38fa3 sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0},{null m=TO_FRONT f=IS_WALLPAPER leash=Surface(name=WallpaperWindowToken{3f31b6f token=android.os.Binder@b0f7549})/@0xa8a02a0 sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0}]}
+11-08 23:51:42.982 V/WindowManagerShell(  838): Playing animation for (#9)android.os.BinderProxy@cffa734@0
+11-08 23:51:42.983 V/WindowManagerShell(  838):  try handler com.android.wm.shell.transition.DefaultMixedHandler@7af01d4
+11-08 23:51:42.983 V/WindowManagerShell(  838):  try handler com.android.wm.shell.keyguard.KeyguardTransitionHandler@60a8f7d
+11-08 23:51:42.984 V/WindowManagerShell(  838):  try handler com.android.wm.shell.activityembedding.ActivityEmbeddingController@1e55e72
+11-08 23:51:42.984 V/WindowManagerShell(  838):  try handler com.android.wm.shell.recents.RecentsTransitionHandler@f9c22c3
+11-08 23:51:42.984 V/ShellRecents(  838): RecentsTransitionHandler.startAnimation: no controller found
+11-08 23:51:42.984 V/WindowManagerShell(  838):  try handler com.android.wm.shell.pip.PipTransition@de46740
+11-08 23:51:42.984 V/WindowManagerShell(  838):  try handler com.android.wm.shell.splitscreen.StageCoordinator@d35a679
+11-08 23:51:42.984 V/WindowManagerShell(  838):  try handler com.android.wm.shell.transition.RemoteTransitionHandler@326efbe
+11-08 23:51:42.984 V/WindowManagerShell(  838): Transition doesn't have explicit remote, search filters for match for {id=9 t=CLOSE f=0x0 trk=0 r=[0@Point(0, 0)] c=[{WCT{android.window.IWindowContainerToken$Stub$Proxy@54b6a1e} m=CLOSE f=NONE leash=Surface(name=Task=8)/@0xa34f2d2 sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0},{WCT{android.window.IWindowContainerToken$Stub$Proxy@ca582ff} m=TO_FRONT f=SHOW_WALLPAPER leash=Surface(name=Task=1)/@0xaf38fa3 sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0},{null m=TO_FRONT f=IS_WALLPAPER leash=Surface(name=WallpaperWindowToken{3f31b6f token=android.os.Binder@b0f7549})/@0xa8a02a0 sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0}]}
+11-08 23:51:42.984 V/WindowManagerShell(  838):  Checking filter Pair{{types=[] flags=0x0] notFlags=0x0 checks=[{atype=dream independent=true modes=[OPEN,TO_FRONT] flags=NONE mustBeTask=false order=ANY topActivity=null},{atype=home independent=true modes=[CLOSE,TO_BACK] flags=NONE mustBeTask=false order=ANY topActivity=null}]} RemoteTransition { remoteTransition = android.window.IRemoteTransition$Stub$Proxy@9ca8cc, appThread = android.app.IApplicationThread$Stub$Proxy@7ea3715, debugName = LauncherToDream }}
+11-08 23:51:42.984 V/WindowManagerShell(  838):  Checking filter Pair{{types=[] flags=0x0] notFlags=0x100 checks=[{atype=home independent=true modes=[OPEN,TO_FRONT] flags=NONE mustBeTask=false order=TOP topActivity=ComponentInfo{com.google.android.apps.nexuslauncher/com.google.android.apps.nexuslauncher.NexusLauncherActivity}},{atype=standard independent=true modes=[CLOSE,TO_BACK] flags=NONE mustBeTask=false order=ANY topActivity=null}]} RemoteTransition { remoteTransition = android.window.IRemoteTransition$Stub$Proxy@ac00a2a, appThread = android.app.IApplicationThread$Stub$Proxy@d59501b, debugName = QuickstepLaunchHome }}
+11-08 23:51:42.985 V/WindowManagerShell(  838):  Delegate animation for #9 to null
+11-08 23:51:42.985 V/WindowManager(  522):     info={id=9 t=CLOSE f=0x0 trk=0 r=[0@Point(0, 0)] c=[{WCT{RemoteToken{5842147 Task{5df38fe #8 type=standard A=10192:org.dpdns.bnai.anime}}} m=CLOSE f=NONE leash=Surface(name=Task=8)/@0xe842161 sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0},{WCT{RemoteToken{729d Task{8bd53eb #1 type=home}}} m=TO_FRONT f=SHOW_WALLPAPER leash=Surface(name=Task=1)/@0x214f619 sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0},{null m=TO_FRONT f=IS_WALLPAPER leash=Surface(name=WallpaperWindowToken{3f31b6f token=android.os.Binder@b0f7549})/@0xe7298fb sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0}]}
+11-08 23:51:42.985 V/WindowManagerShell(  838):  try handler com.android.wm.shell.transition.DefaultTransitionHandler@f94281f
+11-08 23:51:42.985 V/WindowManagerShell(  838): start default transition animation, info = {id=9 t=CLOSE f=0x0 trk=0 r=[0@Point(0, 0)] c=[{WCT{android.window.IWindowContainerToken$Stub$Proxy@54b6a1e} m=CLOSE f=NONE leash=Surface(name=Task=8)/@0xa34f2d2 sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0},{WCT{android.window.IWindowContainerToken$Stub$Proxy@ca582ff} m=TO_FRONT f=SHOW_WALLPAPER leash=Surface(name=Task=1)/@0xaf38fa3 sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0},{null m=TO_FRONT f=IS_WALLPAPER leash=Surface(name=WallpaperWindowToken{3f31b6f token=android.os.Binder@b0f7549})/@0xa8a02a0 sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0}]}
+11-08 23:51:42.985 V/WindowManagerShell(  838): loadAnimation: anim=android.view.animation.AnimationSet@ec42f91 animAttr=0x10 type=CLOSE isEntrance=true
+11-08 23:51:42.986 V/WindowManagerShell(  838): loadAnimation: anim=android.view.animation.AnimationSet@4754564 animAttr=0x11 type=CLOSE isEntrance=false
+11-08 23:51:42.986 V/WindowManagerShell(  838):  animated by com.android.wm.shell.transition.DefaultTransitionHandler@f94281f
+11-08 23:51:42.995 D/CarrierSvcBindHelper( 1054): onHandleForceStop: [org.dpdns.bnai.anime]
+11-08 23:51:42.995 D/CarrierSvcBindHelper( 1054): No carrier app for: 0
+11-08 23:51:43.045 V/WindowManagerShell(  838): Transition animation finished (aborted=false), notifying core (#9)android.os.BinderProxy@cffa734@0
+11-08 23:51:43.049 V/WindowManager(  522): Finish Transition #9: created at 11-08 23:51:42.645 collect-started=0.025ms request-sent=0.078ms started=9.891ms ready=9.879ms sent=332.24ms finished=400.878ms
+11-08 23:51:43.060 I/ImeTracker(  522): com.google.android.apps.nexuslauncher:6945f05: onRequestHide at ORIGIN_SERVER_HIDE_INPUT reason HIDE_UNSPECIFIED_WINDOW
+11-08 23:51:43.061 I/ImeTracker(  522): com.google.android.apps.nexuslauncher:6945f05: onCancelled at PHASE_SERVER_SHOULD_HIDE
+11-08 23:51:43.096 V/MediaPlayerList( 1030): mPackageChangedBroadcastReceiver: action: android.intent.action.PACKAGE_DATA_CLEARED
+11-08 23:51:43.097 V/MediaPlayerList( 1030): mPackageChangedBroadcastReceiver: action: android.intent.action.PACKAGE_DATA_CLEARED
+11-08 23:51:43.134 I/Icing   ( 5421): doRemovePackageData org.dpdns.bnai.anime
+11-08 23:51:43.140 W/WindowManager(  522): Exception thrown during dispatchAppVisibility Window{e6aadca u0 org.dpdns.bnai.anime/org.dpdns.bnai.anime.MainActivity EXITING}
+11-08 23:51:43.140 W/WindowManager(  522): android.os.DeadObjectException
+11-08 23:51:43.140 W/WindowManager(  522): 	at android.os.BinderProxy.transactNative(Native Method)
+11-08 23:51:43.140 W/WindowManager(  522): 	at android.os.BinderProxy.transact(BinderProxy.java:584)
+11-08 23:51:43.140 W/WindowManager(  522): 	at android.view.IWindow$Stub$Proxy.dispatchAppVisibility(IWindow.java:546)
+11-08 23:51:43.140 W/WindowManager(  522): 	at com.android.server.wm.WindowState.sendAppVisibilityToClients(WindowState.java:3271)
+11-08 23:51:43.140 W/WindowManager(  522): 	at com.android.server.wm.WindowContainer.sendAppVisibilityToClients(WindowContainer.java:1221)
+11-08 23:51:43.140 W/WindowManager(  522): 	at com.android.server.wm.WindowToken.setClientVisible(WindowToken.java:409)
+11-08 23:51:43.140 W/WindowManager(  522): 	at com.android.server.wm.ActivityRecord.setClientVisible(ActivityRecord.java:6946)
+11-08 23:51:43.140 W/WindowManager(  522): 	at com.android.server.wm.ActivityRecord.postApplyAnimation(ActivityRecord.java:5637)
+11-08 23:51:43.140 W/WindowManager(  522): 	at com.android.server.wm.ActivityRecord.commitVisibility(ActivityRecord.java:5580)
+11-08 23:51:43.140 W/WindowManager(  522): 	at com.android.server.wm.Transition.finishTransition(Transition.java:1151)
+11-08 23:51:43.140 W/WindowManager(  522): 	at com.android.server.wm.TransitionController.finishTransition(TransitionController.java:868)
+11-08 23:51:43.140 W/WindowManager(  522): 	at com.android.server.wm.WindowOrganizerController.finishTransition(WindowOrganizerController.java:396)
+11-08 23:51:43.140 W/WindowManager(  522): 	at android.window.IWindowOrganizerController$Stub.onTransact(IWindowOrganizerController.java:286)
+11-08 23:51:43.140 W/WindowManager(  522): 	at com.android.server.wm.WindowOrganizerController.onTransact(WindowOrganizerController.java:181)
+11-08 23:51:43.140 W/WindowManager(  522): 	at android.os.Binder.execTransactInternal(Binder.java:1344)
+11-08 23:51:43.140 W/WindowManager(  522): 	at android.os.Binder.execTransact(Binder.java:1275)
+11-08 23:51:43.144 I/Process (  522): Sending signal. PID: 6357 SIG: 9
+11-08 23:51:43.152 W/system_server(  522): Long monitor contention with owner binder:522_18 (2420) at android.content.res.Configuration com.android.server.wm.ActivityTaskManagerService.getGlobalConfigurationForPid(int)(ActivityTaskManagerService.java:1133) waiters=1 in void com.android.server.wm.InputMonitor$UpdateInputWindows.run() for 102ms
+11-08 23:51:43.158 I/GoogleInputMethodService( 1547): GoogleInputMethodService.onFinishInput():3227 
+11-08 23:51:43.158 D/CompatibilityChangeReporter(  522): Compat change id reported: 135634846; UID 10086; state: DISABLED
+11-08 23:51:43.159 D/CompatibilityChangeReporter(  522): Compat change id reported: 177438394; UID 10086; state: DISABLED
+11-08 23:51:43.159 D/CompatibilityChangeReporter(  522): Compat change id reported: 135772972; UID 10086; state: DISABLED
+11-08 23:51:43.160 D/CompatibilityChangeReporter(  522): Compat change id reported: 135754954; UID 10086; state: ENABLED
+11-08 23:51:43.160 D/CompatibilityChangeReporter(  522): Compat change id reported: 143937733; UID 10086; state: ENABLED
+11-08 23:51:43.160 I/GoogleInputMethodService( 1547): GoogleInputMethodService.updateDeviceLockedStatus():2087 repeatCheckTimes = 0, unlocked = true
+11-08 23:51:43.160 I/GoogleInputMethodService( 1547): GoogleInputMethodService.onStartInput():1877 onStartInput(EditorInfo{inputType=0x0(NULL) imeOptions=0x0 privateImeOptions=null actionName=UNSPECIFIED actionLabel=null actionId=0 initialSelStart=-1 initialSelEnd=-1 initialCapsMode=0x0 hintText=null label=null packageName=com.google.android.apps.nexuslauncher fieldId=0 fieldName=null extras=null}, false)
+11-08 23:51:43.160 I/GoogleInputMethodService( 1547): GoogleInputMethodService.shouldHideHeaderOnInitialState():4008 ShouldHideHeaderOnInitialState = false
+11-08 23:51:43.180 D/SafetySourceDataValidator(  522): No cert check requested for package com.google.android.permissioncontroller
+11-08 23:51:43.193 I/A       ( 1805): Constructor was called
+11-08 23:51:43.196 E/BpTransactionCompletedListener(  400): Failed to transact (-32)
+11-08 23:51:43.212 I/GoogleInputMethodService( 1547): GoogleInputMethodService.updateDeviceLockedStatus():2087 repeatCheckTimes = 2, unlocked = true
+11-08 23:51:43.218 D/Zygote  (  336): Forked child process 6472
+11-08 23:51:43.235 W/AccessibilityManagerService(  522):  wait for adding window timeout: 16
+11-08 23:51:43.236 I/MediaProvider( 1659): Begin Intent { act=android.intent.action.PACKAGE_DATA_CLEARED dat=package: flg=0x5000010 cmp=com.google.android.providers.media.module/com.android.providers.media.MediaService (has extras) }
+11-08 23:51:43.242 W/ActivityManager(  522): Slow operation: 87ms so far, now at startProcess: returned from zygote!
+11-08 23:51:43.243 W/ContentProviderHelper(  522): Slow operation: 130ms so far, now at getContentProviderImpl: updating data structures
+11-08 23:51:43.243 W/ContentProviderHelper(  522): Slow operation: 130ms so far, now at getContentProviderImpl: done!
+11-08 23:51:43.243 W/system_server(  522): Long monitor contention with owner binder:522_6 (890) at android.app.ContentProviderHolder com.android.server.am.ContentProviderHelper.getContentProviderImpl(android.app.IApplicationThread, java.lang.String, android.os.IBinder, int, java.lang.String, java.lang.String, boolean, int)(ContentProviderHelper.java:614) waiters=0 in void com.android.server.am.BroadcastQueueModernImpl.updateRunningList() for 130ms
+11-08 23:51:43.243 W/ActivityManager(  522): setHasOverlayUi called on unknown pid: 6357
+11-08 23:51:43.246 W/ActivityManager(  522): Slow operation: 91ms so far, now at startProcess: done updating battery stats
+11-08 23:51:43.246 W/ActivityManager(  522): Slow operation: 91ms so far, now at startProcess: building log message
+11-08 23:51:43.247 I/ActivityManager(  522): Start proc 6472:com.android.externalstorage/u0a86 for content provider {com.android.externalstorage/com.android.externalstorage.ExternalStorageProvider}
+11-08 23:51:43.247 W/ActivityManager(  522): Slow operation: 91ms so far, now at startProcess: starting to update pids map
+11-08 23:51:43.247 W/ActivityManager(  522): Slow operation: 91ms so far, now at startProcess: done updating pids map
+11-08 23:51:43.251 V/WindowManagerShell(  838): Track 0 became idle
+11-08 23:51:43.251 V/WindowManagerShell(  838): All active transition animations finished
+11-08 23:51:43.251 W/Looper  (  838): Slow dispatch took 206ms wmshell.main h=android.os.Handler c=com.android.wm.shell.transition.DefaultTransitionHandler$$ExternalSyntheticLambda0@7f353d0 m=0
+11-08 23:51:43.251 W/Looper  (  838): Slow delivery took 103ms wmshell.main h=android.os.Handler c=android.window.TaskOrganizer$1$$ExternalSyntheticLambda3@9043fc9 m=0
+11-08 23:51:43.260 D/MediaProvider( 1659): Deleted 0 Android/media items belonging to org.dpdns.bnai.anime on /data/user/0/com.google.android.providers.media.module/databases/external.db
+11-08 23:51:43.276 D/MediaGrants( 1659): Removed 0 media_grants for 0 user for org.dpdns.bnai.anime. Reason: Package orphaned
+11-08 23:51:43.279 W/A       ( 1805): Couldn't calculate ClientInstanceId, no account name
+11-08 23:51:43.283 I/A       ( 1805): No savedInstanceState.
+11-08 23:51:43.291 I/A       ( 1805): makeRequest: subscribing to new source
+11-08 23:51:43.300 I/A       ( 1805): OnCreate Was Called
+11-08 23:51:43.305 I/A       ( 1805): getMinusOnePromotion
+11-08 23:51:43.334 I/MediaProvider( 1659): End Intent { act=android.intent.action.PACKAGE_DATA_CLEARED dat=package: flg=0x5000010 cmp=com.google.android.providers.media.module/com.android.providers.media.MediaService (has extras) }
+11-08 23:51:43.335 W/Looper  (  838): Drained
+11-08 23:51:43.345 I/Fitness ( 5296): FitCleanupIntentOperation received Intent android.intent.action.PACKAGE_DATA_CLEARED [CONTEXT service_id=17 ]
+11-08 23:51:43.359 I/externalstorage( 6472): Using CollectorTypeCC GC.
+11-08 23:51:43.360 W/externalstorage( 6472): Unexpected CPU variant for x86: x86_64.
+11-08 23:51:43.360 W/externalstorage( 6472): Known variants: atom, sandybridge, silvermont, goldmont, goldmont-plus, tremont, kabylake, default
+11-08 23:51:43.362 E/externalstorage( 6472): Not starting debugger since process cannot load the jdwp agent.
+11-08 23:51:43.367 D/CompatibilityChangeReporter(  522): Compat change id reported: 168419799; UID 10086; state: DISABLED
+11-08 23:51:43.367 D/CompatibilityChangeReporter(  522): Compat change id reported: 273564678; UID 10086; state: DISABLED
+11-08 23:51:43.369 D/CompatibilityChangeReporter(  522): Compat change id reported: 265195908; UID 10086; state: ENABLED
+11-08 23:51:43.389 D/CompatibilityChangeReporter( 6472): Compat change id reported: 171979766; UID 10086; state: ENABLED
+11-08 23:51:43.390 D/CompatibilityChangeReporter( 6472): Compat change id reported: 242716250; UID 10086; state: ENABLED
+11-08 23:51:43.392 D/CompatibilityChangeReporter(  522): Compat change id reported: 170503758; UID 10086; state: ENABLED
+11-08 23:51:43.392 D/CompatibilityChangeReporter( 6472): Compat change id reported: 3400644; UID 10086; state: ENABLED
+11-08 23:51:43.400 D/PersistedStoragePackageUninstalledReceiver(  839): Received android.intent.action.PACKAGE_DATA_CLEARED for org.dpdns.bnai.anime for u0
+11-08 23:51:43.564 D/nativeloader( 6472): Configuring clns-shared-6 for other apk /system/priv-app/ExternalStorageProvider/ExternalStorageProvider.apk. target_sdk_version=34, uses_libraries=, library_path=/system/priv-app/ExternalStorageProvider/lib/x86_64:/system/lib64:/system_ext/lib64, permitted_path=/data:/mnt/expand:/data/user/0/com.android.externalstorage:/system/priv-app/ExternalStorageProvider:/system/lib64:/system_ext/lib64
+11-08 23:51:43.574 V/GraphicsEnvironment( 6472): Currently set values for:
+11-08 23:51:43.574 V/GraphicsEnvironment( 6472):   angle_gl_driver_selection_pkgs=[]
+11-08 23:51:43.574 V/GraphicsEnvironment( 6472):   angle_gl_driver_selection_values=[]
+11-08 23:51:43.575 V/GraphicsEnvironment( 6472): ANGLE GameManagerService for com.android.externalstorage: false
+11-08 23:51:43.575 V/GraphicsEnvironment( 6472): com.android.externalstorage is not listed in per-application setting
+11-08 23:51:43.575 V/GraphicsEnvironment( 6472): Neither updatable production driver nor prerelease driver is supported.
+11-08 23:51:43.586 D/ExternalStorage( 6472): After updating volumes, found 1 active roots
+11-08 23:51:43.591 W/oid.documentsui( 3082): Long monitor contention with owner pool-8-thread-5 (6457) at void com.android.documentsui.roots.ProvidersCache$MultiProviderUpdateTask.handleDocumentsProvider(android.content.pm.ProviderInfo, com.android.documentsui.base.UserId)(ProvidersCache.java:645) waiters=4 in void com.android.documentsui.roots.ProvidersCache$MultiProviderUpdateTask.handleDocumentsProvider(android.content.pm.ProviderInfo, com.android.documentsui.base.UserId) for 513ms
+11-08 23:51:43.592 I/ActivityManager(  522): Flag disabled. Ignoring finishAttachApplication from uid: 10086. pid: 6472
+11-08 23:51:43.603 I/A       ( 1805): #enqueuePeriodicJob: running = false
+11-08 23:51:43.612 I/A       ( 1805): #scheduledRefresh: enable_prod_refresh is true but we have no valid refresh schedule
+11-08 23:51:43.630 I/A       ( 1805): loading data on surface MinusOne.
+11-08 23:51:43.642 I/Choreographer( 1805): Skipped 55 frames!  The application may be doing too much work on its main thread.
+11-08 23:51:43.648 I/A       ( 1805): onApplyWindowInsets: systemWindowInsets=Insets{left=0, top=128, right=0, bottom=63}
+11-08 23:51:43.648 I/A       ( 1805): onApplyWindowInsets: Adjusting for display cutouts. Safe insets: left=0, top=128, right=0, bottom=0
+11-08 23:51:43.649 I/A       ( 1805): onApplyWindowInsets: systemWindowInsets=Insets{left=0, top=128, right=0, bottom=63}
+11-08 23:51:43.660 I/ActivityTaskManager(  522): Destroy timeout of remove-task, attempt to kill Task{5df38fe #8 type=standard A=10192:org.dpdns.bnai.anime}
+11-08 23:51:43.668 I/A       ( 1805): Created gRPC endpoint to "search" for service class com.google.android.apps.search.googleapp.search.suggest.plugins.onesearch.server.OneSearchSuggestService
+11-08 23:51:43.694 W/OpenGLRenderer(  522): Failed to initialize 101010-2 format, error = EGL_SUCCESS
+11-08 23:51:43.705 I/OpenGLRenderer( 1805): Davey! duration=953ms; Flags=0, FrameTimelineVsyncId=5928, IntendedVsync=342496953350, Vsync=343413619980, InputEventId=0, HandleInputStart=343432871703, AnimationStart=343432872895, PerformTraversalsStart=343432873085, DrawStart=343438076077, FrameDeadline=342613620012, FrameInterval=343428233416, FrameStartTime=16666666, SyncQueued=343438826167, SyncStart=343439120801, IssueDrawCommandsStart=343439159874, SwapBuffers=343439249911, FrameCompleted=343451191220, DequeueBufferDuration=2885, QueueBufferDuration=1111164, GpuCompleted=343451070505, SwapBuffersCompleted=343451191220, DisplayPresentTime=0, CommandSubmissionCompleted=343439249911, 
+11-08 23:51:43.773 D/BoundBrokerSvc( 5296): onBind: Intent { act=com.google.android.gms.auth.account.data.service.START pkg=com.google.android.gms }
+11-08 23:51:43.773 D/BoundBrokerSvc( 5296): Loading bound service for intent: Intent { act=com.google.android.gms.auth.account.data.service.START pkg=com.google.android.gms }
+11-08 23:51:43.780 I/FontLog ( 5296): Received query Google Sans, URI content://com.google.android.gms.fonts [CONTEXT service_id=132 ]
+11-08 23:51:43.782 I/FontLog ( 5296): Query [Google Sans] resolved to {Google Sans, wdth 100.0, wght 400, ital 0.0, bestEffort false} [CONTEXT service_id=132 ]
+11-08 23:51:43.782 I/FontLog ( 5296): Font PFD returned from cache for {Google Sans, wdth 100.0, wght 400, ital 0.0, bestEffort false} [CONTEXT service_id=132 ]
+11-08 23:51:43.797 I/FontLog ( 5296): Fetch {Google Sans, wdth 100.0, wght 400, ital 0.0, bestEffort false} end status Status{statusCode=SUCCESS, resolution=null} [CONTEXT service_id=132 ]
+11-08 23:51:43.799 I/FontLog ( 5296): Pulling font file for id = 2, cache size = 2 [CONTEXT service_id=132 ]
+11-08 23:51:43.890 I/FontLog ( 5296): Received query Google Sans:500, URI content://com.google.android.gms.fonts [CONTEXT service_id=132 ]
+11-08 23:51:43.894 I/FontLog ( 5296): Query [Google Sans:500] resolved to {Google Sans, wdth 100.0, wght 500, ital 0.0, bestEffort false} [CONTEXT service_id=132 ]
+11-08 23:51:43.896 I/FontLog ( 5296): Font PFD returned from cache for {Google Sans, wdth 100.0, wght 500, ital 0.0, bestEffort false} [CONTEXT service_id=132 ]
+11-08 23:51:43.896 I/FontLog ( 5296): Fetch {Google Sans, wdth 100.0, wght 500, ital 0.0, bestEffort false} end status Status{statusCode=SUCCESS, resolution=null} [CONTEXT service_id=132 ]
+11-08 23:51:43.902 I/FontLog ( 5296): Pulling font file for id = 3, cache size = 3 [CONTEXT service_id=132 ]
+11-08 23:51:43.907 W/SQLiteLog( 1805): (28) double-quoted string literal: "MAIN_FEED"
+11-08 23:51:43.907 W/SQLiteLog( 1805): (28) double-quoted string literal: "Session::Current"
+11-08 23:51:43.907 W/SQLiteLog( 1805): (28) double-quoted string literal: "MAIN_FEED"
+11-08 23:51:43.907 W/SQLiteLog( 1805): (28) double-quoted string literal: "Session::Current"
+11-08 23:51:43.912 W/A       ( 1805): Didn't find the session (MAIN_FEED, true)
+11-08 23:51:43.917 W/SystemServiceRegistry( 5296): No service published for: persistent_data_block
+11-08 23:51:43.920 W/A       ( 1805): Didn't find the session (MAIN_FEED, false)
+11-08 23:51:43.922 W/A       ( 1805): RenderableStreamDataSource#loadData - failed precheck
+11-08 23:51:43.922 W/A       ( 1805): DiscoverPrecheckException(precheckFailureReason=com.google.android.apps.search.googleapp.discover.w.a.c@654213c)
+11-08 23:51:43.922 W/A       ( 1805): 	at com.google.android.apps.search.googleapp.discover.w.bb.d(PG:16)
+11-08 23:51:43.922 W/A       ( 1805): 	at com.google.android.apps.search.googleapp.discover.w.ap.invokeSuspend(PG:5)
+11-08 23:51:43.922 W/A       ( 1805): 	at com.google.android.apps.search.googleapp.discover.w.ap.invoke(PG:1)
+11-08 23:51:43.922 W/A       ( 1805): 	at kotlinx.coroutines.f.b.a(PG:1)
+11-08 23:51:43.922 W/A       ( 1805): 	at kotlinx.coroutines.m.a(PG:11)
+11-08 23:51:43.922 W/A       ( 1805): 	at com.google.android.apps.search.googleapp.discover.v.bb.f(PG:2)
+11-08 23:51:43.922 W/A       ( 1805): 	at com.google.android.apps.search.googleapp.discover.v.bb.d(PG:15)
+11-08 23:51:43.922 W/A       ( 1805): 	at com.google.android.apps.search.googleapp.discover.v.an.invokeSuspend(PG:1)
+11-08 23:51:43.922 W/A       ( 1805): 	at i.c.b.a.a.resumeWith(PG:4)
+11-08 23:51:43.922 W/A       ( 1805): 	at kotlinx.coroutines.bk.run(PG:14)
+11-08 23:51:43.922 W/A       ( 1805): 	at com.google.apps.tiktok.coroutines.f.run(PG:1)
+11-08 23:51:43.922 W/A       ( 1805): 	at com.google.android.libraries.i.ae.run(PG:1)
+11-08 23:51:43.922 W/A       ( 1805): 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)
+11-08 23:51:43.922 W/A       ( 1805): 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:644)
+11-08 23:51:43.922 W/A       ( 1805): 	at com.google.android.libraries.i.k.run(PG:2)
+11-08 23:51:43.922 W/A       ( 1805): 	at com.google.android.libraries.i.p.run(PG:4)
+11-08 23:51:43.922 W/A       ( 1805): 	at java.lang.Thread.run(Thread.java:1012)
+11-08 23:51:43.926 W/earchbox:search( 1805): Long monitor contention with owner BG Thread #1 (2482) at void java.lang.Runtime.loadLibrary0(java.lang.ClassLoader, java.lang.Class, java.lang.String)(Runtime.java:1084) waiters=0 in void java.lang.Runtime.loadLibrary0(java.lang.ClassLoader, java.lang.Class, java.lang.String) for 124ms
+11-08 23:51:43.933 W/A       ( 1805): Queue length for executor EventBus is now 11. Perhaps some tasks are too long, or the pool is too small.
+11-08 23:51:43.944 I/A       ( 1805): Using proto config with mendel
+11-08 23:51:43.949 I/A       ( 1805): GMSCore Auth returned 0 accounts.
+11-08 23:51:43.949 I/A       ( 1805): GoogleOwnersProvider returned 0 accounts.
+11-08 23:51:43.953 I/A       ( 1805): Creating in-process transport to InProcessServerAddress[com.google.android.googlequicksearchbox/OnDeviceServer[Hash:26970806]]
+11-08 23:51:43.955 D/ActivityManager(  522): sync unfroze 2046 com.google.process.gapps for 7
+11-08 23:51:43.965 I/A       ( 1805): StreamFragmentPeer#onPending
+11-08 23:51:43.965 I/A       ( 1805): #fetchAndStoreData() on surface MinusOne.
+11-08 23:51:43.970 I/A       ( 1805): Using proto config with mendel
+11-08 23:51:43.970 I/ActivityManager(  522): Force stopping org.dpdns.bnai.anime appid=10192 user=0: from pid 6507
+11-08 23:51:43.972 W/A       ( 1805): Fetch failed. Renderable stream failure reason: USER_SIGNED_OUT
+11-08 23:51:43.972 W/A       ( 1805): DiscoverPrecheckException(precheckFailureReason=com.google.android.apps.search.googleapp.discover.w.a.c@654213c)
+11-08 23:51:43.972 W/A       ( 1805): 	at com.google.android.apps.search.googleapp.discover.w.bb.d(PG:16)
+11-08 23:51:43.972 W/A       ( 1805): 	at com.google.android.apps.search.googleapp.discover.w.ax.invokeSuspend(PG:5)
+11-08 23:51:43.972 W/A       ( 1805): 	at com.google.android.apps.search.googleapp.discover.w.ax.invoke(PG:1)
+11-08 23:51:43.972 W/A       ( 1805): 	at kotlinx.coroutines.f.b.a(PG:1)
+11-08 23:51:43.972 W/A       ( 1805): 	at kotlinx.coroutines.m.a(PG:11)
+11-08 23:51:43.972 W/A       ( 1805): 	at com.google.android.apps.search.googleapp.discover.w.bb.c(PG:2)
+11-08 23:51:43.972 W/A       ( 1805): 	at com.google.android.apps.search.googleapp.discover.v.am.invokeSuspend(PG:5)
+11-08 23:51:43.972 W/A       ( 1805): 	at com.google.android.apps.search.googleapp.discover.v.am.invoke(PG:1)
+11-08 23:51:43.972 W/A       ( 1805): 	at kotlinx.coroutines.f.b.a(PG:1)
+11-08 23:51:43.972 W/A       ( 1805): 	at kotlinx.coroutines.m.a(PG:11)
+11-08 23:51:43.972 W/A       ( 1805): 	at com.google.android.apps.search.googleapp.discover.v.al.invokeSuspend(PG:4)
+11-08 23:51:43.972 W/A       ( 1805): 	at i.c.b.a.a.resumeWith(PG:4)
+11-08 23:51:43.972 W/A       ( 1805): 	at kotlinx.coroutines.bk.run(PG:14)
+11-08 23:51:43.972 W/A       ( 1805): 	at com.google.apps.tiktok.coroutines.f.run(PG:1)
+11-08 23:51:43.972 W/A       ( 1805): 	at com.google.android.libraries.i.ae.run(PG:1)
+11-08 23:51:43.972 W/A       ( 1805): 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)
+11-08 23:51:43.972 W/A       ( 1805): 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:644)
+11-08 23:51:43.972 W/A       ( 1805): 	at com.google.android.libraries.i.k.run(PG:2)
+11-08 23:51:43.972 W/A       ( 1805): 	at com.google.android.libraries.i.p.run(PG:4)
+11-08 23:51:43.972 W/A       ( 1805): 	at java.lang.Thread.run(Thread.java:1012)
+11-08 23:51:43.980 W/A       ( 1805): Failed RenderableStream callback; SubscriptionCallbacks#onError(Throwable) called.
+11-08 23:51:43.980 W/A       ( 1805): com.google.android.apps.search.googleapp.discover.v.i: DiscoverPrecheckException(precheckFailureReason=com.google.android.apps.search.googleapp.discover.w.a.c@654213c)
+11-08 23:51:43.980 W/A       ( 1805): 	at com.google.android.apps.search.googleapp.discover.v.ak.a(PG:1)
+11-08 23:51:43.980 W/A       ( 1805): 	at com.google.android.apps.search.googleapp.discover.v.am.invokeSuspend(PG:17)
+11-08 23:51:43.980 W/A       ( 1805): 	at i.c.b.a.a.resumeWith(PG:4)
+11-08 23:51:43.980 W/A       ( 1805): 	at kotlinx.coroutines.bk.run(PG:14)
+11-08 23:51:43.980 W/A       ( 1805): 	at com.google.apps.tiktok.coroutines.f.run(PG:1)
+11-08 23:51:43.980 W/A       ( 1805): 	at com.google.android.libraries.i.ae.run(PG:1)
+11-08 23:51:43.980 W/A       ( 1805): 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)
+11-08 23:51:43.980 W/A       ( 1805): 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:644)
+11-08 23:51:43.980 W/A       ( 1805): 	at com.google.android.libraries.i.k.run(PG:2)
+11-08 23:51:43.980 W/A       ( 1805): 	at com.google.android.libraries.i.p.run(PG:4)
+11-08 23:51:43.980 W/A       ( 1805): 	at java.lang.Thread.run(Thread.java:1012)
+11-08 23:51:43.980 W/A       ( 1805): Caused by: DiscoverPrecheckException(precheckFailureReason=com.google.android.apps.search.googleapp.discover.w.a.c@654213c)
+11-08 23:51:43.980 W/A       ( 1805): 	at com.google.android.apps.search.googleapp.discover.w.bb.d(PG:16)
+11-08 23:51:43.980 W/A       ( 1805): 	at com.google.android.apps.search.googleapp.discover.w.ax.invokeSuspend(PG:5)
+11-08 23:51:43.980 W/A       ( 1805): 	at com.google.android.apps.search.googleapp.discover.w.ax.invoke(PG:1)
+11-08 23:51:43.980 W/A       ( 1805): 	at kotlinx.coroutines.f.b.a(PG:1)
+11-08 23:51:43.980 W/A       ( 1805): 	at kotlinx.coroutines.m.a(PG:11)
+11-08 23:51:43.980 W/A       ( 1805): 	at com.google.android.apps.search.googleapp.discover.w.bb.c(PG:2)
+11-08 23:51:43.980 W/A       ( 1805): 	at com.google.android.apps.search.googleapp.discover.v.am.invokeSuspend(PG:5)
+11-08 23:51:43.980 W/A       ( 1805): 	at com.google.android.apps.search.googleapp.discover.v.am.invoke(PG:1)
+11-08 23:51:43.980 W/A       ( 1805): 	at kotlinx.coroutines.f.b.a(PG:1)
+11-08 23:51:43.980 W/A       ( 1805): 	at kotlinx.coroutines.m.a(PG:11)
+11-08 23:51:43.980 W/A       ( 1805): 	at com.google.android.apps.search.googleapp.discover.v.al.invokeSuspend(PG:4)
+11-08 23:51:43.980 W/A       ( 1805): 	... 9 more
+11-08 23:51:43.984 I/A       ( 1805): group apa_head_suggest present without account in *
+11-08 23:51:43.987 D/CarrierSvcBindHelper( 1054): onHandleForceStop: [org.dpdns.bnai.anime]
+11-08 23:51:43.987 D/CarrierSvcBindHelper( 1054): No carrier app for: 0
+11-08 23:51:43.989 I/A       ( 1805): incrementApaDataDownloadStoreStatus(latency = PT0.035S, appVersion = 13.17.16.23, status = OK, locale = *, fileGroupnames = apa_head_suggest, accountScoped = false, localGroupsAvailable = false, timeSinceSearchBoot = Optional[PT5M6.3S] (FIVE_TO_TEN_MINUTES), timeSinceDataDownloadInit = PT3M54.324S (ONE_TO_FIVE_MINUTES))
+11-08 23:51:44.009 I/A       ( 1805): GMSCore Auth returned 0 accounts.
+11-08 23:51:44.009 I/A       ( 1805): GoogleOwnersProvider returned 0 accounts.
+11-08 23:51:44.034 W/View    ( 1805): requestLayout() improperly called by android.widget.FrameLayout{a807c73 V.E...... ......ID 0,0-1080,525 #7f0b0fee app:id/googleapp_discover_header_container} during layout: running second layout pass
+11-08 23:51:44.047 I/A       ( 1805): Successfully updated last shown time for signed out error.
+11-08 23:51:44.058 D/CompatibilityChangeReporter(  522): Compat change id reported: 161252188; UID 10192; state: DISABLED
+11-08 23:51:44.059 D/CompatibilityChangeReporter(  522): Compat change id reported: 265464455; UID 10192; state: DISABLED
+11-08 23:51:44.059 D/CompatibilityChangeReporter(  522): Compat change id reported: 265452344; UID 10192; state: DISABLED
+11-08 23:51:44.060 D/CompatibilityChangeReporter(  522): Compat change id reported: 266124927; UID 10192; state: DISABLED
+11-08 23:51:44.060 D/CompatibilityChangeReporter(  522): Compat change id reported: 265451093; UID 10192; state: DISABLED
+11-08 23:51:44.060 D/CompatibilityChangeReporter(  522): Compat change id reported: 265456536; UID 10192; state: DISABLED
+11-08 23:51:44.060 D/CompatibilityChangeReporter(  522): Compat change id reported: 255940284; UID 10192; state: DISABLED
+11-08 23:51:44.061 D/CompatibilityChangeReporter(  522): Compat change id reported: 236283604; UID 10192; state: DISABLED
+11-08 23:51:44.061 D/CompatibilityChangeReporter(  522): Compat change id reported: 263959004; UID 10192; state: DISABLED
+11-08 23:51:44.061 D/CompatibilityChangeReporter(  522): Compat change id reported: 264304459; UID 10192; state: DISABLED
+11-08 23:51:44.062 D/CompatibilityChangeReporter(  522): Compat change id reported: 264301586; UID 10192; state: DISABLED
+11-08 23:51:44.062 D/CompatibilityChangeReporter(  522): Compat change id reported: 254631730; UID 10192; state: DISABLED
+11-08 23:51:44.062 D/CompatibilityChangeReporter(  522): Compat change id reported: 273509367; UID 10192; state: DISABLED
+11-08 23:51:44.062 D/CompatibilityChangeReporter(  522): Compat change id reported: 263259275; UID 10192; state: DISABLED
+11-08 23:51:44.062 D/CompatibilityChangeReporter(  522): Compat change id reported: 174042980; UID 10192; state: DISABLED
+11-08 23:51:44.062 D/CompatibilityChangeReporter(  522): Compat change id reported: 174042936; UID 10192; state: DISABLED
+11-08 23:51:44.062 D/CompatibilityChangeReporter(  522): Compat change id reported: 181136395; UID 10192; state: DISABLED
+11-08 23:51:44.062 D/CompatibilityChangeReporter(  522): Compat change id reported: 194480991; UID 10192; state: ENABLED
+11-08 23:51:44.068 D/CompatibilityChangeReporter(  522): Compat change id reported: 184838306; UID 10192; state: DISABLED
+11-08 23:51:44.068 D/CompatibilityChangeReporter(  522): Compat change id reported: 185004937; UID 10192; state: DISABLED
+11-08 23:51:44.069 V/SplashScreenExceptionList(  522): SplashScreen checking exception for package org.dpdns.bnai.anime (target sdk:34) -> false
+11-08 23:51:44.069 D/CompatibilityChangeReporter(  522): Compat change id reported: 205907456; UID 10192; state: ENABLED
+11-08 23:51:44.072 D/SplashScreenView(  838): Build android.window.SplashScreenView{b01dcfc V.E...... ......ID 0,0-0,0}
+11-08 23:51:44.072 D/SplashScreenView(  838): Icon: view: null drawable: null size: 0
+11-08 23:51:44.072 D/SplashScreenView(  838): Branding: view: android.view.View{8080f85 G.ED..... ......I. 0,0-0,0 #10204ef android:id/splashscreen_branding_view} drawable: null size w: 0 h: 0
+11-08 23:51:44.072 V/WindowManagerShell(  838): Transition requested: android.os.BinderProxy@60751da TransitionRequestInfo { type = OPEN, triggerTask = TaskInfo{userId=0 taskId=9 displayId=0 isRunning=true baseIntent=Intent { act=android.intent.action.MAIN cat=[android.intent.category.LAUNCHER] flg=0x10000000 pkg=org.dpdns.bnai.anime cmp=org.dpdns.bnai.anime/.MainActivity } baseActivity=ComponentInfo{org.dpdns.bnai.anime/org.dpdns.bnai.anime.MainActivity} topActivity=ComponentInfo{org.dpdns.bnai.anime/org.dpdns.bnai.anime.MainActivity} origActivity=null realActivity=ComponentInfo{org.dpdns.bnai.anime/org.dpdns.bnai.anime.MainActivity} numActivities=1 lastActiveTime=343856 supportsMultiWindow=true resizeMode=1 isResizeable=true minWidth=-1 minHeight=-1 defaultMinSize=220 token=WCT{android.window.IWindowContainerToken$Stub$Proxy@4aa760b} topActivityType=1 pictureInPictureParams=null shouldDockBigOverlays=false launchIntoPipHostTaskId=-1 lastParentTaskIdBeforePip=-1 displayCutoutSafeInsets=Rect(0, 128 - 0, 0) topActivityInfo=ActivityInfo{40dcce8 org.dpdns.bnai.anime.MainActivity} launchCookies=[] positionInParent=Point(0, 0) parentTaskId=-1 isFocused=false isVisible=false isVisibleRequested=false isSleeping=false topActivityInSizeCompat=false topActivityEligibleForLetterboxEducation= false topActivityLetterboxed= false isFromDoubleTap= false topActivityLetterboxVerticalPosition= -1 topActivityLetterboxHorizontalPosition= -1 topActivityLetterboxWidth=-1 topActivityLetterboxHeight=-1 locusId=null displayAreaFeatureId=1 cameraCompatControlState=hidden}, remoteTransition = null, displayChange = null }
+11-08 23:51:44.073 D/CompatibilityChangeReporter(  522): Compat change id reported: 194833441; UID 10192; state: ENABLED
+11-08 23:51:44.073 I/ActivityTaskManager(  522): START u0 {act=android.intent.action.MAIN cat=[android.intent.category.LAUNCHER] flg=0x10000000 pkg=org.dpdns.bnai.anime cmp=org.dpdns.bnai.anime/.MainActivity} with LAUNCH_MULTIPLE from uid 10193 (BAL_ALLOW_PERMISSION) result code=0
+11-08 23:51:44.074 D/CompatibilityChangeReporter(  522): Compat change id reported: 135634846; UID 10192; state: DISABLED
+11-08 23:51:44.074 D/CompatibilityChangeReporter(  522): Compat change id reported: 177438394; UID 10192; state: DISABLED
+11-08 23:51:44.075 D/CompatibilityChangeReporter(  522): Compat change id reported: 135772972; UID 10192; state: DISABLED
+11-08 23:51:44.075 D/CompatibilityChangeReporter(  522): Compat change id reported: 135754954; UID 10192; state: ENABLED
+11-08 23:51:44.075 D/CompatibilityChangeReporter(  522): Compat change id reported: 143937733; UID 10192; state: ENABLED
+11-08 23:51:44.080 D/Zygote  (  336): Forked child process 6516
+11-08 23:51:44.081 D/CompatibilityChangeReporter(  522): Compat change id reported: 168419799; UID 10192; state: DISABLED
+11-08 23:51:44.081 D/CompatibilityChangeReporter(  522): Compat change id reported: 273564678; UID 10192; state: DISABLED
+11-08 23:51:44.088 I/ActivityManager(  522): Start proc 6516:org.dpdns.bnai.anime/u0a192 for next-top-activity {org.dpdns.bnai.anime/org.dpdns.bnai.anime.MainActivity}
+11-08 23:51:44.095 I/BpBinder(  400): onLastStrongRef automatically unlinking death recipients: 
+11-08 23:51:44.117 I/pdns.bnai.anime( 6516): Late-enabling -Xcheck:jni
+11-08 23:51:44.124 D/CoreBackPreview(  522): Window{aa2845a u0 Splash Screen org.dpdns.bnai.anime}: Setting back callback OnBackInvokedCallbackInfo{mCallback=android.window.IOnBackInvokedCallback$Stub$Proxy@f48c26, mPriority=0, mIsAnimationCallback=false}
+11-08 23:51:44.134 I/pdns.bnai.anime( 6516): Using CollectorTypeCC GC.
+11-08 23:51:44.135 W/pdns.bnai.anime( 6516): Unexpected CPU variant for x86: x86_64.
+11-08 23:51:44.135 W/pdns.bnai.anime( 6516): Known variants: atom, sandybridge, silvermont, goldmont, goldmont-plus, tremont, kabylake, default
+11-08 23:51:44.148 D/CompatibilityChangeReporter(  522): Compat change id reported: 265195908; UID 10192; state: ENABLED
+11-08 23:51:44.161 D/Maestro ( 6232): Requesting view hierarchy
+11-08 23:51:44.162 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:44.162 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:44.177 V/WindowManagerShell(  838): onTransitionReady android.os.BinderProxy@60751da: {id=10 t=OPEN f=0x0 trk=0 r=[0@Point(0, 0)] c=[{WCT{android.window.IWindowContainerToken$Stub$Proxy@a44e3f5} m=OPEN f=NONE leash=Surface(name=Task=9)/@0xeda4f7e sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0},{WCT{android.window.IWindowContainerToken$Stub$Proxy@147e58a} m=TO_BACK f=SHOW_WALLPAPER leash=Surface(name=Task=1)/@0xa06cdf sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0}]}
+11-08 23:51:44.177 V/WindowManagerShell(  838): Playing animation for (#10)android.os.BinderProxy@60751da@0
+11-08 23:51:44.177 V/WindowManagerShell(  838):  try handler com.android.wm.shell.transition.DefaultMixedHandler@7af01d4
+11-08 23:51:44.177 V/WindowManagerShell(  838):  try handler com.android.wm.shell.keyguard.KeyguardTransitionHandler@60a8f7d
+11-08 23:51:44.177 V/WindowManagerShell(  838):  try handler com.android.wm.shell.activityembedding.ActivityEmbeddingController@1e55e72
+11-08 23:51:44.177 V/WindowManagerShell(  838):  try handler com.android.wm.shell.recents.RecentsTransitionHandler@f9c22c3
+11-08 23:51:44.177 V/ShellRecents(  838): RecentsTransitionHandler.startAnimation: no controller found
+11-08 23:51:44.177 V/WindowManagerShell(  838):  try handler com.android.wm.shell.pip.PipTransition@de46740
+11-08 23:51:44.177 V/WindowManagerShell(  838):  try handler com.android.wm.shell.splitscreen.StageCoordinator@d35a679
+11-08 23:51:44.177 V/WindowManagerShell(  838):  try handler com.android.wm.shell.transition.RemoteTransitionHandler@326efbe
+11-08 23:51:44.177 V/WindowManagerShell(  838): Transition doesn't have explicit remote, search filters for match for {id=10 t=OPEN f=0x0 trk=0 r=[0@Point(0, 0)] c=[{WCT{android.window.IWindowContainerToken$Stub$Proxy@a44e3f5} m=OPEN f=NONE leash=Surface(name=Task=9)/@0xeda4f7e sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0},{WCT{android.window.IWindowContainerToken$Stub$Proxy@147e58a} m=TO_BACK f=SHOW_WALLPAPER leash=Surface(name=Task=1)/@0xa06cdf sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0}]}
+11-08 23:51:44.177 V/WindowManagerShell(  838):  Checking filter Pair{{types=[] flags=0x0] notFlags=0x0 checks=[{atype=dream independent=true modes=[OPEN,TO_FRONT] flags=NONE mustBeTask=false order=ANY topActivity=null},{atype=home independent=true modes=[CLOSE,TO_BACK] flags=NONE mustBeTask=false order=ANY topActivity=null}]} RemoteTransition { remoteTransition = android.window.IRemoteTransition$Stub$Proxy@9ca8cc, appThread = android.app.IApplicationThread$Stub$Proxy@7ea3715, debugName = LauncherToDream }}
+11-08 23:51:44.177 V/WindowManagerShell(  838):  Checking filter Pair{{types=[] flags=0x0] notFlags=0x100 checks=[{atype=home independent=true modes=[OPEN,TO_FRONT] flags=NONE mustBeTask=false order=TOP topActivity=ComponentInfo{com.google.android.apps.nexuslauncher/com.google.android.apps.nexuslauncher.NexusLauncherActivity}},{atype=standard independent=true modes=[CLOSE,TO_BACK] flags=NONE mustBeTask=false order=ANY topActivity=null}]} RemoteTransition { remoteTransition = android.window.IRemoteTransition$Stub$Proxy@ac00a2a, appThread = android.app.IApplicationThread$Stub$Proxy@d59501b, debugName = QuickstepLaunchHome }}
+11-08 23:51:44.177 V/WindowManagerShell(  838):  Delegate animation for #10 to null
+11-08 23:51:44.177 V/WindowManagerShell(  838):  try handler com.android.wm.shell.transition.DefaultTransitionHandler@f94281f
+11-08 23:51:44.178 V/WindowManagerShell(  838): start default transition animation, info = {id=10 t=OPEN f=0x0 trk=0 r=[0@Point(0, 0)] c=[{WCT{android.window.IWindowContainerToken$Stub$Proxy@a44e3f5} m=OPEN f=NONE leash=Surface(name=Task=9)/@0xeda4f7e sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0},{WCT{android.window.IWindowContainerToken$Stub$Proxy@147e58a} m=TO_BACK f=SHOW_WALLPAPER leash=Surface(name=Task=1)/@0xa06cdf sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0}]}
+11-08 23:51:44.178 V/WindowManagerShell(  838): loadAnimation: anim=android.view.animation.AnimationSet@fc24018 animAttr=0x13 type=OPEN isEntrance=false
+11-08 23:51:44.178 V/WindowManager(  522): Sent Transition #10 createdAt=11-08 23:51:44.063 via request=TransitionRequestInfo { type = OPEN, triggerTask = TaskInfo{userId=0 taskId=9 displayId=0 isRunning=true baseIntent=Intent { act=android.intent.action.MAIN cat=[android.intent.category.LAUNCHER] flg=0x10000000 pkg=org.dpdns.bnai.anime cmp=org.dpdns.bnai.anime/.MainActivity } baseActivity=ComponentInfo{org.dpdns.bnai.anime/org.dpdns.bnai.anime.MainActivity} topActivity=ComponentInfo{org.dpdns.bnai.anime/org.dpdns.bnai.anime.MainActivity} origActivity=null realActivity=ComponentInfo{org.dpdns.bnai.anime/org.dpdns.bnai.anime.MainActivity} numActivities=1 lastActiveTime=343856 supportsMultiWindow=true resizeMode=1 isResizeable=true minWidth=-1 minHeight=-1 defaultMinSize=220 token=WCT{RemoteToken{96526bd Task{4c9a14e #9 type=standard A=10192:org.dpdns.bnai.anime}}} topActivityType=1 pictureInPictureParams=null shouldDockBigOverlays=false launchIntoPipHostTaskId=-1 lastParentTaskIdBeforePip=-1 displayCutoutSafeInsets=Rect(0, 128 - 0, 0) topActivityInfo=ActivityInfo{50d44b2 org.dpdns.bnai.anime.MainActivity} launchCookies=[] positionInParent=Point(0, 0) parentTaskId=-1 isFocused=false isVisible=false isVisibleRequested=false isSleeping=false topActivityInSizeCompat=false topActivityEligibleForLetterboxEducation= false topActivityLetterboxed= false isFromDoubleTap= false topActivityLetterboxVerticalPosition= -1 topActivityLetterboxHorizontalPosition= -1 topActivityLetterboxWidth=-1 topActivityLetterboxHeight=-1 locusId=null displayAreaFeatureId=1 cameraCompatControlState=hidden}, remoteTransition = null, displayChange = null }
+11-08 23:51:44.179 V/WindowManagerShell(  838): loadAnimation: anim=android.view.animation.AnimationSet@a745c4 animAttr=0x12 type=OPEN isEntrance=true
+11-08 23:51:44.179 V/WindowManager(  522):     startWCT=WindowContainerTransaction { changes = {} hops = [] errorCallbackToken=null taskFragmentOrganizer=null }
+11-08 23:51:44.199 V/WindowManager(  522):     info={id=10 t=OPEN f=0x0 trk=0 r=[0@Point(0, 0)] c=[{WCT{RemoteToken{96526bd Task{4c9a14e #9 type=standard A=10192:org.dpdns.bnai.anime}}} m=OPEN f=NONE leash=Surface(name=Task=9)/@0x6377067 sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0},{WCT{RemoteToken{729d Task{8bd53eb #1 type=home}}} m=TO_BACK f=SHOW_WALLPAPER leash=Surface(name=Task=1)/@0x214f619 sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0}]}
+11-08 23:51:44.203 V/WindowManagerShell(  838):  animated by com.android.wm.shell.transition.DefaultTransitionHandler@f94281f
+11-08 23:51:44.213 V/WindowManagerShell(  838): Transition animation finished (aborted=false), notifying core (#10)android.os.BinderProxy@60751da@0
+11-08 23:51:44.275 D/EGL_emulation( 1110): app_time_stats: avg=164.89ms min=7.99ms max=770.51ms count=8
+11-08 23:51:44.290 I/adbd    (  410): jdwp connection from 6516
+11-08 23:51:44.295 W/system_server(  522): Long monitor contention with owner android.anim (545) at android.window.TaskSnapshot com.android.server.wm.SnapshotCache.getSnapshot(java.lang.Integer)(SnapshotCache.java:53) waiters=0 in void com.android.server.wm.AccessibilityController.performComputeChangedWindowsNot(int, boolean) for 118ms
+11-08 23:51:44.301 V/WindowManager(  522): Finish Transition #10: created at 11-08 23:51:44.063 collect-started=0.019ms request-sent=7.484ms started=11.155ms ready=108.936ms sent=113.029ms finished=238.154ms
+11-08 23:51:44.303 V/WindowManagerShell(  838): Track 0 became idle
+11-08 23:51:44.303 V/WindowManagerShell(  838): All active transition animations finished
+11-08 23:51:44.303 W/Looper  (  838): Slow dispatch took 89ms wmshell.main h=android.os.Handler c=com.android.wm.shell.transition.DefaultTransitionHandler$$ExternalSyntheticLambda0@b244bcf m=0
+11-08 23:51:44.339 I/AppsFilter(  522): interaction: PackageSetting{d576bac org.dpdns.bnai.anime/10192} -> PackageSetting{c7fabe5 dev.mobile.maestro/10193} BLOCKED
+11-08 23:51:44.347 I/.mobile.maestro( 6232): Background concurrent copying GC freed 278462(14MB) AllocSpace objects, 241(9264KB) LOS objects, 49% free, 11MB/23MB, paused 34us,11us total 252.212ms
+11-08 23:51:44.389 D/CompatibilityChangeReporter( 6516): Compat change id reported: 171979766; UID 10192; state: ENABLED
+11-08 23:51:44.395 D/CompatibilityChangeReporter( 6516): Compat change id reported: 242716250; UID 10192; state: ENABLED
+11-08 23:51:44.454 D/CompatibilityChangeReporter(  522): Compat change id reported: 170503758; UID 10192; state: ENABLED
+11-08 23:51:44.466 W/ziparchive( 6516): Unable to open '/data/app/~~vqQ38lSMY5Rs646Zm75a8A==/org.dpdns.bnai.anime-liSTGR-Jqy3qRYMdF1kOHg==/base.dm': No such file or directory
+11-08 23:51:44.474 W/ziparchive( 6516): Unable to open '/data/app/~~vqQ38lSMY5Rs646Zm75a8A==/org.dpdns.bnai.anime-liSTGR-Jqy3qRYMdF1kOHg==/base.dm': No such file or directory
+11-08 23:51:44.500 D/SearchTargetUtil( 1110):  query= size=15
+11-08 23:51:44.500 D/SearchTargetUtil( 1110): layoutType=extra_tall_icon_row resultType=131072 packageName=com.google.android.googlequicksearchbox extras=Bundle{bitmap_url=data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAkGBwgHBgkIBwgKCgkLDRYPDQwMDRsUFRAWIB0iIiAdHx8kKDQsJCYxJx8fLT0tMTU3Ojo6Iys/RD84QzQ5OjcBCgoKDQwNGg8PGjclHyU3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3N//AABEIAHwAfAMBIgACEQEDEQH/xAAcAAABBQEBAQAAAAAAAAAAAAAFAQIEBgcAAwj/xAA8EAACAQMCAwUGAwcCBwAAAAABAgMABBEFIQYSMRNBUWFxIjKBkaHBBxTRFSNCUoKx8EPhJDM0U2KSwv/EABkBAAMBAQEAAAAAAAAAAAAAAAECAwQABf/EACIRAAMBAAMAAQQDAAAAAAAAAAABAhEDEiExBEFRYRMi8P/aAAwDAQACEQMRAD8AtGK7GdqdiuAoHFb0fhm60uQdlqStD2rSFDbLk5OSObrXlc8EW1xYR273BEqXDTCYJv7RyVI8KtiilO25oYg6wXeaQLnVNPvTMV/JhsIF97IxQ670UyazcX1rq3YSzKqtGIkfYetQeKuIsMbW2m5EyVJU4MjeA8v71lupXd7HfB0eWF0OQVk3Hy6UPGH1Gn6/HpNvd3Mmp3Xayz2qwMvKBy4/i8jSWt1pmt6RaaXJqT80UiMsrAZflOQKoAE88f5u6Z55H97MfNn716QRW857SNJYZT7wXYN5j9KXQ4azfcNWmp6mb29mlkAi7OONXKBB3nI3OaZacLw2y6eou5XWwlaSIMBvnuPpVa4c4sk04C21FjPbDAWYe8nrWgWtxBdwLPbSrJE3RlNMurA9RX7ngywutNms5pZT2lw1wJcDmRmO4HlXtfcJ2d8LhZppcTwRQnGPZCHII86sIFLimxA1lfu+E7O5tryAzTIl2Iw3Lj2QnTHypV4YDWVzZ3Oq39xBcQmErIy+yD3jbrVgrq7EDQC/CunPfade/vBPYoERgR7YHTm8abrvCVhrd6Lu7knWQIExGwAwM+XnVhxXYrsOImKUClpRXHHCgfFusppGmuw3mcEIM9POjtZdxtqKX+pYH/SwZLEHd8A5I9OnrS08Q0rWUtGutc1N3VZWXJ5QG3UfCrNa8KX11MhlSXPJy8zqcUd4H0e3s41kiUFmG7kbmtGtIjgHFRq/wa+Pg81mfQ/h4zoe2mdQehzUa8/DaSF2ntrtA43AZDv8eta32DMmTgVGmh23+FDs0O+KTC7tXTnSZOzmDGN8jo3+/wBs03hnie50W85tjGT++iOyuOmfI+dWzjezhttTgMqgR3p5GJ2AYDY/aqDqemSQXBynMrkhWB91u8f3+eRTJme5x4btpd/BqVolxbNzIwz6VNxWN8La/PolzasWVrSU8syZOVH83l/nlWyIwdAykEEZBFWl6iDWM7FKBS11MA6kxTsUmK44jVwFdS0DgFxlq/7I0WWRG5ZZPYQ/y7bn4Csqkgmv7aYIRsApP2+m9WX8Vbppruws42GXPKq53JJA+VUuLUJLeVLVdgW7OQjr3DH0qVa2Vjw1vha3EdjbBd8IBv5VdrQbDYdKpnD2o2MFtGJ50UqgyM9Ks1hr+lSyKkN5E7n+HoTUUb+yzA8CAmDUadGbr0pHvYo4jKBkDNCZdfvZp2hs9JkkQHHau4UHz607F3APxxoy6xo0luMLOp5oHPc/d8D0PrWVQXDmNhcx5urd8TW7bF8bH+odR6YrWNSutRmJRrZIs7HmYH5YrPOPtMeJV1mBSrbJcYHePdf7fKhP4J8i30r15dadJHCbdn5mchl/lyfrWxcDah+0eG7ORpA7onIxz1wcA/Svn+6kEz9scBzuSBsa0b8Fr+U3N5YM2UCdqoz03wftVpWGSvTWa7FLS1QQ4CuIp1JQOIdeN5MILd3Y4wK9qrvFN5yxCJT73hS3XWdGmezwyzjuZ5NXhuTk5yQ3fsen+eNAdIU3Gr2kZJw8yk5798mrPxJYm6VJ1BJj6gd+aEW8K2uvWpEfZMsoDJ5461PjvZK3OUaXYQR2c0cX7OS5m5MrzKMeO5o/p1tJcntLnSre1JxgKqg9NzkY6fXwp+mIkyo/KCVAGTRowuLeQjAwpyemKlvhtUfciW1wf2ZJGWDOrkBx3imXllJPHi3mfleP2HUe43idqiacOawkJzjmODRfSmDW7fvMEHBHhSpj1HgCTRbuKZXkvZJTz8zjHs48N9/rTNdijmtXgkQFHXDA99Wqe1cIWY5BG1VjVgQu/c30zRbb9F6qUZBJwheNBe3NuVNvbSMG5jgqo3zRn8JbW6h4hkkHsAwH2W/i3H6GieuObLStXkilZRJNHFyA+PfQXgvWp4uM7OGJTJE7GJlHXfct8xV5psw8kqTc1ORuMUtcPOnVUgJ3VBj1ESAnsJBv37VPruUeArjij67rk8cVzaTLFbuB7yyZLeQ2qp6lqN9dssioFTAVAT19K99R4b1a71O2lt3Y2UrABn3YjvZh3U3VlNtcOq+0tsgjXA6tisnNacLEenPFMvPkD6hDdXELI/KpG/X5VV0unW/aW4kLyh1HMd8kHc/LNWi9SVoYoQXLuR2hB6An9M1WNXsvy92Sebs23DY6UeBrMM/PLT8N54fnUW6ZIBxvmiuo3qvp8kaOBzDH60D4Qa31LSbO4JyskYD469P1r01fTZrG5DWVwewG0iSjnI8xuPlS/c1KtQ6yN2bZooSjQtvzYwVHmDvU6yY2srhsurLhg+PtS6WqCNWj1Ip0LAWp8fXwrr9bR35I5LydycZY8gO/z6f3psC2/wDI94tRBHYK3aIfdx1HrQrVIy1tM2N8bUdsbC3sbQlEzKTzMSScnp391BuJ5BbabICfbIwMePdSi6zJOLO3uZOZJ27Hm52jzszeOPLxoHw5Hqya1bnR0lN5z4Xkxt652x60Z4nle0vIVZcq0IRid+/f/PSnaHrM+g3pubQdq0p3RwFVl8M/wn9a0Q8Rg5F/Zm6WBnNnCLxka4CASMi8oLd5A7qkigXC+pz61bjUHhWGJ1ARA/N9cDff6UeFURI6otzqNpbSdnPOiPjOCakyNyRs/gCayrUpZr69lndsknvPSuYUi9fkr5YREt8AoHLnsRnHz61Tdc0yezkIjnDIWJBdctv4mtDqscTJlDtvmocsLqX4+SuxR1t50dmWVWLdedf7UJ1aIGdUmlUSSe6oQ4PxqxspB3oXrll+btwVLCRDlSo3rJxvK9NFt1I38OeJjpGoPpt2cWszns2zsjeHoa1r8xHd7MQTjB86x2w0kmEC7Qkq/MoZsnPnVgsdUurQLkNIYtj4uv69KvVKn4LxtyvTT7CPlZTAq5HQ4Ne1wqxyFmUDx2xk0I0LinS57MhbiJJMfxHBB+NR9X4ohcdlA0U0xB9w7D1NN7hR2tDLXqDbm2AyarGos2oXpkk/5UXuqO9vGm2Uk84ZjksetEIrXkjwfjS4cvTN+O7SVfyc8aghXYPzDb2sYz8sUD4dsf21qIsLmQxPICEWPA5z1xvWna1Yi5ikRlyHRl+lZJKh7QkdQc+lV48aMvOnNafRGiadHpemW9lCPYiQD1ONzU8Csg4T/EW800x2etlruz2UT5zLGPP+cfX16VpWlcS6Lq2BYalbyud+zLcr/wDqcH6VYzhOVeaJ1HUqRWWTJLDNJHLs6sQRitWG1Dr3Q7C9nM88AMhG5BxmuCj1odf2YuJBkbYojXYoNaFeFC1ix7CQ4FCCKtXFA7JmdiFTG5OwFZ5qOvRx5WzAkYf6h934eNYr426yUaptKdZL1fUY9Oti5w0rbRp4n9Kl8HKdQsj27c0yyHLeu/3qgyTy3t4HncuxPU91aPwRAY7Azge/Kfpt9qquPpP7Fjk7X+iyWuhWMz/8REOf
+11-08 23:51:44.500 D/SearchTargetUtil( 1110): layoutType=short_icon_row resultType=131072 packageName=com.google.android.googlequicksearchbox extras=Bundle{suggestion_type=33,suggest_truncate_start=false,is_answer=false,is_entity=false,is_personal=false,suggest_raw_text=pittsburgh steelers game,group_id=web336855,response_id=4aa81253-c3be-4bf8-b6c5-86c94c4a8641,support_query_builder=false,} searchAction=pittsburgh steelers game searchActionExtras=Bundle{learn_more_url=https://support.google.com/websearch/answer/106230?hl=106230,suggestion_action_text=Report this,should_start_for_result=true,allow_pinning=true,skip_logging_in_target_handler=false,suggestion_action_rpc=2,}ParentID: null targetID: c084680b-5bc5-4e9e-a4dd-bf2e4700bd0e
+11-08 23:51:44.501 D/SearchTargetUtil( 1110): layoutType=short_icon_row resultType=131072 packageName=com.google.android.googlequicksearchbox extras=Bundle{suggestion_type=33,suggest_truncate_start=false,is_answer=false,is_entity=false,is_personal=false,suggest_raw_text=children place clothing,group_id=web336855,response_id=4aa81253-c3be-4bf8-b6c5-86c94c4a8641,support_query_builder=false,} searchAction=children place clothing searchActionExtras=Bundle{learn_more_url=https://support.google.com/websearch/answer/106230?hl=106230,suggestion_action_text=Report this,should_start_for_result=true,allow_pinning=true,skip_logging_in_target_handler=false,suggestion_action_rpc=2,}ParentID: null targetID: 9ae80369-7eea-45e2-8e59-ee64bcb1adf2
+11-08 23:51:44.501 D/SearchTargetUtil( 1110): layoutType=short_icon_row resultType=131072 packageName=com.google.android.googlequicksearchbox extras=Bundle{suggestion_type=33,suggest_truncate_start=false,is_answer=false,is_entity=false,is_personal=false,suggest_raw_text=dzne biological aging diet findings,group_id=web336855,response_id=4aa81253-c3be-4bf8-b6c5-86c94c4a8641,support_query_builder=false,} searchAction=dzne biological aging diet findings searchActionExtras=Bundle{learn_more_url=https://support.google.com/websearch/answer/106230?hl=106230,suggestion_action_text=Report this,should_start_for_result=true,allow_pinning=true,skip_logging_in_target_handler=false,suggestion_action_rpc=2,}ParentID: null targetID: 7e11913c-105d-46a4-a83b-15350fe194b3
+11-08 23:51:44.501 D/SearchTargetUtil( 1110): layoutType=short_icon_row resultType=131072 packageName=com.google.android.googlequicksearchbox extras=Bundle{suggestion_type=33,suggest_truncate_start=false,is_answer=false,is_entity=false,is_personal=false,suggest_raw_text=google messages settings to disable,group_id=web336855,response_id=4aa81253-c3be-4bf8-b6c5-86c94c4a8641,support_query_builder=false,} searchAction=google messages settings to disable searchActionExtras=Bundle{learn_more_url=https://support.google.com/websearch/answer/106230?hl=106230,suggestion_action_text=Report this,should_start_for_result=true,allow_pinning=true,skip_logging_in_target_handler=false,suggestion_action_rpc=2,}ParentID: null targetID: d46c388a-0453-4bcd-9ade-f7612921d285
+11-08 23:51:44.501 D/SearchTargetUtil( 1110): layoutType=short_icon_row resultType=131072 packageName=com.google.android.googlequicksearchbox extras=Bundle{suggestion_type=33,suggest_truncate_start=false,is_answer=false,is_entity=false,is_personal=false,suggest_raw_text=jack campbell injury detroit lions,group_id=web336855,response_id=4aa81253-c3be-4bf8-b6c5-86c94c4a8641,support_query_builder=false,} searchAction=jack campbell injury detroit lions searchActionExtras=Bundle{learn_more_url=https://support.google.com/websearch/answer/106230?hl=106230,suggestion_action_text=Report this,should_start_for_result=true,allow_pinning=true,skip_logging_in_target_handler=false,suggestion_action_rpc=2,}ParentID: null targetID: d8446ac4-2764-426a-8fa7-ee9303b053b2
+11-08 23:51:44.501 D/SearchTargetUtil( 1110): layoutType=short_icon_row resultType=131072 packageName=com.google.android.googlequicksearchbox extras=Bundle{suggestion_type=33,suggest_truncate_start=false,is_answer=false,is_entity=false,is_personal=false,suggest_raw_text=skims advent calendar contents,group_id=web336855,response_id=4aa81253-c3be-4bf8-b6c5-86c94c4a8641,support_query_builder=false,} searchAction=skims advent calendar contents searchActionExtras=Bundle{learn_more_url=https://support.google.com/websearch/answer/106230?hl=106230,suggestion_action_text=Report this,should_start_for_result=true,allow_pinning=true,skip_logging_in_target_handler=false,suggestion_action_rpc=2,}ParentID: null targetID: bb61b788-9a45-416c-b6a8-5b3bc8f07545
+11-08 23:51:44.501 D/SearchTargetUtil( 1110): layoutType=short_icon_row resultType=131072 packageName=com.google.android.googlequicksearchbox extras=Bundle{suggestion_type=33,suggest_truncate_start=false,is_answer=false,is_entity=false,is_personal=false,suggest_raw_text=blue angels pilot scott laux,group_id=web336855,response_id=4aa81253-c3be-4bf8-b6c5-86c94c4a8641,support_query_builder=false,} searchAction=blue angels pilot scott laux searchActionExtras=Bundle{learn_more_url=https://support.google.com/websearch/answer/106230?hl=106230,suggestion_action_text=Report this,should_start_for_result=true,allow_pinning=true,skip_logging_in_target_handler=false,suggestion_action_rpc=2,}ParentID: null targetID: cecfb09f-e0a9-4a23-b4d8-5ca1e33d9071
+11-08 23:51:44.501 D/SearchTargetUtil( 1110): layoutType=short_icon_row resultType=131072 packageName=com.google.android.googlequicksearchbox extras=Bundle{suggestion_type=33,suggest_truncate_start=false,is_answer=false,is_entity=false,is_personal=false,suggest_raw_text=winning powerball numbers,group_id=web336855,response_id=4aa81253-c3be-4bf8-b6c5-86c94c4a8641,support_query_builder=false,} searchAction=winning powerball numbers searchActionExtras=Bundle{learn_more_url=https://support.google.com/websearch/answer/106230?hl=106230,suggestion_action_text=Report this,should_start_for_result=true,allow_pinning=true,skip_logging_in_target_handler=false,suggestion_action_rpc=2,}ParentID: null targetID: 7a9b2216-fe7d-430c-bb6a-c8921ebc660d
+11-08 23:51:44.501 D/SearchTargetUtil( 1110): layoutType=short_icon_row resultType=131072 packageName=com.google.android.googlequicksearchbox extras=Bundle{suggestion_type=33,suggest_truncate_start=false,is_answer=false,is_entity=false,is_personal=false,suggest_raw_text=richard satin unexplained weight loss,group_id=web336855,response_id=4aa81253-c3be-4bf8-b6c5-86c94c4a8641,support_query_builder=false,} searchAction=richard satin unexplained weight loss searchActionExtras=Bundle{learn_more_url=https://support.google.com/websearch/answer/106230?hl=106230,suggestion_action_text=Report this,should_start_for_result=true,allow_pinning=true,skip_logging_in_target_handler=false,suggestion_action_rpc=2,}ParentID: null targetID: c09a1ba0-52b6-4372-a398-7307bc28d2c6
+11-08 23:51:44.501 D/SearchTargetUtil( 1110): layoutType=short_icon_row resultType=131072 packageName=com.google.android.googlequicksearchbox extras=Bundle{suggestion_type=33,suggest_truncate_start=false,is_answer=false,is_entity=false,is_personal=false,suggest_raw_text=samsung galaxy z fold 8,group_id=web336855,response_id=4aa81253-c3be-4bf8-b6c5-86c94c4a8641,support_query_builder=false,} searchAction=samsung galaxy z fold 8 searchActionExtras=Bundle{learn_more_url=https://support.google.com/websearch/answer/106230?hl=106230,suggestion_action_text=Report this,should_start_for_result=true,allow_pinning=true,skip_logging_in_target_handler=false,suggestion_action_rpc=2,}ParentID: null targetID: 618d190c-76f9-4edc-9330-34c189301406
+11-08 23:51:44.501 D/SearchTargetUtil( 1110): layoutType=short_icon_row resultType=131072 packageName=com.google.android.googlequicksearchbox extras=Bundle{suggestion_type=33,suggest_truncate_start=false,is_answer=false,is_entity=false,is_personal=false,suggest_raw_text=colts quarterback trade talks jones,group_id=web336855,response_id=4aa81253-c3be-4bf8-b6c5-86c94c4a8641,support_query_builder=false,} searchAction=colts quarterback trade talks jones searchActionExtras=Bundle{learn_more_url=https://support.google.com/websearch/answer/106230?hl=106230,suggestion_action_text=Report this,should_start_for_result=true,allow_pinning=true,skip_logging_in_target_handler=false,suggestion_action_rpc=2,}ParentID: null targetID: 03d853a3-fc09-4b5e-881a-2617dfea3699
+11-08 23:51:44.501 D/SearchTargetUtil( 1110): layoutType=short_icon_row resultType=131072 packageName=com.google.android.googlequicksearchbox extras=Bundle{suggestion_type=33,suggest_truncate_start=false,is_answer=false,is_entity=false,is_personal=false,suggest_raw_text=willie nelson career longevity secrets,group_id=web336855,response_id=4aa81253-c3be-4bf8-b6c5-86c94c4a8641,support_query_builder=false,} searchAction=willie nelson career longevity secrets searchActionExtras=Bundle{learn_more_url=https://support.google.com/websearch/answer/106230?hl=106230,suggestion_action_text=Report this,should_start_for_result=true,allow_pinning=true,skip_logging_in_target_handler=false,suggestion_action_rpc=2,}ParentID: null targetID: a1cf6df3-7186-4f98-be0a-6daa49a878d1
+11-08 23:51:44.502 D/SearchTargetUtil( 1110): layoutType=short_icon_row resultType=131072 packageName=com.google.android.googlequicksearchbox extras=Bundle{suggestion_type=33,suggest_truncate_start=false,is_answer=false,is_entity=false,is_personal=false,suggest_raw_text=paris france protests,group_id=web336855,response_id=4aa81253-c3be-4bf8-b6c5-86c94c4a8641,support_query_builder=false,} searchAction=paris france protests searchActionExtras=Bundle{learn_more_url=https://support.google.com/websearch/answer/106230?hl=106230,suggestion_action_text=Report this,should_start_for_result=true,allow_pinning=true,skip_logging_in_target_handler=false,suggestion_action_rpc=2,}ParentID: null targetID: dc15d312-51ee-4f9b-83a6-a1eeca49f114
+11-08 23:51:44.502 D/SearchTargetUtil( 1110): layoutType=short_icon_row resultType=131072 packageName=com.google.android.googlequicksearchbox extras=Bundle{suggestion_type=33,suggest_truncate_start=false,is_answer=false,is_entity=false,is_personal=false,suggest_raw_text=tesla cybertruck elon musk,group_id=web336855,response_id=4aa81253-c3be-4bf8-b6c5-86c94c4a8641,support_query_builder=false,} searchAction=tesla cybertruck elon musk searchActionExtras=Bundle{learn_more_url=https://support.google.com/websearch/answer/106230?hl=106230,suggestion_action_text=Report this,should_start_for_result=true,allow_pinning=true,skip_logging_in_target_handler=false,suggestion_action_rpc=2,}ParentID: null targetID: d4f52d90-64f6-4a6d-b08f-d986493fd8e8
+11-08 23:51:44.536 I/Maestro ( 6232): Skipping invisible child: android.view.accessibility.AccessibilityNodeInfo@5acb3; boundsInParent: Rect(0, 0 - 0, 49); boundsInScreen: Rect(99, 378 - 99, 427); boundsInWindow: Rect(99, 378 - 99, 427); packageName: com.google.android.apps.nexuslauncher; className: android.widget.TextView; text: null; error: null; maxTextLength: -1; stateDescription: null; contentDescription: null; tooltipText: null; containerTitle: null; viewIdResName: com.google.android.apps.nexuslauncher:id/subtitle_text; uniqueId: null; checkable: false; checked: false; focusable: true; focused: false; selected: false; clickable: true; longClickable: false; contextClickable: false; enabled: true; password: false; scrollable: false; importantForAccessibility: true; visible: false; actions: [AccessibilityAction: ACTION_FOCUS - null, AccessibilityAction: ACTION_SELECT - null, AccessibilityAction: ACTION_CLEAR_SELECTION - null, AccessibilityAction: ACTION_CLICK - null, AccessibilityAction: ACTION_ACCESSIBILITY_FOCUS - null, AccessibilityAction: ACTION_SHOW_ON_SCREEN - null]; isTextSelectable: false
+11-08 23:51:44.600 D/Maestro ( 6232): View hierarchy received in 439 ms
+11-08 23:51:44.639 W/AccessibilityManagerService(  522):  wait for adding window timeout: 17
+11-08 23:51:44.684 D/Maestro ( 6232): Requesting view hierarchy
+11-08 23:51:44.685 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:44.685 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:44.686 W/UiDevice( 6232): Active window root not found.
+11-08 23:51:44.688 W/UiDevice( 6232): Skipping null root node for window: AccessibilityWindowInfo[title=Home, displayId=0, id=15, taskId=7, type=TYPE_APPLICATION, layer=0, region=SkRegion((0,0,1080,2400)), bounds=Rect(0, 0 - 1080, 2400), focused=true, active=true, pictureInPicture=false, transitionTime=342789, hasParent=false, isAnchored=false, hasChildren=false]
+11-08 23:51:44.722 D/Maestro ( 6232): View hierarchy received in 38 ms
+11-08 23:51:44.780 D/Maestro ( 6232): Requesting view hierarchy
+11-08 23:51:44.781 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:44.781 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:44.782 W/UiDevice( 6232): Active window root not found.
+11-08 23:51:44.783 W/UiDevice( 6232): Skipping null root node for window: AccessibilityWindowInfo[title=Home, displayId=0, id=15, taskId=7, type=TYPE_APPLICATION, layer=0, region=SkRegion((0,0,1080,2400)), bounds=Rect(0, 0 - 1080, 2400), focused=true, active=true, pictureInPicture=false, transitionTime=342789, hasParent=false, isAnchored=false, hasChildren=false]
+11-08 23:51:44.817 D/Maestro ( 6232): View hierarchy received in 37 ms
+11-08 23:51:44.873 D/nativeloader( 6516): Configuring clns-6 for other apk /data/app/~~vqQ38lSMY5Rs646Zm75a8A==/org.dpdns.bnai.anime-liSTGR-Jqy3qRYMdF1kOHg==/base.apk. target_sdk_version=34, uses_libraries=, library_path=/data/app/~~vqQ38lSMY5Rs646Zm75a8A==/org.dpdns.bnai.anime-liSTGR-Jqy3qRYMdF1kOHg==/lib/x86_64, permitted_path=/data:/mnt/expand:/data/user/0/org.dpdns.bnai.anime
+11-08 23:51:44.879 V/GraphicsEnvironment( 6516): Currently set values for:
+11-08 23:51:44.879 V/GraphicsEnvironment( 6516):   angle_gl_driver_selection_pkgs=[]
+11-08 23:51:44.879 V/GraphicsEnvironment( 6516):   angle_gl_driver_selection_values=[]
+11-08 23:51:44.880 V/GraphicsEnvironment( 6516): ANGLE GameManagerService for org.dpdns.bnai.anime: false
+11-08 23:51:44.880 V/GraphicsEnvironment( 6516): org.dpdns.bnai.anime is not listed in per-application setting
+11-08 23:51:44.880 V/GraphicsEnvironment( 6516): Neither updatable production driver nor prerelease driver is supported.
+11-08 23:51:44.895 I/ActivityManager(  522): Flag disabled. Ignoring finishAttachApplication from uid: 10192. pid: 6516
+11-08 23:51:44.898 D/libEGL  ( 6516): loaded /vendor/lib64/egl/libEGL_emulation.so
+11-08 23:51:44.899 D/libEGL  ( 6516): loaded /vendor/lib64/egl/libGLESv1_CM_emulation.so
+11-08 23:51:44.901 D/libEGL  ( 6516): loaded /vendor/lib64/egl/libGLESv2_emulation.so
+11-08 23:51:44.921 D/Maestro ( 6232): Requesting view hierarchy
+11-08 23:51:44.921 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:44.922 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:44.923 W/UiDevice( 6232): Active window root not found.
+11-08 23:51:44.925 W/UiDevice( 6232): Skipping null root node for window: AccessibilityWindowInfo[title=Home, displayId=0, id=15, taskId=7, type=TYPE_APPLICATION, layer=0, region=SkRegion((0,0,1080,2400)), bounds=Rect(0, 0 - 1080, 2400), focused=true, active=true, pictureInPicture=false, transitionTime=342789, hasParent=false, isAnchored=false, hasChildren=false]
+11-08 23:51:44.965 D/Maestro ( 6232): View hierarchy received in 44 ms
+11-08 23:51:44.990 I/GnssLocationProvider(  522): WakeLock acquired by handleDownloadPsdsData()
+11-08 23:51:44.991 E/GnssPsdsDownloader(  522): No Long-Term PSDS servers were specified in the GnssConfiguration
+11-08 23:51:45.001 D/CompatibilityChangeReporter( 6516): Compat change id reported: 237531167; UID 10192; state: DISABLED
+11-08 23:51:45.002 W/OpenGLRenderer( 6516): Unknown dataspace 0
+11-08 23:51:45.038 D/Maestro ( 6232): Requesting view hierarchy
+11-08 23:51:45.039 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:45.040 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:45.041 W/UiDevice( 6232): Active window root not found.
+11-08 23:51:45.043 W/UiDevice( 6232): Skipping null root node for window: AccessibilityWindowInfo[title=Home, displayId=0, id=15, taskId=7, type=TYPE_APPLICATION, layer=0, region=SkRegion((0,0,1080,2400)), bounds=Rect(0, 0 - 1080, 2400), focused=true, active=true, pictureInPicture=false, transitionTime=342789, hasParent=false, isAnchored=false, hasChildren=false]
+11-08 23:51:45.101 D/Maestro ( 6232): View hierarchy received in 63 ms
+11-08 23:51:45.161 D/Maestro ( 6232): Requesting view hierarchy
+11-08 23:51:45.161 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:45.162 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:45.163 W/UiDevice( 6232): Active window root not found.
+11-08 23:51:45.164 W/UiDevice( 6232): Skipping null root node for window: AccessibilityWindowInfo[title=Home, displayId=0, id=15, taskId=7, type=TYPE_APPLICATION, layer=0, region=SkRegion((0,0,1080,2400)), bounds=Rect(0, 0 - 1080, 2400), focused=true, active=true, pictureInPicture=false, transitionTime=342789, hasParent=false, isAnchored=false, hasChildren=false]
+11-08 23:51:45.196 D/Maestro ( 6232): View hierarchy received in 35 ms
+11-08 23:51:45.212 W/pdns.bnai.anime( 6516): Method java.lang.Object androidx.compose.runtime.snapshots.SnapshotStateMap.mutate(kotlin.jvm.functions.Function1) failed lock verification and will run slower.
+11-08 23:51:45.212 W/pdns.bnai.anime( 6516): Common causes for lock verification issues are non-optimized dex code
+11-08 23:51:45.212 W/pdns.bnai.anime( 6516): and incorrect proguard optimizations.
+11-08 23:51:45.212 W/pdns.bnai.anime( 6516): Method void androidx.compose.runtime.snapshots.SnapshotStateMap.update(kotlin.jvm.functions.Function1) failed lock verification and will run slower.
+11-08 23:51:45.212 W/pdns.bnai.anime( 6516): Method boolean androidx.compose.runtime.snapshots.SnapshotStateMap.removeIf$runtime_release(kotlin.jvm.functions.Function1) failed lock verification and will run slower.
+11-08 23:51:45.230 W/pdns.bnai.anime( 6516): Method boolean androidx.compose.runtime.snapshots.SnapshotStateList.conditionalUpdate(boolean, kotlin.jvm.functions.Function1) failed lock verification and will run slower.
+11-08 23:51:45.230 W/pdns.bnai.anime( 6516): Method boolean androidx.compose.runtime.snapshots.SnapshotStateList.conditionalUpdate$default(androidx.compose.runtime.snapshots.SnapshotStateList, boolean, kotlin.jvm.functions.Function1, int, java.lang.Object) failed lock verification and will run slower.
+11-08 23:51:45.230 W/pdns.bnai.anime( 6516): Method java.lang.Object androidx.compose.runtime.snapshots.SnapshotStateList.mutate(kotlin.jvm.functions.Function1) failed lock verification and will run slower.
+11-08 23:51:45.231 W/pdns.bnai.anime( 6516): Method void androidx.compose.runtime.snapshots.SnapshotStateList.update(boolean, kotlin.jvm.functions.Function1) failed lock verification and will run slower.
+11-08 23:51:45.231 W/pdns.bnai.anime( 6516): Method void androidx.compose.runtime.snapshots.SnapshotStateList.update$default(androidx.compose.runtime.snapshots.SnapshotStateList, boolean, kotlin.jvm.functions.Function1, int, java.lang.Object) failed lock verification and will run slower.
+11-08 23:51:45.260 D/Maestro ( 6232): Requesting view hierarchy
+11-08 23:51:45.260 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:45.261 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:45.262 W/UiDevice( 6232): Active window root not found.
+11-08 23:51:45.265 W/UiDevice( 6232): Skipping null root node for window: AccessibilityWindowInfo[title=Home, displayId=0, id=15, taskId=7, type=TYPE_APPLICATION, layer=0, region=SkRegion((0,0,1080,2400)), bounds=Rect(0, 0 - 1080, 2400), focused=true, active=true, pictureInPicture=false, transitionTime=342789, hasParent=false, isAnchored=false, hasChildren=false]
+11-08 23:51:45.283 D/CoreBackPreview(  522): Window{4f3044f u0 org.dpdns.bnai.anime/org.dpdns.bnai.anime.MainActivity}: Setting back callback OnBackInvokedCallbackInfo{mCallback=android.window.IOnBackInvokedCallback$Stub$Proxy@9d92661, mPriority=0, mIsAnimationCallback=false}
+11-08 23:51:45.309 D/Maestro ( 6232): View hierarchy received in 49 ms
+11-08 23:51:45.373 D/Maestro ( 6232): Requesting view hierarchy
+11-08 23:51:45.374 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:45.374 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:45.375 W/UiDevice( 6232): Active window root not found.
+11-08 23:51:45.378 W/UiDevice( 6232): Skipping null root node for window: AccessibilityWindowInfo[title=Home, displayId=0, id=15, taskId=7, type=TYPE_APPLICATION, layer=0, region=SkRegion((0,0,1080,2400)), bounds=Rect(0, 0 - 1080, 2400), focused=true, active=true, pictureInPicture=false, transitionTime=342789, hasParent=false, isAnchored=false, hasChildren=false]
+11-08 23:51:45.379 D/CompatibilityChangeReporter( 6516): Compat change id reported: 289878283; UID 10192; state: ENABLED
+11-08 23:51:45.406 D/Maestro ( 6232): View hierarchy received in 33 ms
+11-08 23:51:45.469 D/Maestro ( 6232): Requesting view hierarchy
+11-08 23:51:45.470 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:45.470 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:45.471 W/UiDevice( 6232): Active window root not found.
+11-08 23:51:45.474 W/UiDevice( 6232): Skipping null root node for window: AccessibilityWindowInfo[title=Home, displayId=0, id=15, taskId=7, type=TYPE_APPLICATION, layer=0, region=SkRegion((0,0,1080,2400)), bounds=Rect(0, 0 - 1080, 2400), focused=true, active=true, pictureInPicture=false, transitionTime=342789, hasParent=false, isAnchored=false, hasChildren=false]
+11-08 23:51:45.519 W/OpenGLRenderer( 6516): Failed to initialize 101010-2 format, error = EGL_SUCCESS
+11-08 23:51:45.540 D/Maestro ( 6232): View hierarchy received in 71 ms
+11-08 23:51:45.556 I/hwservicemanager(  134): getTransport: Cannot find entry android.hardware.graphics.mapper@4.0::IMapper/default in either framework or device VINTF manifest.
+11-08 23:51:45.556 I/Gralloc4( 6516): mapper 4.x is not supported
+11-08 23:51:45.751 I/servicemanager(    0): Could not find android.hardware.graphics.allocator.IAllocator/default in the VINTF manifest.
+11-08 23:51:46.085 D/Maestro ( 6232): Requesting view hierarchy
+11-08 23:51:46.086 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:46.086 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:46.089 W/AccessibilityManagerService(  522):  wait for adding window timeout: 18
+11-08 23:51:46.155 W/ziparchive(  522): Unable to open '/data/app/~~vqQ38lSMY5Rs646Zm75a8A==/org.dpdns.bnai.anime-liSTGR-Jqy3qRYMdF1kOHg==/base.dm': No such file or directory
+11-08 23:51:46.156 I/ActivityTaskManager(  522): Displayed org.dpdns.bnai.anime/.MainActivity for user 0: +2s97ms
+11-08 23:51:46.169 I/Choreographer( 6516): Skipped 65 frames!  The application may be doing too much work on its main thread.
+11-08 23:51:46.171 I/OpenGLRenderer( 6516): Davey! duration=1266ms; Flags=1, FrameTimelineVsyncId=6414, IntendedVsync=344680286596, Vsync=344780286592, InputEventId=0, HandleInputStart=344791984161, AnimationStart=344791986796, PerformTraversalsStart=344792051577, DrawStart=345374896647, FrameDeadline=344696953262, FrameInterval=344791868054, FrameStartTime=16666666, SyncQueued=345405355789, SyncStart=345405959797, IssueDrawCommandsStart=345406320861, SwapBuffers=345827194262, FrameCompleted=345947111332, DequeueBufferDuration=3627, QueueBufferDuration=503980, GpuCompleted=345947111332, SwapBuffersCompleted=345930734885, DisplayPresentTime=0, CommandSubmissionCompleted=345827194262, 
+11-08 23:51:46.187 W/WindowOnBackDispatcher(  838): sendCancelIfRunning: isInProgress=falsecallback=android.view.ViewRootImpl$$ExternalSyntheticLambda17@48867e7
+11-08 23:51:46.187 D/CoreBackPreview(  522): Window{aa2845a u0 Splash Screen org.dpdns.bnai.anime EXITING}: Setting back callback null
+11-08 23:51:46.191 W/InputManager-JNI(  522): Input channel object 'aa2845a Splash Screen org.dpdns.bnai.anime (client)' was disposed without first being removed with the input manager!
+11-08 23:51:46.207 I/ImeTracker( 1110): com.google.android.apps.nexuslauncher:7221e880: onRequestHide at ORIGIN_CLIENT_HIDE_SOFT_INPUT reason HIDE_SOFT_INPUT
+11-08 23:51:46.207 I/ImeTracker(  522): com.google.android.apps.nexuslauncher:7221e880: onCancelled at PHASE_SERVER_SHOULD_HIDE
+11-08 23:51:46.233 I/PBSessionCacheImpl( 1805): Deleted sessionId[7940268134147613] from persistence.
+11-08 23:51:46.233 D/OneSearchSuggestProvider( 1110): Shut down the binder channel
+11-08 23:51:46.235 I/IPCThreadState( 1110): oneway function results for code 2 on binder at 0x73257d0b1dd0 will be dropped but finished with status UNKNOWN_TRANSACTION
+11-08 23:51:46.246 D/BtGatt.ScanManager( 1030): uid 10131 isForeground true scanMode -1
+11-08 23:51:46.246 D/BtGatt.ScanManager( 1030): uid 10131 isForeground true scanMode -1
+11-08 23:51:46.273 W/SearchServiceCore( 1805): Abort, client detached.
+11-08 23:51:46.284 I/OpenGLRenderer( 6516): Davey! duration=1184ms; Flags=0, FrameTimelineVsyncId=6444, IntendedVsync=344863619922, Vsync=345946953212, InputEventId=0, HandleInputStart=345957197247, AnimationStart=345957201705, PerformTraversalsStart=346016539581, DrawStart=346022401202, FrameDeadline=345980286544, FrameInterval=345955273486, FrameStartTime=16666666, SyncQueued=346024044789, SyncStart=346024068825, IssueDrawCommandsStart=346024189339, SwapBuffers=346029065221, FrameCompleted=346047766617, DequeueBufferDuration=2665, QueueBufferDuration=216985, GpuCompleted=346047766617, SwapBuffersCompleted=346045619379, DisplayPresentTime=0, CommandSubmissionCompleted=346029065221, 
+11-08 23:51:46.355 D/BtGatt.ScanManager( 1030): uid 10131 isForeground true scanMode -1
+11-08 23:51:46.355 D/BtGatt.ScanManager( 1030): uid 10131 isForeground true scanMode -1
+11-08 23:51:46.356 I/FontLog ( 5296): Received query Noto Color Emoji Compat, URI content://com.google.android.gms.fonts [CONTEXT service_id=132 ]
+11-08 23:51:46.356 I/FontLog ( 5296): Query [emojicompat-emoji-font] resolved to {Noto Color Emoji Compat, wdth 100.0, wght 400, ital 0.0, bestEffort false} [CONTEXT service_id=132 ]
+11-08 23:51:46.357 I/FontLog ( 5296): Fetch {Noto Color Emoji Compat, wdth 100.0, wght 400, ital 0.0, bestEffort false} end status Status{statusCode=SUCCESS, resolution=null} [CONTEXT service_id=132 ]
+11-08 23:51:46.368 D/CompatibilityChangeReporter(  522): Compat change id reported: 214016041; UID 10192; state: ENABLED
+11-08 23:51:46.368 I/ImeTracker(  522): org.dpdns.bnai.anime:31ce222: onRequestHide at ORIGIN_SERVER_HIDE_INPUT reason HIDE_UNSPECIFIED_WINDOW
+11-08 23:51:46.368 I/ImeTracker(  522): org.dpdns.bnai.anime:31ce222: onCancelled at PHASE_SERVER_SHOULD_HIDE
+11-08 23:51:46.373 I/FontLog ( 5296): Pulling font file for id = 4, cache size = 4 [CONTEXT service_id=132 ]
+11-08 23:51:46.374 I/GoogleInputMethodService( 1547): GoogleInputMethodService.onFinishInput():3227 
+11-08 23:51:46.374 I/GoogleInputMethodService( 1547): GoogleInputMethodService.updateDeviceLockedStatus():2087 repeatCheckTimes = 0, unlocked = true
+11-08 23:51:46.374 I/GoogleInputMethodService( 1547): GoogleInputMethodService.onStartInput():1877 onStartInput(EditorInfo{inputType=0x0(NULL) imeOptions=0x0 privateImeOptions=null actionName=UNSPECIFIED actionLabel=null actionId=0 initialSelStart=-1 initialSelEnd=-1 initialCapsMode=0x0 hintText=null label=null packageName=org.dpdns.bnai.anime fieldId=0 fieldName=null extras=null}, false)
+11-08 23:51:46.374 I/GoogleInputMethodService( 1547): GoogleInputMethodService.shouldHideHeaderOnInitialState():4008 ShouldHideHeaderOnInitialState = false
+11-08 23:51:46.382 I/GoogleInputMethodService( 1547): GoogleInputMethodService.updateDeviceLockedStatus():2087 repeatCheckTimes = 2, unlocked = true
+11-08 23:51:46.389 I/FontLog ( 5296): Pulling font file for id = 4, cache size = 4 [CONTEXT service_id=132 ]
+11-08 23:51:46.401 W/earchbox:search( 1805): Cleared Reference was only reachable from finalizer (only reported once)
+11-08 23:51:46.468 I/Maestro ( 6232): Skipping invisible child: android.view.accessibility.AccessibilityNodeInfo@8ad8; boundsInParent: Rect(0, 0 - 1080, 128); boundsInScreen: Rect(0, 0 - 1080, 128); boundsInWindow: Rect(0, 0 - 1080, 128); packageName: org.dpdns.bnai.anime; className: android.view.View; text: null; error: null; maxTextLength: -1; stateDescription: null; contentDescription: null; tooltipText: null; containerTitle: null; viewIdResName: android:id/statusBarBackground; uniqueId: null; checkable: false; checked: false; focusable: false; focused: false; selected: false; clickable: false; longClickable: false; contextClickable: false; enabled: true; password: false; scrollable: false; importantForAccessibility: false; visible: false; actions: [AccessibilityAction: ACTION_SELECT - null, AccessibilityAction: ACTION_CLEAR_SELECTION - null, AccessibilityAction: ACTION_ACCESSIBILITY_FOCUS - null, AccessibilityAction: ACTION_SHOW_ON_SCREEN - null]; isTextSelectable: false
+11-08 23:51:46.485 D/Maestro ( 6232): View hierarchy received in 400 ms
+11-08 23:51:46.654 E/TaskPersister(  522): File error accessing recents directory (directory doesn't exist?).
+11-08 23:51:46.904 D/OomAdjuster(  522): Not killing cached processes
+11-08 23:51:46.952 D/Maestro ( 6232): Requesting view hierarchy
+11-08 23:51:46.953 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:46.953 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:46.988 I/Maestro ( 6232): Skipping invisible child: android.view.accessibility.AccessibilityNodeInfo@8ad8; boundsInParent: Rect(0, 0 - 1080, 128); boundsInScreen: Rect(0, 0 - 1080, 128); boundsInWindow: Rect(0, 0 - 1080, 128); packageName: org.dpdns.bnai.anime; className: android.view.View; text: null; error: null; maxTextLength: -1; stateDescription: null; contentDescription: null; tooltipText: null; containerTitle: null; viewIdResName: android:id/statusBarBackground; uniqueId: null; checkable: false; checked: false; focusable: false; focused: false; selected: false; clickable: false; longClickable: false; contextClickable: false; enabled: true; password: false; scrollable: false; importantForAccessibility: false; visible: false; actions: [AccessibilityAction: ACTION_SELECT - null, AccessibilityAction: ACTION_CLEAR_SELECTION - null, AccessibilityAction: ACTION_ACCESSIBILITY_FOCUS - null, AccessibilityAction: ACTION_SHOW_ON_SCREEN - null]; isTextSelectable: false
+11-08 23:51:47.000 D/Maestro ( 6232): View hierarchy received in 48 ms
+11-08 23:51:47.056 D/Maestro ( 6232): Requesting view hierarchy
+11-08 23:51:47.057 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:47.058 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:47.090 I/Maestro ( 6232): Skipping invisible child: android.view.accessibility.AccessibilityNodeInfo@8ad8; boundsInParent: Rect(0, 0 - 1080, 128); boundsInScreen: Rect(0, 0 - 1080, 128); boundsInWindow: Rect(0, 0 - 1080, 128); packageName: org.dpdns.bnai.anime; className: android.view.View; text: null; error: null; maxTextLength: -1; stateDescription: null; contentDescription: null; tooltipText: null; containerTitle: null; viewIdResName: android:id/statusBarBackground; uniqueId: null; checkable: false; checked: false; focusable: false; focused: false; selected: false; clickable: false; longClickable: false; contextClickable: false; enabled: true; password: false; scrollable: false; importantForAccessibility: false; visible: false; actions: [AccessibilityAction: ACTION_SELECT - null, AccessibilityAction: ACTION_CLEAR_SELECTION - null, AccessibilityAction: ACTION_ACCESSIBILITY_FOCUS - null, AccessibilityAction: ACTION_SHOW_ON_SCREEN - null]; isTextSelectable: false
+11-08 23:51:47.100 D/Maestro ( 6232): View hierarchy received in 44 ms
+11-08 23:51:47.155 D/Maestro ( 6232): Requesting view hierarchy
+11-08 23:51:47.156 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:47.156 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:47.175 I/Maestro ( 6232): Skipping invisible child: android.view.accessibility.AccessibilityNodeInfo@8ad8; boundsInParent: Rect(0, 0 - 1080, 128); boundsInScreen: Rect(0, 0 - 1080, 128); boundsInWindow: Rect(0, 0 - 1080, 128); packageName: org.dpdns.bnai.anime; className: android.view.View; text: null; error: null; maxTextLength: -1; stateDescription: null; contentDescription: null; tooltipText: null; containerTitle: null; viewIdResName: android:id/statusBarBackground; uniqueId: null; checkable: false; checked: false; focusable: false; focused: false; selected: false; clickable: false; longClickable: false; contextClickable: false; enabled: true; password: false; scrollable: false; importantForAccessibility: false; visible: false; actions: [AccessibilityAction: ACTION_SELECT - null, AccessibilityAction: ACTION_CLEAR_SELECTION - null, AccessibilityAction: ACTION_ACCESSIBILITY_FOCUS - null, AccessibilityAction: ACTION_SHOW_ON_SCREEN - null]; isTextSelectable: false
+11-08 23:51:47.185 D/Maestro ( 6232): View hierarchy received in 30 ms
+11-08 23:51:47.201 D/Maestro ( 6232): Requesting view hierarchy
+11-08 23:51:47.201 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:47.201 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:47.226 I/Maestro ( 6232): Skipping invisible child: android.view.accessibility.AccessibilityNodeInfo@8ad8; boundsInParent: Rect(0, 0 - 1080, 128); boundsInScreen: Rect(0, 0 - 1080, 128); boundsInWindow: Rect(0, 0 - 1080, 128); packageName: org.dpdns.bnai.anime; className: android.view.View; text: null; error: null; maxTextLength: -1; stateDescription: null; contentDescription: null; tooltipText: null; containerTitle: null; viewIdResName: android:id/statusBarBackground; uniqueId: null; checkable: false; checked: false; focusable: false; focused: false; selected: false; clickable: false; longClickable: false; contextClickable: false; enabled: true; password: false; scrollable: false; importantForAccessibility: false; visible: false; actions: [AccessibilityAction: ACTION_SELECT - null, AccessibilityAction: ACTION_CLEAR_SELECTION - null, AccessibilityAction: ACTION_ACCESSIBILITY_FOCUS - null, AccessibilityAction: ACTION_SHOW_ON_SCREEN - null]; isTextSelectable: false
+11-08 23:51:47.237 D/Maestro ( 6232): View hierarchy received in 36 ms
+11-08 23:51:47.294 D/Maestro ( 6232): Requesting view hierarchy
+11-08 23:51:47.295 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:47.295 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:47.320 I/Maestro ( 6232): Skipping invisible child: android.view.accessibility.AccessibilityNodeInfo@8ad8; boundsInParent: Rect(0, 0 - 1080, 128); boundsInScreen: Rect(0, 0 - 1080, 128); boundsInWindow: Rect(0, 0 - 1080, 128); packageName: org.dpdns.bnai.anime; className: android.view.View; text: null; error: null; maxTextLength: -1; stateDescription: null; contentDescription: null; tooltipText: null; containerTitle: null; viewIdResName: android:id/statusBarBackground; uniqueId: null; checkable: false; checked: false; focusable: false; focused: false; selected: false; clickable: false; longClickable: false; contextClickable: false; enabled: true; password: false; scrollable: false; importantForAccessibility: false; visible: false; actions: [AccessibilityAction: ACTION_SELECT - null, AccessibilityAction: ACTION_CLEAR_SELECTION - null, AccessibilityAction: ACTION_ACCESSIBILITY_FOCUS - null, AccessibilityAction: ACTION_SHOW_ON_SCREEN - null]; isTextSelectable: false
+11-08 23:51:47.333 D/Maestro ( 6232): View hierarchy received in 39 ms
+11-08 23:51:47.392 D/Maestro ( 6232): Requesting view hierarchy
+11-08 23:51:47.392 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:47.393 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:47.412 I/Maestro ( 6232): Skipping invisible child: android.view.accessibility.AccessibilityNodeInfo@8ad8; boundsInParent: Rect(0, 0 - 1080, 128); boundsInScreen: Rect(0, 0 - 1080, 128); boundsInWindow: Rect(0, 0 - 1080, 128); packageName: org.dpdns.bnai.anime; className: android.view.View; text: null; error: null; maxTextLength: -1; stateDescription: null; contentDescription: null; tooltipText: null; containerTitle: null; viewIdResName: android:id/statusBarBackground; uniqueId: null; checkable: false; checked: false; focusable: false; focused: false; selected: false; clickable: false; longClickable: false; contextClickable: false; enabled: true; password: false; scrollable: false; importantForAccessibility: false; visible: false; actions: [AccessibilityAction: ACTION_SELECT - null, AccessibilityAction: ACTION_CLEAR_SELECTION - null, AccessibilityAction: ACTION_ACCESSIBILITY_FOCUS - null, AccessibilityAction: ACTION_SHOW_ON_SCREEN - null]; isTextSelectable: false
+11-08 23:51:47.418 W/JobService( 2881): onNetworkChanged() not implemented in com.android.voicemail.impl.scheduling.TaskSchedulerJobService. Must override in a subclass.
+11-08 23:51:47.420 D/StatusBarIconController(  838): ignoring old pipeline callbacks, because the new mobile icons are enabled
+11-08 23:51:47.433 D/EGL_emulation(  838): app_time_stats: avg=47367.76ms min=47367.76ms max=47367.76ms count=1
+11-08 23:51:47.438 D/Maestro ( 6232): View hierarchy received in 46 ms
+11-08 23:51:47.920 D/Maestro ( 6232): Requesting view hierarchy
+11-08 23:51:47.920 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:47.921 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:47.946 I/Maestro ( 6232): Skipping invisible child: android.view.accessibility.AccessibilityNodeInfo@8ad8; boundsInParent: Rect(0, 0 - 1080, 128); boundsInScreen: Rect(0, 0 - 1080, 128); boundsInWindow: Rect(0, 0 - 1080, 128); packageName: org.dpdns.bnai.anime; className: android.view.View; text: null; error: null; maxTextLength: -1; stateDescription: null; contentDescription: null; tooltipText: null; containerTitle: null; viewIdResName: android:id/statusBarBackground; uniqueId: null; checkable: false; checked: false; focusable: false; focused: false; selected: false; clickable: false; longClickable: false; contextClickable: false; enabled: true; password: false; scrollable: false; importantForAccessibility: false; visible: false; actions: [AccessibilityAction: ACTION_SELECT - null, AccessibilityAction: ACTION_CLEAR_SELECTION - null, AccessibilityAction: ACTION_ACCESSIBILITY_FOCUS - null, AccessibilityAction: ACTION_SHOW_ON_SCREEN - null]; isTextSelectable: false
+11-08 23:51:47.956 D/Maestro ( 6232): View hierarchy received in 36 ms
+11-08 23:51:48.011 D/Maestro ( 6232): Requesting view hierarchy
+11-08 23:51:48.012 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:48.012 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:48.032 I/Maestro ( 6232): Skipping invisible child: android.view.accessibility.AccessibilityNodeInfo@8ad8; boundsInParent: Rect(0, 0 - 1080, 128); boundsInScreen: Rect(0, 0 - 1080, 128); boundsInWindow: Rect(0, 0 - 1080, 128); packageName: org.dpdns.bnai.anime; className: android.view.View; text: null; error: null; maxTextLength: -1; stateDescription: null; contentDescription: null; tooltipText: null; containerTitle: null; viewIdResName: android:id/statusBarBackground; uniqueId: null; checkable: false; checked: false; focusable: false; focused: false; selected: false; clickable: false; longClickable: false; contextClickable: false; enabled: true; password: false; scrollable: false; importantForAccessibility: false; visible: false; actions: [AccessibilityAction: ACTION_SELECT - null, AccessibilityAction: ACTION_CLEAR_SELECTION - null, AccessibilityAction: ACTION_ACCESSIBILITY_FOCUS - null, AccessibilityAction: ACTION_SHOW_ON_SCREEN - null]; isTextSelectable: false
+11-08 23:51:48.042 D/Maestro ( 6232): View hierarchy received in 31 ms
+11-08 23:51:48.137 D/Maestro ( 6232): Requesting view hierarchy
+11-08 23:51:48.138 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:48.138 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:48.158 I/Maestro ( 6232): Skipping invisible child: android.view.accessibility.AccessibilityNodeInfo@8ad8; boundsInParent: Rect(0, 0 - 1080, 128); boundsInScreen: Rect(0, 0 - 1080, 128); boundsInWindow: Rect(0, 0 - 1080, 128); packageName: org.dpdns.bnai.anime; className: android.view.View; text: null; error: null; maxTextLength: -1; stateDescription: null; contentDescription: null; tooltipText: null; containerTitle: null; viewIdResName: android:id/statusBarBackground; uniqueId: null; checkable: false; checked: false; focusable: false; focused: false; selected: false; clickable: false; longClickable: false; contextClickable: false; enabled: true; password: false; scrollable: false; importantForAccessibility: false; visible: false; actions: [AccessibilityAction: ACTION_SELECT - null, AccessibilityAction: ACTION_CLEAR_SELECTION - null, AccessibilityAction: ACTION_ACCESSIBILITY_FOCUS - null, AccessibilityAction: ACTION_SHOW_ON_SCREEN - null]; isTextSelectable: false
+11-08 23:51:48.168 D/Maestro ( 6232): View hierarchy received in 31 ms
+11-08 23:51:48.223 D/Maestro ( 6232): Requesting view hierarchy
+11-08 23:51:48.223 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:48.223 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:48.249 I/Maestro ( 6232): Skipping invisible child: android.view.accessibility.AccessibilityNodeInfo@8ad8; boundsInParent: Rect(0, 0 - 1080, 128); boundsInScreen: Rect(0, 0 - 1080, 128); boundsInWindow: Rect(0, 0 - 1080, 128); packageName: org.dpdns.bnai.anime; className: android.view.View; text: null; error: null; maxTextLength: -1; stateDescription: null; contentDescription: null; tooltipText: null; containerTitle: null; viewIdResName: android:id/statusBarBackground; uniqueId: null; checkable: false; checked: false; focusable: false; focused: false; selected: false; clickable: false; longClickable: false; contextClickable: false; enabled: true; password: false; scrollable: false; importantForAccessibility: false; visible: false; actions: [AccessibilityAction: ACTION_SELECT - null, AccessibilityAction: ACTION_CLEAR_SELECTION - null, AccessibilityAction: ACTION_ACCESSIBILITY_FOCUS - null, AccessibilityAction: ACTION_SHOW_ON_SCREEN - null]; isTextSelectable: false
+11-08 23:51:48.259 D/Maestro ( 6232): View hierarchy received in 36 ms
+11-08 23:51:48.312 D/Maestro ( 6232): Requesting view hierarchy
+11-08 23:51:48.313 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:48.313 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:48.341 I/Maestro ( 6232): Skipping invisible child: android.view.accessibility.AccessibilityNodeInfo@8ad8; boundsInParent: Rect(0, 0 - 1080, 128); boundsInScreen: Rect(0, 0 - 1080, 128); boundsInWindow: Rect(0, 0 - 1080, 128); packageName: org.dpdns.bnai.anime; className: android.view.View; text: null; error: null; maxTextLength: -1; stateDescription: null; contentDescription: null; tooltipText: null; containerTitle: null; viewIdResName: android:id/statusBarBackground; uniqueId: null; checkable: false; checked: false; focusable: false; focused: false; selected: false; clickable: false; longClickable: false; contextClickable: false; enabled: true; password: false; scrollable: false; importantForAccessibility: false; visible: false; actions: [AccessibilityAction: ACTION_SELECT - null, AccessibilityAction: ACTION_CLEAR_SELECTION - null, AccessibilityAction: ACTION_ACCESSIBILITY_FOCUS - null, AccessibilityAction: ACTION_SHOW_ON_SCREEN - null]; isTextSelectable: false
+11-08 23:51:48.352 D/Maestro ( 6232): View hierarchy received in 40 ms
+11-08 23:51:48.406 D/Maestro ( 6232): Requesting view hierarchy
+11-08 23:51:48.407 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:48.407 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:48.429 I/Maestro ( 6232): Skipping invisible child: android.view.accessibility.AccessibilityNodeInfo@8ad8; boundsInParent: Rect(0, 0 - 1080, 128); boundsInScreen: Rect(0, 0 - 1080, 128); boundsInWindow: Rect(0, 0 - 1080, 128); packageName: org.dpdns.bnai.anime; className: android.view.View; text: null; error: null; maxTextLength: -1; stateDescription: null; contentDescription: null; tooltipText: null; containerTitle: null; viewIdResName: android:id/statusBarBackground; uniqueId: null; checkable: false; checked: false; focusable: false; focused: false; selected: false; clickable: false; longClickable: false; contextClickable: false; enabled: true; password: false; scrollable: false; importantForAccessibility: false; visible: false; actions: [AccessibilityAction: ACTION_SELECT - null, AccessibilityAction: ACTION_CLEAR_SELECTION - null, AccessibilityAction: ACTION_ACCESSIBILITY_FOCUS - null, AccessibilityAction: ACTION_SHOW_ON_SCREEN - null]; isTextSelectable: false
+11-08 23:51:48.439 D/Maestro ( 6232): View hierarchy received in 33 ms
+11-08 23:51:48.533 D/Maestro ( 6232): Requesting view hierarchy
+11-08 23:51:48.534 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:48.534 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:48.558 I/Maestro ( 6232): Skipping invisible child: android.view.accessibility.AccessibilityNodeInfo@8ad8; boundsInParent: Rect(0, 0 - 1080, 128); boundsInScreen: Rect(0, 0 - 1080, 128); boundsInWindow: Rect(0, 0 - 1080, 128); packageName: org.dpdns.bnai.anime; className: android.view.View; text: null; error: null; maxTextLength: -1; stateDescription: null; contentDescription: null; tooltipText: null; containerTitle: null; viewIdResName: android:id/statusBarBackground; uniqueId: null; checkable: false; checked: false; focusable: false; focused: false; selected: false; clickable: false; longClickable: false; contextClickable: false; enabled: true; password: false; scrollable: false; importantForAccessibility: false; visible: false; actions: [AccessibilityAction: ACTION_SELECT - null, AccessibilityAction: ACTION_CLEAR_SELECTION - null, AccessibilityAction: ACTION_ACCESSIBILITY_FOCUS - null, AccessibilityAction: ACTION_SHOW_ON_SCREEN - null]; isTextSelectable: false
+11-08 23:51:48.568 D/Maestro ( 6232): View hierarchy received in 35 ms
+11-08 23:51:48.623 D/Maestro ( 6232): Requesting view hierarchy
+11-08 23:51:48.623 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:48.624 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:48.642 I/Maestro ( 6232): Skipping invisible child: android.view.accessibility.AccessibilityNodeInfo@8ad8; boundsInParent: Rect(0, 0 - 1080, 128); boundsInScreen: Rect(0, 0 - 1080, 128); boundsInWindow: Rect(0, 0 - 1080, 128); packageName: org.dpdns.bnai.anime; className: android.view.View; text: null; error: null; maxTextLength: -1; stateDescription: null; contentDescription: null; tooltipText: null; containerTitle: null; viewIdResName: android:id/statusBarBackground; uniqueId: null; checkable: false; checked: false; focusable: false; focused: false; selected: false; clickable: false; longClickable: false; contextClickable: false; enabled: true; password: false; scrollable: false; importantForAccessibility: false; visible: false; actions: [AccessibilityAction: ACTION_SELECT - null, AccessibilityAction: ACTION_CLEAR_SELECTION - null, AccessibilityAction: ACTION_ACCESSIBILITY_FOCUS - null, AccessibilityAction: ACTION_SHOW_ON_SCREEN - null]; isTextSelectable: false
+11-08 23:51:48.652 D/Maestro ( 6232): View hierarchy received in 28 ms
+11-08 23:51:48.705 D/Maestro ( 6232): Requesting view hierarchy
+11-08 23:51:48.705 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:48.706 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:48.731 I/Maestro ( 6232): Skipping invisible child: android.view.accessibility.AccessibilityNodeInfo@8ad8; boundsInParent: Rect(0, 0 - 1080, 128); boundsInScreen: Rect(0, 0 - 1080, 128); boundsInWindow: Rect(0, 0 - 1080, 128); packageName: org.dpdns.bnai.anime; className: android.view.View; text: null; error: null; maxTextLength: -1; stateDescription: null; contentDescription: null; tooltipText: null; containerTitle: null; viewIdResName: android:id/statusBarBackground; uniqueId: null; checkable: false; checked: false; focusable: false; focused: false; selected: false; clickable: false; longClickable: false; contextClickable: false; enabled: true; password: false; scrollable: false; importantForAccessibility: false; visible: false; actions: [AccessibilityAction: ACTION_SELECT - null, AccessibilityAction: ACTION_CLEAR_SELECTION - null, AccessibilityAction: ACTION_ACCESSIBILITY_FOCUS - null, AccessibilityAction: ACTION_SHOW_ON_SCREEN - null]; isTextSelectable: false
+11-08 23:51:48.742 D/Maestro ( 6232): View hierarchy received in 37 ms
+11-08 23:51:48.757 D/Maestro ( 6232): Requesting view hierarchy
+11-08 23:51:48.758 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:48.758 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:48.784 I/Maestro ( 6232): Skipping invisible child: android.view.accessibility.AccessibilityNodeInfo@8ad8; boundsInParent: Rect(0, 0 - 1080, 128); boundsInScreen: Rect(0, 0 - 1080, 128); boundsInWindow: Rect(0, 0 - 1080, 128); packageName: org.dpdns.bnai.anime; className: android.view.View; text: null; error: null; maxTextLength: -1; stateDescription: null; contentDescription: null; tooltipText: null; containerTitle: null; viewIdResName: android:id/statusBarBackground; uniqueId: null; checkable: false; checked: false; focusable: false; focused: false; selected: false; clickable: false; longClickable: false; contextClickable: false; enabled: true; password: false; scrollable: false; importantForAccessibility: false; visible: false; actions: [AccessibilityAction: ACTION_SELECT - null, AccessibilityAction: ACTION_CLEAR_SELECTION - null, AccessibilityAction: ACTION_ACCESSIBILITY_FOCUS - null, AccessibilityAction: ACTION_SHOW_ON_SCREEN - null]; isTextSelectable: false
+11-08 23:51:48.795 D/Maestro ( 6232): View hierarchy received in 38 ms
+11-08 23:51:48.851 D/Maestro ( 6232): Requesting view hierarchy
+11-08 23:51:48.851 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:48.852 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:48.873 I/Maestro ( 6232): Skipping invisible child: android.view.accessibility.AccessibilityNodeInfo@8ad8; boundsInParent: Rect(0, 0 - 1080, 128); boundsInScreen: Rect(0, 0 - 1080, 128); boundsInWindow: Rect(0, 0 - 1080, 128); packageName: org.dpdns.bnai.anime; className: android.view.View; text: null; error: null; maxTextLength: -1; stateDescription: null; contentDescription: null; tooltipText: null; containerTitle: null; viewIdResName: android:id/statusBarBackground; uniqueId: null; checkable: false; checked: false; focusable: false; focused: false; selected: false; clickable: false; longClickable: false; contextClickable: false; enabled: true; password: false; scrollable: false; importantForAccessibility: false; visible: false; actions: [AccessibilityAction: ACTION_SELECT - null, AccessibilityAction: ACTION_CLEAR_SELECTION - null, AccessibilityAction: ACTION_ACCESSIBILITY_FOCUS - null, AccessibilityAction: ACTION_SHOW_ON_SCREEN - null]; isTextSelectable: false
+11-08 23:51:48.885 D/Maestro ( 6232): View hierarchy received in 34 ms
+11-08 23:51:48.948 D/Maestro ( 6232): Requesting view hierarchy
+11-08 23:51:48.949 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:48.949 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:48.969 I/Maestro ( 6232): Skipping invisible child: android.view.accessibility.AccessibilityNodeInfo@8ad8; boundsInParent: Rect(0, 0 - 1080, 128); boundsInScreen: Rect(0, 0 - 1080, 128); boundsInWindow: Rect(0, 0 - 1080, 128); packageName: org.dpdns.bnai.anime; className: android.view.View; text: null; error: null; maxTextLength: -1; stateDescription: null; contentDescription: null; tooltipText: null; containerTitle: null; viewIdResName: android:id/statusBarBackground; uniqueId: null; checkable: false; checked: false; focusable: false; focused: false; selected: false; clickable: false; longClickable: false; contextClickable: false; enabled: true; password: false; scrollable: false; importantForAccessibility: false; visible: false; actions: [AccessibilityAction: ACTION_SELECT - null, AccessibilityAction: ACTION_CLEAR_SELECTION - null, AccessibilityAction: ACTION_ACCESSIBILITY_FOCUS - null, AccessibilityAction: ACTION_SHOW_ON_SCREEN - null]; isTextSelectable: false
+11-08 23:51:48.979 D/Maestro ( 6232): View hierarchy received in 31 ms
+11-08 23:51:49.072 D/Maestro ( 6232): Requesting view hierarchy
+11-08 23:51:49.073 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:49.073 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:49.091 I/Maestro ( 6232): Skipping invisible child: android.view.accessibility.AccessibilityNodeInfo@8ad8; boundsInParent: Rect(0, 0 - 1080, 128); boundsInScreen: Rect(0, 0 - 1080, 128); boundsInWindow: Rect(0, 0 - 1080, 128); packageName: org.dpdns.bnai.anime; className: android.view.View; text: null; error: null; maxTextLength: -1; stateDescription: null; contentDescription: null; tooltipText: null; containerTitle: null; viewIdResName: android:id/statusBarBackground; uniqueId: null; checkable: false; checked: false; focusable: false; focused: false; selected: false; clickable: false; longClickable: false; contextClickable: false; enabled: true; password: false; scrollable: false; importantForAccessibility: false; visible: false; actions: [AccessibilityAction: ACTION_SELECT - null, AccessibilityAction: ACTION_CLEAR_SELECTION - null, AccessibilityAction: ACTION_ACCESSIBILITY_FOCUS - null, AccessibilityAction: ACTION_SHOW_ON_SCREEN - null]; isTextSelectable: false
+11-08 23:51:49.102 D/Maestro ( 6232): View hierarchy received in 30 ms
+11-08 23:51:49.159 D/Maestro ( 6232): Requesting view hierarchy
+11-08 23:51:49.159 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:49.159 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:49.177 I/Maestro ( 6232): Skipping invisible child: android.view.accessibility.AccessibilityNodeInfo@8ad8; boundsInParent: Rect(0, 0 - 1080, 128); boundsInScreen: Rect(0, 0 - 1080, 128); boundsInWindow: Rect(0, 0 - 1080, 128); packageName: org.dpdns.bnai.anime; className: android.view.View; text: null; error: null; maxTextLength: -1; stateDescription: null; contentDescription: null; tooltipText: null; containerTitle: null; viewIdResName: android:id/statusBarBackground; uniqueId: null; checkable: false; checked: false; focusable: false; focused: false; selected: false; clickable: false; longClickable: false; contextClickable: false; enabled: true; password: false; scrollable: false; importantForAccessibility: false; visible: false; actions: [AccessibilityAction: ACTION_SELECT - null, AccessibilityAction: ACTION_CLEAR_SELECTION - null, AccessibilityAction: ACTION_ACCESSIBILITY_FOCUS - null, AccessibilityAction: ACTION_SHOW_ON_SCREEN - null]; isTextSelectable: false
+11-08 23:51:49.188 D/Maestro ( 6232): View hierarchy received in 29 ms
+11-08 23:51:49.280 D/Maestro ( 6232): Requesting view hierarchy
+11-08 23:51:49.280 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:49.281 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:49.303 I/Maestro ( 6232): Skipping invisible child: android.view.accessibility.AccessibilityNodeInfo@8ad8; boundsInParent: Rect(0, 0 - 1080, 128); boundsInScreen: Rect(0, 0 - 1080, 128); boundsInWindow: Rect(0, 0 - 1080, 128); packageName: org.dpdns.bnai.anime; className: android.view.View; text: null; error: null; maxTextLength: -1; stateDescription: null; contentDescription: null; tooltipText: null; containerTitle: null; viewIdResName: android:id/statusBarBackground; uniqueId: null; checkable: false; checked: false; focusable: false; focused: false; selected: false; clickable: false; longClickable: false; contextClickable: false; enabled: true; password: false; scrollable: false; importantForAccessibility: false; visible: false; actions: [AccessibilityAction: ACTION_SELECT - null, AccessibilityAction: ACTION_CLEAR_SELECTION - null, AccessibilityAction: ACTION_ACCESSIBILITY_FOCUS - null, AccessibilityAction: ACTION_SHOW_ON_SCREEN - null]; isTextSelectable: false
+11-08 23:51:49.313 D/Maestro ( 6232): View hierarchy received in 33 ms
+11-08 23:51:49.407 D/Maestro ( 6232): Requesting view hierarchy
+11-08 23:51:49.408 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:49.408 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:49.426 I/Maestro ( 6232): Skipping invisible child: android.view.accessibility.AccessibilityNodeInfo@8ad8; boundsInParent: Rect(0, 0 - 1080, 128); boundsInScreen: Rect(0, 0 - 1080, 128); boundsInWindow: Rect(0, 0 - 1080, 128); packageName: org.dpdns.bnai.anime; className: android.view.View; text: null; error: null; maxTextLength: -1; stateDescription: null; contentDescription: null; tooltipText: null; containerTitle: null; viewIdResName: android:id/statusBarBackground; uniqueId: null; checkable: false; checked: false; focusable: false; focused: false; selected: false; clickable: false; longClickable: false; contextClickable: false; enabled: true; password: false; scrollable: false; importantForAccessibility: false; visible: false; actions: [AccessibilityAction: ACTION_SELECT - null, AccessibilityAction: ACTION_CLEAR_SELECTION - null, AccessibilityAction: ACTION_ACCESSIBILITY_FOCUS - null, AccessibilityAction: ACTION_SHOW_ON_SCREEN - null]; isTextSelectable: false
+11-08 23:51:49.435 D/Maestro ( 6232): View hierarchy received in 28 ms
+11-08 23:51:49.528 D/Maestro ( 6232): Requesting view hierarchy
+11-08 23:51:49.529 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:49.529 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:49.539 D/BoundBrokerSvc( 5296): onUnbind: Intent { act=com.google.android.contextmanager.service.ContextManagerService.START pkg=com.google.android.gms }
+11-08 23:51:49.547 I/Maestro ( 6232): Skipping invisible child: android.view.accessibility.AccessibilityNodeInfo@8ad8; boundsInParent: Rect(0, 0 - 1080, 128); boundsInScreen: Rect(0, 0 - 1080, 128); boundsInWindow: Rect(0, 0 - 1080, 128); packageName: org.dpdns.bnai.anime; className: android.view.View; text: null; error: null; maxTextLength: -1; stateDescription: null; contentDescription: null; tooltipText: null; containerTitle: null; viewIdResName: android:id/statusBarBackground; uniqueId: null; checkable: false; checked: false; focusable: false; focused: false; selected: false; clickable: false; longClickable: false; contextClickable: false; enabled: true; password: false; scrollable: false; importantForAccessibility: false; visible: false; actions: [AccessibilityAction: ACTION_SELECT - null, AccessibilityAction: ACTION_CLEAR_SELECTION - null, AccessibilityAction: ACTION_ACCESSIBILITY_FOCUS - null, AccessibilityAction: ACTION_SHOW_ON_SCREEN - null]; isTextSelectable: false
+11-08 23:51:49.557 D/Maestro ( 6232): View hierarchy received in 29 ms
+11-08 23:51:49.652 D/Maestro ( 6232): Requesting view hierarchy
+11-08 23:51:49.653 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:49.653 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:49.680 I/Maestro ( 6232): Skipping invisible child: android.view.accessibility.AccessibilityNodeInfo@8ad8; boundsInParent: Rect(0, 0 - 1080, 128); boundsInScreen: Rect(0, 0 - 1080, 128); boundsInWindow: Rect(0, 0 - 1080, 128); packageName: org.dpdns.bnai.anime; className: android.view.View; text: null; error: null; maxTextLength: -1; stateDescription: null; contentDescription: null; tooltipText: null; containerTitle: null; viewIdResName: android:id/statusBarBackground; uniqueId: null; checkable: false; checked: false; focusable: false; focused: false; selected: false; clickable: false; longClickable: false; contextClickable: false; enabled: true; password: false; scrollable: false; importantForAccessibility: false; visible: false; actions: [AccessibilityAction: ACTION_SELECT - null, AccessibilityAction: ACTION_CLEAR_SELECTION - null, AccessibilityAction: ACTION_ACCESSIBILITY_FOCUS - null, AccessibilityAction: ACTION_SHOW_ON_SCREEN - null]; isTextSelectable: false
+11-08 23:51:49.690 D/Maestro ( 6232): View hierarchy received in 38 ms
+11-08 23:51:49.746 D/Maestro ( 6232): Requesting view hierarchy
+11-08 23:51:49.747 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:49.747 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:49.769 I/Maestro ( 6232): Skipping invisible child: android.view.accessibility.AccessibilityNodeInfo@8ad8; boundsInParent: Rect(0, 0 - 1080, 128); boundsInScreen: Rect(0, 0 - 1080, 128); boundsInWindow: Rect(0, 0 - 1080, 128); packageName: org.dpdns.bnai.anime; className: android.view.View; text: null; error: null; maxTextLength: -1; stateDescription: null; contentDescription: null; tooltipText: null; containerTitle: null; viewIdResName: android:id/statusBarBackground; uniqueId: null; checkable: false; checked: false; focusable: false; focused: false; selected: false; clickable: false; longClickable: false; contextClickable: false; enabled: true; password: false; scrollable: false; importantForAccessibility: false; visible: false; actions: [AccessibilityAction: ACTION_SELECT - null, AccessibilityAction: ACTION_CLEAR_SELECTION - null, AccessibilityAction: ACTION_ACCESSIBILITY_FOCUS - null, AccessibilityAction: ACTION_SHOW_ON_SCREEN - null]; isTextSelectable: false
+11-08 23:51:49.779 D/Maestro ( 6232): View hierarchy received in 33 ms
+11-08 23:51:49.793 D/Maestro ( 6232): Requesting view hierarchy
+11-08 23:51:49.793 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:49.794 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:49.812 I/Maestro ( 6232): Skipping invisible child: android.view.accessibility.AccessibilityNodeInfo@8ad8; boundsInParent: Rect(0, 0 - 1080, 128); boundsInScreen: Rect(0, 0 - 1080, 128); boundsInWindow: Rect(0, 0 - 1080, 128); packageName: org.dpdns.bnai.anime; className: android.view.View; text: null; error: null; maxTextLength: -1; stateDescription: null; contentDescription: null; tooltipText: null; containerTitle: null; viewIdResName: android:id/statusBarBackground; uniqueId: null; checkable: false; checked: false; focusable: false; focused: false; selected: false; clickable: false; longClickable: false; contextClickable: false; enabled: true; password: false; scrollable: false; importantForAccessibility: false; visible: false; actions: [AccessibilityAction: ACTION_SELECT - null, AccessibilityAction: ACTION_CLEAR_SELECTION - null, AccessibilityAction: ACTION_ACCESSIBILITY_FOCUS - null, AccessibilityAction: ACTION_SHOW_ON_SCREEN - null]; isTextSelectable: false
+11-08 23:51:49.822 D/Maestro ( 6232): View hierarchy received in 29 ms
+11-08 23:51:49.917 D/Maestro ( 6232): Requesting view hierarchy
+11-08 23:51:49.917 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:49.918 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:49.937 I/Maestro ( 6232): Skipping invisible child: android.view.accessibility.AccessibilityNodeInfo@8ad8; boundsInParent: Rect(0, 0 - 1080, 128); boundsInScreen: Rect(0, 0 - 1080, 128); boundsInWindow: Rect(0, 0 - 1080, 128); packageName: org.dpdns.bnai.anime; className: android.view.View; text: null; error: null; maxTextLength: -1; stateDescription: null; contentDescription: null; tooltipText: null; containerTitle: null; viewIdResName: android:id/statusBarBackground; uniqueId: null; checkable: false; checked: false; focusable: false; focused: false; selected: false; clickable: false; longClickable: false; contextClickable: false; enabled: true; password: false; scrollable: false; importantForAccessibility: false; visible: false; actions: [AccessibilityAction: ACTION_SELECT - null, AccessibilityAction: ACTION_CLEAR_SELECTION - null, AccessibilityAction: ACTION_ACCESSIBILITY_FOCUS - null, AccessibilityAction: ACTION_SHOW_ON_SCREEN - null]; isTextSelectable: false
+11-08 23:51:49.950 D/Maestro ( 6232): View hierarchy received in 33 ms
+11-08 23:51:50.006 D/Maestro ( 6232): Requesting view hierarchy
+11-08 23:51:50.007 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:50.007 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:50.035 I/Maestro ( 6232): Skipping invisible child: android.view.accessibility.AccessibilityNodeInfo@8ad8; boundsInParent: Rect(0, 0 - 1080, 128); boundsInScreen: Rect(0, 0 - 1080, 128); boundsInWindow: Rect(0, 0 - 1080, 128); packageName: org.dpdns.bnai.anime; className: android.view.View; text: null; error: null; maxTextLength: -1; stateDescription: null; contentDescription: null; tooltipText: null; containerTitle: null; viewIdResName: android:id/statusBarBackground; uniqueId: null; checkable: false; checked: false; focusable: false; focused: false; selected: false; clickable: false; longClickable: false; contextClickable: false; enabled: true; password: false; scrollable: false; importantForAccessibility: false; visible: false; actions: [AccessibilityAction: ACTION_SELECT - null, AccessibilityAction: ACTION_CLEAR_SELECTION - null, AccessibilityAction: ACTION_ACCESSIBILITY_FOCUS - null, AccessibilityAction: ACTION_SHOW_ON_SCREEN - null]; isTextSelectable: false
+11-08 23:51:50.046 D/Maestro ( 6232): View hierarchy received in 40 ms
+11-08 23:51:50.097 D/ProfileInstaller( 6516): Installing profile for org.dpdns.bnai.anime
+11-08 23:51:50.105 D/Maestro ( 6232): Requesting view hierarchy
+11-08 23:51:50.106 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:50.106 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:50.127 I/Maestro ( 6232): Skipping invisible child: android.view.accessibility.AccessibilityNodeInfo@8ad8; boundsInParent: Rect(0, 0 - 1080, 128); boundsInScreen: Rect(0, 0 - 1080, 128); boundsInWindow: Rect(0, 0 - 1080, 128); packageName: org.dpdns.bnai.anime; className: android.view.View; text: null; error: null; maxTextLength: -1; stateDescription: null; contentDescription: null; tooltipText: null; containerTitle: null; viewIdResName: android:id/statusBarBackground; uniqueId: null; checkable: false; checked: false; focusable: false; focused: false; selected: false; clickable: false; longClickable: false; contextClickable: false; enabled: true; password: false; scrollable: false; importantForAccessibility: false; visible: false; actions: [AccessibilityAction: ACTION_SELECT - null, AccessibilityAction: ACTION_CLEAR_SELECTION - null, AccessibilityAction: ACTION_ACCESSIBILITY_FOCUS - null, AccessibilityAction: ACTION_SHOW_ON_SCREEN - null]; isTextSelectable: false
+11-08 23:51:50.136 D/Maestro ( 6232): View hierarchy received in 31 ms
+11-08 23:51:50.192 D/Maestro ( 6232): Requesting view hierarchy
+11-08 23:51:50.193 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:50.193 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:50.216 I/Maestro ( 6232): Skipping invisible child: android.view.accessibility.AccessibilityNodeInfo@8ad8; boundsInParent: Rect(0, 0 - 1080, 128); boundsInScreen: Rect(0, 0 - 1080, 128); boundsInWindow: Rect(0, 0 - 1080, 128); packageName: org.dpdns.bnai.anime; className: android.view.View; text: null; error: null; maxTextLength: -1; stateDescription: null; contentDescription: null; tooltipText: null; containerTitle: null; viewIdResName: android:id/statusBarBackground; uniqueId: null; checkable: false; checked: false; focusable: false; focused: false; selected: false; clickable: false; longClickable: false; contextClickable: false; enabled: true; password: false; scrollable: false; importantForAccessibility: false; visible: false; actions: [AccessibilityAction: ACTION_SELECT - null, AccessibilityAction: ACTION_CLEAR_SELECTION - null, AccessibilityAction: ACTION_ACCESSIBILITY_FOCUS - null, AccessibilityAction: ACTION_SHOW_ON_SCREEN - null]; isTextSelectable: false
+11-08 23:51:50.227 D/Maestro ( 6232): View hierarchy received in 35 ms
+11-08 23:51:50.281 D/Maestro ( 6232): Requesting view hierarchy
+11-08 23:51:50.281 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:50.282 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:50.303 I/Maestro ( 6232): Skipping invisible child: android.view.accessibility.AccessibilityNodeInfo@8ad8; boundsInParent: Rect(0, 0 - 1080, 128); boundsInScreen: Rect(0, 0 - 1080, 128); boundsInWindow: Rect(0, 0 - 1080, 128); packageName: org.dpdns.bnai.anime; className: android.view.View; text: null; error: null; maxTextLength: -1; stateDescription: null; contentDescription: null; tooltipText: null; containerTitle: null; viewIdResName: android:id/statusBarBackground; uniqueId: null; checkable: false; checked: false; focusable: false; focused: false; selected: false; clickable: false; longClickable: false; contextClickable: false; enabled: true; password: false; scrollable: false; importantForAccessibility: false; visible: false; actions: [AccessibilityAction: ACTION_SELECT - null, AccessibilityAction: ACTION_CLEAR_SELECTION - null, AccessibilityAction: ACTION_ACCESSIBILITY_FOCUS - null, AccessibilityAction: ACTION_SHOW_ON_SCREEN - null]; isTextSelectable: false
+11-08 23:51:50.313 D/Maestro ( 6232): View hierarchy received in 32 ms
+11-08 23:51:50.327 D/Maestro ( 6232): Requesting view hierarchy
+11-08 23:51:50.327 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:50.328 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:50.348 I/Maestro ( 6232): Skipping invisible child: android.view.accessibility.AccessibilityNodeInfo@8ad8; boundsInParent: Rect(0, 0 - 1080, 128); boundsInScreen: Rect(0, 0 - 1080, 128); boundsInWindow: Rect(0, 0 - 1080, 128); packageName: org.dpdns.bnai.anime; className: android.view.View; text: null; error: null; maxTextLength: -1; stateDescription: null; contentDescription: null; tooltipText: null; containerTitle: null; viewIdResName: android:id/statusBarBackground; uniqueId: null; checkable: false; checked: false; focusable: false; focused: false; selected: false; clickable: false; longClickable: false; contextClickable: false; enabled: true; password: false; scrollable: false; importantForAccessibility: false; visible: false; actions: [AccessibilityAction: ACTION_SELECT - null, AccessibilityAction: ACTION_CLEAR_SELECTION - null, AccessibilityAction: ACTION_ACCESSIBILITY_FOCUS - null, AccessibilityAction: ACTION_SHOW_ON_SCREEN - null]; isTextSelectable: false
+11-08 23:51:50.359 D/Maestro ( 6232): View hierarchy received in 32 ms
+11-08 23:51:50.454 D/Maestro ( 6232): Requesting view hierarchy
+11-08 23:51:50.454 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:50.455 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:50.484 I/Maestro ( 6232): Skipping invisible child: android.view.accessibility.AccessibilityNodeInfo@8ad8; boundsInParent: Rect(0, 0 - 1080, 128); boundsInScreen: Rect(0, 0 - 1080, 128); boundsInWindow: Rect(0, 0 - 1080, 128); packageName: org.dpdns.bnai.anime; className: android.view.View; text: null; error: null; maxTextLength: -1; stateDescription: null; contentDescription: null; tooltipText: null; containerTitle: null; viewIdResName: android:id/statusBarBackground; uniqueId: null; checkable: false; checked: false; focusable: false; focused: false; selected: false; clickable: false; longClickable: false; contextClickable: false; enabled: true; password: false; scrollable: false; importantForAccessibility: false; visible: false; actions: [AccessibilityAction: ACTION_SELECT - null, AccessibilityAction: ACTION_CLEAR_SELECTION - null, AccessibilityAction: ACTION_ACCESSIBILITY_FOCUS - null, AccessibilityAction: ACTION_SHOW_ON_SCREEN - null]; isTextSelectable: false
+11-08 23:51:50.497 D/Maestro ( 6232): View hierarchy received in 43 ms
+11-08 23:51:50.557 D/Maestro ( 6232): Requesting view hierarchy
+11-08 23:51:50.558 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:50.558 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:50.582 I/Maestro ( 6232): Skipping invisible child: android.view.accessibility.AccessibilityNodeInfo@8ad8; boundsInParent: Rect(0, 0 - 1080, 128); boundsInScreen: Rect(0, 0 - 1080, 128); boundsInWindow: Rect(0, 0 - 1080, 128); packageName: org.dpdns.bnai.anime; className: android.view.View; text: null; error: null; maxTextLength: -1; stateDescription: null; contentDescription: null; tooltipText: null; containerTitle: null; viewIdResName: android:id/statusBarBackground; uniqueId: null; checkable: false; checked: false; focusable: false; focused: false; selected: false; clickable: false; longClickable: false; contextClickable: false; enabled: true; password: false; scrollable: false; importantForAccessibility: false; visible: false; actions: [AccessibilityAction: ACTION_SELECT - null, AccessibilityAction: ACTION_CLEAR_SELECTION - null, AccessibilityAction: ACTION_ACCESSIBILITY_FOCUS - null, AccessibilityAction: ACTION_SHOW_ON_SCREEN - null]; isTextSelectable: false
+11-08 23:51:50.593 D/Maestro ( 6232): View hierarchy received in 36 ms
+11-08 23:51:50.646 D/Maestro ( 6232): Requesting view hierarchy
+11-08 23:51:50.646 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:50.647 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:50.664 I/Maestro ( 6232): Skipping invisible child: android.view.accessibility.AccessibilityNodeInfo@8ad8; boundsInParent: Rect(0, 0 - 1080, 128); boundsInScreen: Rect(0, 0 - 1080, 128); boundsInWindow: Rect(0, 0 - 1080, 128); packageName: org.dpdns.bnai.anime; className: android.view.View; text: null; error: null; maxTextLength: -1; stateDescription: null; contentDescription: null; tooltipText: null; containerTitle: null; viewIdResName: android:id/statusBarBackground; uniqueId: null; checkable: false; checked: false; focusable: false; focused: false; selected: false; clickable: false; longClickable: false; contextClickable: false; enabled: true; password: false; scrollable: false; importantForAccessibility: false; visible: false; actions: [AccessibilityAction: ACTION_SELECT - null, AccessibilityAction: ACTION_CLEAR_SELECTION - null, AccessibilityAction: ACTION_ACCESSIBILITY_FOCUS - null, AccessibilityAction: ACTION_SHOW_ON_SCREEN - null]; isTextSelectable: false
+11-08 23:51:50.674 D/Maestro ( 6232): View hierarchy received in 28 ms
+11-08 23:51:50.731 D/Maestro ( 6232): Requesting view hierarchy
+11-08 23:51:50.731 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:50.732 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:50.750 I/Maestro ( 6232): Skipping invisible child: android.view.accessibility.AccessibilityNodeInfo@8ad8; boundsInParent: Rect(0, 0 - 1080, 128); boundsInScreen: Rect(0, 0 - 1080, 128); boundsInWindow: Rect(0, 0 - 1080, 128); packageName: org.dpdns.bnai.anime; className: android.view.View; text: null; error: null; maxTextLength: -1; stateDescription: null; contentDescription: null; tooltipText: null; containerTitle: null; viewIdResName: android:id/statusBarBackground; uniqueId: null; checkable: false; checked: false; focusable: false; focused: false; selected: false; clickable: false; longClickable: false; contextClickable: false; enabled: true; password: false; scrollable: false; importantForAccessibility: false; visible: false; actions: [AccessibilityAction: ACTION_SELECT - null, AccessibilityAction: ACTION_CLEAR_SELECTION - null, AccessibilityAction: ACTION_ACCESSIBILITY_FOCUS - null, AccessibilityAction: ACTION_SHOW_ON_SCREEN - null]; isTextSelectable: false
+11-08 23:51:50.760 D/Maestro ( 6232): View hierarchy received in 29 ms
+11-08 23:51:50.852 D/Maestro ( 6232): Requesting view hierarchy
+11-08 23:51:50.853 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:50.853 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:50.870 I/Maestro ( 6232): Skipping invisible child: android.view.accessibility.AccessibilityNodeInfo@8ad8; boundsInParent: Rect(0, 0 - 1080, 128); boundsInScreen: Rect(0, 0 - 1080, 128); boundsInWindow: Rect(0, 0 - 1080, 128); packageName: org.dpdns.bnai.anime; className: android.view.View; text: null; error: null; maxTextLength: -1; stateDescription: null; contentDescription: null; tooltipText: null; containerTitle: null; viewIdResName: android:id/statusBarBackground; uniqueId: null; checkable: false; checked: false; focusable: false; focused: false; selected: false; clickable: false; longClickable: false; contextClickable: false; enabled: true; password: false; scrollable: false; importantForAccessibility: false; visible: false; actions: [AccessibilityAction: ACTION_SELECT - null, AccessibilityAction: ACTION_CLEAR_SELECTION - null, AccessibilityAction: ACTION_ACCESSIBILITY_FOCUS - null, AccessibilityAction: ACTION_SHOW_ON_SCREEN - null]; isTextSelectable: false
+11-08 23:51:50.880 D/Maestro ( 6232): View hierarchy received in 28 ms
+11-08 23:51:50.934 D/Maestro ( 6232): Requesting view hierarchy
+11-08 23:51:50.934 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:50.934 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:50.957 I/Maestro ( 6232): Skipping invisible child: android.view.accessibility.AccessibilityNodeInfo@8ad8; boundsInParent: Rect(0, 0 - 1080, 128); boundsInScreen: Rect(0, 0 - 1080, 128); boundsInWindow: Rect(0, 0 - 1080, 128); packageName: org.dpdns.bnai.anime; className: android.view.View; text: null; error: null; maxTextLength: -1; stateDescription: null; contentDescription: null; tooltipText: null; containerTitle: null; viewIdResName: android:id/statusBarBackground; uniqueId: null; checkable: false; checked: false; focusable: false; focused: false; selected: false; clickable: false; longClickable: false; contextClickable: false; enabled: true; password: false; scrollable: false; importantForAccessibility: false; visible: false; actions: [AccessibilityAction: ACTION_SELECT - null, AccessibilityAction: ACTION_CLEAR_SELECTION - null, AccessibilityAction: ACTION_ACCESSIBILITY_FOCUS - null, AccessibilityAction: ACTION_SHOW_ON_SCREEN - null]; isTextSelectable: false
+11-08 23:51:50.967 D/Maestro ( 6232): View hierarchy received in 33 ms
+11-08 23:51:51.061 D/Maestro ( 6232): Requesting view hierarchy
+11-08 23:51:51.062 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:51.062 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:51.085 I/Maestro ( 6232): Skipping invisible child: android.view.accessibility.AccessibilityNodeInfo@8ad8; boundsInParent: Rect(0, 0 - 1080, 128); boundsInScreen: Rect(0, 0 - 1080, 128); boundsInWindow: Rect(0, 0 - 1080, 128); packageName: org.dpdns.bnai.anime; className: android.view.View; text: null; error: null; maxTextLength: -1; stateDescription: null; contentDescription: null; tooltipText: null; containerTitle: null; viewIdResName: android:id/statusBarBackground; uniqueId: null; checkable: false; checked: false; focusable: false; focused: false; selected: false; clickable: false; longClickable: false; contextClickable: false; enabled: true; password: false; scrollable: false; importantForAccessibility: false; visible: false; actions: [AccessibilityAction: ACTION_SELECT - null, AccessibilityAction: ACTION_CLEAR_SELECTION - null, AccessibilityAction: ACTION_ACCESSIBILITY_FOCUS - null, AccessibilityAction: ACTION_SHOW_ON_SCREEN - null]; isTextSelectable: false
+11-08 23:51:51.095 D/Maestro ( 6232): View hierarchy received in 34 ms
+11-08 23:51:51.193 D/Maestro ( 6232): Requesting view hierarchy
+11-08 23:51:51.194 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:51.195 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:51.212 I/Maestro ( 6232): Skipping invisible child: android.view.accessibility.AccessibilityNodeInfo@8ad8; boundsInParent: Rect(0, 0 - 1080, 128); boundsInScreen: Rect(0, 0 - 1080, 128); boundsInWindow: Rect(0, 0 - 1080, 128); packageName: org.dpdns.bnai.anime; className: android.view.View; text: null; error: null; maxTextLength: -1; stateDescription: null; contentDescription: null; tooltipText: null; containerTitle: null; viewIdResName: android:id/statusBarBackground; uniqueId: null; checkable: false; checked: false; focusable: false; focused: false; selected: false; clickable: false; longClickable: false; contextClickable: false; enabled: true; password: false; scrollable: false; importantForAccessibility: false; visible: false; actions: [AccessibilityAction: ACTION_SELECT - null, AccessibilityAction: ACTION_CLEAR_SELECTION - null, AccessibilityAction: ACTION_ACCESSIBILITY_FOCUS - null, AccessibilityAction: ACTION_SHOW_ON_SCREEN - null]; isTextSelectable: false
+11-08 23:51:51.221 D/Maestro ( 6232): View hierarchy received in 28 ms
+11-08 23:51:51.247 I/netd    (  335): tetherGetStats() -> {[]} <0.38ms>
+11-08 23:51:51.249 I/netd    (  335): bandwidthSetGlobalAlert(2097152) <0.08ms>
+11-08 23:51:51.313 D/Maestro ( 6232): Requesting view hierarchy
+11-08 23:51:51.314 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:51.314 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:51.336 I/Maestro ( 6232): Skipping invisible child: android.view.accessibility.AccessibilityNodeInfo@8ad8; boundsInParent: Rect(0, 0 - 1080, 128); boundsInScreen: Rect(0, 0 - 1080, 128); boundsInWindow: Rect(0, 0 - 1080, 128); packageName: org.dpdns.bnai.anime; className: android.view.View; text: null; error: null; maxTextLength: -1; stateDescription: null; contentDescription: null; tooltipText: null; containerTitle: null; viewIdResName: android:id/statusBarBackground; uniqueId: null; checkable: false; checked: false; focusable: false; focused: false; selected: false; clickable: false; longClickable: false; contextClickable: false; enabled: true; password: false; scrollable: false; importantForAccessibility: false; visible: false; actions: [AccessibilityAction: ACTION_SELECT - null, AccessibilityAction: ACTION_CLEAR_SELECTION - null, AccessibilityAction: ACTION_ACCESSIBILITY_FOCUS - null, AccessibilityAction: ACTION_SHOW_ON_SCREEN - null]; isTextSelectable: false
+11-08 23:51:51.345 D/Maestro ( 6232): View hierarchy received in 32 ms
+11-08 23:51:51.402 D/WindowManager(  522): captureDisplay
+11-08 23:51:51.417 W/System  ( 6171): A resource was acquired at attached stack trace but never released. See java.io.Closeable for information on avoiding resource leaks.
+11-08 23:51:51.422 W/System  ( 6171): java.lang.Throwable: Explicit termination method 'HardwareBuffer.close' not called
+11-08 23:51:51.422 W/System  ( 6171): 	at dalvik.system.CloseGuard.openWithCallSite(CloseGuard.java:288)
+11-08 23:51:51.422 W/System  ( 6171): 	at dalvik.system.CloseGuard.open(CloseGuard.java:257)
+11-08 23:51:51.422 W/System  ( 6171): 	at android.hardware.HardwareBuffer.<init>(HardwareBuffer.java:266)
+11-08 23:51:51.422 W/System  ( 6171): A resource was acquired at attached stack trace but never released. See java.io.Closeable for information on avoiding resource leaks.
+11-08 23:51:51.422 W/System  ( 6171): java.lang.Throwable: Explicit termination method 'HardwareBuffer.close' not called
+11-08 23:51:51.422 W/System  ( 6171): 	at dalvik.system.CloseGuard.openWithCallSite(CloseGuard.java:288)
+11-08 23:51:51.422 W/System  ( 6171): 	at dalvik.system.CloseGuard.open(CloseGuard.java:257)
+11-08 23:51:51.422 W/System  ( 6171): 	at android.hardware.HardwareBuffer.<init>(HardwareBuffer.java:266)
+11-08 23:51:51.628 D/Maestro ( 6232): Requesting view hierarchy
+11-08 23:51:51.628 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:51.629 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:51.656 I/Maestro ( 6232): Skipping invisible child: android.view.accessibility.AccessibilityNodeInfo@8ad8; boundsInParent: Rect(0, 0 - 1080, 128); boundsInScreen: Rect(0, 0 - 1080, 128); boundsInWindow: Rect(0, 0 - 1080, 128); packageName: org.dpdns.bnai.anime; className: android.view.View; text: null; error: null; maxTextLength: -1; stateDescription: null; contentDescription: null; tooltipText: null; containerTitle: null; viewIdResName: android:id/statusBarBackground; uniqueId: null; checkable: false; checked: false; focusable: false; focused: false; selected: false; clickable: false; longClickable: false; contextClickable: false; enabled: true; password: false; scrollable: false; importantForAccessibility: false; visible: false; actions: [AccessibilityAction: ACTION_SELECT - null, AccessibilityAction: ACTION_CLEAR_SELECTION - null, AccessibilityAction: ACTION_ACCESSIBILITY_FOCUS - null, AccessibilityAction: ACTION_SHOW_ON_SCREEN - null]; isTextSelectable: false
+11-08 23:51:51.669 D/Maestro ( 6232): View hierarchy received in 41 ms
+11-08 23:51:51.723 D/Maestro ( 6232): Requesting view hierarchy
+11-08 23:51:51.723 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:51.724 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:51.747 I/Maestro ( 6232): Skipping invisible child: android.view.accessibility.AccessibilityNodeInfo@8ad8; boundsInParent: Rect(0, 0 - 1080, 128); boundsInScreen: Rect(0, 0 - 1080, 128); boundsInWindow: Rect(0, 0 - 1080, 128); packageName: org.dpdns.bnai.anime; className: android.view.View; text: null; error: null; maxTextLength: -1; stateDescription: null; contentDescription: null; tooltipText: null; containerTitle: null; viewIdResName: android:id/statusBarBackground; uniqueId: null; checkable: false; checked: false; focusable: false; focused: false; selected: false; clickable: false; longClickable: false; contextClickable: false; enabled: true; password: false; scrollable: false; importantForAccessibility: false; visible: false; actions: [AccessibilityAction: ACTION_SELECT - null, AccessibilityAction: ACTION_CLEAR_SELECTION - null, AccessibilityAction: ACTION_ACCESSIBILITY_FOCUS - null, AccessibilityAction: ACTION_SHOW_ON_SCREEN - null]; isTextSelectable: false
+11-08 23:51:51.757 D/Maestro ( 6232): View hierarchy received in 34 ms
+11-08 23:51:51.818 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:51.823 D/UiDevice( 6232): Waiting 500ms for window update of package org.dpdns.bnai.anime.
+11-08 23:51:52.324 W/UiDevice( 6232): Timed out waiting 500ms on window update.
+11-08 23:51:52.324 W/UiDevice( 6232): java.util.concurrent.TimeoutException: Expected event not received within: 500 ms among: []
+11-08 23:51:52.324 W/UiDevice( 6232): 	at android.app.UiAutomation.executeAndWaitForEvent(UiAutomation.java:1071)
+11-08 23:51:52.324 W/UiDevice( 6232): 	at androidx.test.uiautomator.UiDevice.waitForWindowUpdate(UiDevice.java:1253)
+11-08 23:51:52.324 W/UiDevice( 6232): 	at dev.mobile.maestro.Service.isWindowUpdating(MaestroDriverService.kt:361)
+11-08 23:51:52.324 W/UiDevice( 6232): 	at maestro_android.MaestroDriverGrpc$MethodHandlers.invoke(MaestroDriverGrpc.java:965)
+11-08 23:51:52.324 W/UiDevice( 6232): 	at io.grpc.stub.ServerCalls$UnaryServerCallHandler$UnaryServerCallListener.onHalfClose(ServerCalls.java:182)
+11-08 23:51:52.324 W/UiDevice( 6232): 	at io.grpc.internal.ServerCallImpl$ServerStreamListenerImpl.halfClosed(ServerCallImpl.java:355)
+11-08 23:51:52.324 W/UiDevice( 6232): 	at io.grpc.internal.ServerImpl$JumpToApplicationThreadServerStreamListener$1HalfClosed.runInContext(ServerImpl.java:867)
+11-08 23:51:52.324 W/UiDevice( 6232): 	at io.grpc.internal.ContextRunnable.run(ContextRunnable.java:37)
+11-08 23:51:52.324 W/UiDevice( 6232): 	at io.grpc.internal.SerializingExecutor.run(SerializingExecutor.java:133)
+11-08 23:51:52.324 W/UiDevice( 6232): 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)
+11-08 23:51:52.324 W/UiDevice( 6232): 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:644)
+11-08 23:51:52.324 W/UiDevice( 6232): 	at java.lang.Thread.run(Thread.java:1012)
+11-08 23:51:52.382 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:52.384 D/UiDevice( 6232): Waiting 500ms for window update of package org.dpdns.bnai.anime.
+11-08 23:51:52.403 D/OomAdjuster(  522): Not killing cached processes
+11-08 23:51:52.404 D/BtGatt.ScanManager( 1030): uid 10131 isForeground true scanMode -1
+11-08 23:51:52.404 D/BtGatt.ScanManager( 1030): uid 10131 isForeground true scanMode -1
+11-08 23:51:52.885 W/UiDevice( 6232): Timed out waiting 500ms on window update.
+11-08 23:51:52.885 W/UiDevice( 6232): java.util.concurrent.TimeoutException: Expected event not received within: 500 ms among: []
+11-08 23:51:52.885 W/UiDevice( 6232): 	at android.app.UiAutomation.executeAndWaitForEvent(UiAutomation.java:1071)
+11-08 23:51:52.885 W/UiDevice( 6232): 	at androidx.test.uiautomator.UiDevice.waitForWindowUpdate(UiDevice.java:1253)
+11-08 23:51:52.885 W/UiDevice( 6232): 	at dev.mobile.maestro.Service.isWindowUpdating(MaestroDriverService.kt:361)
+11-08 23:51:52.885 W/UiDevice( 6232): 	at maestro_android.MaestroDriverGrpc$MethodHandlers.invoke(MaestroDriverGrpc.java:965)
+11-08 23:51:52.885 W/UiDevice( 6232): 	at io.grpc.stub.ServerCalls$UnaryServerCallHandler$UnaryServerCallListener.onHalfClose(ServerCalls.java:182)
+11-08 23:51:52.885 W/UiDevice( 6232): 	at io.grpc.internal.ServerCallImpl$ServerStreamListenerImpl.halfClosed(ServerCallImpl.java:355)
+11-08 23:51:52.885 W/UiDevice( 6232): 	at io.grpc.internal.ServerImpl$JumpToApplicationThreadServerStreamListener$1HalfClosed.runInContext(ServerImpl.java:867)
+11-08 23:51:52.885 W/UiDevice( 6232): 	at io.grpc.internal.ContextRunnable.run(ContextRunnable.java:37)
+11-08 23:51:52.885 W/UiDevice( 6232): 	at io.grpc.internal.SerializingExecutor.run(SerializingExecutor.java:133)
+11-08 23:51:52.885 W/UiDevice( 6232): 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)
+11-08 23:51:52.885 W/UiDevice( 6232): 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:644)
+11-08 23:51:52.885 W/UiDevice( 6232): 	at java.lang.Thread.run(Thread.java:1012)
+11-08 23:51:52.948 D/Maestro ( 6232): Requesting view hierarchy
+11-08 23:51:52.948 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:52.948 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:52.957 I/DialerCallerIdFeedbackDeletionWorker( 2881): com.android.dialer.calleridfeedback.impl.database.retention.CallerIdFeedbackDeletionWorker.startWork:60 startWork
+11-08 23:51:52.957 I/DialerCallerIdFeedbackEnabledFn( 2881): com.android.dialer.calleridfeedback.impl.CallerIdFeedbackEnabledFn.isEnabled:41 Caller ID feedback enabled [CONTEXT ratelimit_period="1 MINUTES [skipped: 1]" ]
+11-08 23:51:52.959 I/WM-WorkerWrapper( 2881): Worker result SUCCESS for Work [ id=c2735a56-aade-40df-a0ac-f6005a1d8aa2, tags={ com.google.apps.tiktok.contrib.work.TikTokListenableWorker, TikTokWorker#com.android.dialer.calleridfeeback.impl.database.retention.CallerIdFeedbackDeletionWorker } ]
+11-08 23:51:52.976 I/DialerXatuMetricsWorker( 2881): com.android.dialer.xatu.impl.storage.postcall.XatuMetricsWorker.startWork:66 enter
+11-08 23:51:52.979 I/DialerCallerIdFeedbackDatabase( 2881): com.android.dialer.calleridfeedback.impl.database.CallerIdFeedbackDatabase.deleteAllMatching:409 feedbackCreationTimestamp list empty
+11-08 23:51:52.979 I/DialerCallerIdFeedbackDatabase( 2881): com.android.dialer.calleridfeedback.impl.database.CallerIdFeedbackDatabase$1.onSuccess:351 Deleted old caller IDs.
+11-08 23:51:52.985 I/Maestro ( 6232): Skipping invisible child: android.view.accessibility.AccessibilityNodeInfo@8ad8; boundsInParent: Rect(0, 0 - 1080, 128); boundsInScreen: Rect(0, 0 - 1080, 128); boundsInWindow: Rect(0, 0 - 1080, 128); packageName: org.dpdns.bnai.anime; className: android.view.View; text: null; error: null; maxTextLength: -1; stateDescription: null; contentDescription: null; tooltipText: null; containerTitle: null; viewIdResName: android:id/statusBarBackground; uniqueId: null; checkable: false; checked: false; focusable: false; focused: false; selected: false; clickable: false; longClickable: false; contextClickable: false; enabled: true; password: false; scrollable: false; importantForAccessibility: false; visible: false; actions: [AccessibilityAction: ACTION_SELECT - null, AccessibilityAction: ACTION_CLEAR_SELECTION - null, AccessibilityAction: ACTION_ACCESSIBILITY_FOCUS - null, AccessibilityAction: ACTION_SHOW_ON_SCREEN - null]; isTextSelectable: false
+11-08 23:51:52.991 I/WM-WorkerWrapper( 2881): Worker result SUCCESS for Work [ id=c7247934-3271-46c5-992b-d0bd5ae5c954, tags={ com.google.apps.tiktok.contrib.work.TikTokListenableWorker, TikTokWorker#com.android.dialer.xatu.impl.storage.postcall.XatuMetricsWorker } ]
+11-08 23:51:52.997 D/Maestro ( 6232): View hierarchy received in 49 ms
+11-08 23:51:53.004 I/DropBoxManagerService(  522): add tag=system_server_strictmode isTagEnabled=true flags=0x2
+11-08 23:51:53.005 I/DropBoxManagerService(  522): add tag=system_server_strictmode isTagEnabled=true flags=0x2
+11-08 23:51:53.005 I/DropBoxManagerService(  522): add tag=system_server_strictmode isTagEnabled=true flags=0x2
+11-08 23:51:53.005 I/DropBoxManagerService(  522): add tag=system_server_strictmode isTagEnabled=true flags=0x2
+11-08 23:51:53.005 I/DropBoxManagerService(  522): add tag=system_server_strictmode isTagEnabled=true flags=0x2
+11-08 23:51:53.006 I/DropBoxManagerService(  522): add tag=system_server_strictmode isTagEnabled=true flags=0x2
+11-08 23:51:53.006 I/DropBoxManagerService(  522): add tag=system_server_strictmode isTagEnabled=true flags=0x2
+11-08 23:51:53.086 D/TaplEvents( 1110): TIS / TouchInteractionService.onInputEvent: MotionEvent { action=ACTION_DOWN, actionButton=0, id[0]=0, x[0]=540.0, y[0]=1570.0, toolType[0]=TOOL_TYPE_FINGER, buttonState=0, classification=NONE, metaState=0, flags=0x0, edgeFlags=0x0, pointerCount=1, historySize=0, eventTime=352843, downTime=352843, deviceId=-1, source=0x1002, displayId=0, eventId=-74925497 }
+11-08 23:51:53.127 D/ActivityManager(  522): freezing 3082 com.google.android.documentsui
+11-08 23:51:53.127 D/ActivityManager(  522): freezing 2640 com.android.chrome
+11-08 23:51:53.191 D/TaplEvents( 1110): TIS / TouchInteractionService.onInputEvent: MotionEvent { action=ACTION_UP, actionButton=0, id[0]=0, x[0]=540.0, y[0]=1570.0, toolType[0]=TOOL_TYPE_FINGER, buttonState=0, classification=NONE, metaState=0, flags=0x0, edgeFlags=0x0, pointerCount=1, historySize=0, eventTime=352975, downTime=352843, deviceId=-1, source=0x1002, displayId=0, eventId=-915611416 }
+11-08 23:51:53.228 D/EGL_emulation( 6516): app_time_stats: avg=1415.27ms min=13.37ms max=6477.63ms count=5
+11-08 23:51:53.370 D/ActivityManager(  522): freezing 6472 com.android.externalstorage
+11-08 23:51:53.469 I/keystore2(  156): system/security/keystore2/src/watchdog.rs:319 - Watchdog thread idle -> terminating. Have a great day.
+11-08 23:51:53.830 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:53.830 D/Maestro ( 6232): Requesting view hierarchy
+11-08 23:51:53.831 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:53.831 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:53.853 I/Maestro ( 6232): Skipping invisible child: android.view.accessibility.AccessibilityNodeInfo@8ad8; boundsInParent: Rect(0, 0 - 1080, 128); boundsInScreen: Rect(0, 0 - 1080, 128); boundsInWindow: Rect(0, 0 - 1080, 128); packageName: org.dpdns.bnai.anime; className: android.view.View; text: null; error: null; maxTextLength: -1; stateDescription: null; contentDescription: null; tooltipText: null; containerTitle: null; viewIdResName: android:id/statusBarBackground; uniqueId: null; checkable: false; checked: false; focusable: false; focused: false; selected: false; clickable: false; longClickable: false; contextClickable: false; enabled: true; password: false; scrollable: false; importantForAccessibility: false; visible: false; actions: [AccessibilityAction: ACTION_SELECT - null, AccessibilityAction: ACTION_CLEAR_SELECTION - null, AccessibilityAction: ACTION_ACCESSIBILITY_FOCUS - null, AccessibilityAction: ACTION_SHOW_ON_SCREEN - null]; isTextSelectable: false
+11-08 23:51:53.863 D/Maestro ( 6232): View hierarchy received in 33 ms
+11-08 23:51:53.918 D/Maestro ( 6232): Requesting view hierarchy
+11-08 23:51:53.918 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:53.919 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:53.934 I/Maestro ( 6232): Skipping invisible child: android.view.accessibility.AccessibilityNodeInfo@8ad8; boundsInParent: Rect(0, 0 - 1080, 128); boundsInScreen: Rect(0, 0 - 1080, 128); boundsInWindow: Rect(0, 0 - 1080, 128); packageName: org.dpdns.bnai.anime; className: android.view.View; text: null; error: null; maxTextLength: -1; stateDescription: null; contentDescription: null; tooltipText: null; containerTitle: null; viewIdResName: android:id/statusBarBackground; uniqueId: null; checkable: false; checked: false; focusable: false; focused: false; selected: false; clickable: false; longClickable: false; contextClickable: false; enabled: true; password: false; scrollable: false; importantForAccessibility: false; visible: false; actions: [AccessibilityAction: ACTION_SELECT - null, AccessibilityAction: ACTION_CLEAR_SELECTION - null, AccessibilityAction: ACTION_ACCESSIBILITY_FOCUS - null, AccessibilityAction: ACTION_SHOW_ON_SCREEN - null]; isTextSelectable: false
+11-08 23:51:53.944 D/Maestro ( 6232): View hierarchy received in 26 ms
+11-08 23:51:54.036 D/Maestro ( 6232): Requesting view hierarchy
+11-08 23:51:54.037 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:54.037 W/QueryController( 6232): Could not detect idle state.
+11-08 23:51:54.059 I/Maestro ( 6232): Skipping invisible child: android.view.accessibility.AccessibilityNodeInfo@8ad8; boundsInParent: Rect(0, 0 - 1080, 128); boundsInScreen: Rect(0, 0 - 1080, 128); boundsInWindow: Rect(0, 0 - 1080, 128); packageName: org.dpdns.bnai.anime; className: android.view.View; text: null; error: null; maxTextLength: -1; stateDescription: null; contentDescription: null; tooltipText: null; containerTitle: null; viewIdResName: android:id/statusBarBackground; uniqueId: null; checkable: false; checked: false; focusable: false; focused: false; selected: false; clickable: false; longClickable: false; contextClickable: false; enabled: true; password: false; scrollable: false; importantForAccessibility: false; visible: false; actions: [AccessibilityAction: ACTION_SELECT - null, AccessibilityAction: ACTION_CLEAR_SELECTION - null, AccessibilityAction: ACTION_ACCESSIBILITY_FOCUS - null, AccessibilityAction: ACTION_SHOW_ON_SCREEN - null]; isTextSelectable: false
+11-08 23:51:54.074 D/Maestro ( 6232): View hierarchy received in 38 ms
+11-08 23:51:54.347 I/logd    (    0): logdr: UID=2000 GID=2000 PID=6548 n tail=0 logMask=99 pid=0 start=0ns deadline=0ns

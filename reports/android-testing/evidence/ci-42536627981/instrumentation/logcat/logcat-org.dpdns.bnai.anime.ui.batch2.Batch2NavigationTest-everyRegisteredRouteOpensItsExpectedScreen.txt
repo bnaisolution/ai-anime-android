@@ -1,0 +1,59 @@
+11-08 23:53:30.406  6313  6334 I TestRunner: started: everyRegisteredRouteOpensItsExpectedScreen(org.dpdns.bnai.anime.ui.batch2.Batch2NavigationTest)
+11-08 23:53:30.415  6313  6334 D IdlingRegistry: Registering idling resources: [androidx.compose.ui.test.junit4.EspressoLink@2141cae]
+11-08 23:53:30.443  6313  6334 W Settings: Setting always_finish_activities has moved from android.provider.Settings.System to android.provider.Settings.Global, returning read-only value.
+11-08 23:53:30.479   837   880 D SplashScreenView: Build android.window.SplashScreenView{3c3a887 V.E...... ......ID 0,0-0,0}
+11-08 23:53:30.479   837   880 D SplashScreenView: Icon: view: null drawable: null size: 0
+11-08 23:53:30.479   837   880 D SplashScreenView: Branding: view: android.view.View{71213b4 G.ED..... ......I. 0,0-0,0 #10204ef android:id/splashscreen_branding_view} drawable: null size w: 0 h: 0
+11-08 23:53:30.546   402   402 I BpBinder: onLastStrongRef automatically unlinking death recipients:
+11-08 23:53:30.630  6362  6362 W WindowOnBackDispatcher: sendCancelIfRunning: isInProgress=falsecallback=android.view.ViewRootImpl$$ExternalSyntheticLambda17@f7c06b4
+11-08 23:53:30.632   521   825 W InputManager-JNI: Input channel object 'cd6c52c org.dpdns.bnai.anime.test/androidx.test.core.app.InstrumentationActivityInvoker$EmptyActivity (client)' was disposed without first being removed with the input manager!
+11-08 23:53:30.661  6313  6313 D LifecycleMonitor: Lifecycle status change: androidx.activity.ComponentActivity@b90e212 in: PRE_ON_CREATE
+11-08 23:53:30.662  6313  6313 V ActivityScenario: Activity lifecycle changed event received but ignored because the reported transition was not ON_CREATE while the last known transition was PRE_ON_CREATE
+11-08 23:53:30.743  6313  6313 D LifecycleMonitor: Lifecycle status change: androidx.activity.ComponentActivity@b90e212 in: CREATED
+11-08 23:53:30.745  6313  6313 V ActivityScenario: Update currentActivityStage to CREATED, currentActivity=androidx.activity.ComponentActivity@b90e212
+11-08 23:53:30.758  6313  6313 D LifecycleMonitor: Lifecycle status change: androidx.activity.ComponentActivity@b90e212 in: STARTED
+11-08 23:53:30.758  6313  6313 V ActivityScenario: Update currentActivityStage to STARTED, currentActivity=androidx.activity.ComponentActivity@b90e212
+11-08 23:53:30.761  6313  6313 D LifecycleMonitor: Lifecycle status change: androidx.activity.ComponentActivity@b90e212 in: RESUMED
+11-08 23:53:30.763  6313  6313 V ActivityScenario: Update currentActivityStage to RESUMED, currentActivity=androidx.activity.ComponentActivity@b90e212
+11-08 23:53:31.167  1023  1305 D BtGatt.ScanManager: uid 10131 isForeground true scanMode -1
+11-08 23:53:31.168  1023  1305 D BtGatt.ScanManager: uid 10131 isForeground true scanMode -1
+11-08 23:53:31.190   521  2247 W system_server: Long monitor contention with owner binder:521_1C (2261) at android.window.TaskSnapshot com.android.server.wm.ActivityTaskManagerService.takeTaskSnapshot(int, boolean)(ActivityTaskManagerService.java:3820) waiters=0 in int com.android.server.wm.WindowOrganizerController.finishTransition(android.os.IBinder, android.window.WindowContainerTransaction, android.window.IWindowContainerTransactionCallback) for 174ms
+11-08 23:53:31.229  6313  6313 D AutofillManager: Fill dialog is enabled:false, hints=[password, passwordAuto, creditCardNumber, creditCardSecurityCode, creditCardExpirationDate]
+11-08 23:53:31.394   521   538 W ziparchive: Unable to open '/data/app/~~X-LgaU6zbIcpZde_NyYmDw==/org.dpdns.bnai.anime-24nZ24IfQyQnXkxCM4uqFA==/base.dm': No such file or directory
+11-08 23:53:31.459  1107  2110 D OneSearchSuggestProvider: Shut down the binder channel
+11-08 23:53:31.473  1107  1162 I ImeTracker: com.google.android.apps.nexuslauncher:8f81f280: onRequestHide at ORIGIN_CLIENT_HIDE_SOFT_INPUT reason HIDE_SOFT_INPUT
+11-08 23:53:31.473  1107  1162 I ImeTracker: com.google.android.apps.nexuslauncher:8f81f280: onFailed at PHASE_CLIENT_VIEW_SERVED
+11-08 23:53:31.474  1107  1148 I IPCThreadState: oneway function results for code 2 on binder at 0x7da80ac83bc0 will be dropped but finished with status UNKNOWN_TRANSACTION
+11-08 23:53:31.483   521   538 I ActivityTaskManager: Displayed org.dpdns.bnai.anime/androidx.activity.ComponentActivity for user 0: +840ms
+11-08 23:53:31.523   837   879 W WindowOnBackDispatcher: sendCancelIfRunning: isInProgress=falsecallback=android.view.ViewRootImpl$$ExternalSyntheticLambda17@c284623
+11-08 23:53:31.527   521  2247 W InputManager-JNI: Input channel object '771c98e Splash Screen org.dpdns.bnai.anime (client)' was disposed without first being removed with the input manager!
+11-08 23:53:31.528  1739  4702 I PBSessionCacheImpl: Deleted sessionId[7649997064422513] from persistence.
+11-08 23:53:31.553  1739  2468 W SearchServiceCore: Abort, client detached.
+11-08 23:53:31.554   521   530 I system_server: NativeAlloc concurrent copying GC freed 120885(3746KB) AllocSpace objects, 6(120KB) LOS objects, 47% free, 26MB/50MB, paused 59us,84us total 368.801ms
+11-08 23:53:32.037  6313  6313 W WindowOnBackDispatcher: OnBackInvokedCallback is not enabled for the application.
+11-08 23:53:32.037  6313  6313 W WindowOnBackDispatcher: Set 'android:enableOnBackInvokedCallback="true"' in the application manifest.
+11-08 23:53:32.573   837   837 D StatusBarIconController: ignoring old pipeline callbacks, because the new mobile icons are enabled
+11-08 23:53:32.979  6313  6337 D EGL_emulation: app_time_stats: avg=281.71ms min=72.90ms max=765.78ms count=7
+11-08 23:53:34.019  6313  6337 D EGL_emulation: app_time_stats: avg=259.88ms min=238.62ms max=276.85ms count=4
+11-08 23:53:35.058  6313  6337 D EGL_emulation: app_time_stats: avg=207.66ms min=169.59ms max=244.03ms count=5
+11-08 23:53:36.242  6313  6337 D EGL_emulation: app_time_stats: avg=236.63ms min=187.35ms max=282.51ms count=5
+11-08 23:53:37.276  6313  6337 D EGL_emulation: app_time_stats: avg=171.95ms min=132.36ms max=199.01ms count=6
+11-08 23:53:38.344  6313  6337 D EGL_emulation: app_time_stats: avg=177.93ms min=161.18ms max=204.99ms count=6
+11-08 23:53:38.975   837   880 D SplashScreenView: Build android.window.SplashScreenView{82ff667 V.E...... ......ID 0,0-0,0}
+11-08 23:53:38.975   837   880 D SplashScreenView: Icon: view: null drawable: null size: 0
+11-08 23:53:38.975   837   880 D SplashScreenView: Branding: view: android.view.View{4297c14 G.ED..... ......I. 0,0-0,0 #10204ef android:id/splashscreen_branding_view} drawable: null size w: 0 h: 0
+11-08 23:53:38.985  6313  6313 D LifecycleMonitor: Lifecycle status change: androidx.activity.ComponentActivity@b90e212 in: PAUSED
+11-08 23:53:38.986  6313  6313 V ActivityScenario: Update currentActivityStage to PAUSED, currentActivity=androidx.activity.ComponentActivity@b90e212
+11-08 23:53:38.995   402   402 I BpBinder: onLastStrongRef automatically unlinking death recipients:
+11-08 23:53:39.375  6362  6389 W OpenGLRenderer: Failed to initialize 101010-2 format, error = EGL_SUCCESS
+11-08 23:53:39.609   521   538 W ziparchive: Unable to open '/data/app/~~KSRme4HfuhZkYjy9aVejUQ==/org.dpdns.bnai.anime.test-fIUmPhMYs6cn5JzEYeQeJA==/base.dm': No such file or directory
+11-08 23:53:39.610   521   538 I ActivityTaskManager: Displayed org.dpdns.bnai.anime.test/androidx.test.core.app.InstrumentationActivityInvoker$EmptyActivity for user 0: +655ms
+11-08 23:53:39.612   402   402 I BpBinder: onLastStrongRef automatically unlinking death recipients:
+11-08 23:53:39.654  6313  6313 D LifecycleMonitor: Lifecycle status change: androidx.activity.ComponentActivity@b90e212 in: STOPPED
+11-08 23:53:39.654  6313  6313 V ActivityScenario: Update currentActivityStage to STOPPED, currentActivity=androidx.activity.ComponentActivity@b90e212
+11-08 23:53:39.704  6313  6313 D LifecycleMonitor: Lifecycle status change: androidx.activity.ComponentActivity@b90e212 in: DESTROYED
+11-08 23:53:39.704  6313  6313 V ActivityScenario: Update currentActivityStage to DESTROYED, currentActivity=null
+11-08 23:53:39.705  6313  6313 W WindowOnBackDispatcher: sendCancelIfRunning: isInProgress=falsecallback=android.view.ViewRootImpl$$ExternalSyntheticLambda17@4616a36
+11-08 23:53:39.736   521  2238 W InputManager-JNI: Input channel object '2497854 org.dpdns.bnai.anime/androidx.activity.ComponentActivity (client)' was disposed without first being removed with the input manager!
+11-08 23:53:39.743  6313  6334 D IdlingRegistry: Unregistering idling resources: [androidx.compose.ui.test.junit4.EspressoLink@2141cae]
+11-08 23:53:39.744  6313  6334 I TestRunner: finished: everyRegisteredRouteOpensItsExpectedScreen(org.dpdns.bnai.anime.ui.batch2.Batch2NavigationTest)
