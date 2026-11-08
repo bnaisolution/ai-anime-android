@@ -1,4 +1,8 @@
 package org.dpdns.bnai.anime.ui.owner
+import androidx.compose.ui.platform.testTag
+import org.dpdns.bnai.anime.ui.testing.TestTags
+
+import org.dpdns.bnai.anime.ui.LocalAppContainer
 
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
@@ -15,7 +19,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
-import org.dpdns.bnai.anime.core.network.AnimeRepository
 import org.dpdns.bnai.anime.core.network.HealthResponseDto
 import org.dpdns.bnai.anime.core.network.ProjectOverviewDto
 import org.dpdns.bnai.anime.core.network.Resource
@@ -26,7 +29,7 @@ import org.dpdns.bnai.anime.ui.components.formatInt
 @Composable
 fun DatabaseScreen() {
     val context = LocalContext.current
-    val repository = remember { AnimeRepository() }
+    val repository = LocalAppContainer.current.repository
     val scope = rememberCoroutineScope()
 
     var activeProjectId by remember { mutableStateOf(repository.currentProjectId()) }
@@ -61,7 +64,7 @@ fun DatabaseScreen() {
     }
 
     Column(
-        modifier = Modifier
+        modifier = Modifier.testTag(TestTags.Screen.DATABASE)
             .fillMaxSize()
             .padding(16.dp)
             .verticalScroll(rememberScrollState()),

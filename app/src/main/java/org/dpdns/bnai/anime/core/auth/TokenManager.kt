@@ -43,6 +43,13 @@ class TokenManager(context: Context? = null) {
         }
     }
 
+    internal fun clearForTests() {
+        cachedToken = null
+        cachedProjectId = null
+        cachedProviderLabel = null
+        prefs?.edit()?.clear()?.apply()
+    }
+
     fun saveUserMeta(
         userId: String?,
         workspaceId: String? = "default-workspace",
@@ -204,6 +211,17 @@ class TokenManager(context: Context? = null) {
 
         fun consumeSessionExpiredMessage() {
             _sessionExpiredFlow.value = null
+        }
+
+        fun resetForTests() {
+            synchronized(this) {
+                instance = null
+                appContext = null
+                cachedToken = null
+                cachedProjectId = null
+                cachedProviderLabel = null
+                _sessionExpiredFlow.value = null
+            }
         }
     }
 }

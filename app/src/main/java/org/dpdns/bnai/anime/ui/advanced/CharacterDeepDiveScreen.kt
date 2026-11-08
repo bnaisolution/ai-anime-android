@@ -1,4 +1,8 @@
 package org.dpdns.bnai.anime.ui.advanced
+import androidx.compose.ui.platform.testTag
+import org.dpdns.bnai.anime.ui.testing.TestTags
+
+import org.dpdns.bnai.anime.ui.LocalAppContainer
 
 import android.widget.Toast
 import androidx.compose.foundation.background
@@ -28,7 +32,7 @@ import org.dpdns.bnai.anime.ui.components.StatusBadge
 @Composable
 fun CharacterDeepDiveScreen(characterId: String = "") {
     val context = LocalContext.current
-    val repository = remember { AnimeRepository() }
+    val repository = LocalAppContainer.current.repository
     val scope = rememberCoroutineScope()
 
     var characters by remember { mutableStateOf<List<CharacterDto>>(emptyList()) }
@@ -112,7 +116,7 @@ fun CharacterDeepDiveScreen(characterId: String = "") {
 
     LaunchedEffect(characterId) { loadCharactersList() }
 
-    Column(modifier = Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+    Column(modifier = Modifier.testTag(TestTags.Screen.CHARACTER_DEEP_DIVE).fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         // Fix #162: Project & Character Selectors at top
         ProjectSelectorBar(
             onProjectChanged = { loadCharactersList() },

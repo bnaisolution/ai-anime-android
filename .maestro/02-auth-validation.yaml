@@ -1,0 +1,6 @@
+appId: org.dpdns.bnai.anime
+---
+- launchApp:
+    clearState: true
+- tapOn: "Sign In to Studio"
+- assertVisible: "Email and password are required."

@@ -1,4 +1,8 @@
 package org.dpdns.bnai.anime.ui.character
+import androidx.compose.ui.platform.testTag
+import org.dpdns.bnai.anime.ui.testing.TestTags
+
+import org.dpdns.bnai.anime.ui.LocalAppContainer
 
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
@@ -21,7 +25,7 @@ fun CharacterDetailScreen(
     characterId: String = "",
     initialCharacter: Character? = null,
     onOpenDeepDive: () -> Unit = {},
-    viewModel: CharacterViewModel = viewModel()
+    viewModel: CharacterViewModel = viewModel(factory = LocalAppContainer.current.viewModelFactory)
 ) {
     val context = LocalContext.current
     val voices by viewModel.voiceCatalog.collectAsState()
@@ -35,7 +39,7 @@ fun CharacterDetailScreen(
     }
 
     Column(
-        modifier = Modifier.fillMaxSize().padding(16.dp).verticalScroll(rememberScrollState()),
+        modifier = Modifier.testTag(TestTags.Screen.CHARACTER_DETAIL).fillMaxSize().padding(16.dp).verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {

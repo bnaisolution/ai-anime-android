@@ -1,4 +1,8 @@
 package org.dpdns.bnai.anime.ui.advanced
+import androidx.compose.ui.platform.testTag
+import org.dpdns.bnai.anime.ui.testing.TestTags
+
+import org.dpdns.bnai.anime.ui.LocalAppContainer
 
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
@@ -29,7 +33,7 @@ import org.dpdns.bnai.anime.ui.components.formatRelativeTime
 @Composable
 fun ContinuityCheckerScreen() {
     val context = LocalContext.current
-    val repository = remember { AnimeRepository() }
+    val repository = LocalAppContainer.current.repository
     val scope = rememberCoroutineScope()
 
     var state by remember { mutableStateOf<Resource<List<JsonMap>>>(Resource.Loading) }
@@ -50,7 +54,7 @@ fun ContinuityCheckerScreen() {
 
     LaunchedEffect(Unit) { loadContinuity() }
 
-    Column(modifier = Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+    Column(modifier = Modifier.testTag(TestTags.Screen.CONTINUITY).fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         // Fix #290: Header "Continuity Checker" + Project Selector
         ProjectSelectorBar(
             onProjectChanged = { loadContinuity() },

@@ -1,4 +1,8 @@
 package org.dpdns.bnai.anime.ui.brain
+import androidx.compose.ui.platform.testTag
+import org.dpdns.bnai.anime.ui.testing.TestTags
+
+import org.dpdns.bnai.anime.ui.LocalAppContainer
 
 import android.widget.Toast
 import androidx.compose.foundation.background
@@ -26,8 +30,6 @@ import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.dpdns.bnai.anime.core.auth.PersistedChatMessage
-import org.dpdns.bnai.anime.core.auth.TokenManager
-import org.dpdns.bnai.anime.core.network.AnimeRepository
 import org.dpdns.bnai.anime.core.network.CommandIntent
 import org.dpdns.bnai.anime.core.network.Resource
 import org.dpdns.bnai.anime.ui.components.ProjectSelectorBar
@@ -38,8 +40,8 @@ import org.dpdns.bnai.anime.ui.designsystem.*
 @Composable
 fun AIBrainScreen() {
     val context = LocalContext.current
-    val tokenManager = remember { TokenManager.init(context) }
-    val repository = remember { AnimeRepository() }
+    val tokenManager = LocalAppContainer.current.tokenManager
+    val repository = LocalAppContainer.current.repository
     val scope = rememberCoroutineScope()
     val listState = rememberLazyListState()
 
@@ -123,7 +125,7 @@ fun AIBrainScreen() {
     }
 
     Column(
-        modifier = Modifier
+        modifier = Modifier.testTag(TestTags.Screen.AI_BRAIN)
             .fillMaxSize()
             .imePadding()
             .padding(16.dp),

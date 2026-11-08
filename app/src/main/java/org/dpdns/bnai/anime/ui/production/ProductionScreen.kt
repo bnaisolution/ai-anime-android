@@ -1,5 +1,7 @@
 package org.dpdns.bnai.anime.ui.production
 
+import org.dpdns.bnai.anime.ui.LocalAppContainer
+
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -12,6 +14,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -24,6 +27,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import org.dpdns.bnai.anime.ui.components.ProjectSelectorBar
 import org.dpdns.bnai.anime.ui.components.StatusBadge
 import org.dpdns.bnai.anime.ui.components.friendlyPipelineStatus
+import org.dpdns.bnai.anime.ui.testing.TestTags
 
 @Composable
 fun ProductionScreen(
@@ -31,7 +35,7 @@ fun ProductionScreen(
     onViewVideoClick: () -> Unit = {},
     onOpenSceneInspector: () -> Unit = {},
     onOpenMediaLibrary: () -> Unit = {},
-    viewModel: ProductionViewModel = viewModel()
+    viewModel: ProductionViewModel = viewModel(factory = LocalAppContainer.current.viewModelFactory)
 ) {
     val state by viewModel.state.collectAsState()
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -47,6 +51,7 @@ fun ProductionScreen(
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
+            .testTag(TestTags.Screen.PRODUCTION)
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp),
         contentPadding = PaddingValues(bottom = 80.dp)
@@ -160,7 +165,7 @@ fun ProductionScreen(
             ) {
                 OutlinedButton(
                     onClick = { viewModel.pausePipeline() },
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f).testTag(TestTags.Production.PAUSE)
                 ) {
                     Icon(Icons.Default.Pause, contentDescription = null)
                     Spacer(modifier = Modifier.width(4.dp))
@@ -168,7 +173,7 @@ fun ProductionScreen(
                 }
                 OutlinedButton(
                     onClick = { viewModel.cancelPipeline() },
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.weight(1f).testTag(TestTags.Production.CANCEL),
                     colors = ButtonDefaults.outlinedButtonColors(
                         contentColor = MaterialTheme.colorScheme.error
                     )
@@ -179,7 +184,7 @@ fun ProductionScreen(
                 }
                 Button(
                     onClick = { pollTrigger++ },
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f).testTag(TestTags.Production.SYNC)
                 ) {
                     Text("Sync")
                 }

@@ -1,5 +1,7 @@
 package org.dpdns.bnai.anime.ui.owner
 
+import org.dpdns.bnai.anime.ui.LocalAppContainer
+
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -11,21 +13,22 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
-import org.dpdns.bnai.anime.core.network.AnimeRepository
 import org.dpdns.bnai.anime.core.network.CommandIntent
 import org.dpdns.bnai.anime.core.network.Resource
 import org.dpdns.bnai.anime.ui.components.ProjectSelectorBar
 import org.dpdns.bnai.anime.ui.components.StatusBadge
 import org.dpdns.bnai.anime.ui.components.formatInt
+import org.dpdns.bnai.anime.ui.testing.TestTags
 
 @Composable
 fun OwnerOverviewScreen() {
     val context = LocalContext.current
-    val repository = remember { AnimeRepository() }
+    val repository = LocalAppContainer.current.repository
     val scope = rememberCoroutineScope()
 
     var activeProjectId by remember { mutableStateOf(repository.currentProjectId()) }
@@ -69,7 +72,8 @@ fun OwnerOverviewScreen() {
                             showEmergencyDialog = false
                         }
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
+                    modifier = Modifier.testTag(TestTags.Dialog.CONFIRM)
                 ) { Text("Halt Fleet Now") }
             },
             dismissButton = {
@@ -81,6 +85,7 @@ fun OwnerOverviewScreen() {
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .testTag(TestTags.Screen.OWNER_OVERVIEW)
             .padding(16.dp)
             .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(14.dp)
@@ -159,7 +164,7 @@ fun OwnerOverviewScreen() {
         Button(
             onClick = { showEmergencyDialog = true },
             colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
-            modifier = Modifier.fillMaxWidth().height(50.dp)
+            modifier = Modifier.fillMaxWidth().height(50.dp).testTag(TestTags.Owner.EMERGENCY_STOP)
         ) {
             Text("🚨 Emergency Stop All GPU Workers", fontWeight = FontWeight.Bold)
         }

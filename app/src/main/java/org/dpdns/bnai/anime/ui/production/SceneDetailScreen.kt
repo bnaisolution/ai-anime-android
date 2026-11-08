@@ -1,4 +1,8 @@
 package org.dpdns.bnai.anime.ui.production
+import androidx.compose.ui.platform.testTag
+import org.dpdns.bnai.anime.ui.testing.TestTags
+
+import org.dpdns.bnai.anime.ui.LocalAppContainer
 
 import android.content.Intent
 import android.net.Uri
@@ -19,7 +23,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
-import org.dpdns.bnai.anime.core.network.AnimeRepository
 import org.dpdns.bnai.anime.core.network.CommandIntent
 import org.dpdns.bnai.anime.core.network.Resource
 import org.dpdns.bnai.anime.core.network.SceneDto
@@ -30,7 +33,7 @@ import org.dpdns.bnai.anime.ui.designsystem.*
 @Composable
 fun SceneDetailScreen(episodeNo: Int = 1) {
     val context = LocalContext.current
-    val repository = remember { AnimeRepository() }
+    val repository = LocalAppContainer.current.repository
     val scope = rememberCoroutineScope()
 
     var currentEpisodeNo by remember { mutableStateOf(episodeNo.coerceAtLeast(1)) }
@@ -119,7 +122,7 @@ fun SceneDetailScreen(episodeNo: Int = 1) {
     }
 
     Column(
-        modifier = Modifier
+        modifier = Modifier.testTag(TestTags.Screen.SCENES)
             .fillMaxSize()
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)

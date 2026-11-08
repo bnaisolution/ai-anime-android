@@ -9,7 +9,7 @@ import kotlinx.coroutines.launch
 import org.dpdns.bnai.anime.core.model.Character
 import org.dpdns.bnai.anime.core.network.*
 
-class CharacterViewModel(private val repository: AnimeRepository = AnimeRepository()) : ViewModel() {
+class CharacterViewModel(private val repository: AnimeRepositoryApi) : ViewModel() {
     private val _charactersState = MutableStateFlow<Resource<List<Character>>>(Resource.Loading)
     val charactersState: StateFlow<Resource<List<Character>>> = _charactersState.asStateFlow()
 

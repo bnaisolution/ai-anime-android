@@ -1,6 +1,5 @@
 package org.dpdns.bnai.anime.ui.auth
 
-import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -9,6 +8,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import org.dpdns.bnai.anime.core.auth.TokenManager
+import org.dpdns.bnai.anime.core.di.AppContainer
 import org.dpdns.bnai.anime.core.network.*
 
 class AuthViewModel(
@@ -48,11 +48,10 @@ class AuthViewModel(
         }
     }
 
-    class Factory(private val context: Context) : ViewModelProvider.Factory {
+    class Factory(private val container: AppContainer) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            val appContext = context.applicationContext
-            return AuthViewModel(RetrofitClient.getApiService(appContext), TokenManager.init(appContext)) as T
+            return AuthViewModel(container.apiService, container.tokenManager) as T
         }
     }
 }

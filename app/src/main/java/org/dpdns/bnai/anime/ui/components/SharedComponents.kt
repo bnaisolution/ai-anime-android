@@ -1,5 +1,7 @@
 package org.dpdns.bnai.anime.ui.components
 
+import org.dpdns.bnai.anime.ui.LocalAppContainer
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -22,21 +24,21 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.dpdns.bnai.anime.core.auth.PersistedChatMessage
-import org.dpdns.bnai.anime.core.auth.TokenManager
 import org.dpdns.bnai.anime.core.model.Project
-import org.dpdns.bnai.anime.core.network.AnimeRepository
 import org.dpdns.bnai.anime.core.network.CommandIntent
 import org.dpdns.bnai.anime.core.network.JsonMap
 import org.dpdns.bnai.anime.core.network.Resource
 import org.dpdns.bnai.anime.ui.designsystem.MarkdownText
 import org.dpdns.bnai.anime.ui.designsystem.StatusChip
 import org.dpdns.bnai.anime.ui.designsystem.StudioTokens
+import org.dpdns.bnai.anime.ui.testing.TestTags
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 
@@ -96,14 +98,16 @@ fun friendlyPipelineStatus(rawStatus: String?): String {
 fun <T> ResourceStateBox(
     resource: Resource<T>,
     emptyMessage: String = "No records found for this project.",
+    modifier: Modifier = Modifier,
     onRetry: (() -> Unit)? = null,
     content: @Composable (T) -> Unit
 ) {
     when (resource) {
         is Resource.Idle, is Resource.Loading -> {
             Box(
-                modifier = Modifier
+                modifier = modifier
                     .fillMaxWidth()
+                    .testTag(TestTags.State.LOADING)
                     .padding(vertical = 32.dp),
                 contentAlignment = Alignment.Center
             ) {
@@ -112,7 +116,9 @@ fun <T> ResourceStateBox(
         }
         is Resource.Empty -> {
             Card(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = modifier
+                    .fillMaxWidth()
+                    .testTag(TestTags.State.EMPTY),
                 shape = RoundedCornerShape(12.dp)
             ) {
                 Column(
@@ -124,7 +130,10 @@ fun <T> ResourceStateBox(
                 ) {
                     Text(emptyMessage, style = MaterialTheme.typography.bodyMedium)
                     if (onRetry != null) {
-                        OutlinedButton(onClick = onRetry) {
+                        OutlinedButton(
+                            onClick = onRetry,
+                            modifier = Modifier.testTag(TestTags.State.RETRY)
+                        ) {
                             Icon(Icons.Default.Refresh, contentDescription = "Refresh", modifier = Modifier.size(16.dp))
                             Spacer(modifier = Modifier.width(6.dp))
                             Text("Refresh")
@@ -135,7 +144,9 @@ fun <T> ResourceStateBox(
         }
         is Resource.Error -> {
             Card(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = modifier
+                    .fillMaxWidth()
+                    .testTag(TestTags.State.ERROR),
                 shape = RoundedCornerShape(12.dp),
                 colors = CardDefaults.cardColors(containerColor = StudioTokens.Error.copy(alpha = 0.12f))
             ) {
@@ -153,7 +164,10 @@ fun <T> ResourceStateBox(
                     )
                     Text(text = resource.message, style = MaterialTheme.typography.bodySmall)
                     if (onRetry != null) {
-                        OutlinedButton(onClick = onRetry) {
+                        OutlinedButton(
+                            onClick = onRetry,
+                            modifier = Modifier.testTag(TestTags.State.RETRY)
+                        ) {
                             Icon(Icons.Default.Refresh, contentDescription = "Retry", modifier = Modifier.size(16.dp))
                             Spacer(modifier = Modifier.width(6.dp))
                             Text("Retry")
@@ -252,12 +266,13 @@ fun KeyValueMapList(items: List<JsonMap>) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProjectSelectorBar(
+    modifier: Modifier = Modifier,
     onProjectChanged: (String) -> Unit = {},
     onRefreshClick: (() -> Unit)? = null
 ) {
     val context = LocalContext.current
-    val tokenManager = remember { TokenManager.init(context) }
-    val repository = remember { AnimeRepository() }
+    val tokenManager = LocalAppContainer.current.tokenManager
+    val repository = LocalAppContainer.current.repository
     var projects by remember { mutableStateOf<List<Project>>(emptyList()) }
     var expanded by remember { mutableStateOf(false) }
     var selectedProjectId by remember { mutableStateOf(repository.currentProjectId()) }
@@ -280,7 +295,7 @@ fun ProjectSelectorBar(
         ?: if (selectedProjectId.isNotBlank()) "Project #${selectedProjectId.take(6)}" else "Select Project"
 
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -299,6 +314,7 @@ fun ProjectSelectorBar(
                 modifier = Modifier
                     .menuAnchor()
                     .fillMaxWidth()
+                    .testTag(TestTags.Navigation.PROJECT_SELECTOR)
             )
             ExposedDropdownMenu(
                 expanded = expanded,
@@ -320,7 +336,9 @@ fun ProjectSelectorBar(
         if (onRefreshClick != null) {
             IconButton(
                 onClick = onRefreshClick,
-                modifier = Modifier.size(48.dp)
+                modifier = Modifier
+                    .size(48.dp)
+                    .testTag(TestTags.Navigation.PROJECT_REFRESH)
             ) {
                 Icon(Icons.Default.Refresh, contentDescription = "Refresh project data")
             }
@@ -350,8 +368,8 @@ fun GlobalAiDirectorBottomSheet(
     onOpenFullAiBrain: () -> Unit = { onNavigateToRoute("ai_brain") }
 ) {
     val context = LocalContext.current
-    val tokenManager = remember { TokenManager.init(context) }
-    val repository = remember { AnimeRepository() }
+    val tokenManager = LocalAppContainer.current.tokenManager
+    val repository = LocalAppContainer.current.repository
     val scope = rememberCoroutineScope()
     val projectId = repository.currentProjectId()
     val effectiveScreen = currentScreenName.ifBlank { currentScreen }
@@ -387,6 +405,7 @@ fun GlobalAiDirectorBottomSheet(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
+                .testTag(TestTags.AiDirector.SHEET)
                 .imePadding()
                 .padding(horizontal = 16.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp)
@@ -585,6 +604,7 @@ fun GlobalAiDirectorBottomSheet(
                     enabled = prompt.isNotBlank() && !isSending,
                     modifier = Modifier
                         .size(48.dp)
+                        .testTag(TestTags.AiDirector.SEND)
                         .clip(CircleShape)
                         .background(if (prompt.isNotBlank() && !isSending) StudioTokens.Primary else Color.Gray.copy(alpha = 0.3f))
                 ) {

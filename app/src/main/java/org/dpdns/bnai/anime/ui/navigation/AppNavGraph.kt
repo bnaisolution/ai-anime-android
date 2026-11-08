@@ -1,5 +1,7 @@
 package org.dpdns.bnai.anime.ui.navigation
 
+import org.dpdns.bnai.anime.ui.LocalAppContainer
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -13,6 +15,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -25,9 +28,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import kotlinx.coroutines.launch
-import org.dpdns.bnai.anime.core.auth.TokenManager
 import org.dpdns.bnai.anime.core.model.Character
-import org.dpdns.bnai.anime.core.network.AnimeRepository
 import org.dpdns.bnai.anime.ui.advanced.*
 import org.dpdns.bnai.anime.ui.analytics.AnalyticsScreen
 import org.dpdns.bnai.anime.ui.auth.AuthScreen
@@ -50,13 +51,14 @@ import org.dpdns.bnai.anime.ui.settings.SettingsScreen
 import org.dpdns.bnai.anime.ui.studio.PromptStudioScreen
 import org.dpdns.bnai.anime.ui.studio.StudioDashboardScreen
 import org.dpdns.bnai.anime.ui.tools.QuickToolsScreen
+import org.dpdns.bnai.anime.ui.testing.TestTags
 
 data class NavItem(val route: String, val label: String, val icon: ImageVector)
 
 @Composable
 fun AppNavGraph(navController: NavHostController) {
-    val tokenManager = remember { TokenManager.getInstance() }
-    val repository = remember { AnimeRepository() }
+    val tokenManager = LocalAppContainer.current.tokenManager
+    val repository = LocalAppContainer.current.repository
     val startDest = if (!tokenManager.getToken().isNullOrBlank()) "studio" else "auth"
     val expiredMessage by tokenManager.sessionExpiredMessage.collectAsState()
 
@@ -171,6 +173,7 @@ fun AppNavGraph(navController: NavHostController) {
 
     ModalNavigationDrawer(
         drawerState = drawerState,
+        modifier = Modifier.testTag(TestTags.Navigation.DRAWER),
         drawerContent = {
             ModalDrawerSheet {
                 Column(modifier = Modifier.fillMaxHeight().padding(12.dp)) {
@@ -288,7 +291,7 @@ fun AppNavGraph(navController: NavHostController) {
                                 }
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier.weight(1f).testTag(TestTags.Settings.LOGOUT)
                         ) {
                             Text("Logout")
                         }
@@ -350,6 +353,7 @@ fun AppNavGraph(navController: NavHostController) {
                     if (currentRoute !in listOf("ai_brain", "studio")) {
                         FloatingActionButton(
                             onClick = { showGlobalAiSheet = true },
+                            modifier = Modifier.testTag(TestTags.Navigation.AI_DIRECTOR_FAB),
                             containerColor = MaterialTheme.colorScheme.primary
                         ) {
                             Icon(Icons.Default.AutoAwesome, contentDescription = "Ask AI Director", tint = Color.White)

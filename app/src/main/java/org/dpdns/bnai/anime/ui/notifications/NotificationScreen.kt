@@ -1,4 +1,8 @@
 package org.dpdns.bnai.anime.ui.notifications
+import androidx.compose.ui.platform.testTag
+import org.dpdns.bnai.anime.ui.testing.TestTags
+
+import org.dpdns.bnai.anime.ui.LocalAppContainer
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -19,14 +23,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
-import org.dpdns.bnai.anime.core.network.AnimeRepository
 import org.dpdns.bnai.anime.core.network.JsonMap
 import org.dpdns.bnai.anime.core.network.Resource
 import org.dpdns.bnai.anime.ui.components.*
 
 @Composable
 fun NotificationScreen() {
-    val repository = remember { AnimeRepository() }
+    val repository = LocalAppContainer.current.repository
     val scope = rememberCoroutineScope()
 
     var activeProjectId by remember { mutableStateOf(repository.currentProjectId()) }
@@ -46,7 +49,7 @@ fun NotificationScreen() {
     }
 
     Column(
-        modifier = Modifier
+        modifier = Modifier.testTag(TestTags.Screen.NOTIFICATIONS)
             .fillMaxSize()
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)

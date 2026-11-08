@@ -1,4 +1,8 @@
 package org.dpdns.bnai.anime.ui.advanced
+import androidx.compose.ui.platform.testTag
+import org.dpdns.bnai.anime.ui.testing.TestTags
+
+import org.dpdns.bnai.anime.ui.LocalAppContainer
 
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
@@ -10,7 +14,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
-import org.dpdns.bnai.anime.core.network.AnimeRepository
 import org.dpdns.bnai.anime.core.network.Resource
 import org.dpdns.bnai.anime.ui.components.ProjectSelectorBar
 import org.dpdns.bnai.anime.ui.components.formatInt
@@ -19,7 +22,7 @@ import org.dpdns.bnai.anime.ui.designsystem.*
 @Composable
 fun BudgetLedgerScreen() {
     val context = LocalContext.current
-    val repository = remember { AnimeRepository() }
+    val repository = LocalAppContainer.current.repository
     val scope = rememberCoroutineScope()
 
     var budgetCeiling by remember { mutableStateOf("1000") }
@@ -61,7 +64,7 @@ fun BudgetLedgerScreen() {
     }
 
     Column(
-        modifier = Modifier
+        modifier = Modifier.testTag(TestTags.Screen.BUDGET_LEDGER)
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
             .padding(16.dp),

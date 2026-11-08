@@ -1,4 +1,8 @@
 package org.dpdns.bnai.anime.ui.advanced
+import androidx.compose.ui.platform.testTag
+import org.dpdns.bnai.anime.ui.testing.TestTags
+
+import org.dpdns.bnai.anime.ui.LocalAppContainer
 
 import android.widget.Toast
 import androidx.compose.foundation.background
@@ -30,7 +34,7 @@ import org.dpdns.bnai.anime.ui.components.cleanDisplayTitle
 @Composable
 fun CanonViewerScreen() {
     val context = LocalContext.current
-    val repository = remember { AnimeRepository() }
+    val repository = LocalAppContainer.current.repository
     val scope = rememberCoroutineScope()
 
     var selectedTab by remember { mutableStateOf(0) } // 0: Locked Facts, 1: Pending Proposals
@@ -106,7 +110,7 @@ fun CanonViewerScreen() {
         )
     }
 
-    Scaffold(
+    Scaffold(modifier = Modifier.testTag(TestTags.Screen.CANON),
         // Fix #307: FAB (+) for "Add Canon Fact"
         floatingActionButton = {
             ExtendedFloatingActionButton(

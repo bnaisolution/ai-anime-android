@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="org.dpdns.bnai.anime.core.network.AnimeRepositoryApiContractTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-11-08T18:34:16" hostname="localhost" time="0.17">
+  <properties/>
+  <testcase name="compositeContractExposesAllFeatureContracts" classname="org.dpdns.bnai.anime.core.network.AnimeRepositoryApiContractTest" time="0.001"/>
+  <testcase name="unconfiguredOperationsFailFast" classname="org.dpdns.bnai.anime.core.network.AnimeRepositoryApiContractTest" time="0.161"/>
+  <testcase name="unconfiguredContextFailsFast" classname="org.dpdns.bnai.anime.core.network.AnimeRepositoryApiContractTest" time="0.007"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

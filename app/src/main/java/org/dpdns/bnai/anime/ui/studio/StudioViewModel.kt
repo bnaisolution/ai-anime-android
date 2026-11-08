@@ -20,7 +20,10 @@ data class HomeSummaryUi(
     val createStatusMessage: String? = null
 )
 
-class StudioViewModel(private val repository: AnimeRepository = AnimeRepository()) : ViewModel() {
+class StudioViewModel(
+    private val repository: AnimeRepositoryApi,
+    private val tokenManager: TokenManager
+) : ViewModel() {
     private val _projectsState = MutableStateFlow<Resource<List<Project>>>(Resource.Loading)
     val projectsState: StateFlow<Resource<List<Project>>> = _projectsState.asStateFlow()
 
@@ -40,7 +43,7 @@ class StudioViewModel(private val repository: AnimeRepository = AnimeRepository(
                 val activeId = repository.currentProjectId().ifBlank { res.data.first().id }
                 val activeName = res.data.find { it.id == activeId }?.name ?: res.data.first().name
                 if (repository.currentProjectId().isBlank()) {
-                    TokenManager.getInstance()?.saveActiveProjectId(activeId)
+                    tokenManager.saveActiveProjectId(activeId)
                 }
                 loadProjectHomeMetrics(activeId, activeName)
             }
@@ -48,7 +51,7 @@ class StudioViewModel(private val repository: AnimeRepository = AnimeRepository(
     }
 
     fun selectProject(projectId: String) {
-        TokenManager.getInstance()?.saveActiveProjectId(projectId)
+        tokenManager.saveActiveProjectId(projectId)
         val projName = (_projectsState.value as? Resource.Success)?.data?.find { it.id == projectId }?.name ?: "Active Project"
         loadProjectHomeMetrics(projectId, projName)
     }
@@ -84,7 +87,7 @@ class StudioViewModel(private val repository: AnimeRepository = AnimeRepository(
         viewModelScope.launch {
             when (val created = repository.createProjectSync(cleanName)) {
                 is Resource.Success -> {
-                    TokenManager.getInstance()?.saveActiveProjectId(created.data.id)
+                    tokenManager.saveActiveProjectId(created.data.id)
                     _homeSummary.value = _homeSummary.value.copy(createStatusMessage = "Project '$cleanName' created!")
                     loadProjects()
                 }

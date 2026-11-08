@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import org.dpdns.bnai.anime.core.network.AnimeRepository
+import org.dpdns.bnai.anime.core.network.AnimeRepositoryApi
 import org.dpdns.bnai.anime.core.network.CommandIntent
 import org.dpdns.bnai.anime.core.network.Resource
 
@@ -37,7 +37,7 @@ data class ProductionState(
 )
 
 class ProductionViewModel(
-    private val repository: AnimeRepository = AnimeRepository()
+    private val repository: AnimeRepositoryApi
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(ProductionState())

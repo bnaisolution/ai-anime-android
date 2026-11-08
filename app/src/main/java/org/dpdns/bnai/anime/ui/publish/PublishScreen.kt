@@ -1,4 +1,8 @@
 package org.dpdns.bnai.anime.ui.publish
+import androidx.compose.ui.platform.testTag
+import org.dpdns.bnai.anime.ui.testing.TestTags
+
+import org.dpdns.bnai.anime.ui.LocalAppContainer
 
 import android.widget.Toast
 import androidx.compose.foundation.background
@@ -21,7 +25,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
 import org.dpdns.bnai.anime.core.model.Episode
-import org.dpdns.bnai.anime.core.network.AnimeRepository
 import org.dpdns.bnai.anime.core.network.CommandIntent
 import org.dpdns.bnai.anime.core.network.Resource
 import org.dpdns.bnai.anime.ui.components.ProjectSelectorBar
@@ -30,7 +33,7 @@ import org.dpdns.bnai.anime.ui.components.StatusBadge
 @Composable
 fun PublishScreen() {
     val context = LocalContext.current
-    val repository = remember { AnimeRepository() }
+    val repository = LocalAppContainer.current.repository
     val scope = rememberCoroutineScope()
 
     var episodes by remember { mutableStateOf<List<Episode>>(emptyList()) }
@@ -66,7 +69,7 @@ fun PublishScreen() {
     LaunchedEffect(Unit) { loadViralMetadata() }
 
     Column(
-        modifier = Modifier.fillMaxSize().padding(16.dp).verticalScroll(rememberScrollState()),
+        modifier = Modifier.testTag(TestTags.Screen.PUBLISH).fillMaxSize().padding(16.dp).verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
         // Fix #70: Clean Header (No WF-07) + Project Selector

@@ -1,4 +1,8 @@
 package org.dpdns.bnai.anime.ui.project
+import androidx.compose.ui.platform.testTag
+import org.dpdns.bnai.anime.ui.testing.TestTags
+
+import org.dpdns.bnai.anime.ui.LocalAppContainer
 
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
@@ -18,8 +22,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import org.dpdns.bnai.anime.core.auth.TokenManager
-import org.dpdns.bnai.anime.core.network.AnimeRepository
 import org.dpdns.bnai.anime.core.network.CommandIntent
 import org.dpdns.bnai.anime.core.network.JsonMap
 import org.dpdns.bnai.anime.core.network.Resource
@@ -30,8 +32,8 @@ import org.dpdns.bnai.anime.ui.designsystem.*
 @Composable
 fun BibleScreen() {
     val context = LocalContext.current
-    val tokenManager = remember { TokenManager.init(context) }
-    val repository = remember { AnimeRepository() }
+    val tokenManager = LocalAppContainer.current.tokenManager
+    val repository = LocalAppContainer.current.repository
     val scope = rememberCoroutineScope()
 
     var projectId by remember { mutableStateOf(repository.currentProjectId()) }
@@ -159,7 +161,7 @@ fun BibleScreen() {
     }
 
     Column(
-        modifier = Modifier
+        modifier = Modifier.testTag(TestTags.Screen.BIBLE)
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
             .padding(16.dp),
@@ -329,7 +331,7 @@ fun BibleScreen() {
                         isSavingDraft = false
                     }
                 },
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f).testTag(TestTags.Bible.SAVE_DRAFT)
             )
 
             OutlinedButton(

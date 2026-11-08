@@ -1,4 +1,8 @@
 package org.dpdns.bnai.anime.ui.advanced
+import androidx.compose.ui.platform.testTag
+import org.dpdns.bnai.anime.ui.testing.TestTags
+
+import org.dpdns.bnai.anime.ui.LocalAppContainer
 
 import android.widget.Toast
 import androidx.compose.foundation.clickable
@@ -24,7 +28,7 @@ import org.dpdns.bnai.anime.ui.components.*
 @Composable
 fun JobsMonitorScreen() {
     val context = LocalContext.current
-    val repository = remember { AnimeRepository() }
+    val repository = LocalAppContainer.current.repository
     val scope = rememberCoroutineScope()
 
     var activeProjectId by remember { mutableStateOf(repository.currentProjectId()) }
@@ -82,6 +86,7 @@ fun JobsMonitorScreen() {
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .testTag(TestTags.Screen.JOBS_MONITOR)
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {

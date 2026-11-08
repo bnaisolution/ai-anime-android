@@ -1,4 +1,8 @@
 package org.dpdns.bnai.anime.ui.tools
+import androidx.compose.ui.platform.testTag
+import org.dpdns.bnai.anime.ui.testing.TestTags
+
+import org.dpdns.bnai.anime.ui.LocalAppContainer
 
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
@@ -15,7 +19,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import org.dpdns.bnai.anime.core.network.AnimeRepository
 import org.dpdns.bnai.anime.core.network.CommandIntent
 import org.dpdns.bnai.anime.core.network.Resource
 import org.dpdns.bnai.anime.ui.components.ProjectSelectorBar
@@ -27,7 +30,7 @@ fun QuickToolsScreen(
     onOpenProductionPoll: (String) -> Unit = {}
 ) {
     val context = LocalContext.current
-    val repository = remember { AnimeRepository() }
+    val repository = LocalAppContainer.current.repository
     val scope = rememberCoroutineScope()
 
     var mode by rememberSaveable { mutableStateOf("IMAGE") }
@@ -75,7 +78,7 @@ fun QuickToolsScreen(
     val isJobRunning = activeCommandId != null && activeStatus !in listOf("SUCCEEDED", "COMPLETED", "FAILED", "ERROR", "CANCELLED")
 
     Column(
-        modifier = Modifier
+        modifier = Modifier.testTag(TestTags.Screen.QUICK_TOOLS)
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
             .padding(16.dp),

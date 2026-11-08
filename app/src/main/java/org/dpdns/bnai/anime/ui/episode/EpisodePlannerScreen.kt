@@ -1,4 +1,8 @@
 package org.dpdns.bnai.anime.ui.episode
+import androidx.compose.ui.platform.testTag
+import org.dpdns.bnai.anime.ui.testing.TestTags
+
+import org.dpdns.bnai.anime.ui.LocalAppContainer
 
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
@@ -13,7 +17,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
-import org.dpdns.bnai.anime.core.network.AnimeRepository
 import org.dpdns.bnai.anime.core.network.CommandIntent
 import org.dpdns.bnai.anime.core.network.EpisodeDto
 import org.dpdns.bnai.anime.core.network.Resource
@@ -28,7 +31,7 @@ fun EpisodePlannerScreen(
     onOpenScenes: (Int) -> Unit = {}
 ) {
     val context = LocalContext.current
-    val repository = remember { AnimeRepository() }
+    val repository = LocalAppContainer.current.repository
     val scope = rememberCoroutineScope()
 
     var episodes by remember { mutableStateOf<List<EpisodeDto>>(emptyList()) }
@@ -152,7 +155,7 @@ fun EpisodePlannerScreen(
     }
 
     Column(
-        modifier = Modifier
+        modifier = Modifier.testTag(TestTags.Screen.EPISODES)
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
             .padding(16.dp),
@@ -335,7 +338,7 @@ fun EpisodePlannerScreen(
                         isSavingMetadata = false
                     }
                 },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth().testTag(TestTags.EpisodePlanner.SAVE_METADATA)
             )
         }
 
@@ -355,13 +358,13 @@ fun EpisodePlannerScreen(
                     isLoading = isGenerating,
                     enabled = !isGenerating,
                     onClick = { dispatchEpisodeGeneration(isRegeneration = false) },
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f).testTag(TestTags.EpisodePlanner.GENERATE)
                 )
                 SecondaryButton(
                     text = "Regenerate...",
                     enabled = !isGenerating,
                     onClick = { showRegenerateConfirm = true },
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f).testTag(TestTags.EpisodePlanner.REGENERATE)
                 )
             }
         }

@@ -1,4 +1,8 @@
 package org.dpdns.bnai.anime.ui.owner
+import androidx.compose.ui.platform.testTag
+import org.dpdns.bnai.anime.ui.testing.TestTags
+
+import org.dpdns.bnai.anime.ui.LocalAppContainer
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -14,7 +18,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import org.dpdns.bnai.anime.core.network.AnimeRepository
 import org.dpdns.bnai.anime.core.network.JsonMap
 import org.dpdns.bnai.anime.core.network.Resource
 import org.dpdns.bnai.anime.ui.components.*
@@ -22,7 +25,7 @@ import org.dpdns.bnai.anime.ui.components.*
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdminQueuesScreen() {
-    val repository = remember { AnimeRepository() }
+    val repository = LocalAppContainer.current.repository
     val scope = rememberCoroutineScope()
 
     var activeProjectId by remember { mutableStateOf(repository.currentProjectId()) }
@@ -70,6 +73,7 @@ fun AdminQueuesScreen() {
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .testTag(TestTags.Screen.ADMIN_QUEUES)
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {

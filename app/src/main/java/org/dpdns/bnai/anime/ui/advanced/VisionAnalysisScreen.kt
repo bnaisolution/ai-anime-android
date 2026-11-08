@@ -1,5 +1,9 @@
 package org.dpdns.bnai.anime.ui.advanced
 
+import androidx.compose.ui.platform.testTag
+import org.dpdns.bnai.anime.ui.LocalAppContainer
+import org.dpdns.bnai.anime.ui.testing.TestTags
+
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -15,7 +19,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import org.dpdns.bnai.anime.core.network.AnimeRepository
 import org.dpdns.bnai.anime.core.network.JsonMap
 import org.dpdns.bnai.anime.core.network.Resource
 import org.dpdns.bnai.anime.ui.components.ProjectSelectorBar
@@ -25,7 +28,7 @@ import org.dpdns.bnai.anime.ui.designsystem.*
 @Composable
 fun VisionAnalysisScreen() {
     val context = LocalContext.current
-    val repository = remember { AnimeRepository() }
+    val repository = LocalAppContainer.current.repository
     val scope = rememberCoroutineScope()
 
     var imageUrl by rememberSaveable { mutableStateOf("") }
@@ -90,6 +93,7 @@ fun VisionAnalysisScreen() {
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .testTag(TestTags.Screen.VISION_ANALYSIS)
             .verticalScroll(rememberScrollState())
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)

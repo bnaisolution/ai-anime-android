@@ -16,7 +16,7 @@ data class StoryBibleData(
     val toneAndTheme: String
 )
 
-class ProjectViewModel(private val repository: AnimeRepository = AnimeRepository()) : ViewModel() {
+class ProjectViewModel(private val repository: AnimeRepositoryApi) : ViewModel() {
     private val _overviewState = MutableStateFlow<Resource<ProjectOverviewDto>>(Resource.Loading)
     val overviewState: StateFlow<Resource<ProjectOverviewDto>> = _overviewState.asStateFlow()
 

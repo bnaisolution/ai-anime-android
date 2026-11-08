@@ -1,4 +1,8 @@
 package org.dpdns.bnai.anime.ui.advanced
+import androidx.compose.ui.platform.testTag
+import org.dpdns.bnai.anime.ui.testing.TestTags
+
+import org.dpdns.bnai.anime.ui.LocalAppContainer
 
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
@@ -26,7 +30,7 @@ import org.dpdns.bnai.anime.ui.components.cleanDisplayTitle
 @Composable
 fun LoreExplorerScreen() {
     val context = LocalContext.current
-    val repository = remember { AnimeRepository() }
+    val repository = LocalAppContainer.current.repository
     val scope = rememberCoroutineScope()
 
     // Fix #149 & #157: 8 World Wiki categories including Relationships
@@ -99,7 +103,7 @@ fun LoreExplorerScreen() {
         )
     }
 
-    Scaffold(
+    Scaffold(modifier = Modifier.testTag(TestTags.Screen.LORE_EXPLORER),
         // Fix #160: FAB (+) to Add via AI
         floatingActionButton = {
             ExtendedFloatingActionButton(

@@ -26,6 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.AnnotatedString
@@ -41,6 +42,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.SubcomposeAsyncImage
+import org.dpdns.bnai.anime.ui.testing.TestTags
 
 object StudioTokens {
     val Primary = Color(0xFF10A37F)
@@ -65,10 +67,11 @@ object StudioTokens {
 fun ScreenHeader(
     title: String,
     subtitle: String? = null,
+    modifier: Modifier = Modifier,
     trailingContent: (@Composable RowScope.() -> Unit)? = null
 ) {
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -101,9 +104,13 @@ fun ScreenHeader(
 }
 
 @Composable
-fun SectionHeader(title: String, badgeText: String? = null) {
+fun SectionHeader(
+    title: String,
+    badgeText: String? = null,
+    modifier: Modifier = Modifier
+) {
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -256,7 +263,7 @@ fun MetricCard(
 }
 
 @Composable
-fun StatusChip(label: String) {
+fun StatusChip(label: String, modifier: Modifier = Modifier) {
     val upper = label.uppercase().trim()
     val chipColor = when {
         upper in listOf("SUCCEEDED", "ACTIVE", "COMMITTED", "PASSED", "APPROVED", "ONLINE", "COMPLETED", "HEALTHY", "UP", "ALIVE", "LOCKED", "RESOLVED", "VERIFIED_N8N_API") -> StudioTokens.Success
@@ -266,7 +273,7 @@ fun StatusChip(label: String) {
         else -> StudioTokens.Secondary
     }
     Row(
-        modifier = Modifier
+        modifier = modifier
             .clip(CircleShape)
             .background(chipColor.copy(alpha = 0.15f))
             .border(1.dp, chipColor.copy(alpha = 0.35f), CircleShape)
@@ -322,6 +329,8 @@ fun ConfirmationDialog(
     confirmText: String = "Confirm",
     dismissText: String = "Cancel",
     isDestructive: Boolean = false,
+    confirmTestTag: String = TestTags.Dialog.CONFIRM,
+    dismissTestTag: String = TestTags.Dialog.CANCEL,
     onConfirm: () -> Unit,
     onDismiss: () -> Unit
 ) {
@@ -335,6 +344,7 @@ fun ConfirmationDialog(
                 onClick = onClick@{
                     onConfirm()
                 },
+                modifier = Modifier.testTag(confirmTestTag),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = if (isDestructive) StudioTokens.Error else StudioTokens.Primary
                 )
@@ -343,7 +353,10 @@ fun ConfirmationDialog(
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) {
+            TextButton(
+                onClick = onDismiss,
+                modifier = Modifier.testTag(dismissTestTag)
+            ) {
                 Text(dismissText)
             }
         }
@@ -361,6 +374,8 @@ fun UnsavedChangesDialog(
         confirmText = "Discard Changes",
         dismissText = "Keep Editing",
         isDestructive = true,
+        confirmTestTag = TestTags.Dialog.UNSAVED_DISCARD,
+        dismissTestTag = TestTags.Dialog.UNSAVED_KEEP_EDITING,
         onConfirm = onDiscard,
         onDismiss = onKeepEditing
     )

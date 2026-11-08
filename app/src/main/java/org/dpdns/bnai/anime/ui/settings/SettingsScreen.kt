@@ -1,5 +1,7 @@
 package org.dpdns.bnai.anime.ui.settings
 
+import org.dpdns.bnai.anime.ui.LocalAppContainer
+
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -8,23 +10,23 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
-import org.dpdns.bnai.anime.core.auth.TokenManager
-import org.dpdns.bnai.anime.core.network.AnimeRepository
 import org.dpdns.bnai.anime.core.network.Resource
 import org.dpdns.bnai.anime.ui.components.ProjectSelectorBar
 import org.dpdns.bnai.anime.ui.designsystem.*
+import org.dpdns.bnai.anime.ui.testing.TestTags
 
 @Composable
 fun SettingsScreen() {
     val context = LocalContext.current
-    val tokenManager = remember { TokenManager.init(context) }
-    val repository = remember { AnimeRepository() }
+    val tokenManager = LocalAppContainer.current.tokenManager
+    val repository = LocalAppContainer.current.repository
     val scope = rememberCoroutineScope()
 
     var selectedTab by remember { mutableStateOf(0) }
@@ -89,6 +91,7 @@ fun SettingsScreen() {
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .testTag(TestTags.Screen.SETTINGS)
             .verticalScroll(rememberScrollState())
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
@@ -254,6 +257,7 @@ fun SettingsScreen() {
         PrimaryButton(
             text = "Save & Verify Configuration",
             isLoading = isSaving,
+            modifier = Modifier.fillMaxWidth().testTag(TestTags.Settings.SAVE),
             onClick = {
                 isSaving = true
                 scope.launch {
@@ -301,8 +305,7 @@ fun SettingsScreen() {
                         Toast.makeText(context, saveInfraRes.message, Toast.LENGTH_LONG).show()
                     }
                 }
-            },
-            modifier = Modifier.fillMaxWidth()
+            }
         )
 
         Spacer(modifier = Modifier.height(64.dp))

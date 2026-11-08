@@ -1,0 +1,24 @@
+# Local verification evidence
+date_utc=2026-11-08T22:44:25Z
+branch=main
+baseline=0ddea5c9d1c5a335f349366d24c37649b2879115
+worktree=modified_and_untracked
+
+## inventory
+screen files: 33
+unique routes: 35
+inventory file: docs/audit/ANDROID_PHASE_1_TEST_INVENTORY.md
+OK: every screen file and unique route is present in the inventory.
+
+## python_compile
+OK
+
+## git_diff_check
+OK
+
+## local_jvm_totals
+tests=20 failures=0 errors=0 skipped=0
+
+## git_status_summary
+tracked_modified=47
+untracked_entries=15

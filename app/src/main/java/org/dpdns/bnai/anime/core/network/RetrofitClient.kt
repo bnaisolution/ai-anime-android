@@ -15,7 +15,11 @@ object RetrofitClient {
     @Volatile
     private var apiServiceInstance: AnimeApiService? = null
 
-    fun create(tokenManager: TokenManager? = null): AnimeApiService {
+    fun create(
+        baseUrl: String = BASE_URL,
+        tokenManager: TokenManager? = null,
+        client: OkHttpClient? = null
+    ): AnimeApiService {
         val authAndTraceInterceptor = Interceptor { chain ->
             val tm = tokenManager ?: TokenManager.getInstance()
             val activeToken = tm.getToken()
@@ -44,7 +48,8 @@ object RetrofitClient {
             response
         }
 
-        val okHttpClient = OkHttpClient.Builder()
+        val okHttpClient = (client ?: OkHttpClient.Builder().build())
+            .newBuilder()
             .addInterceptor(authAndTraceInterceptor)
             .connectTimeout(30, TimeUnit.SECONDS)
             .readTimeout(45, TimeUnit.SECONDS)
@@ -52,7 +57,7 @@ object RetrofitClient {
             .build()
 
         return Retrofit.Builder()
-            .baseUrl(BASE_URL)
+            .baseUrl(baseUrl)
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
@@ -62,7 +67,13 @@ object RetrofitClient {
     fun getApiService(context: Context? = null): AnimeApiService {
         context?.let { TokenManager.init(it.applicationContext) }
         return apiServiceInstance ?: synchronized(this) {
-            apiServiceInstance ?: create(TokenManager.getInstance()).also { apiServiceInstance = it }
+            apiServiceInstance ?: create(tokenManager = TokenManager.getInstance()).also { apiServiceInstance = it }
+        }
+    }
+
+    internal fun resetCacheForTests() {
+        synchronized(this) {
+            apiServiceInstance = null
         }
     }
 }

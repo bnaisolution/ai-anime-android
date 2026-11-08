@@ -1,4 +1,8 @@
 package org.dpdns.bnai.anime.ui.owner
+import androidx.compose.ui.platform.testTag
+import org.dpdns.bnai.anime.ui.testing.TestTags
+
+import org.dpdns.bnai.anime.ui.LocalAppContainer
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -14,17 +18,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
-import org.dpdns.bnai.anime.core.auth.TokenManager
-import org.dpdns.bnai.anime.core.network.AnimeRepository
 import org.dpdns.bnai.anime.core.network.JsonMap
 import org.dpdns.bnai.anime.core.network.Resource
 import org.dpdns.bnai.anime.ui.components.*
 
 @Composable
 fun AuditLogScreen() {
-    val repository = remember { AnimeRepository() }
+    val repository = LocalAppContainer.current.repository
     val scope = rememberCoroutineScope()
-    val userEmail = remember { TokenManager.getInstance()?.getUserEmail()?.ifBlank { "studio@bnai.dpdns.org" } ?: "studio@bnai.dpdns.org" }
+    val tokenManager = LocalAppContainer.current.tokenManager
+    val userEmail = remember { tokenManager.getUserEmail().ifBlank { "studio@bnai.dpdns.org" } }
 
     var activeProjectId by remember { mutableStateOf(repository.currentProjectId()) }
     var searchQuery by remember { mutableStateOf("") }
@@ -43,7 +46,7 @@ fun AuditLogScreen() {
     }
 
     Column(
-        modifier = Modifier
+        modifier = Modifier.testTag(TestTags.Screen.AUDIT_LOG)
             .fillMaxSize()
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)

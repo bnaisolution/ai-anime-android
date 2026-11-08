@@ -1,5 +1,7 @@
 package org.dpdns.bnai.anime.ui.studio
 
+import org.dpdns.bnai.anime.ui.LocalAppContainer
+
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -15,6 +17,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -23,13 +26,14 @@ import org.dpdns.bnai.anime.ui.components.ResourceStateBox
 import org.dpdns.bnai.anime.ui.components.StatusBadge
 import org.dpdns.bnai.anime.ui.components.formatRelativeTime
 import org.dpdns.bnai.anime.ui.components.friendlyPipelineStatus
+import org.dpdns.bnai.anime.ui.testing.TestTags
 
 @Composable
 fun StudioDashboardScreen(
     onProjectClick: (String) -> Unit = {},
     onOpenReviews: () -> Unit = {},
     onOpenEpisodes: () -> Unit = {},
-    viewModel: StudioViewModel = viewModel()
+    viewModel: StudioViewModel = viewModel(factory = LocalAppContainer.current.viewModelFactory)
 ) {
     val projectsResource by viewModel.projectsState.collectAsState()
     val summary by viewModel.homeSummary.collectAsState()
@@ -48,7 +52,7 @@ fun StudioDashboardScreen(
                     onValueChange = { newProjectName = it },
                     label = { Text("Project Title") },
                     singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth().testTag(TestTags.Studio.PROJECT_NAME_FIELD)
                 )
             },
             confirmButton = {
@@ -58,7 +62,8 @@ fun StudioDashboardScreen(
                         newProjectName = ""
                         showCreateDialog = false
                     },
-                    enabled = newProjectName.isNotBlank()
+                    enabled = newProjectName.isNotBlank(),
+                    modifier = Modifier.testTag(TestTags.Studio.CREATE_CONFIRM)
                 ) { Text("Create") }
             },
             dismissButton = {
@@ -86,9 +91,11 @@ fun StudioDashboardScreen(
     }
 
     Scaffold(
+        modifier = Modifier.testTag(TestTags.Screen.STUDIO),
         floatingActionButton = {
             ExtendedFloatingActionButton(
                 onClick = { showCreateDialog = true },
+                modifier = Modifier.testTag(TestTags.Studio.CREATE_PROJECT),
                 icon = { Icon(Icons.Default.Add, contentDescription = "Create Project") },
                 text = { Text("Create Project") }
             )
@@ -178,13 +185,14 @@ fun StudioDashboardScreen(
                     }
 
                     LazyColumn(
+                        modifier = Modifier.testTag(TestTags.Studio.PROJECT_LIST),
                         verticalArrangement = Arrangement.spacedBy(10.dp),
                         contentPadding = PaddingValues(bottom = 80.dp)
                     ) {
                         items(projects, key = { it.id }) { project ->
                             val isActive = project.id == summary.activeProjectId
                             Card(
-                                modifier = Modifier.fillMaxWidth().clickable {
+                                modifier = Modifier.fillMaxWidth().testTag(TestTags.item(TestTags.Studio.PROJECT_ITEM_PREFIX, project.id)).clickable {
                                     viewModel.selectProject(project.id)
                                     onProjectClick(project.id)
                                 },

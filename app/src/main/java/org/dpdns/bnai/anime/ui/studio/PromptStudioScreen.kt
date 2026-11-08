@@ -1,5 +1,7 @@
 package org.dpdns.bnai.anime.ui.studio
 
+import org.dpdns.bnai.anime.ui.LocalAppContainer
+
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.*
@@ -13,16 +15,17 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
-import org.dpdns.bnai.anime.core.network.AnimeRepository
 import org.dpdns.bnai.anime.core.network.Resource
 import org.dpdns.bnai.anime.core.network.SystemPromptDto
 import org.dpdns.bnai.anime.ui.components.ProjectSelectorBar
 import org.dpdns.bnai.anime.ui.designsystem.*
+import org.dpdns.bnai.anime.ui.testing.TestTags
 
 private val CATEGORIES = listOf("BIBLE", "EPISODE", "IMAGE", "AI_DIRECTOR")
 
@@ -36,7 +39,7 @@ private val SYSTEM_DEFAULTS = mapOf(
 @Composable
 fun PromptStudioScreen() {
     val context = LocalContext.current
-    val repository = remember { AnimeRepository() }
+    val repository = LocalAppContainer.current.repository
     val scope = rememberCoroutineScope()
 
     var selectedCatIndex by remember { mutableStateOf(0) }
@@ -147,6 +150,7 @@ fun PromptStudioScreen() {
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .testTag(TestTags.Screen.PROMPT_STUDIO)
             .verticalScroll(rememberScrollState())
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
@@ -173,6 +177,7 @@ fun PromptStudioScreen() {
                 val dirty = (textByCat[cat] ?: "") != (baselineByCat[cat] ?: "")
                 Tab(
                     selected = selectedCatIndex == idx,
+                    modifier = Modifier.testTag(TestTags.item(TestTags.PromptStudio.TAB_PREFIX, cat)),
                     onClick = {
                         if (selectedCatIndex != idx) {
                             if (hasUnsavedInCurrentTab) {
@@ -195,7 +200,10 @@ fun PromptStudioScreen() {
             ) {
                 SectionHeader(title = "$currentCategory Prompt Configuration")
                 if (!isEditMode) {
-                    OutlinedButton(onClick = { editModeByCat[currentCategory] = true }) {
+                    OutlinedButton(
+                        onClick = { editModeByCat[currentCategory] = true },
+                        modifier = Modifier.testTag(TestTags.PromptStudio.EDIT)
+                    ) {
                         Icon(Icons.Default.Edit, contentDescription = null, modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(4.dp))
                         Text("Enter Edit Mode")
@@ -225,7 +233,7 @@ fun PromptStudioScreen() {
                 readOnly = !isEditMode,
                 label = { Text("Prompt Title ($currentCategory)") },
                 singleLine = true,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth().testTag(TestTags.PromptStudio.TITLE_FIELD)
             )
 
             OutlinedTextField(
@@ -234,7 +242,7 @@ fun PromptStudioScreen() {
                 readOnly = !isEditMode,
                 label = { Text("System Prompt Instructions ($currentCategory)") },
                 minLines = 6,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth().testTag(TestTags.PromptStudio.TEXT_FIELD)
             )
 
             Row(
@@ -267,7 +275,7 @@ fun PromptStudioScreen() {
                             }
                         }
                     },
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f).testTag(TestTags.PromptStudio.SAVE)
                 )
 
                 SecondaryButton(
@@ -283,7 +291,7 @@ fun PromptStudioScreen() {
 
             OutlinedButton(
                 onClick = { showResetConfirm = true },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth().testTag(TestTags.PromptStudio.RESET)
             ) {
                 Icon(Icons.Default.Restore, contentDescription = null, modifier = Modifier.size(16.dp))
                 Spacer(modifier = Modifier.width(6.dp))

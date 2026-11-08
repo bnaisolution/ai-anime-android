@@ -1,4 +1,8 @@
 package org.dpdns.bnai.anime.ui.character
+import androidx.compose.ui.platform.testTag
+import org.dpdns.bnai.anime.ui.testing.TestTags
+
+import org.dpdns.bnai.anime.ui.LocalAppContainer
 
 import android.widget.Toast
 import androidx.compose.foundation.background
@@ -37,7 +41,7 @@ import org.dpdns.bnai.anime.ui.components.StatusBadge
 fun CharacterListScreen(
     onCharacterClick: (Character) -> Unit = {},
     onOpenDeepDive: (String) -> Unit = {},
-    viewModel: CharacterViewModel = viewModel()
+    viewModel: CharacterViewModel = viewModel(factory = LocalAppContainer.current.viewModelFactory)
 ) {
     val context = LocalContext.current
     val charactersResource by viewModel.charactersState.collectAsState()
@@ -65,14 +69,14 @@ fun CharacterListScreen(
                         onValueChange = { newCharName = it },
                         label = { Text("Character Name") },
                         singleLine = true,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth().testTag(TestTags.Character.NAME_FIELD)
                     )
                     OutlinedTextField(
                         value = newCharRole,
                         onValueChange = { newCharRole = it },
                         label = { Text("Role (Protagonist / Antagonist / Support)") },
                         singleLine = true,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth().testTag(TestTags.Character.ROLE_FIELD)
                     )
                 }
             },
@@ -85,7 +89,8 @@ fun CharacterListScreen(
                         newCharName = ""
                         showAddDialog = false
                     },
-                    enabled = newCharName.isNotBlank()
+                    enabled = newCharName.isNotBlank(),
+                    modifier = Modifier.testTag(TestTags.Character.ADD_CONFIRM)
                 ) { Text("Create & Gen Image") }
             },
             dismissButton = {
@@ -94,7 +99,7 @@ fun CharacterListScreen(
         )
     }
 
-    Column(modifier = Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+    Column(modifier = Modifier.fillMaxSize().testTag(TestTags.Screen.CHARACTERS).padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         // Fix #29: Header Project Selector + Search Bar
         ProjectSelectorBar(
             onProjectChanged = { newId -> viewModel.loadCharacters(newId) },

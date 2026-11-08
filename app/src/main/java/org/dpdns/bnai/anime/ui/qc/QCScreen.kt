@@ -1,4 +1,8 @@
 package org.dpdns.bnai.anime.ui.qc
+import androidx.compose.ui.platform.testTag
+import org.dpdns.bnai.anime.ui.testing.TestTags
+
+import org.dpdns.bnai.anime.ui.LocalAppContainer
 
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
@@ -11,7 +15,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
-import org.dpdns.bnai.anime.core.network.AnimeRepository
 import org.dpdns.bnai.anime.core.network.CommandIntent
 import org.dpdns.bnai.anime.core.network.EpisodeDto
 import org.dpdns.bnai.anime.core.network.Resource
@@ -24,7 +27,7 @@ fun QCScreen(
     onProceedToPublish: () -> Unit = {}
 ) {
     val context = LocalContext.current
-    val repository = remember { AnimeRepository() }
+    val repository = LocalAppContainer.current.repository
     val scope = rememberCoroutineScope()
 
     var episodes by remember { mutableStateOf<List<EpisodeDto>>(emptyList()) }
@@ -55,7 +58,7 @@ fun QCScreen(
     val isApproved = rawQcStatus == "APPROVED" || rawQcStatus == "PASSED"
 
     Column(
-        modifier = Modifier
+        modifier = Modifier.testTag(TestTags.Screen.QC)
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
             .padding(16.dp),

@@ -1,5 +1,7 @@
 package org.dpdns.bnai.anime.ui.review
 
+import org.dpdns.bnai.anime.ui.LocalAppContainer
+
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -10,6 +12,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -17,17 +20,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
-import org.dpdns.bnai.anime.core.network.AnimeRepository
 import org.dpdns.bnai.anime.core.network.ApprovalDecisionDto
 import org.dpdns.bnai.anime.core.network.Resource
 import org.dpdns.bnai.anime.ui.components.ProjectSelectorBar
 import org.dpdns.bnai.anime.ui.components.StatusBadge
 import org.dpdns.bnai.anime.ui.components.cleanDisplayTitle
+import org.dpdns.bnai.anime.ui.testing.TestTags
 
 @Composable
 fun ReviewInboxScreen() {
     val context = LocalContext.current
-    val repository = remember { AnimeRepository() }
+    val repository = LocalAppContainer.current.repository
     val scope = rememberCoroutineScope()
 
     var approvalsState by remember { mutableStateOf<Resource<List<ApprovalDecisionDto>>>(Resource.Loading) }
@@ -56,7 +59,7 @@ fun ReviewInboxScreen() {
                     label = { Text("Reason for rejection") },
                     placeholder = { Text("e.g. Character eye color breaks canon...") },
                     minLines = 3,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth().testTag(TestTags.Review.REJECT_REASON)
                 )
             },
             confirmButton = {
@@ -78,7 +81,8 @@ fun ReviewInboxScreen() {
                             loadApprovals()
                         }
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
+                    modifier = Modifier.testTag(TestTags.Review.REJECT_CONFIRM)
                 ) { Text("Confirm Reject") }
             },
             dismissButton = {
@@ -87,7 +91,7 @@ fun ReviewInboxScreen() {
         )
     }
 
-    Column(modifier = Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+    Column(modifier = Modifier.fillMaxSize().testTag(TestTags.Screen.REVIEW_INBOX).padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         // Fix #200 & #202: Header "Review & Approvals" + Project Selector
         ProjectSelectorBar(
             onProjectChanged = { loadApprovals() },
@@ -176,14 +180,14 @@ fun ReviewInboxScreen() {
                                             }
                                         },
                                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF10B981)),
-                                        modifier = Modifier.weight(1f)
+                                        modifier = Modifier.weight(1f).testTag(TestTags.Review.APPROVE)
                                     ) {
                                         Text("✅ Approve")
                                     }
                                     OutlinedButton(
                                         onClick = { rejectingApproval = item },
                                         colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error),
-                                        modifier = Modifier.weight(1f)
+                                        modifier = Modifier.weight(1f).testTag(TestTags.Review.REJECT)
                                     ) {
                                         Text("❌ Reject")
                                     }

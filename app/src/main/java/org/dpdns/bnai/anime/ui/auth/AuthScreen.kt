@@ -1,5 +1,7 @@
 package org.dpdns.bnai.anime.ui.auth
 
+import org.dpdns.bnai.anime.ui.LocalAppContainer
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -12,9 +14,9 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -24,17 +26,17 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import kotlinx.coroutines.launch
-import org.dpdns.bnai.anime.core.auth.TokenManager
 import org.dpdns.bnai.anime.core.network.Resource
+import org.dpdns.bnai.anime.ui.testing.TestTags
 
 @Composable
 fun AuthScreen(
     navController: NavController,
-    viewModel: AuthViewModel = viewModel(factory = AuthViewModel.Factory(LocalContext.current))
+    viewModel: AuthViewModel = viewModel(factory = AuthViewModel.Factory(LocalAppContainer.current))
 ) {
     val authState by viewModel.authState.collectAsState()
-    val tokenManager = remember { TokenManager.getInstance() }
-    val expiredMsg by (tokenManager?.sessionExpiredMessage?.collectAsState() ?: remember { mutableStateOf(null) })
+    val tokenManager = LocalAppContainer.current.tokenManager
+    val expiredMsg by tokenManager.sessionExpiredMessage.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
@@ -45,7 +47,7 @@ fun AuthScreen(
     LaunchedEffect(expiredMsg) {
         expiredMsg?.let {
             snackbarHostState.showSnackbar(it)
-            tokenManager?.consumeSessionExpiredMessage()
+            tokenManager.consumeSessionExpiredMessage()
         }
     }
 
@@ -57,7 +59,10 @@ fun AuthScreen(
         }
     }
 
-    Scaffold(snackbarHost = { SnackbarHost(hostState = snackbarHostState) }) { innerPadding ->
+    Scaffold(
+        modifier = Modifier.testTag(TestTags.Screen.AUTH),
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
+    ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -97,7 +102,7 @@ fun AuthScreen(
                 singleLine = true,
                 isError = hasError,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Next),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth().testTag(TestTags.Auth.EMAIL)
             )
             Spacer(modifier = Modifier.height(12.dp))
             OutlinedTextField(
@@ -112,7 +117,7 @@ fun AuthScreen(
                         Text(if (isPasswordVisible) "Hide" else "Show")
                     }
                 },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth().testTag(TestTags.Auth.PASSWORD)
             )
 
             // Fix #390: Inline red error text below input
@@ -133,7 +138,7 @@ fun AuthScreen(
                 onClick = { viewModel.login(email, password) },
                 enabled = !isLoading,
                 shape = RoundedCornerShape(10.dp),
-                modifier = Modifier.fillMaxWidth().height(50.dp)
+                modifier = Modifier.fillMaxWidth().height(50.dp).testTag(TestTags.Auth.SUBMIT)
             ) {
                 if (isLoading) {
                     CircularProgressIndicator(modifier = Modifier.size(22.dp), strokeWidth = 2.dp, color = Color.White)

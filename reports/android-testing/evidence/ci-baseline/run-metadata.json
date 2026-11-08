@@ -1,0 +1,8 @@
+{
+  "baseline_sha": "0ddea5c9d1c5a335f349366d24c37649b2879115",
+  "runs": [
+    {"conclusion":"success","databaseId":42462816185,"headSha":"0ddea5c9d1c5a335f349366d24c37649b2879115","url":"https://github.com/bnaisolution/ai-anime-android/actions/runs/42462816185","workflowName":"Android Unit Tests"}
+,
+    {"conclusion":"success","databaseId":42462816117,"headSha":"0ddea5c9d1c5a335f349366d24c37649b2879115","url":"https://github.com/bnaisolution/ai-anime-android/actions/runs/42462816117","workflowName":"Build Anime APK"}
+  ]
+}

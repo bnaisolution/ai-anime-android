@@ -1,5 +1,7 @@
 package org.dpdns.bnai.anime.ui.project
 
+import org.dpdns.bnai.anime.ui.LocalAppContainer
+
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -11,6 +13,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -18,8 +21,6 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import org.dpdns.bnai.anime.core.auth.TokenManager
-import org.dpdns.bnai.anime.core.network.AnimeRepository
 import org.dpdns.bnai.anime.core.network.CommandIntent
 import org.dpdns.bnai.anime.core.network.JsonMap
 import org.dpdns.bnai.anime.core.network.Resource
@@ -27,6 +28,7 @@ import org.dpdns.bnai.anime.ui.components.ProjectSelectorBar
 import org.dpdns.bnai.anime.ui.components.formatInt
 import org.dpdns.bnai.anime.ui.components.friendlyPipelineStatus
 import org.dpdns.bnai.anime.ui.designsystem.*
+import org.dpdns.bnai.anime.ui.testing.TestTags
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -54,11 +56,11 @@ fun ProjectDetailScreen(
     onOpenQuota: () -> Unit = {},
     onOpenBudget: () -> Unit = {},
     onOpenNotifications: () -> Unit = {},
-    viewModel: ProjectViewModel = viewModel()
+    viewModel: ProjectViewModel = viewModel(factory = LocalAppContainer.current.viewModelFactory)
 ) {
     val context = LocalContext.current
-    val tokenManager = remember { TokenManager.init(context) }
-    val repository = remember { AnimeRepository() }
+    val tokenManager = LocalAppContainer.current.tokenManager
+    val repository = LocalAppContainer.current.repository
     val scope = rememberCoroutineScope()
 
     val activePid = projectId.ifBlank { repository.currentProjectId() }
@@ -211,6 +213,7 @@ fun ProjectDetailScreen(
                 PrimaryButton(
                     text = "Save Settings",
                     isLoading = isSavingSettings,
+                    modifier = Modifier.testTag(TestTags.ProjectDetail.SAVE_SETTINGS),
                     onClick = {
                         val pid = repository.currentProjectId()
                         if (pid.isBlank()) return@PrimaryButton
@@ -252,6 +255,7 @@ fun ProjectDetailScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .testTag(TestTags.Screen.PROJECT_DETAIL)
             .verticalScroll(rememberScrollState())
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp)
@@ -283,7 +287,10 @@ fun ProjectDetailScreen(
                 title = projName,
                 subtitle = "Medium: $editMedium • Genre: $editGenre • Policy: ${if (editAutoApprove) "Auto-Approve" else "Review Gate"}",
                 trailingContent = {
-                    IconButton(onClick = { showSettingsDialog = true }) {
+                    IconButton(
+                        onClick = { showSettingsDialog = true },
+                        modifier = Modifier.testTag(TestTags.ProjectDetail.SETTINGS_BUTTON)
+                    ) {
                         Icon(Icons.Default.Edit, contentDescription = "Edit Project Settings")
                     }
                 }
