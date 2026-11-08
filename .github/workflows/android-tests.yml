@@ -196,9 +196,71 @@ jobs:
             echo "- Commit: ${{ github.sha }}"
           } >> "$GITHUB_STEP_SUMMARY"
 
+  maestro:
+    name: Maestro smoke (API 34 emulator)
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
+      - name: Install Android SDK packages
+        run: |
+          yes | sdkmanager --licenses >/dev/null 2>&1 || true
+          sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0"
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v3
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: Install debug APK and run Maestro
+        uses: ReactiveCircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          script: |
+            ./gradlew installDebug --no-daemon --stacktrace
+            curl -Ls "https://get.maestro.mobile.dev" | bash
+            export PATH="$PATH:$HOME/.maestro/bin"
+            maestro test .maestro
+      - name: Upload Maestro artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-maestro-artifacts
+          path: |
+            .maestro
+            ~/.maestro/tests
+          retention-days: 14
+          if-no-files-found: warn
+      - name: Write Maestro summary
+        if: always()
+        run: |
+          {
+            echo "### Android Maestro smoke"
+            echo ""
+            echo "- Runner: API 34 x86_64 emulator"
+            echo "- Flows: launch, auth empty-submit validation"
+            echo "- Commit: ${{ github.sha }}"
+          } >> "$GITHUB_STEP_SUMMARY"
+
   android-summary:
     name: Android test summary
-    needs: [unit, lint, instrumentation]
+    needs: [unit, lint, instrumentation, maestro]
     if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -209,6 +271,7 @@ jobs:
           UNIT_SKIPPED: ${{ needs.unit.outputs.skipped }}
           LINT_RESULT: ${{ needs.lint.outputs.lint_outcome }}
           INSTRUMENTATION_RESULT: ${{ needs.instrumentation.result }}
+          MAESTRO_RESULT: ${{ needs.maestro.result }}
         run: |
           case "$UNIT_RESULT" in
             success) UNIT_STATUS=PASS ;;
@@ -229,6 +292,12 @@ jobs:
             cancelled) INSTRUMENTATION_STATUS=CANCELLED ;;
             *) INSTRUMENTATION_STATUS="NOT RUN" ;;
           esac
+          case "$MAESTRO_RESULT" in
+            success) MAESTRO_STATUS=PASS ;;
+            failure) MAESTRO_STATUS=FAIL ;;
+            cancelled) MAESTRO_STATUS=CANCELLED ;;
+            *) MAESTRO_STATUS="NOT RUN" ;;
+          esac
           {
             echo "## Android CI summary"
             echo ""
@@ -237,10 +306,12 @@ jobs:
             echo "| android-unit | $UNIT_STATUS | JUnit report artifact |"
             echo "| android-lint | $LINT_STATUS (informational) | lint report artifact |"
             echo "| android-instrumentation | $INSTRUMENTATION_STATUS | connected test report + logcat artifact |"
+            echo "| android-maestro | $MAESTRO_STATUS | Maestro artifacts |"
             echo ""
             echo "- Commit: ${{ github.sha }}"
             echo "- Skipped unit tests: ${UNIT_SKIPPED:-0}"
             echo "- Unit tests are gating; any skipped unit test prevents a PASS."
             echo "- Lint is informational in this phase."
             echo "- Instrumentation PASS requires a real emulator execution; no result is inferred from compilation."
+            echo "- Maestro PASS requires a real emulator execution; no result is inferred from configuration."
           } >> "$GITHUB_STEP_SUMMARY"
