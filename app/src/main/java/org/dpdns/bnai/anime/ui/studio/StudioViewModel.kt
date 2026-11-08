@@ -82,14 +82,14 @@ class StudioViewModel(private val repository: AnimeRepository = AnimeRepository(
         val cleanName = projectName.trim()
         if (cleanName.isBlank()) return
         viewModelScope.launch {
-            val baseProjectId = repository.currentProjectId().ifBlank { "00000000-0000-0000-0000-000000000000" }
-            when (val cmd = repository.submitStudioCommand(baseProjectId, CommandIntent.CREATE_PROJECT, "SAVE", payload = mapOf("name" to cleanName))) {
+            when (val created = repository.createProjectSync(cleanName)) {
                 is Resource.Success -> {
+                    TokenManager.getInstance()?.saveActiveProjectId(created.data.id)
                     _homeSummary.value = _homeSummary.value.copy(createStatusMessage = "Project '$cleanName' created!")
                     loadProjects()
                 }
                 is Resource.Error -> {
-                    _homeSummary.value = _homeSummary.value.copy(createStatusMessage = "Create failed: ${cmd.message}")
+                    _homeSummary.value = _homeSummary.value.copy(createStatusMessage = "Create failed: ${created.message}")
                 }
                 else -> Unit
             }

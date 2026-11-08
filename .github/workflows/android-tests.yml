@@ -1,0 +1,167 @@
+name: Android Unit Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  unit:
+    name: JVM unit tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    outputs:
+      skipped: ${{ steps.skips.outputs.skipped }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+      - name: Install Android SDK packages
+        run: |
+          yes | sdkmanager --licenses >/dev/null 2>&1 || true
+          sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0"
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v3
+      - name: Run JVM unit tests
+        id: unit
+        run: ./gradlew testDebugUnitTest --no-daemon --stacktrace
+      - name: Detect skipped unit tests
+        id: skips
+        if: always()
+        run: |
+          node - <<'NODE'
+          const fs = require('node:fs');
+          const path = require('node:path');
+          const dir = 'app/build/test-results/testDebugUnitTest';
+          let skipped = 0;
+          if (fs.existsSync(dir)) {
+            for (const f of fs.readdirSync(dir)) {
+              if (f.endsWith('.xml')) {
+                const xml = fs.readFileSync(path.join(dir, f), 'utf8');
+                skipped += (xml.match(/<skipped\b/g) || []).length;
+              }
+            }
+          }
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, `skipped=${skipped}\n`);
+          NODE
+      - name: Upload unit test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-unit-test-report
+          path: |
+            app/build/reports/tests/testDebugUnitTest
+            app/build/test-results/testDebugUnitTest
+          retention-days: 14
+          if-no-files-found: error
+      - name: Write unit summary
+        if: always()
+        run: |
+          {
+            echo "### Android JVM unit tests"
+            echo ""
+            echo "- Outcome: ${{ steps.unit.outcome }}"
+            echo "- Commit: ${{ github.sha }}"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  lint:
+    name: Android Lint (informational)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    outputs:
+      lint_outcome: ${{ steps.lint.outcome }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+      - name: Install Android SDK packages
+        run: |
+          yes | sdkmanager --licenses >/dev/null 2>&1 || true
+          sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0"
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v3
+      - name: Run Android Lint
+        id: lint
+        continue-on-error: true
+        run: ./gradlew lintDebug --no-daemon --stacktrace
+      - name: Upload lint report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-lint-report
+          path: |
+            app/build/reports/lint-results-debug.html
+            app/build/reports/lint-results-debug.xml
+          retention-days: 14
+          if-no-files-found: warn
+      - name: Write lint summary
+        if: always()
+        run: |
+          {
+            echo "### Android Lint"
+            echo ""
+            echo "- Outcome: ${{ steps.lint.outcome }}"
+            echo "- Phase 1 is informational; lint failures are visible but do not block the workflow."
+            echo "- Commit: ${{ github.sha }}"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  android-summary:
+    name: Android test summary
+    needs: [unit, lint]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Write honest Android summary
+        env:
+          UNIT_RESULT: ${{ needs.unit.result }}
+          UNIT_SKIPPED: ${{ needs.unit.outputs.skipped }}
+          LINT_RESULT: ${{ needs.lint.outputs.lint_outcome }}
+        run: |
+          case "$UNIT_RESULT" in
+            success) UNIT_STATUS=PASS ;;
+            failure) UNIT_STATUS=FAIL ;;
+            *) UNIT_STATUS="NOT RUN" ;;
+          esac
+          if [ "$UNIT_STATUS" = PASS ] && [ "${UNIT_SKIPPED:-0}" != "0" ]; then
+            UNIT_STATUS=BLOCKED
+          fi
+          case "$LINT_RESULT" in
+            success) LINT_STATUS=PASS ;;
+            failure) LINT_STATUS=FAIL ;;
+            *) LINT_STATUS="NOT RUN" ;;
+          esac
+          {
+            echo "## Android CI summary"
+            echo ""
+            echo "| Layer | Status | Evidence |"
+            echo "|---|---|---|"
+            echo "| android-unit | $UNIT_STATUS | JUnit report artifact |"
+            echo "| android-lint | $LINT_STATUS (informational) | lint report artifact |"
+            echo ""
+            echo "- Commit: ${{ github.sha }}"
+            echo "- Skipped unit tests: ${UNIT_SKIPPED:-0}"
+            echo "- Unit tests are gating; any skipped unit test prevents a PASS."
+            echo "- Lint is informational in this phase."
+            echo "- Emulator/UI tests are NOT IMPLEMENTED and are not claimed."
+          } >> "$GITHUB_STEP_SUMMARY"

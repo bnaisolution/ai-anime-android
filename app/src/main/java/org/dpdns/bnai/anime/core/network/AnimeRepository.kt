@@ -52,6 +52,12 @@ class AnimeRepository(private val apiService: AnimeApiService = RetrofitClient.g
         Resource.Error(e.localizedMessage ?: "Network failure")
     }
 
+    suspend fun createProjectSync(name: String): Resource<ProjectDto> = try {
+        mapEnvelope(apiService.createProjectSync(mapOf("name" to name))) { it }
+    } catch (e: Exception) {
+        Resource.Error(e.localizedMessage ?: "Project creation failed")
+    }
+
     suspend fun fetchProjectOverview(projectId: String): Resource<ProjectOverviewDto> = try {
         mapEnvelope(apiService.getProjectOverview(projectId)) { it }
     } catch (e: Exception) {
@@ -458,15 +464,14 @@ class AnimeRepository(private val apiService: AnimeApiService = RetrofitClient.g
         payload: JsonMap = emptyMap(),
         customIdempotencyKey: String? = null
     ): Resource<SubmitCommandResultDto> {
-        if (projectId.isBlank() && intent != CommandIntent.CREATE_PROJECT) {
+        if (projectId.isBlank()) {
             return Resource.Error("Please select or create a project first.")
         }
-        val safeProjId = projectId.ifBlank { "00000000-0000-0000-0000-000000000000" }
         val idempotencyKey = customIdempotencyKey ?: "cmd-${intent.name.lowercase()}-${UUID.randomUUID()}"
         return try {
             val response = apiService.submitCommand(
                 idempotencyKey,
-                CreateCommandRequest(safeProjId, intent.name, mode, episodeNo, payload)
+                CreateCommandRequest(projectId, intent.name, mode, episodeNo, payload)
             )
             if (response.isSuccessful && response.body()?.data != null) {
                 Resource.Success(response.body()!!.data!!)
