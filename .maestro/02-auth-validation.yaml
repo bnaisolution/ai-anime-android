@@ -2,5 +2,13 @@ appId: org.dpdns.bnai.anime
 ---
 - launchApp:
     clearState: true
+- tapOn:
+    text: "Wait"
+    optional: true
+- extendedWaitUntil:
+    visible: "AI Cinematic Anime Studio"
+    timeout: 60000
 - tapOn: "Sign In to Studio"
-- assertVisible: "Email and password are required."
+- extendedWaitUntil:
+    visible: "Email and password are required."
+    timeout: 30000

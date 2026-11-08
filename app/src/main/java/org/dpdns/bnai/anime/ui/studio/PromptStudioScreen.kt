@@ -198,7 +198,10 @@ fun PromptStudioScreen() {
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                SectionHeader(title = "$currentCategory Prompt Configuration")
+                SectionHeader(
+                    title = "$currentCategory Prompt Configuration",
+                    modifier = Modifier.weight(1f)
+                )
                 if (!isEditMode) {
                     OutlinedButton(
                         onClick = { editModeByCat[currentCategory] = true },

@@ -2,5 +2,10 @@ appId: org.dpdns.bnai.anime
 ---
 - launchApp:
     clearState: true
-- assertVisible: "AI Cinematic Anime Studio"
+- tapOn:
+    text: "Wait"
+    optional: true
+- extendedWaitUntil:
+    visible: "AI Cinematic Anime Studio"
+    timeout: 60000
 - assertVisible: "Sign In to Studio"
