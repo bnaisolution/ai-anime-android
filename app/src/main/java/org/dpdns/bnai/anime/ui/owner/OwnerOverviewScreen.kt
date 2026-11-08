@@ -77,7 +77,10 @@ fun OwnerOverviewScreen() {
                 ) { Text("Halt Fleet Now") }
             },
             dismissButton = {
-                TextButton(onClick = { showEmergencyDialog = false }) { Text("Cancel") }
+                TextButton(
+                    onClick = { showEmergencyDialog = false },
+                    modifier = Modifier.testTag(TestTags.Dialog.CANCEL)
+                ) { Text("Cancel") }
             }
         )
     }
