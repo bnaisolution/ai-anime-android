@@ -234,7 +234,13 @@ jobs:
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
           script: |
             ./gradlew installDebug --no-daemon --stacktrace
-            curl -Ls "https://get.maestro.mobile.dev" | bash
+            for attempt in 1 2 3; do
+              if curl -fLsS --retry 3 --retry-delay 5 "https://get.maestro.mobile.dev" -o /tmp/install-maestro.sh && bash /tmp/install-maestro.sh; then
+                break
+              fi
+              sleep 15
+            done
+            test -x "$HOME/.maestro/bin/maestro"
             "$HOME/.maestro/bin/maestro" test .maestro
       - name: Upload Maestro artifacts
         if: always()
