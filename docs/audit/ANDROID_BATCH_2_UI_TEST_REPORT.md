@@ -1,8 +1,10 @@
 # Android Batch 2 — Compose UI Test Report
 
-**Status:** IMPLEMENTED — 77 BATCH 2 TEST SOURCES COMPILE WITH STUB R.JAR; INSTRUMENTATION EXECUTION BLOCKED (ENVIRONMENT)
+**Status:** SUPERSEDED — CLOUD INSTRUMENTATION EXECUTED AND PASSED (116/116 IN RUN `42577400016`)
 
 **Baseline:** `0ddea5c9d1c5a335f349366d24c37649b2879115`
+
+**Post-run note (2026-11-09):** The tables below are the pre-run snapshot. Final cloud run `42577400016` executed all 116 instrumentation tests successfully (0 failures/errors/skipped), including the 35-method control suite.
 
 **Inventory correction (2026-11-09):** source-derived interactive controls are **205**, not 206; tabs are **14**, not 15. `CanonViewerScreen.kt` has one `TabRow` plus two `Tab` calls. See `ANDROID_BATCH_2_CONTROL_COVERAGE.md` and `ANDROID_PHASE_1_TEST_INVENTORY.md`.
 
@@ -185,11 +187,11 @@ No commit or push was performed.
 
 ## Final Batch 2 status
 
-- Test source: **IMPLEMENTED** (77 Batch 2 tests).
+- Test source: **IMPLEMENTED** (77 Batch 2 tests, plus 35 control-level tests).
 - Production Kotlin compile: **PASS**.
-- Android test Kotlin compile with stub: **PASS (compile-only)**.
-- Standard Android resource/instrumentation compile: **BLOCKED (environment)**.
-- Instrumentation execution: **BLOCKED (environment)**.
-- Lint: **BLOCKED (environment)**.
-- Runtime UI pass/fail: **NOT CLAIMED**.
+- Android test Kotlin compile: **PASS**.
+- Standard Android resource/instrumentation compile: **PASS in cloud**.
+- Instrumentation execution: **PASS — 116/116 in run `42577400016`**.
+- Lint: **PASS — 25 findings, 0 errors**.
+- Runtime UI pass/fail: **PASS**.
 - Application defects: **3 CONFIRMED AND FIXED** (quick-video duration, empty prompt resource, null voice ID).

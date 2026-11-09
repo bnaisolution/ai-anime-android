@@ -1,8 +1,10 @@
 # Android Batch 2 — Screen Coverage
 
-**Status:** IMPLEMENTED — 33/33 SCREEN TESTS PRESENT; EXECUTION BLOCKED (ENVIRONMENT)
+**Status:** SUPERSEDED — 33/33 SCREEN TESTS PASSED IN CLOUD RUN `42577400016`
 
 **Baseline:** `0ddea5c9d1c5a335f349366d24c37649b2879115`
+
+**Post-run note (2026-11-09):** The per-screen table below is the pre-run snapshot. Final cloud run `42577400016` passed all 33 screen tests as part of the 116/116 instrumentation result.
 
 ## Method
 
@@ -105,4 +107,4 @@ Those behaviors are either covered by the shared/interaction tests, listed as co
 
 ## Final screen status
 
-**33/33 screen tests implemented; 0 runtime PASS; 33 BLOCKED by the AAPT2/instrumentation environment.**
+**33/33 screen tests passed in cloud run `42577400016`.**

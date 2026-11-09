@@ -1,8 +1,10 @@
 # Android Batch 2 — Navigation Coverage
 
-**Status:** IMPLEMENTED — 35/35 ROUTES HAVE NAVIGATION TEST SOURCE; EXECUTION BLOCKED (ENVIRONMENT)
+**Status:** SUPERSEDED — 35/35 ROUTES PASSED IN CLOUD RUN `42577400016`
 
 **Baseline:** `0ddea5c9d1c5a335f349366d24c37649b2879115`
+
+**Post-run note (2026-11-09):** The route table below is the pre-run snapshot. Final cloud run `42577400016` passed all 35 route/navigation tests as part of the 116/116 instrumentation result.
 
 ## Method
 
@@ -123,4 +125,4 @@ Each route assertion checks the destination's screen-root tag. No route is marke
 
 ## Final navigation status
 
-**35/35 routes have navigation test source; 0 routes have runtime PASS; 35 routes are BLOCKED by the AAPT2/instrumentation environment.**
+**35/35 route/navigation tests passed in cloud run `42577400016`.**

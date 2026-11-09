@@ -1,8 +1,10 @@
 # Android Batch 2 — Control Coverage
 
-**Status:** PARTIALLY IMPLEMENTED — 27 OF 205 SCREEN CONTROLS EXPLICITLY ASSERTED; 178 NOT INDIVIDUALLY ASSERTED; EXECUTION BLOCKED
+**Status:** SUPERSEDED — 35-METHOD CONTROL-LEVEL SUITE EXECUTED AND PASSED (35/35 IN CLOUD RUN `42577400016`)
 
 **Baseline:** `0ddea5c9d1c5a335f349366d24c37649b2879115`
+
+**Post-run note (2026-11-09):** The tables below are the pre-expansion snapshot. The 35-method control suite passed 35/35 in cloud run `42577400016`.
 
 **Correction (2026-11-09):** the source-derived total is **205**, not 206. `CanonViewerScreen.kt` contains one `TabRow` and two `Tab` calls (3 tab occurrences), not 4. The prior 206 total overcounted CanonViewer by one.
 
@@ -148,14 +150,14 @@ These are not included in the 205 screen-control total.
 - No control test verifies that an action actually mutates repository state, because the fake repository returns `Resource.Empty` for most methods.
 - No tablet/rail layout control coverage.
 
-## Final control status
+## Pre-expansion control status
 
-**27 controls have explicit test source but are BLOCKED from execution; 178 controls are NOT IMPLEMENTED at control level. No control is marked PASS or FAIL.**
+**Before the 2026-11-09 expansion, 27 controls had explicit test source and 178 controls were not implemented at control level.** That status is retained as history; it was superseded by the executed 35-method suite below.
 
-## 2026-11-09 control-level expansion — implemented, not executed
+## 2026-11-09 control-level expansion — executed and passed
 
 A new `Batch2FullControlCoverageTest.kt` source file contains 35 control-level test methods covering all 33 screens, with assertions/clicks for actions, fields, dialogs, menus, tabs, conditional states, and scrollable list controls. The recording fake repository was expanded to return realistic data for these screens.
 
-**Status: NOT TESTED.** The source has not been compiled, linted, or executed. Local Android builds remain blocked by the Termux host architecture and missing toolchain. Cloud execution requires explicit approval to push and dispatch the workflow.
+**Status: TESTED AND PASSED.** The suite passed in cloud run `42577400016` at commit `44bfa15c5e23d09e51a2d3c681c9cca3b219f844`: 35/35 tests, 0 failures, 0 errors, 0 skipped. The full instrumentation job passed 116/116 tests.
 
-The corrected source-derived inventory remains **205** controls. The executed suite still credits only the 27 previously asserted controls; the 178 screen-smoke-only controls are not reclassified until the new tests pass in cloud CI. The label-to-test map is at `reports/android-testing/evidence/android-control-expansion-2026-11-09/CONTROL_ASSERTION_MAP.md`.
+The corrected source-derived inventory remains **205** controls. The new suite asserts or clicks **280** control-label occurrences across all 33 screens. The prior 27 explicit controls remain covered. This report does not claim a one-to-one 205/205 runtime assertion count because a control can expose multiple labels/states; the label-to-test map is at `reports/android-testing/evidence/android-control-expansion-2026-11-09/CONTROL_ASSERTION_MAP.md`.

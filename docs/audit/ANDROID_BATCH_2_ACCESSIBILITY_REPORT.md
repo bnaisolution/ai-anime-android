@@ -1,8 +1,10 @@
 # Android Batch 2 — Accessibility Report
 
-**Status:** PARTIALLY IMPLEMENTED — 5 ACCESSIBILITY TESTS PRESENT; RUNTIME ACCESSIBILITY EXECUTION BLOCKED; TALKBACK/CONTRAST/SCALING/RTL NOT IMPLEMENTED
+**Status:** PARTIALLY IMPLEMENTED — 5 AUTOMATED ACCESSIBILITY TESTS PASSED IN CLOUD RUN `42577400016`; MANUAL TALKBACK/CONTRAST/SCALING/RTL NOT PERFORMED
 
 **Baseline:** `0ddea5c9d1c5a335f349366d24c37649b2879115`
+
+**Post-run note (2026-11-09):** The table below is the pre-run snapshot. Final cloud run `42577400016` passed all 5 automated accessibility tests. Manual TalkBack/contrast/scaling/RTL checks remain NOT PERFORMED.
 
 ## Scope
 
@@ -97,8 +99,8 @@ All 5 are blocked by the same AAPT2/instrumentation environment limitation. No a
 - Host is `aarch64`; SDK AAPT2 is x86_64.
 - Android resource processing fails before instrumentation.
 - No emulator or physical device is available.
-- Therefore all 5 accessibility tests are `BLOCKED`, not `PASS`.
+- Therefore all 5 automated accessibility tests are `PASS` in cloud run `42577400016`.
 
 ## Final accessibility status
 
-**5 accessibility tests implemented; 0 runtime PASS; 5 BLOCKED. Static source audit passes for 13/13 IconButton labels and 4/4 FAB labels. Decorative-icon classification, TalkBack, contrast, scaling, RTL, focus order, and touch-target checks remain NOT IMPLEMENTED.**
+**5/5 automated accessibility tests passed in cloud run `42577400016`. Static source audit passes for 13/13 IconButton labels and 4/4 FAB labels. Manual TalkBack, contrast, scaling, RTL, focus order, and touch-target checks remain NOT PERFORMED.**

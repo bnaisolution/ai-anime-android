@@ -1,6 +1,8 @@
 # Android Batch 3 — Cloud Testing and CI Report
 
-**Status:** CONFIGURED — NOT EXECUTED FOR LOCAL CHANGES (NO PUSH; WORKFLOW DISPATCH RUNS BASELINE ONLY)
+**Status:** SUPERSEDED — FINAL CLOUD RUN `42577400016` EXECUTED SUCCESSFULLY (JVM 20/20, INSTRUMENTATION 116/116, MAESTRO 2/2, LINT 0 ERRORS)
+
+**Superseded (2026-11-09):** Cloud execution later ran on the testing branch. Final green run `42577400016` at `44bfa15c5e23d09e51a2d3c681c9cca3b219f844`: 20/20 JVM, 116/116 instrumentation, 2/2 Maestro, lint 0 errors. See `reports/android-testing/evidence/ci-42577400016/`.
 
 **Baseline:** `0ddea5c9d1c5a335f349366d24c37649b2879115`
 
@@ -79,11 +81,11 @@ The flows intentionally avoid credentials and backend state. They validate app l
 |---|---|---|
 | Workflow files created/updated | Yes | CONFIGURED |
 | Maestro flow files created | 2 | CONFIGURED |
-| YAML syntax lint | Not run — no `yamllint`/`actionlint`/PyYAML/js-yaml locally | NOT RUN |
+| YAML syntax lint | Not run locally; workflow executed successfully in cloud | PASS (cloud execution) |
 | Manual YAML review | Completed | PASS (manual) |
-| GitHub Actions instrumentation execution | Not run — local changes not pushed | NOT RUN |
-| Maestro execution | Not run — no local emulator/Maestro | NOT RUN |
-| New-code remote CI | Not run — no push permitted | NOT RUN |
+| GitHub Actions instrumentation execution | Run `42577400016` | PASS — 116/116 |
+| Maestro execution | Run `42577400016` | PASS — 2/2 flows |
+| New-code remote CI | Run `42577400016` | PASS |
 
 Manual review confirmed:
 
@@ -94,18 +96,16 @@ Manual review confirmed:
 - Artifact paths are repository-relative.
 - Maestro `appId` matches `applicationId = "org.dpdns.bnai.anime"`.
 
-YAML was not machine-validated. A future push should confirm the first workflow run before treating it as stable.
+YAML was machine-validated by successful cloud execution in run `42577400016`.
 
-## 5. Why no new-code CI result exists
+## 5. New-code CI result
 
-The repository has uncommitted Batch 1–4 changes. The permitted scope forbids commit/push. `workflow_dispatch` can only execute the remote branch, so it would test the baseline, not these changes.
-
-Therefore:
+This report originally documented a local-only working tree with no push permission. That limitation was superseded: the testing branch was pushed and cloud CI ran the changes.
 
 - Baseline CI evidence remains valid for `0ddea5c9d1c5a335f349366d24c37649b2879115`.
-- New-code CI is **PENDING**, not PASS.
-- Emulator and Maestro results are **NOT RUN**, not PASS.
-- No CI result is inferred from local compilation.
+- New-code CI is **PASS** in run `42577400016` at `44bfa15c5e23d09e51a2d3c681c9cca3b219f844`.
+- Emulator and Maestro results are **PASS** in that run: 116/116 instrumentation and 2/2 flows.
+- No result is inferred from local compilation.
 
 ## 6. Acceptance criteria for the first real run
 
@@ -121,4 +121,4 @@ The Batch 3 workflow should be considered accepted only when:
 
 ## 7. Batch 3 verdict
 
-**CONFIGURED, NOT EXECUTED.** The cloud execution path now exists and is honest about gating and evidence. It must not be described as passing until a pushed revision runs successfully.
+**EXECUTED AND PASSED (2026-11-09).** The cloud execution path ran successfully in `42577400016`: JVM 20/20, instrumentation 116/116, Maestro 2/2, lint 0 errors. This report's original "configured, not executed" verdict is historical.

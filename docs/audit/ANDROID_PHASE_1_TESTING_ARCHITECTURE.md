@@ -1,6 +1,8 @@
 # Android Phase 1 — Testing Architecture
 
-**Status:** IMPLEMENTED — JVM COMPILE/TEST VALIDATED; ANDROID INSTRUMENTATION BLOCKED
+**Status:** IMPLEMENTED — JVM AND CLOUD INSTRUMENTATION VALIDATED
+
+**Superseded (2026-11-09):** Android instrumentation and Maestro are no longer blocked in cloud CI. Final green run `42577400016` passed 116/116 instrumentation tests and 2/2 Maestro flows at `44bfa15c5e23d09e51a2d3c681c9cca3b219f844`.
 
 **Baseline:** `0ddea5c9d1c5a335f349366d24c37649b2879115`
 
@@ -20,11 +22,11 @@ Phase 1 introduces seams for testing without changing production API behavior or
 | HTTP | `RetrofitClient.create(baseUrl, tokenManager, client)` supports isolated clients; cache reset for tests | IMPLEMENTED |
 | Session state | `TokenManager` supports instance clearing and companion reset for tests | IMPLEMENTED |
 | Compose semantics | Central `TestTags`; P0 and shared components expose stable tags | IMPLEMENTED |
-| JVM tests | Repository contract, Retrofit isolation, and repository behavior tests | IMPLEMENTED; 20 PASSED LOCALLY |
-| Instrumentation semantics | `P0ComposeSemanticsTest` and Batch 2 Compose tests | IMPLEMENTED; COMPILE-ONLY WITH STUB; EXECUTION BLOCKED |
+| JVM tests | Repository contract, Retrofit isolation, and repository behavior tests | IMPLEMENTED; 20 PASSED IN CLOUD |
+| Instrumentation semantics | `P0ComposeSemanticsTest`, Batch 2 Compose tests, and 35-method control suite | IMPLEMENTED; 116 PASSED IN CLOUD |
 | Inventory guard | `scripts/check_test_inventory.py` checks 33 screens and 35 unique routes | IMPLEMENTED |
-| Emulator/UI execution | GitHub Actions emulator job | CONFIGURED IN BATCH 3; NOT RUN |
-| Maestro | End-to-end smoke flows | CONFIGURED IN BATCH 3; NOT RUN |
+| Emulator/UI execution | GitHub Actions emulator job | EXECUTED; PASS IN RUN `42577400016` |
+| Maestro | End-to-end smoke flows | EXECUTED; 2/2 PASS IN RUN `42577400016` |
 | Screenshot tests | Visual regression | PLANNED |
 | Release APK smoke | Installed-app smoke test | PLANNED |
 | Post-publication testing | Isolated staging/production smoke with approved read-only actions | PLANNED |

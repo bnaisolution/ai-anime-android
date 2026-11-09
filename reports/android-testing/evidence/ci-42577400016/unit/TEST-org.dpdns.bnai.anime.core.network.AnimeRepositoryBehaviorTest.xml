@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="org.dpdns.bnai.anime.core.network.AnimeRepositoryBehaviorTest" tests="8" skipped="0" failures="0" errors="0" timestamp="2026-11-09T07:10:34" hostname="runnervm7aw5e" time="0.334">
+  <properties/>
+  <testcase name="submitQuickVideoUsesFiveSecondDefaultWhenOmitted" classname="org.dpdns.bnai.anime.core.network.AnimeRepositoryBehaviorTest" time="0.261"/>
+  <testcase name="emptySystemPromptListMapsToEmptyResource" classname="org.dpdns.bnai.anime.core.network.AnimeRepositoryBehaviorTest" time="0.016"/>
+  <testcase name="nullSystemPromptPayloadMapsToEmptyResource" classname="org.dpdns.bnai.anime.core.network.AnimeRepositoryBehaviorTest" time="0.015"/>
+  <testcase name="firstProjectBecomesActiveWhenNoneIsSelected" classname="org.dpdns.bnai.anime.core.network.AnimeRepositoryBehaviorTest" time="0.009"/>
+  <testcase name="projectHttpFailureMapsToErrorWithStatusCode" classname="org.dpdns.bnai.anime.core.network.AnimeRepositoryBehaviorTest" time="0.007"/>
+  <testcase name="nullVoiceIdDoesNotLeakLiteralNullString" classname="org.dpdns.bnai.anime.core.network.AnimeRepositoryBehaviorTest" time="0.008"/>
+  <testcase name="submitQuickVideoForwardsRequestedDuration" classname="org.dpdns.bnai.anime.core.network.AnimeRepositoryBehaviorTest" time="0.009"/>
+  <testcase name="populatedSystemPromptListMapsToSuccess" classname="org.dpdns.bnai.anime.core.network.AnimeRepositoryBehaviorTest" time="0.007"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

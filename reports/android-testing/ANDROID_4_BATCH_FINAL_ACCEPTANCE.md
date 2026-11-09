@@ -10,9 +10,9 @@
 
 **Baseline revision:** `0ddea5c9d1c5a335f349366d24c37649b2879115`
 
-**Tested code revision:** `b01ee3c9094c71fb42a22e865b3bfc9ba078d518`
+**Tested code revision:** `44bfa15c5e23d09e51a2d3c681c9cca3b219f844`
 
-**Working tree:** the tested revision was clean; the current working tree contains two uncommitted Android test-source changes (`Batch2TestHarness.kt`, `Batch2FullControlCoverageTest.kt`) plus this report/evidence update. The test-source changes are not part of the tested revision.
+**Working tree:** clean at the tested revision. The report/evidence update is docs-only and does not change application or test code.
 
 **Report date:** 2026-11-08 (updated 2026-11-09)
 
@@ -22,18 +22,19 @@
 
 ## 1. Executive summary
 
-All automated Android 4-batch acceptance gates passed against the exact pushed revision `b01ee3c9094c71fb42a22e865b3bfc9ba078d518`:
+All automated Android 4-batch acceptance gates passed against the exact pushed revision `44bfa15c5e23d09e51a2d3c681c9cca3b219f844`:
 
 - JVM unit tests: **PASS** — 20/20.
 - Android lint: **PASS** — completed with 25 findings (14 warnings, 11 information, 0 errors); lint remains informational.
 - Debug APK and instrumentation APK: **PASS** — assembled by the API 34 emulator job.
-- Compose instrumentation: **PASS** — 81/81, 0 failures, 0 errors, 0 skipped.
+- Compose instrumentation: **PASS** — 116/116, 0 failures, 0 errors, 0 skipped.
+- Control-level expansion: **PASS** — 35/35 new `Batch2FullControlCoverageTest` methods.
 - Maestro smoke: **PASS** — 2/2 flows.
-- GitHub Actions workflow `android-tests.yml`: **SUCCESS** — run `42536627981`.
+- GitHub Actions workflow `android-tests.yml`: **SUCCESS** — run `42577400016`.
 
 The final decision is **CONDITIONALLY ACCEPTED** rather than unconditional acceptance because these checks remain outside the executed automated scope:
 
-1. 178 of 205 interactive controls are covered by screen smoke rather than individual behavior assertions; a 35-method control-level expansion exists locally but has not been compiled or executed.
+1. The 35-test control-level expansion asserts 280 label occurrences across the 205-control inventory, but it validates UI exposure/activation with fake repositories rather than backend-side effects.
 2. Manual accessibility checks (TalkBack, font scaling, contrast, RTL, Switch Access) were not performed.
 3. Backend-enforced runtime authorization was not exercised; the backend was not modified or deployed.
 4. No physical-device test was performed.
@@ -46,14 +47,14 @@ No open confirmed defect remains from the executed suites.
 |---|---|
 | Branch | `opencode/android-4-batch-testing` |
 | Baseline HEAD | `0ddea5c9d1c5a335f349366d24c37649b2879115` |
-| Tested code HEAD | `b01ee3c9094c71fb42a22e865b3bfc9ba078d518` |
+| Tested code HEAD | `44bfa15c5e23d09e51a2d3c681c9cca3b219f844` |
 | Branch pushed | Yes, testing branch only |
 | Merge to `main` | None |
 | Production deployment | None |
 | `PROJECT_STATE.md` | Not modified |
 | Backend/CPU worker/n8n/Supabase/AWS | Not modified |
 
-The tested revision contains the complete Batch 1–4 implementation and the fixes for all failures found during cloud execution. This report is committed after the tested revision and does not change application or test code.
+The tested revision contains the complete Batch 1–4 implementation, the control-level expansion, and the fixes for all failures found during cloud execution. This report is committed after the tested revision and does not change application or test code.
 
 ## 3. Verified baseline inventory
 
@@ -74,7 +75,7 @@ The historical baseline was rechecked against current source:
 | Tabs | 14 | 14 | MATCH (corrected from 15) |
 | List surfaces | 24 | 24 | MATCH |
 | State references | 152 | 152 | MATCH |
-| Android instrumentation tests | 81 | 81 | MATCH |
+| Android instrumentation tests | 116 | 116 | MATCH |
 | JVM tests executed | 20 | 20 | MATCH |
 
 Inventory guard result:
@@ -119,6 +120,7 @@ These are conditional gating paths, not confirmed defects.
 ### Test source
 
 - 33 screen render/smoke tests.
+- 35 control-level coverage tests.
 - 10 shared-component tests.
 - 8 interaction tests.
 - 11 navigation tests.
@@ -149,7 +151,7 @@ These are conditional gating paths, not confirmed defects.
 | Retrofit client isolation | 1/1 passed | PASS |
 | Total JVM tests | 20/20 passed | PASS |
 | Inventory guard | Passed | PASS |
-| Cloud JVM execution | Run `42536627981` | PASS |
+| Cloud JVM execution | Run `42577400016` | PASS |
 
 ### JVM evidence
 
@@ -165,8 +167,8 @@ These are conditional gating paths, not confirmed defects.
 Evidence:
 
 - `reports/android-testing/evidence/local-jvm/`
-- `reports/android-testing/evidence/ci-42536627981/unit/`
-- `reports/android-testing/evidence/ci-42536627981/run-metadata.json`
+- `reports/android-testing/evidence/ci-42577400016/unit/`
+- `reports/android-testing/evidence/ci-42577400016/run-metadata.json`
 
 Local execution command:
 
@@ -177,30 +179,31 @@ Local execution command:
   -I /data/data/com.termux/files/usr/tmp/opencode/test-classpath.init.gradle
 ```
 
-The local command is a Termux JVM-only workaround using the pre-existing stub `R.jar`. Cloud execution in run `42536627981` is the authoritative JVM result.
+The local command is a Termux JVM-only workaround using the pre-existing stub `R.jar`. Cloud execution in run `42577400016` is the authoritative JVM result.
 
 ## 6. Batch 2 — Screens, controls, navigation, accessibility
 
-**Status: PASS — 81/81 instrumentation tests.**
+**Status: PASS — 116/116 instrumentation tests.**
 
 ### Instrumentation results
 
 | Test class | Tests | Failures | Errors | Skipped |
 |---|---:|---:|---:|---:|
 | `Batch2ScreenCoverageTest` | 33 | 0 | 0 | 0 |
+| `Batch2FullControlCoverageTest` | 35 | 0 | 0 | 0 |
 | `Batch2SharedComponentTest` | 10 | 0 | 0 | 0 |
 | `Batch2InteractionTest` | 8 | 0 | 0 | 0 |
 | `Batch2NavigationTest` | 11 | 0 | 0 | 0 |
 | `Batch2AccessibilityTest` | 5 | 0 | 0 | 0 |
 | `Batch2ControlBehaviorTest` | 10 | 0 | 0 | 0 |
 | `P0ComposeSemanticsTest` | 4 | 0 | 0 | 0 |
-| **Total** | **81** | **0** | **0** | **0** |
+| **Total** | **116** | **0** | **0** | **0** |
 
 Evidence:
 
-- `reports/android-testing/evidence/ci-42536627981/instrumentation/TEST-emulator-5554 - 14-_app-.xml`
-- `reports/android-testing/evidence/ci-42536627981/instrumentation/logcat/`
-- `reports/android-testing/evidence/ci-42536627981/instrumentation/test-results.log`
+- `reports/android-testing/evidence/ci-42577400016/instrumentation/TEST-emulator-5554 - 14-_app-.xml`
+- `reports/android-testing/evidence/ci-42577400016/instrumentation/test-results.log`
+- `reports/android-testing/evidence/ci-42577400016/run-metadata.json`
 
 ### Control coverage
 
@@ -212,12 +215,15 @@ Evidence:
 | Menus | 23 |
 | Tabs | 14 |
 | **Interactive controls** | **205** |
-| Explicitly asserted | 27 |
-| Screen-smoke only | 178 |
+| Prior explicit assertions (before expansion) | 27 |
+| New control-level test methods | 35 |
+| New control-label occurrences asserted/clicked | 280 |
 
-The 33 screen tests prove each screen renders and exposes its root tag. The 27 previously executed controls have behavior or semantics assertions. The remaining 178 controls are not individually asserted by the executed suite; this is the primary residual coverage risk. A new 35-method control-level test source exists in the working tree but is not part of the tested revision and has not been compiled or executed.
+The 33 screen tests prove each screen renders and exposes its root tag. The 27 previously executed controls have behavior or semantics assertions. The 35-method `Batch2FullControlCoverageTest` expansion now passes in cloud CI and asserts or clicks 280 control-label occurrences across all 33 screens, including dialogs, menus, tabs, conditional states, and scrollable lists. Because one control can expose multiple labels/states, this report does not claim a one-to-one "205 individually asserted" count; the assertion map is the authoritative label-to-test record.
 
 ### Per-screen control matrix
+
+The matrix below records the pre-expansion baseline (27 explicit, 178 screen-smoke-only). It is retained for inventory traceability; the 35-method control-level suite has since passed and is mapped in `reports/android-testing/evidence/android-control-expansion-2026-11-09/CONTROL_ASSERTION_MAP.md`.
 
 | Screen | Actions | Fields | Dialogs | Menus | Tabs | Total | Explicit | Unasserted |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
@@ -308,12 +314,12 @@ The instrumentation job uses `ReactiveCircus/android-emulator-runner@v2` with AP
 | Test APK build | Completed | PASS |
 | Lint | Completed; 25 findings, 0 errors | PASS (informational) |
 | API 34 emulator startup | Completed | PASS |
-| Connected instrumentation tests | 81/81 | PASS |
+| Connected instrumentation tests | 116/116 | PASS |
 | Maestro launch flow | PASS | PASS |
 | Maestro auth-validation flow | PASS | PASS |
-| Logcat collection | 81 per-test logcat files | PASS |
-| New-code GitHub Actions run ID | `42536627981` | PASS |
-| New-code tested commit SHA | `b01ee3c9094c71fb42a22e865b3bfc9ba078d518` | PASS |
+| Logcat collection | 116 per-test logcat files | PASS |
+| New-code GitHub Actions run ID | `42577400016` | PASS |
+| New-code tested commit SHA | `44bfa15c5e23d09e51a2d3c681c9cca3b219f844` | PASS |
 
 ### Maestro flows
 
@@ -322,7 +328,7 @@ The instrumentation job uses `ReactiveCircus/android-emulator-runner@v2` with AP
 | `.maestro/01-launch.yaml` | Launch and assert studio title/sign-in | PASS |
 | `.maestro/02-auth-validation.yaml` | Empty sign-in and assert validation error | PASS |
 
-Run `42535478325` exposed a Maestro startup flake: a Pixel Launcher ANR dialog covered the app during launch. The flows now optionally dismiss the system "Wait" action and use extended visibility waits. Run `42536627981` passed both flows.
+Earlier Maestro startup flakes were addressed by dismissing the system "Wait" action, adding extended visibility waits, suppressing emulator error dialogs with `hide_error_dialogs=1`, and caching/retrying the pinned Maestro CLI download. Run `42577400016` passed both flows.
 
 ## 8. Batch 4 — Regression and final acceptance
 
@@ -335,10 +341,10 @@ Run `42535478325` exposed a Maestro startup flake: a Pixel Launcher ANR dialog c
 | Inventory guard | 33/35 | PASS |
 | `git diff --check` | Clean | PASS |
 | Android lint | 25 findings, 0 errors | PASS (informational) |
-| Instrumentation execution | 81/81 | PASS |
+| Instrumentation execution | 116/116 | PASS |
 | Emulator | API 34 x86_64 | PASS |
 | Maestro | 2/2 flows | PASS |
-| New-code CI | Run `42536627981` | PASS |
+| New-code CI | Run `42577400016` | PASS |
 | Physical-device testing | No device | NOT RUN |
 
 ### Failure-to-fix history
@@ -349,7 +355,13 @@ Run `42535478325` exposed a Maestro startup flake: a Pixel Launcher ANR dialog c
 | `42532828312` | `021af6b` | FAILURE | 10 instrumentation; Maestro PATH | Fixed selectors/tags/nav; invoked Maestro via `$HOME/.maestro/bin/maestro` |
 | `42534330579` | `571f139` | FAILURE | 2 instrumentation | Tagged Owner cancel button; hardened Prompt Studio save test |
 | `42535478325` | `6864062` | FAILURE | 1 instrumentation; Maestro ANR | Fixed Prompt Studio edit layout; hardened Maestro startup |
-| `42536627981` | `b01ee3c` | SUCCESS | 0 | Final acceptance run |
+| `42536627981` | `b01ee3c` | SUCCESS | 0 | Prior 81-test acceptance run |
+| `42565765861` | `261b3b5` | FAILURE | Gradle distribution download HTTP 504 | Switched to verified Tencent mirror with SHA-256 |
+| `42567788322` | `527a4ee` | FAILURE | 6 control-level instrumentation | Added tags, unmerged-tree clicks, scroll-before-click |
+| `42569558539` | `f9d8278` | FAILURE | Maestro blocked by Pixel Launcher ANR dialog | Set `hide_error_dialogs=1`; extended waits |
+| `42570740543` | `5444ebc` | FAILURE | Maestro CLI download HTTP 504 | Cached and retried pinned `cli-2.12.1` download |
+| `42572369671` | `5f2e53e` | FAILURE | Instrumentation job hit 45-minute timeout at 28/116 | Raised instrumentation to 75 min and Maestro to 60 min |
+| `42577400016` | `44bfa15` | SUCCESS | 0 | Final 116-test acceptance run |
 
 ## 9. Security verification
 
@@ -374,7 +386,7 @@ Run `42535478325` exposed a Maestro startup flake: a Pixel Launcher ANR dialog c
 | Skipped | 0 |
 | Authoritative environment | GitHub Actions Ubuntu, JDK 17 |
 
-Evidence: `reports/android-testing/evidence/ci-42536627981/unit/`.
+Evidence: `reports/android-testing/evidence/ci-42577400016/unit/`.
 
 ## 11. Android build and lint results
 
@@ -387,17 +399,17 @@ Evidence: `reports/android-testing/evidence/ci-42536627981/unit/`.
 | Lint | 25 findings: 14 warnings, 11 information, 0 errors | PASS (informational) |
 | Local standard resource processing | AAPT2 x86_64 on aarch64 | BLOCKED locally only |
 
-Lint evidence: `reports/android-testing/evidence/ci-42536627981/lint/`.
+Lint evidence: `reports/android-testing/evidence/ci-42577400016/lint/`.
 
 ## 12. Instrumentation results
 
 | Item | Result | Status |
 |---|---|---|
-| Instrumentation test sources | 81 | IMPLEMENTED |
-| Connected execution | 81 executed | PASS |
-| Test result XML | 81 tests, 0 failures, 0 errors, 0 skipped | PASS |
+| Instrumentation test sources | 116 | IMPLEMENTED |
+| Connected execution | 116 executed | PASS |
+| Test result XML | 116 tests, 0 failures, 0 errors, 0 skipped | PASS |
 | Failure diagnostics | None in final run | PASS |
-| Per-test logcat | 81 files | PASS |
+| Per-test logcat | 116 files | PASS |
 
 ## 13. Emulator results
 
@@ -427,12 +439,18 @@ Lint evidence: `reports/android-testing/evidence/ci-42536627981/lint/`.
 | `42534330579` | `android-tests.yml` | `571f139` | FAILURE | `https://github.com/bnaisolution/ai-anime-android/actions/runs/42534330579` |
 | `42535478325` | `android-tests.yml` | `6864062` | FAILURE | `https://github.com/bnaisolution/ai-anime-android/actions/runs/42535478325` |
 | `42536627981` | `android-tests.yml` | `b01ee3c` | SUCCESS | `https://github.com/bnaisolution/ai-anime-android/actions/runs/42536627981` |
+| `42565765861` | `android-tests.yml` | `261b3b5` | FAILURE | `https://github.com/bnaisolution/ai-anime-android/actions/runs/42565765861` |
+| `42567788322` | `android-tests.yml` | `527a4ee` | FAILURE | `https://github.com/bnaisolution/ai-anime-android/actions/runs/42567788322` |
+| `42569558539` | `android-tests.yml` | `f9d8278` | FAILURE | `https://github.com/bnaisolution/ai-anime-android/actions/runs/42569558539` |
+| `42570740543` | `android-tests.yml` | `5444ebc` | FAILURE | `https://github.com/bnaisolution/ai-anime-android/actions/runs/42570740543` |
+| `42572369671` | `android-tests.yml` | `5f2e53e` | FAILURE | `https://github.com/bnaisolution/ai-anime-android/actions/runs/42572369671` |
+| `42577400016` | `android-tests.yml` | `44bfa15` | SUCCESS | `https://github.com/bnaisolution/ai-anime-android/actions/runs/42577400016` |
 
-The authoritative final run is `42536627981`.
+The authoritative final run is `42577400016`.
 
 ## 16. Exact tested commit SHA
 
-- Tested code SHA: `b01ee3c9094c71fb42a22e865b3bfc9ba078d518`.
+- Tested code SHA: `44bfa15c5e23d09e51a2d3c681c9cca3b219f844`.
 - Branch: `opencode/android-4-batch-testing`.
 - This report is a docs-only commit after the tested code SHA.
 - No merge to `main` and no deployment occurred.
@@ -441,12 +459,13 @@ The authoritative final run is `42536627981`.
 
 | Evidence | Path |
 |---|---|
-| Final run metadata | `reports/android-testing/evidence/ci-42536627981/run-metadata.json` |
-| Final JVM XML | `reports/android-testing/evidence/ci-42536627981/unit/` |
-| Final instrumentation XML | `reports/android-testing/evidence/ci-42536627981/instrumentation/` |
-| Final per-test logcat | `reports/android-testing/evidence/ci-42536627981/instrumentation/logcat/` |
-| Final lint report | `reports/android-testing/evidence/ci-42536627981/lint/` |
-| Final Maestro logs/artifacts | `reports/android-testing/evidence/ci-42536627981/maestro/` |
+| Final run metadata | `reports/android-testing/evidence/ci-42577400016/run-metadata.json` |
+| Final JVM XML | `reports/android-testing/evidence/ci-42577400016/unit/` |
+| Final instrumentation XML | `reports/android-testing/evidence/ci-42577400016/instrumentation/` |
+| Final instrumentation test log | `reports/android-testing/evidence/ci-42577400016/instrumentation/test-results.log` |
+| Final lint report | `reports/android-testing/evidence/ci-42577400016/lint/` |
+| Final Maestro logs/artifacts | `reports/android-testing/evidence/ci-42577400016/maestro/2026-11-09_071455/` |
+| Final CI evidence summary | `reports/android-testing/evidence/ci-42577400016/README.md` |
 | Local JVM XML | `reports/android-testing/evidence/local-jvm/` |
 | Local checks | `reports/android-testing/evidence/local-checks.txt` |
 | Compile log | `reports/android-testing/evidence/gradle-compile.log` |
@@ -465,11 +484,11 @@ No open confirmed defect remains from the executed JVM, lint, instrumentation, o
 
 Residual risks:
 
-1. **Control coverage:** 178 of 205 interactive controls are not individually asserted by the executed suite. A defect isolated to one of those controls could escape the current suite.
+1. **Control behavior depth:** the 35-test expansion proves UI exposure/activation, but most fake-repository methods do not verify backend-side effects or persistence.
 2. **Manual accessibility:** TalkBack, font scaling, contrast, RTL, and Switch Access were not executed.
 3. **Backend authorization runtime:** Android navigation gating passed, but backend-enforced authorization was not exercised because the backend was not modified or deployed.
 4. **Physical device:** No OEM/physical-device test was performed.
-5. **Emulator flake:** The Maestro startup ANR was mitigated, not eliminated. The optional "Wait" dismissal and extended waits reduce recurrence.
+5. **Emulator flake:** Maestro startup ANR/download failures were mitigated (error-dialog suppression, pinned CLI cache/retry), not eliminated.
 
 ## 19. Environment limitations
 
@@ -483,7 +502,7 @@ Residual risks:
 
 ## 20. Follow-up conditions
 
-1. Add and execute individual behavior assertions for high-risk controls among the 178 screen-smoke-only controls.
+1. Add backend-side effect/persistence assertions for high-risk controls; the current control suite is UI-level with fake repositories.
 2. Run manual accessibility checks (TalkBack, font scaling, contrast, RTL, Switch Access).
 3. Execute backend authorization tests in an approved non-production environment.
 4. Run a physical-device smoke pass before release.
@@ -493,25 +512,25 @@ Residual risks:
 
 **CONDITIONALLY ACCEPTED**
 
-Reason: all automated Android 4-batch gates passed on the exact pushed revision `b01ee3c9094c71fb42a22e865b3bfc9ba078d518`:
+Reason: all automated Android 4-batch gates passed on the exact pushed revision `44bfa15c5e23d09e51a2d3c681c9cca3b219f844`:
 
 - JVM: 20/20.
-- Instrumentation: 81/81.
+- Instrumentation: 116/116, including 35 control-level tests.
 - Maestro: 2/2.
 - Lint: completed, 0 errors.
 - Cloud workflow: SUCCESS.
 
-Acceptance is conditional on the follow-up items in Section 20: broader control-level coverage, manual accessibility, backend runtime authorization, and physical-device validation. No unconditional release acceptance is claimed.
+Acceptance is conditional on the follow-up items in Section 20: backend-side effect coverage, manual accessibility, backend runtime authorization, and physical-device validation. No unconditional release acceptance is claimed.
 
 ## 22. Master continuation scope — backend, CPU worker, n8n, integration (2026-11-09)
 
-This section extends the report beyond the Android-only automated scope. It does not replace the tested Android revision `b01ee3c9094c71fb42a22e865b3bfc9ba078d518`.
+This section extends the report beyond the Android-only automated scope. The tested Android revision is now `44bfa15c5e23d09e51a2d3c681c9cca3b219f844` (run `42577400016`).
 
 ### 22.1 Repository state
 
 | Repository | Local path | Branch | HEAD | Working tree |
 |---|---|---|---|---|
-| Android | `ai-anime-android` | `opencode/android-4-batch-testing` | `e82aa27f1e7efa296519044e13723e282b641418` | Two uncommitted test-source changes: `Batch2TestHarness.kt`, `Batch2FullControlCoverageTest.kt` |
+| Android | `ai-anime-android` | `opencode/android-4-batch-testing` | `44bfa15c5e23d09e51a2d3c681c9cca3b219f844` | Clean; docs/evidence update pending |
 | Backend | `ai-anime-backend` | `main` | `c6fc39865c44913eb0ba59065e99abff46f715fd` | Untracked `test-results/` |
 | CPU worker | `anime-cpu-worker` | `main` | `da069d3bb30d2389992cc8de82a9b5bad1e31eea` | Untracked `test-results/`, `tests/__pycache__/` |
 
@@ -565,18 +584,18 @@ The 14 workflow IDs are unique: `U4pLz7pXmG2OqXlt`, `UeEXeimGGwqIh84T`, `qRUdhg1
 
 Static audit evidence: `reports/android-testing/evidence/n8n-static-2026-11-09/n8n-static-audit.md` and `.json`.
 
-### 22.5 Android control-level expansion — implemented, not executed
+### 22.5 Android control-level expansion — executed and passed
 
-A 35-method control-level test source has been written locally:
+The 35-method control-level test source is committed and executed:
 
 - `app/src/androidTest/java/org/dpdns/bnai/anime/ui/batch2/Batch2FullControlCoverageTest.kt`
 - `app/src/androidTest/java/org/dpdns/bnai/anime/ui/batch2/Batch2TestHarness.kt` (expanded fake data and fake state)
 
-The new tests wait for each screen-root `TestTags` entry and assert controls by text/content description, including dialogs, menus, tabs, conditional states, and scrollable lists. They have **not** been compiled, linted, or executed. Local Android build remains blocked by the Termux `aarch64` host and missing Android SDK/toolchain. Cloud execution requires an explicit branch push and workflow dispatch approval.
+The tests wait for each screen-root `TestTags` entry and assert controls by text/content description, including dialogs, menus, tabs, conditional states, and scrollable lists. They passed in cloud run `42577400016`: **35/35, 0 failures, 0 errors, 0 skipped**.
 
-**Status: NOT TESTED.**
+**Status: TESTED AND PASSED.**
 
-The 205-control inventory is corrected from 206: `CanonViewerScreen.kt` has one `TabRow` plus two `Tab` calls, not four tab occurrences. The executed suite remains 27 explicit controls and 178 screen-smoke-only controls. The new source is intended to reduce the 178 gap but cannot be credited until it passes cloud CI.
+The 205-control inventory remains corrected from 206: `CanonViewerScreen.kt` has one `TabRow` plus two `Tab` calls, not four tab occurrences. The new suite asserts or clicks 280 control-label occurrences across all 33 screens. The prior 27 explicit controls remain covered; the suite materially reduces the old 178 screen-smoke-only gap, but this report does not claim a one-to-one 205/205 runtime assertion count because labels and states can map many-to-one.
 
 ### 22.6 Accessibility and integration
 
@@ -594,8 +613,8 @@ The 205-control inventory is corrected from 206: `CanonViewerScreen.kt` has one 
 
 | Scope | Status | Basis |
 |---|---|---|
-| Android JVM/lint/instrumentation/Maestro at `b01ee3c` | CONDITIONALLY ACCEPTED | Run `42536627981` green; 20 JVM, 81 instrumentation, 2 Maestro |
-| Android new control-level tests | NOT TESTED | Source exists locally; not compiled or executed |
+| Android JVM/lint/instrumentation/Maestro at `44bfa15` | CONDITIONALLY ACCEPTED | Run `42577400016` green; 20 JVM, 116 instrumentation, 2 Maestro |
+| Android control-level tests | TESTED AND PASSED | 35/35 in run `42577400016` |
 | Backend safe suites | PASS | Run `42458161277`; 36 unit, 60 routes, 27 static, 19 regression |
 | Backend database integration | BLOCKED | 4 tests skipped; no safe test DB |
 | Worker contract tests | PASS | Run `42457744833`; 5/5 |
@@ -607,9 +626,9 @@ The 205-control inventory is corrected from 206: `CanonViewerScreen.kt` has one 
 
 ## 23. Consolidated final decision (2026-11-09)
 
-**Android automated scope:** **CONDITIONALLY ACCEPTED** — unchanged from Section 21. The exact tested revision remains `b01ee3c9094c71fb42a22e865b3bfc9ba078d518` with run `42536627981` green.
+**Android automated scope:** **CONDITIONALLY ACCEPTED** — the exact tested revision is `44bfa15c5e23d09e51a2d3c681c9cca3b219f844` with run `42577400016` green: 20/20 JVM, 116/116 instrumentation (including 35 control-level tests), 2/2 Maestro, lint 0 errors.
 
-**Full three-repository/n8n/integration scope:** **BLOCKED** — unconditional acceptance is not claimed. Backend database integration, n8n runtime execution, end-to-end Android→Backend→n8n→Supabase/DB→Worker→Backend→Android flow, the new Android control-level tests, and manual accessibility remain unexecuted or blocked.
+**Full three-repository/n8n/integration scope:** **BLOCKED** — unconditional acceptance is not claimed. Backend database integration, n8n runtime execution, end-to-end Android→Backend→n8n→Supabase/DB→Worker→Backend→Android flow, and manual accessibility remain unexecuted or blocked.
 
 **Overall decision:** **CONDITIONALLY ACCEPTED for the Android automated scope; BLOCKED for full integration acceptance.**
 
