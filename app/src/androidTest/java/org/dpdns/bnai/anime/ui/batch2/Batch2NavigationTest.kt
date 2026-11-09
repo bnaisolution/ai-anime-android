@@ -77,6 +77,12 @@ class Batch2NavigationTest {
     @Test
     fun drawerOpensAndExposesWorkspaceNavigation() {
         container.tokenManager.saveToken("batch2-token")
+        container.tokenManager.saveUserMeta(
+            userId = "batch2-owner",
+            workspaceId = "default-workspace",
+            role = "owner_admin",
+            email = "owner@test.invalid"
+        )
         launchGraph()
         composeRule.onNodeWithContentDescription("Open Navigation Drawer").performClick()
         composeRule.waitForIdle()
