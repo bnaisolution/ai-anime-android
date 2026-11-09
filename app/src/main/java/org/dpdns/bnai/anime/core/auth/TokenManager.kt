@@ -23,6 +23,10 @@ class TokenManager(context: Context? = null) {
 
     private val prefs: SharedPreferences? = (context ?: appContext)?.let { createSecurePreferences(it) }
     private val gson = Gson()
+    private var cachedUserId: String? = null
+    private var cachedWorkspaceId: String? = null
+    private var cachedUserRole: String? = null
+    private var cachedUserEmail: String? = null
 
     val sessionExpiredMessage: StateFlow<String?>
         get() = _sessionExpiredFlow.asStateFlow()
@@ -75,6 +79,10 @@ class TokenManager(context: Context? = null) {
         cachedToken = null
         cachedRefreshToken = null
         cachedExpiresAt = 0L
+        cachedUserId = null
+        cachedWorkspaceId = null
+        cachedUserRole = null
+        cachedUserEmail = null
         prefs?.edit()
             ?.remove(KEY_JWT)
             ?.remove(KEY_REFRESH_TOKEN)
@@ -93,6 +101,10 @@ class TokenManager(context: Context? = null) {
         cachedToken = null
         cachedRefreshToken = null
         cachedExpiresAt = 0L
+        cachedUserId = null
+        cachedWorkspaceId = null
+        cachedUserRole = null
+        cachedUserEmail = null
         cachedProjectId = null
         cachedProviderLabel = null
         prefs?.edit()?.clear()?.apply()
@@ -104,6 +116,10 @@ class TokenManager(context: Context? = null) {
         role: String? = "normal_user",
         email: String? = ""
     ) {
+        cachedUserId = userId
+        cachedWorkspaceId = workspaceId ?: "default-workspace"
+        cachedUserRole = role ?: "normal_user"
+        cachedUserEmail = email ?: ""
         prefs?.edit()
             ?.putString(KEY_USER_ID, userId ?: "")
             ?.putString(KEY_WORKSPACE_ID, workspaceId ?: "default-workspace")
@@ -112,10 +128,10 @@ class TokenManager(context: Context? = null) {
             ?.apply()
     }
 
-    fun getUserId(): String = prefs?.getString(KEY_USER_ID, "") ?: ""
-    fun getWorkspaceId(): String = prefs?.getString(KEY_WORKSPACE_ID, "default-workspace") ?: "default-workspace"
-    fun getUserEmail(): String = prefs?.getString(KEY_USER_EMAIL, "") ?: ""
-    fun getUserRole(): String = prefs?.getString(KEY_USER_ROLE, "normal_user") ?: "normal_user"
+    fun getUserId(): String = cachedUserId ?: prefs?.getString(KEY_USER_ID, "") ?: ""
+    fun getWorkspaceId(): String = cachedWorkspaceId ?: prefs?.getString(KEY_WORKSPACE_ID, "default-workspace") ?: "default-workspace"
+    fun getUserEmail(): String = cachedUserEmail ?: prefs?.getString(KEY_USER_EMAIL, "") ?: ""
+    fun getUserRole(): String = cachedUserRole ?: prefs?.getString(KEY_USER_ROLE, "normal_user") ?: "normal_user"
     fun isOwner(): Boolean = getUserRole().lowercase() in listOf("owner", "owner_admin", "admin")
 
     fun notifySessionExpired(message: String = "Your session has expired. Please sign in again.") {
