@@ -267,6 +267,13 @@ data class SystemPromptDto(
     val title: String,
     val visual_medium: String = "ANIME",
     val prompt_category: String? = "BIBLE",
+    val genre: String? = null,
+    val format: String? = null,
+    val model_hint: String? = null,
+    val tags: List<String> = emptyList(),
+    val is_favorite: Boolean = false,
+    val is_archived: Boolean = false,
+    val version: Int = 1,
     val prompt_text: String,
     val is_default: Boolean? = false
 )
@@ -276,8 +283,26 @@ data class CreateSystemPromptRequest(
     val title: String,
     val visual_medium: String,
     val prompt_category: String = "BIBLE",
+    val genre: String? = null,
+    val format: String? = null,
+    val model_hint: String? = null,
+    val tags: List<String> = emptyList(),
+    val is_favorite: Boolean = false,
     val prompt_text: String,
     val set_active: Boolean = true
+)
+
+data class UpdateSystemPromptRequest(
+    val title: String? = null,
+    val visual_medium: String? = null,
+    val prompt_category: String? = null,
+    val genre: String? = null,
+    val format: String? = null,
+    val model_hint: String? = null,
+    val tags: List<String>? = null,
+    val is_favorite: Boolean? = null,
+    val is_archived: Boolean? = null,
+    val prompt_text: String? = null
 )
 
 data class CustomGpuConfigDto(
@@ -495,10 +520,24 @@ interface AnimeApiService {
     suspend fun getLedgerSummary(@Query("project_id") projectId: String): Response<ApiEnvelope<JsonMap>>
 
     @GET("v1/anime/prompts")
-    suspend fun getSystemPrompts(@Query("project_id") projectId: String? = null): Response<ApiEnvelope<List<SystemPromptDto>>>
+    suspend fun getSystemPrompts(
+        @Query("project_id") projectId: String? = null,
+        @Query("prompt_category") promptCategory: String? = null,
+        @Query("q") query: String? = null,
+        @Query("is_favorite") favoritesOnly: Boolean? = null
+    ): Response<ApiEnvelope<List<SystemPromptDto>>>
 
     @POST("v1/anime/prompts")
     suspend fun createSystemPrompt(@Body body: CreateSystemPromptRequest): Response<ApiEnvelope<SystemPromptDto>>
+
+    @PATCH("v1/anime/prompts/{promptId}")
+    suspend fun updateSystemPrompt(
+        @Path("promptId") promptId: String,
+        @Body body: UpdateSystemPromptRequest
+    ): Response<ApiEnvelope<SystemPromptDto>>
+
+    @POST("v1/anime/prompts/{promptId}/favorite")
+    suspend fun togglePromptFavorite(@Path("promptId") promptId: String): Response<ApiEnvelope<SystemPromptDto>>
 
     @DELETE("v1/anime/prompts/{promptId}")
     suspend fun deleteSystemPrompt(@Path("promptId") promptId: String): Response<ApiEnvelope<JsonMap>>

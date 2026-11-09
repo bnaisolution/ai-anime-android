@@ -28,6 +28,7 @@ import org.dpdns.bnai.anime.ui.designsystem.*
 import org.dpdns.bnai.anime.ui.testing.TestTags
 
 private val CATEGORIES = listOf("BIBLE", "EPISODE", "IMAGE", "AI_DIRECTOR")
+private val MEDIA_OPTIONS = listOf("ANIME", "REAL_HUMAN", "MANHWA", "3D", "HYBRID")
 
 private val SYSTEM_DEFAULTS = mapOf(
     "BIBLE" to "You are the WF-01 Master Story Bible Architect. Build cohesive anime world rules, power scaling ceilings, and immutable character anchors.",
@@ -79,6 +80,9 @@ fun PromptStudioScreen() {
     }
 
     var savedPrompts by remember { mutableStateOf<List<SystemPromptDto>>(emptyList()) }
+    var selectedMedium by remember { mutableStateOf("ANIME") }
+    var searchQuery by remember { mutableStateOf("") }
+    var favoritesOnly by remember { mutableStateOf(false) }
     var isSaving by remember { mutableStateOf(false) }
     var pendingTabSwitch by remember { mutableStateOf<Int?>(null) }
     var showResetConfirm by remember { mutableStateOf(false) }
@@ -193,6 +197,37 @@ fun PromptStudioScreen() {
         }
 
         StandardCard {
+            SectionHeader(title = "Master Prompt Library")
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                OutlinedButton(
+                    onClick = {
+                        val idx = MEDIA_OPTIONS.indexOf(selectedMedium)
+                        selectedMedium = MEDIA_OPTIONS[(idx + 1) % MEDIA_OPTIONS.size]
+                    },
+                    modifier = Modifier.testTag(TestTags.PromptStudio.MEDIUM)
+                ) {
+                    Text("Medium: $selectedMedium")
+                }
+                FilterChip(
+                    selected = favoritesOnly,
+                    onClick = { favoritesOnly = !favoritesOnly },
+                    label = { Text("Favorites") }
+                )
+            }
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = { searchQuery = it },
+                label = { Text("Search prompts, genres, and text") },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+
+        StandardCard {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -264,7 +299,7 @@ fun PromptStudioScreen() {
                                 projectId = pid,
                                 title = currentTitle.trim().ifBlank { "$currentCategory Prompt" },
                                 promptText = currentText.trim(),
-                                visualMedium = "ANIME",
+                                visualMedium = selectedMedium,
                                 promptCategory = currentCategory
                             )
                             isSaving = false
@@ -302,7 +337,15 @@ fun PromptStudioScreen() {
             }
         }
 
-        val categorySavedList = savedPrompts.filter { (it.prompt_category ?: "BIBLE").uppercase() == currentCategory }
+        val categorySavedList = savedPrompts.filter { prompt ->
+            val categoryMatches = (prompt.prompt_category ?: "BIBLE").uppercase() == currentCategory
+            val queryMatches = searchQuery.isBlank() ||
+                prompt.title.contains(searchQuery, ignoreCase = true) ||
+                prompt.prompt_text.contains(searchQuery, ignoreCase = true) ||
+                (prompt.genre ?: "").contains(searchQuery, ignoreCase = true)
+            val favoriteMatches = !favoritesOnly || prompt.is_favorite
+            categoryMatches && queryMatches && favoriteMatches
+        }
         SectionHeader(
             title = "Saved $currentCategory Prompts (${categorySavedList.size})",
             badgeText = currentCategory
@@ -334,10 +377,28 @@ fun PromptStudioScreen() {
                         Column(modifier = Modifier.weight(1f)) {
                             Text(item.title, fontWeight = FontWeight.Bold)
                             Text(
+                                text = "v${item.version} | ${item.genre ?: "Any genre"} | ${item.visual_medium}",
+                                fontSize = 11.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Text(
                                 text = item.prompt_text,
                                 maxLines = 2,
                                 fontSize = 12.sp,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        IconButton(onClick = {
+                            if (item.id.isBlank()) return@IconButton
+                            scope.launch {
+                                repository.togglePromptFavorite(item.id)
+                                loadPromptsForProject()
+                            }
+                        }) {
+                            Text(
+                                text = if (item.is_favorite) "\u2605" else "\u2606",
+                                fontSize = 20.sp,
+                                color = StudioTokens.Warning
                             )
                         }
                         IconButton(onClick = {

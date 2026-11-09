@@ -260,7 +260,10 @@ interface ProductionRepository : RepositoryContext {
 
 interface PromptRepository : RepositoryContext {
     suspend fun fetchSystemPrompts(
-        projectId: String = currentProjectId()
+        projectId: String = currentProjectId(),
+        promptCategory: String? = null,
+        query: String? = null,
+        favoritesOnly: Boolean? = null
     ): Resource<List<SystemPromptDto>> =
         throw UnsupportedOperationException("fetchSystemPrompts is not configured")
 
@@ -269,9 +272,25 @@ interface PromptRepository : RepositoryContext {
         title: String,
         promptText: String,
         visualMedium: String = "ANIME",
-        promptCategory: String = "BIBLE"
+        promptCategory: String = "BIBLE",
+        genre: String? = null,
+        format: String? = null,
+        modelHint: String? = null
     ): Resource<SystemPromptDto> =
         throw UnsupportedOperationException("saveSystemPrompt is not configured")
+
+    suspend fun updateSystemPrompt(
+        promptId: String,
+        title: String? = null,
+        promptText: String? = null,
+        visualMedium: String? = null,
+        promptCategory: String? = null,
+        isFavorite: Boolean? = null
+    ): Resource<SystemPromptDto> =
+        throw UnsupportedOperationException("updateSystemPrompt is not configured")
+
+    suspend fun togglePromptFavorite(promptId: String): Resource<SystemPromptDto> =
+        throw UnsupportedOperationException("togglePromptFavorite is not configured")
 
     suspend fun deletePrompt(promptId: String): Resource<JsonMap> =
         throw UnsupportedOperationException("deletePrompt is not configured")

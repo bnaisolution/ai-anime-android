@@ -161,4 +161,75 @@ class AnimeRepositoryBehaviorTest {
         assertTrue(result is Resource.Error)
         assertEquals(503, (result as Resource.Error).code)
     }
+
+    @Test
+    fun saveSystemPromptForwardsSelectedMediumAndCategory() = runBlocking {
+        server.enqueue(
+            MockResponse()
+                .setResponseCode(201)
+                .setBody(
+                    """{"data":{"id":"prompt-2","title":"Image","prompt_text":"Keyframe","prompt_category":"IMAGE","visual_medium":"MANHWA"}}"""
+                )
+        )
+
+        val result = repository.saveSystemPrompt(
+            projectId = "project-1",
+            title = "Image",
+            promptText = "Keyframe",
+            visualMedium = "MANHWA",
+            promptCategory = "IMAGE"
+        )
+
+        val recorded = server.takeRequest()
+        val body = recorded.body.readUtf8()
+        assertTrue(result is Resource.Success<*>)
+        assertEquals("POST", recorded.method)
+        assertEquals("/v1/anime/prompts", recorded.path)
+        assertTrue(body.contains("\"visual_medium\":\"MANHWA\""))
+        assertTrue(body.contains("\"prompt_category\":\"IMAGE\""))
+    }
+
+    @Test
+    fun updateSystemPromptUsesPatchAndMapsVersionedResponse() = runBlocking {
+        server.enqueue(
+            MockResponse()
+                .setResponseCode(200)
+                .setBody(
+                    """{"data":{"id":"prompt-1","title":"Renamed","prompt_text":"Updated","prompt_category":"BIBLE","visual_medium":"ANIME","is_favorite":true,"version":2}}"""
+                )
+        )
+
+        val result = repository.updateSystemPrompt(
+            promptId = "prompt-1",
+            title = "Renamed",
+            promptText = "Updated",
+            isFavorite = true
+        )
+
+        val recorded = server.takeRequest()
+        val body = recorded.body.readUtf8()
+        assertEquals("PATCH", recorded.method)
+        assertEquals("/v1/anime/prompts/prompt-1", recorded.path)
+        assertTrue(body.contains("\"title\":\"Renamed\""))
+        assertTrue(body.contains("\"is_favorite\":true"))
+        assertEquals(2, (result as Resource.Success<SystemPromptDto>).data.version)
+    }
+
+    @Test
+    fun togglePromptFavoritePostsToFavoritePath() = runBlocking {
+        server.enqueue(
+            MockResponse()
+                .setResponseCode(200)
+                .setBody(
+                    """{"data":{"id":"prompt-1","title":"Bible","prompt_text":"Write","prompt_category":"BIBLE","visual_medium":"ANIME","is_favorite":true,"version":1}}"""
+                )
+        )
+
+        val result = repository.togglePromptFavorite("prompt-1")
+
+        val recorded = server.takeRequest()
+        assertEquals("POST", recorded.method)
+        assertEquals("/v1/anime/prompts/prompt-1/favorite", recorded.path)
+        assertTrue((result as Resource.Success<SystemPromptDto>).data.is_favorite)
+    }
 }

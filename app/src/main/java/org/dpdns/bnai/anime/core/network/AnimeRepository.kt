@@ -677,9 +677,19 @@ class AnimeRepository(
         Resource.Error(e.localizedMessage ?: "Failed to load character reference history")
     }
 
-    override suspend fun fetchSystemPrompts(projectId: String): Resource<List<SystemPromptDto>> = withContext(Dispatchers.IO) {
+    override suspend fun fetchSystemPrompts(
+        projectId: String,
+        promptCategory: String?,
+        query: String?,
+        favoritesOnly: Boolean?
+    ): Resource<List<SystemPromptDto>> = withContext(Dispatchers.IO) {
         try {
-            val response = apiService.getSystemPrompts(projectId.takeIf { it.isNotBlank() })
+            val response = apiService.getSystemPrompts(
+                projectId = projectId.takeIf { it.isNotBlank() },
+                promptCategory = promptCategory,
+                query = query,
+                favoritesOnly = favoritesOnly
+            )
             if (response.isSuccessful) {
                 val prompts = response.body()?.data.orEmpty()
                 if (prompts.isEmpty()) Resource.Empty else Resource.Success(prompts)
@@ -696,7 +706,10 @@ class AnimeRepository(
         title: String,
         promptText: String,
         visualMedium: String,
-        promptCategory: String
+        promptCategory: String,
+        genre: String?,
+        format: String?,
+        modelHint: String?
     ): Resource<SystemPromptDto> = withContext(Dispatchers.IO) {
         try {
             val req = CreateSystemPromptRequest(
@@ -704,7 +717,10 @@ class AnimeRepository(
                 title = title,
                 prompt_text = promptText,
                 visual_medium = visualMedium,
-                prompt_category = promptCategory
+                prompt_category = promptCategory,
+                genre = genre,
+                format = format,
+                model_hint = modelHint
             )
             val response = apiService.createSystemPrompt(req)
             if (response.isSuccessful && response.body()?.data != null) {
@@ -714,6 +730,46 @@ class AnimeRepository(
             }
         } catch (e: Exception) {
             Resource.Error(e.localizedMessage ?: "Failed to save prompt")
+        }
+    }
+
+    override suspend fun updateSystemPrompt(
+        promptId: String,
+        title: String?,
+        promptText: String?,
+        visualMedium: String?,
+        promptCategory: String?,
+        isFavorite: Boolean?
+    ): Resource<SystemPromptDto> = withContext(Dispatchers.IO) {
+        try {
+            val req = UpdateSystemPromptRequest(
+                title = title,
+                prompt_text = promptText,
+                visual_medium = visualMedium,
+                prompt_category = promptCategory,
+                is_favorite = isFavorite
+            )
+            val response = apiService.updateSystemPrompt(promptId, req)
+            if (response.isSuccessful && response.body()?.data != null) {
+                Resource.Success(response.body()!!.data!!)
+            } else {
+                Resource.Error("Failed to update prompt (${response.code()})", response.code())
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.localizedMessage ?: "Failed to update prompt")
+        }
+    }
+
+    override suspend fun togglePromptFavorite(promptId: String): Resource<SystemPromptDto> = withContext(Dispatchers.IO) {
+        try {
+            val response = apiService.togglePromptFavorite(promptId)
+            if (response.isSuccessful && response.body()?.data != null) {
+                Resource.Success(response.body()!!.data!!)
+            } else {
+                Resource.Error("Failed to favorite prompt (${response.code()})", response.code())
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.localizedMessage ?: "Failed to favorite prompt")
         }
     }
 

@@ -68,6 +68,9 @@ object TestTags {
         const val TAB_PREFIX = "screen.prompt_studio.tab"
         const val TITLE_FIELD = "screen.prompt_studio.title"
         const val TEXT_FIELD = "screen.prompt_studio.text"
+        const val MEDIUM = "screen.prompt_studio.medium"
+        const val SEARCH = "screen.prompt_studio.search"
+        const val FAVORITES = "screen.prompt_studio.favorites"
     }
 
     object Settings {
