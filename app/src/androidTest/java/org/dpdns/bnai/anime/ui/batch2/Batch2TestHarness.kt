@@ -473,12 +473,12 @@ internal fun batch2RecordingRepository(
                     "submitQuickImage", "submitQuickVideo" -> Resource.Success(
                         SubmitCommandResultDto(status = "QUEUED", command_id = "quick-cmd")
                     )
-                    "cancelJobSync" -> Resource.Success(emptyMap())
+                    "cancelJobSync" -> Resource.Success(emptyMap<String, Any?>())
                     "updateBudgetLimit" -> Resource.Success(mapOf("budget_ceiling" to argList.lastOrNull()))
                     "updateSceneSync" -> Resource.Success(
                         SceneDto(id = argList.getOrNull(2) as? String ?: "scene-1")
                     )
-                    "deleteSystemPrompt" -> Resource.Success(emptyMap())
+                    "deleteSystemPrompt" -> Resource.Success(emptyMap<String, Any?>())
                     "createProjectSync" -> Resource.Success(
                         ProjectDto(
                             id = "created-project",
