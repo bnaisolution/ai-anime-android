@@ -516,6 +516,15 @@ internal fun batch2RecordingRepository(
                             prompt_category = argList.getOrNull(4) as? String
                         )
                     )
+                    "updateSystemPrompt" -> Resource.Success(
+                        SystemPromptDto(
+                            id = argList.getOrNull(0) as? String ?: "prompt-1",
+                            title = argList.getOrNull(1) as? String ?: "Updated Prompt",
+                            prompt_text = argList.getOrNull(2) as? String ?: "",
+                            visual_medium = argList.getOrNull(3) as? String ?: "ANIME",
+                            prompt_category = argList.getOrNull(4) as? String
+                        )
+                    )
                     "submitStudioCommand" -> Resource.Success(
                         SubmitCommandResultDto(status = "QUEUED", command_id = "cmd-batch2")
                     )

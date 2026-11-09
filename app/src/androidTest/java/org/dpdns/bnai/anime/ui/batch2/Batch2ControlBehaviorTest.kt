@@ -122,8 +122,9 @@ class Batch2ControlBehaviorTest {
             .assertIsEnabled()
             .performSemanticsAction(SemanticsActions.OnClick)
 
-        waitForCall(container, "saveSystemPrompt")
-        val call = container.recorder.lastCall("saveSystemPrompt")
+        waitForCall(container, "updateSystemPrompt")
+        val call = container.recorder.lastCall("updateSystemPrompt")
+        assertEquals("prompt-1", call?.args?.get(0))
         assertEquals("Edited prompt", call?.args?.get(2))
         assertEquals("BIBLE", call?.args?.get(4))
     }

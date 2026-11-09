@@ -80,6 +80,7 @@ fun PromptStudioScreen() {
     }
 
     var savedPrompts by remember { mutableStateOf<List<SystemPromptDto>>(emptyList()) }
+    val promptIdByCat = remember { mutableStateMapOf<String, String>() }
     var selectedMedium by remember { mutableStateOf("ANIME") }
     var searchQuery by remember { mutableStateOf("") }
     var favoritesOnly by remember { mutableStateOf(false) }
@@ -105,10 +106,13 @@ fun PromptStudioScreen() {
                     savedPrompts = res.data
                     CATEGORIES.forEach { cat ->
                         val match = res.data.firstOrNull { (it.prompt_category ?: "BIBLE").uppercase() == cat }
-                        if (match != null && baselineByCat[cat] == SYSTEM_DEFAULTS[cat]) {
-                            titlesByCat[cat] = match.title
-                            textByCat[cat] = match.prompt_text
-                            baselineByCat[cat] = match.prompt_text
+                        if (match != null) {
+                            promptIdByCat[cat] = match.id
+                            if (baselineByCat[cat] == SYSTEM_DEFAULTS[cat]) {
+                                titlesByCat[cat] = match.title
+                                textByCat[cat] = match.prompt_text
+                                baselineByCat[cat] = match.prompt_text
+                            }
                         }
                     }
                 }
@@ -295,15 +299,28 @@ fun PromptStudioScreen() {
                         val pid = repository.currentProjectId()
                         isSaving = true
                         scope.launch {
-                            val res = repository.saveSystemPrompt(
-                                projectId = pid,
-                                title = currentTitle.trim().ifBlank { "$currentCategory Prompt" },
-                                promptText = currentText.trim(),
-                                visualMedium = selectedMedium,
-                                promptCategory = currentCategory
-                            )
+                            val title = currentTitle.trim().ifBlank { "$currentCategory Prompt" }
+                            val existingId = promptIdByCat[currentCategory]
+                            val res = if (existingId.isNullOrBlank()) {
+                                repository.saveSystemPrompt(
+                                    projectId = pid,
+                                    title = title,
+                                    promptText = currentText.trim(),
+                                    visualMedium = selectedMedium,
+                                    promptCategory = currentCategory
+                                )
+                            } else {
+                                repository.updateSystemPrompt(
+                                    promptId = existingId,
+                                    title = title,
+                                    promptText = currentText.trim(),
+                                    visualMedium = selectedMedium,
+                                    promptCategory = currentCategory
+                                )
+                            }
                             isSaving = false
                             if (res is Resource.Success) {
+                                promptIdByCat[currentCategory] = res.data.id
                                 baselineByCat[currentCategory] = currentText.trim()
                                 editModeByCat[currentCategory] = false
                                 loadPromptsForProject()
@@ -363,6 +380,7 @@ fun PromptStudioScreen() {
             categorySavedList.forEach { item ->
                 StandardCard(
                     onClick = {
+                        promptIdByCat[currentCategory] = item.id
                         titlesByCat[currentCategory] = item.title
                         textByCat[currentCategory] = item.prompt_text
                         baselineByCat[currentCategory] = item.prompt_text
