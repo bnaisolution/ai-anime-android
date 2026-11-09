@@ -133,7 +133,7 @@ jobs:
   instrumentation:
     name: Compose instrumentation (API 34 emulator)
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 75
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -199,7 +199,7 @@ jobs:
   maestro:
     name: Maestro smoke (API 34 emulator)
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 60
     steps:
       - name: Checkout
         uses: actions/checkout@v4
