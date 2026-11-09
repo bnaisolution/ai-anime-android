@@ -233,6 +233,7 @@ jobs:
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
           script: |
+            adb shell settings put global hide_error_dialogs 1
             ./gradlew installDebug --no-daemon --stacktrace
             curl -fLsS --retry 5 --retry-delay 5 --retry-all-errors "https://get.maestro.mobile.dev" -o /tmp/install-maestro.sh
             bash /tmp/install-maestro.sh

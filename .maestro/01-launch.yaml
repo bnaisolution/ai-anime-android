@@ -5,6 +5,7 @@ appId: org.dpdns.bnai.anime
 - tapOn:
     text: "Wait"
     optional: true
+    waitUntilVisible: true
 - extendedWaitUntil:
     visible: "AI Cinematic Anime Studio"
     timeout: 60000
