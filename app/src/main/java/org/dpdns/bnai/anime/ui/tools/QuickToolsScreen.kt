@@ -110,7 +110,7 @@ fun QuickToolsScreen(
                 onValueChange = { promptText = it },
                 label = { Text("Visual Prompt") },
                 minLines = 3,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth().testTag(TestTags.QuickTools.PROMPT)
             )
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 OutlinedTextField(
@@ -157,7 +157,7 @@ fun QuickToolsScreen(
                         }
                     }
                 },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth().testTag(TestTags.QuickTools.GENERATE)
             )
         }
 

@@ -91,6 +91,11 @@ object TestTags {
         const val REGENERATE = "screen.episodes.regenerate"
     }
 
+    object QuickTools {
+        const val PROMPT = "screen.quick_tools.prompt"
+        const val GENERATE = "screen.quick_tools.generate"
+    }
+
     object Owner {
         const val EMERGENCY_STOP = "screen.owner.emergency_stop"
     }

@@ -4,7 +4,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasScrollAction
-import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithContentDescription
@@ -121,7 +120,7 @@ class Batch2FullControlCoverageTest {
     }
 
     private fun clickDesc(description: String) {
-        composeRule.onAllNodesWithContentDescription(description)[0].performClick()
+        composeRule.onAllNodesWithContentDescription(description, useUnmergedTree = true)[0].performClick()
         composeRule.waitForIdle()
     }
 
@@ -175,7 +174,7 @@ class Batch2FullControlCoverageTest {
         assertText("Pending Proposals")
         assertText("Search canon facts or proposals...", substring = true)
 
-        clickText("Add Canon Fact")
+        clickDesc("Add Canon Fact")
         waitForText("➕ Add Canon Fact")
         assertText("Immutable Story / Character Fact")
         assertText("Commit Fact")
@@ -253,7 +252,7 @@ class Batch2FullControlCoverageTest {
         assertText("Filter Mysteries...", substring = true)
         assertText("Generate Mysteries with AI")
 
-        clickText("Add via AI")
+        clickDesc("Add Lore")
         waitForText("✨ Add / Edit World Wiki via AI")
         assertText("Describe new Mysteries entry", substring = true)
         assertText("Generate & Save")
@@ -388,7 +387,8 @@ class Batch2FullControlCoverageTest {
         waitForText("Preview Prompt")
         assertText("Preview Prompt")
 
-        clickText("Regenerate...")
+        scrollToText("Regenerate...")
+        clickTag(TestTags.EpisodePlanner.REGENERATE)
         waitForText("Regenerate Episode 2?")
         assertText("Regenerate Episode")
         assertText("Cancel")
@@ -739,7 +739,7 @@ class Batch2FullControlCoverageTest {
         assertText("Close")
         clickText("Close")
 
-        clickClickableText("Create Project")
+        clickTag(TestTags.Studio.CREATE_PROJECT)
         waitForText("Project Title")
         assertText("Project Title")
         assertText("Create")
@@ -758,8 +758,9 @@ class Batch2FullControlCoverageTest {
         assertText("Aspect Ratio")
         assertText("Generate Ad-Hoc Image")
 
-        composeRule.onAllNodes(hasSetTextAction())[0].performTextInput("A city at dusk")
-        clickText("Generate Ad-Hoc Image")
+        composeRule.onNodeWithTag(TestTags.QuickTools.PROMPT).performTextInput("A city at dusk")
+        scrollToText("Generate Ad-Hoc Image")
+        clickTag(TestTags.QuickTools.GENERATE)
         waitForText("Save Asset to Project")
         assertText("Save Asset to Project")
     }
@@ -769,8 +770,9 @@ class Batch2FullControlCoverageTest {
         val state = Batch2FakeState().apply { commandStatus = "QUEUED" }
         setContent(fakeContainer(state)) { QuickToolsScreen() }
         waitForTag(TestTags.Screen.QUICK_TOOLS)
-        composeRule.onAllNodes(hasSetTextAction())[0].performTextInput("A city at dusk")
-        clickText("Generate Ad-Hoc Image")
+        composeRule.onNodeWithTag(TestTags.QuickTools.PROMPT).performTextInput("A city at dusk")
+        scrollToText("Generate Ad-Hoc Image")
+        clickTag(TestTags.QuickTools.GENERATE)
         waitForText("Cancel Remote Job")
         assertText("Cancel Remote Job")
     }
