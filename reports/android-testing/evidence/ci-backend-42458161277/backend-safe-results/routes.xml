@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<testsuites>
+	<testcase name="protected project route rejects a missing JWT with 401" time="0.405106" classname="test"/>
+	<testcase name="protected project route rejects an invalid JWT signature with 401" time="0.097997" classname="test"/>
+	<testcase name="protected project route rejects an expired JWT with 401" time="0.089496" classname="test"/>
+	<testcase name="protected project route rejects a JWT with the wrong issuer or audience" time="0.089990" classname="test"/>
+	<testcase name="a valid authenticated owner can read their project" time="0.082875" classname="test"/>
+	<testcase name="a valid authenticated user cannot read another user's project" time="0.073443" classname="test"/>
+	<testcase name="a null-owner project is denied and is never auto-claimed" time="0.063355" classname="test"/>
+	<testcase name="x-user-id and x-project-id headers cannot override the verified JWT identity or route project" time="0.075935" classname="test"/>
+	<testcase name="body user_id cannot override the verified command owner" time="0.071387" classname="test"/>
+	<testcase name="unauthorized project command execution is rejected before the command is inserted" time="0.082835" classname="test"/>
+	<testcase name="valid owner command execution uses the JWT subject as user_id" time="0.076977" classname="test"/>
+	<testcase name="unauthorized project cancellation is rejected by the project guard" time="0.094298" classname="test"/>
+	<testcase name="fake password login is disabled and never issues a token or writes to the database" time="0.058533" classname="test"/>
+	<testcase name="authenticated /me returns the verified JWT identity" time="0.050741" classname="test"/>
+	<testcase name="owner_admin is granted only by the configured email allowlist, not by the subject or role claim" time="0.054728" classname="test"/>
+	<testcase name="a trusted_service JWT cannot authenticate as a user" time="0.050736" classname="test"/>
+	<testcase name="infrastructure routes require a JWT and work for the authenticated user" time="0.060513" classname="test"/>
+	<testcase name="project-scoped prompt routes enforce project ownership" time="0.067775" classname="test"/>
+	<testcase name="health endpoint reports database status and returns X-Request-Id" time="0.492231" classname="test"/>
+	<testcase name="command submission rejects a request without authentication" time="0.141327" classname="test"/>
+	<testcase name="valid command submission returns 202 with command id and mapped workflow" time="0.094917" classname="test"/>
+	<testcase name="incident list and acknowledge require authentication" time="0.211472" classname="test"/>
+	<testcase name="normal users cannot list incidents or infer another user incident" time="0.007589" classname="test"/>
+	<testcase name="normal users cannot acknowledge an incident even when they know its id" time="0.005700" classname="test"/>
+	<testcase name="normal-user incident access is fail-closed because no safe ownership mapping exists" time="0.003736" classname="test"/>
+	<testcase name="owner/admin can list incidents" time="0.008361" classname="test"/>
+	<testcase name="owner/admin acknowledge verifies the incident exists before updating" time="0.008714" classname="test"/>
+	<testcase name="owner/admin acknowledge returns 404 and does not update a nonexistent incident" time="0.006776" classname="test"/>
+	<testcase name="incident stats are owner/admin only and use the verified identity" time="0.006995" classname="test"/>
+	<testcase name="incident database errors are sanitized" time="0.007205" classname="test"/>
+	<testcase name="Lore read route rejects an unauthenticated request" time="0.484935" classname="test"/>
+	<testcase name="Lore read route rejects the all-zero project uuid" time="0.116490" classname="test"/>
+	<testcase name="Lore read route rejects cross-project access" time="0.076614" classname="test"/>
+	<testcase name="Lore quota returns a standard data envelope for the owner" time="0.061835" classname="test"/>
+	<testcase name="project creation stores the JWT subject and ignores a body user_id override" time="0.077662" classname="test"/>
+	<testcase name="actual anime module registration exposes every registered-elsewhere route" time="0.470623" classname="test"/>
+	<testcase name="Lore router defines all 28 expected method+path routes exactly once" time="0.129690" classname="test"/>
+	<testcase name="GET project detail is served by the registered reads router" time="0.070987" classname="test"/>
+	<testcase name="file deletion is scoped to the caller workspace" time="0.308626" classname="test"/>
+	<testcase name="file deletion without a workspace scope is rejected before touching storage" time="0.016069" classname="test"/>
+	<testcase name="normal users cannot deploy n8n workflows" time="0.006771" classname="test"/>
+	<testcase name="owner deployment requires an explicit n8n API key and has no bundled fallback" time="0.005663" classname="test"/>
+	<testcase name="owner deployment uses the configured n8n API key" time="0.008011" classname="test"/>
+	<testcase name="public system liveness exposes only minimal availability information" time="0.203915" classname="test"/>
+	<testcase name="detailed health requires authentication" time="0.004227" classname="test"/>
+	<testcase name="detailed health rejects authenticated non-owner users, including spoofed identity headers" time="0.004920" classname="test"/>
+	<testcase name="detailed health sanitizes database errors for the owner" time="0.004166" classname="test"/>
+	<testcase name="detailed health is available to the owner when healthy" time="0.006017" classname="test"/>
+	<testcase name="stable version requires authentication and does not leak database errors" time="0.006084" classname="test"/>
+	<testcase name="stable version is readable by an authenticated user" time="0.008502" classname="test"/>
+	<testcase name="crash reports require authentication and never echo crash details" time="0.009746" classname="test"/>
+	<testcase name="crash report persistence errors are sanitized" time="0.006610" classname="test"/>
+	<testcase name="Telegram media proxy rejects missing authentication for private media" time="0.265180" classname="test"/>
+	<testcase name="Telegram media proxy rejects an authenticated user who does not own the project" time="0.066659" classname="test"/>
+	<testcase name="Telegram media proxy rejects caller-supplied bot_token without reflecting it" time="0.043658" classname="test"/>
+	<testcase name="Telegram media proxy rejects unsafe Telegram file paths before a second request" time="0.045058" classname="test"/>
+	<testcase name="Telegram media proxy does not follow upstream redirects" time="0.043465" classname="test"/>
+	<testcase name="Telegram media proxy serves private media only to the owning authenticated user" time="0.044209" classname="test"/>
+	<testcase name="Telegram media proxy serves published master media without authentication" time="0.034043" classname="test"/>
+	<testcase name="Telegram media proxy returns 404 for an unknown asset and 503 when storage is unconfigured" time="0.067508" classname="test"/>
+	<!-- tests 60 -->
+	<!-- suites 0 -->
+	<!-- pass 60 -->
+	<!-- fail 0 -->
+	<!-- cancelled 0 -->
+	<!-- skipped 0 -->
+	<!-- todo 0 -->
+	<!-- duration_ms 2363.998623 -->
+</testsuites>

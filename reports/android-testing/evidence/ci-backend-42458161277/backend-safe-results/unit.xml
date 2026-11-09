@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<testsuites>
+	<testcase name="every CommandIntent maps to a workflow key" time="0.001280" classname="test"/>
+	<testcase name="CREATE_PROJECT maps to WF-01 (documented backend behavior)" time="0.000182" classname="test"/>
+	<testcase name="command body hash is stable across key order and changes with payload" time="0.000754" classname="test"/>
+	<testcase name="command status enum includes terminal statuses used by reconciliation" time="0.000112" classname="test"/>
+	<testcase name="exponential backoff is a future ISO timestamp" time="0.000428" classname="test"/>
+	<testcase name="callback HMAC validation accepts a correct signature" time="0.001855" classname="test"/>
+	<testcase name="callback HMAC validation rejects tampered payloads" time="0.000592" classname="test"/>
+	<testcase name="callback HMAC validation rejects timestamps outside the 5 minute window" time="0.000274" classname="test"/>
+	<testcase name="callback HMAC validation rejects replayed nonces" time="0.000351" classname="test"/>
+	<testcase name="AnimeError maps error codes to HTTP statuses" time="0.003037" classname="test"/>
+	<testcase name="animeErrorHandler returns the standard error envelope" time="0.088521" classname="test"/>
+	<testcase name="animeErrorHandler converts unknown errors to INTERNAL 500" time="0.005971" classname="test"/>
+	<testcase name="requireProjectRole rejects a request with no authenticated identity" time="0.001322" classname="test"/>
+	<testcase name="requireProjectRole rejects the all-zero project uuid" time="0.000390" classname="test"/>
+	<testcase name="requireProjectRole rejects a project owned by another user" time="0.000294" classname="test"/>
+	<testcase name="requireProjectRole allows the owner of an existing project" time="0.000194" classname="test"/>
+	<testcase name="requireProjectRole rejects a null-owner project without claiming it" time="0.000691" classname="test"/>
+	<testcase name="requireProjectRole enforces allowedRoles instead of hardcoding owner" time="0.000284" classname="test"/>
+	<testcase name="requireProjectRole rejects a spoofed x-user-id header" time="0.000373" classname="test"/>
+	<testcase name="requireProjectRole rejects conflicting project ids in path and query" time="0.000204" classname="test"/>
+	<testcase name="requireProjectRole rejects a query user_id identity override" time="0.000449" classname="test"/>
+	<testcase name="createProjectSynchronous generates the project id server-side and stores the owner" time="0.072636" classname="test"/>
+	<testcase name="createProjectSynchronous surfaces database failures as INTERNAL errors" time="0.000692" classname="test"/>
+	<testcase name="createProjectSynchronous does not accept a client-supplied id" time="0.000301" classname="test"/>
+	<testcase name="authorization denies a project that does not exist instead of failing open" time="0.048055" classname="test"/>
+	<testcase name="authorization denies a project lookup error instead of failing open" time="0.000195" classname="test"/>
+	<testcase name="authorization denies a normal user access to another user project" time="0.000174" classname="test"/>
+	<testcase name="authorization denies a normal user access to a null-owner project" time="0.000120" classname="test"/>
+	<testcase name="authorization allows a normal user to use their own project" time="0.000188" classname="test"/>
+	<testcase name="authorization allows the owner admin to use an existing project" time="0.000182" classname="test"/>
+	<testcase name="Telegram file id validation rejects unsafe or malformed values" time="0.001129" classname="test"/>
+	<testcase name="Telegram bot token validation never accepts client-shaped or missing values" time="0.000412" classname="test"/>
+	<testcase name="private and internal destination hosts are detected" time="0.006404" classname="test"/>
+	<testcase name="Telegram destination validation rejects unsafe URLs and redirects are not followed" time="0.000329" classname="test"/>
+	<testcase name="Telegram file paths cannot turn into arbitrary destinations" time="0.000448" classname="test"/>
+	<testcase name="media content types are limited to a safe allowlist" time="0.000190" classname="test"/>
+	<!-- tests 36 -->
+	<!-- suites 0 -->
+	<!-- pass 36 -->
+	<!-- fail 0 -->
+	<!-- cancelled 0 -->
+	<!-- skipped 0 -->
+	<!-- todo 0 -->
+	<!-- duration_ms 278.331144 -->
+</testsuites>

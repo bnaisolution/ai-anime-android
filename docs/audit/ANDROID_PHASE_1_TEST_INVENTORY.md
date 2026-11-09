@@ -40,7 +40,7 @@ Counts below are source occurrences in each screen file. “Actions” includes 
 | `AuthScreen.kt` | `auth` | 4 | 2 | 0 | 0 | 0 | 0 | 5 | `TestTags.Auth.EMAIL`, `TestTags.Auth.PASSWORD`, `TestTags.Auth.SUBMIT` |
 | `BibleScreen.kt` | `bible` | 2 | 7 | 0 | 0 | 0 | 2 | 20 | — |
 | `BudgetLedgerScreen.kt` | `budget_ledger` | 1 | 1 | 0 | 0 | 0 | 0 | 6 | — |
-| `CanonViewerScreen.kt` | `canon` | 6 | 2 | 1 | 0 | 3 | 4 | 10 | — |
+| `CanonViewerScreen.kt` | `canon` | 6 | 2 | 1 | 0 | 3 | 3 | 10 | — |
 | `CharacterDeepDiveScreen.kt` | `character_deep_dive` | 2 | 0 | 0 | 2 | 2 | 2 | 9 | — |
 | `CharacterDetailScreen.kt` | `character_detail` | 5 | 0 | 0 | 4 | 0 | 0 | 0 | — |
 | `CharacterListScreen.kt` | `characters` | 7 | 3 | 1 | 0 | 2 | 0 | 3 | — |

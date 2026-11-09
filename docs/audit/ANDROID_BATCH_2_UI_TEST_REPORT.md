@@ -4,6 +4,8 @@
 
 **Baseline:** `0ddea5c9d1c5a335f349366d24c37649b2879115`
 
+**Inventory correction (2026-11-09):** source-derived interactive controls are **205**, not 206; tabs are **14**, not 15. `CanonViewerScreen.kt` has one `TabRow` plus two `Tab` calls. See `ANDROID_BATCH_2_CONTROL_COVERAGE.md` and `ANDROID_PHASE_1_TEST_INVENTORY.md`.
+
 **Branch:** `main`
 
 **Scope:** Batch 2. Batch 3/4 work is reported separately. No backend, CPU Worker, n8n, Supabase, AI Assistant, production credential, or security changes were made.

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<testsuites>
+	<testcase name="X-Project-Id is only sent for a non-blank active project" time="0.000583" classname="test"/>
+	<testcase name="Bearer token is only sent for a non-blank token" time="0.000095" classname="test"/>
+	<testcase name="createProjectSync declares the canonical POST path" time="0.000101" classname="test"/>
+	<testcase name="Android JVM test dependencies and test sources are present" time="0.000775" classname="test"/>
+	<testcase name="worker exposes the FastAPI endpoints consumed by n8n workflows" time="0.000625" classname="test"/>
+	<testcase name="worker request schemas declare the contract fields" time="0.000158" classname="test"/>
+	<testcase name="worker has no literal Telegram bot token, AWS key, or GitHub token" time="0.000358" classname="test"/>
+	<testcase name="worker secrets are read from the environment" time="0.000229" classname="test"/>
+	<!-- tests 8 -->
+	<!-- suites 0 -->
+	<!-- pass 8 -->
+	<!-- fail 0 -->
+	<!-- cancelled 0 -->
+	<!-- skipped 0 -->
+	<!-- todo 0 -->
+	<!-- duration_ms 43.024255 -->
+</testsuites>

@@ -1,8 +1,10 @@
 # Android Batch 2 — Control Coverage
 
-**Status:** PARTIALLY IMPLEMENTED — 27 OF 206 SCREEN CONTROLS EXPLICITLY ASSERTED; 179 NOT INDIVIDUALLY ASSERTED; EXECUTION BLOCKED
+**Status:** PARTIALLY IMPLEMENTED — 27 OF 205 SCREEN CONTROLS EXPLICITLY ASSERTED; 178 NOT INDIVIDUALLY ASSERTED; EXECUTION BLOCKED
 
 **Baseline:** `0ddea5c9d1c5a335f349366d24c37649b2879115`
+
+**Correction (2026-11-09):** the source-derived total is **205**, not 206. `CanonViewerScreen.kt` contains one `TabRow` and two `Tab` calls (3 tab occurrences), not 4. The prior 206 total overcounted CanonViewer by one.
 
 ## Method
 
@@ -13,7 +15,7 @@ Controls are counted from the source-derived inventory in `docs/audit/ANDROID_PH
 - Dialogs: `AlertDialog`, `ConfirmationDialog`, `ModalBottomSheet` usage.
 - Menus: dropdown menus and menu items.
 - Tabs: `Tab`, `TabRow`, `ScrollableTabRow`.
-- Lists and state references are reported separately and are not included in the 206 interactive-control total.
+- Lists and state references are reported separately and are not included in the 205 interactive-control total.
 
 A control is marked `BLOCKED` when a control-level assertion exists but cannot run because instrumentation is blocked. A control is marked `NOT IMPLEMENTED` when no control-level assertion exists and only the screen smoke test is present.
 
@@ -25,10 +27,10 @@ A control is marked `BLOCKED` when a control-level assertion exists but cannot r
 | Fields | 56 |
 | Dialogs | 13 |
 | Menus | 23 |
-| Tabs | 15 |
-| **Interactive controls (actions + fields + dialogs + menus + tabs)** | **206** |
+| Tabs | 14 |
+| **Interactive controls (actions + fields + dialogs + menus + tabs)** | **205** |
 | Explicitly asserted screen controls | 27 |
-| Not individually asserted screen controls | 179 |
+| Not individually asserted screen controls | 178 |
 | List surfaces (separate) | 24 |
 | State references (separate) | 152 |
 
@@ -39,7 +41,7 @@ A control is marked `BLOCKED` when a control-level assertion exists but cannot r
 | PASS | 0 | No runtime UI execution occurred. |
 | FAIL | 0 | No runtime UI execution occurred. |
 | BLOCKED | 27 | Explicit test source exists; instrumentation execution blocked. |
-| NOT IMPLEMENTED | 179 | Screen smoke only; no control-level assertion. |
+| NOT IMPLEMENTED | 178 | Screen smoke only; no control-level assertion. |
 
 ## Explicitly asserted screen controls
 
@@ -75,7 +77,7 @@ A control is marked `BLOCKED` when a control-level assertion exists but cannot r
 
 ## Shared component controls
 
-These are not included in the 206 screen-control total.
+These are not included in the 205 screen-control total.
 
 | Component | Control | Assertion | Status |
 |---|---|---|---|
@@ -105,7 +107,7 @@ These are not included in the 206 screen-control total.
 | `AuthScreen.kt` | 4 | 2 | 0 | 0 | 0 | 6 | 3 | BLOCKED | 3 | NOT IMPLEMENTED |
 | `BibleScreen.kt` | 2 | 7 | 0 | 0 | 2 | 11 | 1 | BLOCKED | 10 | NOT IMPLEMENTED |
 | `BudgetLedgerScreen.kt` | 1 | 1 | 0 | 0 | 0 | 2 | 0 | BLOCKED | 2 | NOT IMPLEMENTED |
-| `CanonViewerScreen.kt` | 6 | 2 | 1 | 0 | 4 | 13 | 0 | BLOCKED | 13 | NOT IMPLEMENTED |
+| `CanonViewerScreen.kt` | 6 | 2 | 1 | 0 | 3 | 12 | 0 | BLOCKED | 12 | NOT IMPLEMENTED |
 | `CharacterDeepDiveScreen.kt` | 2 | 0 | 0 | 2 | 2 | 6 | 0 | BLOCKED | 6 | NOT IMPLEMENTED |
 | `CharacterDetailScreen.kt` | 5 | 0 | 0 | 4 | 0 | 9 | 0 | BLOCKED | 9 | NOT IMPLEMENTED |
 | `CharacterListScreen.kt` | 7 | 3 | 1 | 0 | 0 | 11 | 3 | BLOCKED | 8 | NOT IMPLEMENTED |
@@ -131,7 +133,7 @@ These are not included in the 206 screen-control total.
 | `VisionAnalysisScreen.kt` | 1 | 2 | 0 | 0 | 0 | 3 | 0 | BLOCKED | 3 | NOT IMPLEMENTED |
 | `WorkerManagerScreen.kt` | 1 | 0 | 0 | 0 | 0 | 1 | 0 | BLOCKED | 1 | NOT IMPLEMENTED |
 | `WorkflowManagerScreen.kt` | 1 | 0 | 0 | 0 | 0 | 1 | 0 | BLOCKED | 1 | NOT IMPLEMENTED |
-| **Total** | **99** | **56** | **13** | **23** | **15** | **206** | **27** | **BLOCKED** | **179** | **NOT IMPLEMENTED** |
+| **Total** | **99** | **56** | **13** | **23** | **14** | **205** | **27** | **BLOCKED** | **178** | **NOT IMPLEMENTED** |
 
 ## Notable control gaps
 
@@ -148,4 +150,12 @@ These are not included in the 206 screen-control total.
 
 ## Final control status
 
-**27 controls have explicit test source but are BLOCKED from execution; 179 controls are NOT IMPLEMENTED at control level. No control is marked PASS or FAIL.**
+**27 controls have explicit test source but are BLOCKED from execution; 178 controls are NOT IMPLEMENTED at control level. No control is marked PASS or FAIL.**
+
+## 2026-11-09 control-level expansion — implemented, not executed
+
+A new `Batch2FullControlCoverageTest.kt` source file contains 35 control-level test methods covering all 33 screens, with assertions/clicks for actions, fields, dialogs, menus, tabs, conditional states, and scrollable list controls. The recording fake repository was expanded to return realistic data for these screens.
+
+**Status: NOT TESTED.** The source has not been compiled, linted, or executed. Local Android builds remain blocked by the Termux host architecture and missing toolchain. Cloud execution requires explicit approval to push and dispatch the workflow.
+
+The corrected source-derived inventory remains **205** controls. The executed suite still credits only the 27 previously asserted controls; the 178 screen-smoke-only controls are not reclassified until the new tests pass in cloud CI. The label-to-test map is at `reports/android-testing/evidence/android-control-expansion-2026-11-09/CONTROL_ASSERTION_MAP.md`.

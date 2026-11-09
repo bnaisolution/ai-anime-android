@@ -12,17 +12,25 @@ import org.dpdns.bnai.anime.core.model.Episode
 import org.dpdns.bnai.anime.core.model.Project
 import org.dpdns.bnai.anime.core.network.AnimeApiService
 import org.dpdns.bnai.anime.core.network.AnimeRepositoryApi
+import org.dpdns.bnai.anime.core.network.ApiCommandRecordDto
 import org.dpdns.bnai.anime.core.network.ApprovalDecisionDto
 import org.dpdns.bnai.anime.core.network.CharacterDto
+import org.dpdns.bnai.anime.core.network.ClipDto
 import org.dpdns.bnai.anime.core.network.EpisodeDto
+import org.dpdns.bnai.anime.core.network.HealthResponseDto
+import org.dpdns.bnai.anime.core.network.JobDto
+import org.dpdns.bnai.anime.core.network.JsonMap
 import org.dpdns.bnai.anime.core.network.ProjectDto
+import org.dpdns.bnai.anime.core.network.ProjectOverviewDto
 import org.dpdns.bnai.anime.core.network.Resource
+import org.dpdns.bnai.anime.core.network.SceneDto
 import org.dpdns.bnai.anime.core.network.SubmitCommandResultDto
 import org.dpdns.bnai.anime.core.network.SystemPromptDto
 import org.dpdns.bnai.anime.ui.AppViewModelFactory
 import org.dpdns.bnai.anime.ui.LocalAppContainer
 
 internal const val BATCH2_PROJECT_ID = "batch2-project"
+private const val BATCH2_MEDIA_URL = "https://example.com/batch2-clip.mp4"
 
 internal fun batch2FakeRepository(): AnimeRepositoryApi =
     Proxy.newProxyInstance(
@@ -87,7 +95,31 @@ internal class Batch2Recorder {
         calls.lastOrNull { it.method == method }
 }
 
-internal fun batch2RecordingRepository(recorder: Batch2Recorder): AnimeRepositoryApi =
+internal class Batch2FakeState {
+    var commandStatus: String = "SUCCEEDED"
+    var commandResult: JsonMap = mapOf("media_url" to BATCH2_MEDIA_URL)
+    var jobsStatus: String = "FAILED"
+    var overviewActiveCommandId: String? = null
+}
+
+private fun batch2Job(fakeState: Batch2FakeState): JobDto =
+    JobDto(
+        id = "job-1",
+        project_id = BATCH2_PROJECT_ID,
+        intent = "SCENE_RENDER",
+        status = fakeState.jobsStatus,
+        episode_no = 1,
+        episode_state = mapOf("current_state" to "Rendering"),
+        pending_actions = listOf(mapOf("action" to "retry")),
+        attempt_count = 1,
+        max_attempts = 3,
+        created_at = "2026-01-01T00:00:00Z"
+    )
+
+internal fun batch2RecordingRepository(
+    recorder: Batch2Recorder,
+    fakeState: Batch2FakeState = Batch2FakeState()
+): AnimeRepositoryApi =
     Proxy.newProxyInstance(
         AnimeRepositoryApi::class.java.classLoader,
         arrayOf(AnimeRepositoryApi::class.java)
@@ -119,7 +151,24 @@ internal fun batch2RecordingRepository(recorder: Batch2Recorder): AnimeRepositor
                                 id = "episode-1",
                                 episodeNumber = 1,
                                 title = "Pilot",
-                                status = "READY"
+                                status = "READY",
+                                synopsis = "First episode"
+                            )
+                        )
+                    )
+                    "fetchEpisodesRaw" -> Resource.Success(
+                        listOf(
+                            EpisodeDto(
+                                id = "episode-1",
+                                project_id = BATCH2_PROJECT_ID,
+                                episode_no = 1,
+                                title = "Pilot",
+                                synopsis = "First episode",
+                                current_state = "READY",
+                                status = "READY",
+                                qc_status = "APPROVED",
+                                script_json = mapOf("raw_script" to "INT. STUDIO - DAY"),
+                                master_video_url = BATCH2_MEDIA_URL
                             )
                         )
                     )
@@ -161,8 +210,8 @@ internal fun batch2RecordingRepository(recorder: Batch2Recorder): AnimeRepositor
                             "telegram_chat_id" to ""
                         )
                     )
-                    "fetchProjectOverviewRaw" -> Resource.Success(
-                        mapOf(
+                    "fetchProjectOverviewRaw" -> {
+                        val overview = mutableMapOf<String, Any?>(
                             "project" to mapOf(
                                 "id" to BATCH2_PROJECT_ID,
                                 "name" to "Batch 2 Project",
@@ -172,7 +221,52 @@ internal fun batch2RecordingRepository(recorder: Batch2Recorder): AnimeRepositor
                             "genre" to "Action / Fantasy",
                             "visual_medium" to "ANIME",
                             "auto_approve" to false,
-                            "cover_image_url" to ""
+                            "cover_image_url" to "",
+                            "budget_ceiling" to 1000,
+                            "canon_status" to "LOCKED",
+                            "continuity_status" to "CHECKED",
+                            "episodes_count" to 1,
+                            "characters_count" to 1,
+                            "scenes_count" to 1,
+                            "active_jobs_count" to 0,
+                            "pending_approvals_count" to 1,
+                            "pending_actions_count" to 0,
+                            "counts" to mapOf(
+                                "episodes_count" to 1,
+                                "characters_count" to 1,
+                                "scenes_count" to 1,
+                                "active_jobs_count" to 0,
+                                "pending_approvals_count" to 1,
+                                "pending_actions_count" to 0
+                            )
+                        )
+                        fakeState.overviewActiveCommandId?.let { cid ->
+                            overview["status"] = mapOf("active_command_id" to cid)
+                        }
+                        Resource.Success(overview)
+                    }
+                    "fetchProjectOverview" -> Resource.Success(
+                        ProjectOverviewDto(
+                            project = ProjectDto(id = BATCH2_PROJECT_ID, name = "Batch 2 Project"),
+                            stats = mapOf(
+                                "total_episodes" to 1,
+                                "total_characters" to 1,
+                                "total_scenes" to 1,
+                                "active_jobs_count" to 0
+                            ),
+                            episodes_count = 1,
+                            characters_count = 1,
+                            pending_approvals = 1,
+                            active_jobs = 0,
+                            canon_status = "LOCKED",
+                            continuity_status = "CHECKED"
+                        )
+                    )
+                    "fetchAdminLedgerSummary" -> Resource.Success(
+                        mapOf(
+                            "total_reserved" to 10,
+                            "total_consumed" to 20,
+                            "total_released" to 30
                         )
                     )
                     "fetchCharacters" -> Resource.Success(
@@ -187,7 +281,204 @@ internal fun batch2RecordingRepository(recorder: Batch2Recorder): AnimeRepositor
                             )
                         )
                     )
-                    "fetchJobs", "fetchCommandStatus", "fetchCategoryItems" -> Resource.Empty
+                    "fetchCharactersRaw" -> Resource.Success(
+                        listOf(
+                            CharacterDto(
+                                id = "char-1",
+                                character_code = "CHAR_001",
+                                name = "Aki",
+                                role = "Protagonist",
+                                canon_lock_status = "LOCKED",
+                                visual_dna = mapOf("eye_color" to "Blue", "hair_style" to "Silver"),
+                                voice_config = mapOf("provider" to "Svara TTS")
+                            )
+                        )
+                    )
+                    "fetchCharacterReferenceHistory" -> Resource.Success(
+                        listOf(
+                            mapOf(
+                                "id" to "ref-1",
+                                "image_url" to "https://example.com/ref.png",
+                                "status" to "VERIFIED"
+                            )
+                        )
+                    )
+                    "fetchCategoryItems" -> Resource.Empty
+                    "fetchCanon" -> Resource.Success(
+                        listOf(
+                            mapOf(
+                                "id" to "canon-1",
+                                "fact" to "The sky is red",
+                                "locked" to true
+                            )
+                        )
+                    )
+                    "fetchCanonProposals" -> Resource.Success(
+                        listOf(
+                            mapOf(
+                                "id" to "proposal-1",
+                                "status" to "PENDING",
+                                "exact_diff" to mapOf(
+                                    "old_value" to "Blue eyes",
+                                    "new_value" to "Green eyes"
+                                )
+                            )
+                        )
+                    )
+                    "fetchContinuity" -> Resource.Success(
+                        listOf(
+                            mapOf(
+                                "id" to "continuity-1",
+                                "status" to "CRITICAL",
+                                "issue" to "Dead character speaks",
+                                "checked_at" to "2026-01-01T00:00:00Z"
+                            )
+                        )
+                    )
+                    "fetchJobs" -> Resource.Success(listOf(batch2Job(fakeState)))
+                    "fetchJobDetail" -> Resource.Success(batch2Job(fakeState))
+                    "fetchRetries" -> Resource.Success(
+                        listOf(
+                            mapOf(
+                                "action_type" to "SCENE_RENDER",
+                                "status" to "RETRY_SCHEDULED",
+                                "attempt_count" to 1,
+                                "max_attempts" to 3,
+                                "ready_at" to "2026-01-01T00:00:00Z"
+                            )
+                        )
+                    )
+                    "fetchProjectMedia" -> Resource.Success(
+                        mapOf(
+                            "clips" to listOf(
+                                mapOf(
+                                    "id" to "clip-1",
+                                    "scene_order" to 1,
+                                    "clip_url" to BATCH2_MEDIA_URL,
+                                    "status" to "READY"
+                                )
+                            ),
+                            "character_refs" to listOf(
+                                mapOf(
+                                    "id" to "char-1",
+                                    "name" to "Aki",
+                                    "image_url" to "https://example.com/ref.png"
+                                )
+                            ),
+                            "scenes" to listOf(
+                                mapOf(
+                                    "id" to "scene-1",
+                                    "scene_order" to 1,
+                                    "description" to "Opening scene",
+                                    "status" to "READY"
+                                )
+                            )
+                        )
+                    )
+                    "fetchNotifications" -> Resource.Success(
+                        listOf(
+                            mapOf(
+                                "id" to "notification-1",
+                                "action" to "RENDER_COMPLETE",
+                                "new_value" to "Episode 1 rendered",
+                                "created_at" to "2026-01-01T00:00:00Z"
+                            )
+                        )
+                    )
+                    "fetchAdminQueues" -> Resource.Success(
+                        mapOf(
+                            "outbox_pending" to 3,
+                            "commands_running" to 2,
+                            "dead_letter_count" to 1
+                        )
+                    )
+                    "fetchAdminWorkers" -> Resource.Success(
+                        listOf(
+                            mapOf(
+                                "worker_id" to "worker-1",
+                                "provider" to "KAGGLE",
+                                "status" to "ONLINE",
+                                "current_model" to "anime-v1",
+                                "last_heartbeat" to "2026-01-01T00:00:00Z"
+                            )
+                        )
+                    )
+                    "fetchAdminWorkflows" -> Resource.Success(
+                        listOf(
+                            mapOf(
+                                "wf_key" to "WF-00",
+                                "total_commands" to 4,
+                                "failed_commands" to 0,
+                                "n8n_live_active" to true
+                            )
+                        )
+                    )
+                    "fetchAuditLogs" -> Resource.Success(
+                        listOf(
+                            mapOf(
+                                "id" to "audit-1",
+                                "action" to "STATE_TRANSITION",
+                                "old_value" to "QUEUED",
+                                "new_value" to "RUNNING",
+                                "created_at" to "2026-01-01T00:00:00Z"
+                            )
+                        )
+                    )
+                    "fetchAnalytics" -> Resource.Success(mapOf("total_episodes" to 1))
+                    "fetchHealthDetail" -> Resource.Success(
+                        HealthResponseDto(
+                            ok = true,
+                            database = "CONNECTED",
+                            version = "1.0.0-studio"
+                        )
+                    )
+                    "fetchScenesRaw" -> Resource.Success(
+                        listOf(
+                            SceneDto(
+                                id = "scene-1",
+                                episode_no = 1,
+                                scene_order = 1,
+                                description = "Opening scene",
+                                visual_prompt = "Anime city at dusk",
+                                status = "READY",
+                                clips = listOf(
+                                    ClipDto(
+                                        id = "clip-1",
+                                        scene_order = 1,
+                                        clip_url = BATCH2_MEDIA_URL,
+                                        status = "READY"
+                                    )
+                                )
+                            )
+                        )
+                    )
+                    "fetchBible" -> Resource.Success(
+                        mapOf(
+                            "premise" to "A hero rises",
+                            "tone_genre" to "Action / Fantasy",
+                            "world_setting" to "Neo Tokyo",
+                            "world_rules" to "No time travel",
+                            "power_system" to "Spirit energy",
+                            "character_foundations" to "Aki",
+                            "timeline" to "Season 1"
+                        )
+                    )
+                    "fetchCommandStatus" -> Resource.Success(
+                        ApiCommandRecordDto(
+                            id = argList.getOrNull(0) as? String ?: "cmd-batch2",
+                            status = fakeState.commandStatus,
+                            result = fakeState.commandResult
+                        )
+                    )
+                    "submitQuickImage", "submitQuickVideo" -> Resource.Success(
+                        SubmitCommandResultDto(status = "QUEUED", command_id = "quick-cmd")
+                    )
+                    "cancelJobSync" -> Resource.Success(emptyMap())
+                    "updateBudgetLimit" -> Resource.Success(mapOf("budget_ceiling" to argList.lastOrNull()))
+                    "updateSceneSync" -> Resource.Success(
+                        SceneDto(id = argList.getOrNull(2) as? String ?: "scene-1")
+                    )
+                    "deleteSystemPrompt" -> Resource.Success(emptyMap())
                     "createProjectSync" -> Resource.Success(
                         ProjectDto(
                             id = "created-project",
@@ -257,10 +548,11 @@ internal fun batch2RecordingRepository(recorder: Batch2Recorder): AnimeRepositor
     } as AnimeRepositoryApi
 
 internal class Batch2RecordingContainer(
-    val recorder: Batch2Recorder = Batch2Recorder()
-) : AppContainer {
+    val recorder: Batch2Recorder = Batch2Recorder(),
+    val fakeState: Batch2FakeState = Batch2FakeState(),
     override val tokenManager: TokenManager = TokenManager(null)
+) : AppContainer {
     override val apiService: AnimeApiService = batch2FakeApiService()
-    override val repository: AnimeRepositoryApi = batch2RecordingRepository(recorder)
+    override val repository: AnimeRepositoryApi = batch2RecordingRepository(recorder, fakeState)
     override val viewModelFactory = AppViewModelFactory(this)
 }

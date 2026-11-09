@@ -12,9 +12,11 @@
 
 **Tested code revision:** `b01ee3c9094c71fb42a22e865b3bfc9ba078d518`
 
-**Working tree:** clean at the tested revision; this report is a docs-only follow-up commit
+**Working tree:** the tested revision was clean; the current working tree contains two uncommitted Android test-source changes (`Batch2TestHarness.kt`, `Batch2FullControlCoverageTest.kt`) plus this report/evidence update. The test-source changes are not part of the tested revision.
 
-**Report date:** 2026-11-08
+**Report date:** 2026-11-08 (updated 2026-11-09)
+
+**Inventory correction (2026-11-09):** source-derived interactive controls are **205**, not 206. `CanonViewerScreen.kt` has one `TabRow` plus two `Tab` calls (3 tab occurrences), so the prior 206 total overcounted CanonViewer by one. Tabs are 14, not 15.
 
 **Final decision:** **CONDITIONALLY ACCEPTED**
 
@@ -31,7 +33,7 @@ All automated Android 4-batch acceptance gates passed against the exact pushed r
 
 The final decision is **CONDITIONALLY ACCEPTED** rather than unconditional acceptance because these checks remain outside the executed automated scope:
 
-1. 179 of 206 interactive controls are covered by screen smoke rather than individual behavior assertions.
+1. 178 of 205 interactive controls are covered by screen smoke rather than individual behavior assertions; a 35-method control-level expansion exists locally but has not been compiled or executed.
 2. Manual accessibility checks (TalkBack, font scaling, contrast, RTL, Switch Access) were not performed.
 3. Backend-enforced runtime authorization was not exercised; the backend was not modified or deployed.
 4. No physical-device test was performed.
@@ -64,12 +66,12 @@ The historical baseline was rechecked against current source:
 | Unique routes | 35 | 35 | MATCH |
 | Duplicate route declarations | 2 | 2 (`auth`, `studio`) | VERIFIED CONDITIONAL |
 | Parameterized routes | 2 | 2 | MATCH |
-| Interactive controls | 206 | 206 | MATCH |
+| Interactive controls | 205 | 205 | MATCH (corrected from 206) |
 | Actions | 99 | 99 | MATCH |
 | Fields | 56 | 56 | MATCH |
 | Dialogs | 13 | 13 | MATCH |
 | Menus | 23 | 23 | MATCH |
-| Tabs | 15 | 15 | MATCH |
+| Tabs | 14 | 14 | MATCH (corrected from 15) |
 | List surfaces | 24 | 24 | MATCH |
 | State references | 152 | 152 | MATCH |
 | Android instrumentation tests | 81 | 81 | MATCH |
@@ -208,12 +210,12 @@ Evidence:
 | Fields | 56 |
 | Dialogs | 13 |
 | Menus | 23 |
-| Tabs | 15 |
-| **Interactive controls** | **206** |
+| Tabs | 14 |
+| **Interactive controls** | **205** |
 | Explicitly asserted | 27 |
-| Screen-smoke only | 179 |
+| Screen-smoke only | 178 |
 
-The 33 screen tests prove each screen renders and exposes its root tag. The 27 explicitly asserted controls have behavior or semantics assertions. The remaining 179 controls are not individually asserted; this is the primary residual coverage risk.
+The 33 screen tests prove each screen renders and exposes its root tag. The 27 previously executed controls have behavior or semantics assertions. The remaining 178 controls are not individually asserted by the executed suite; this is the primary residual coverage risk. A new 35-method control-level test source exists in the working tree but is not part of the tested revision and has not been compiled or executed.
 
 ### Per-screen control matrix
 
@@ -226,7 +228,7 @@ The 33 screen tests prove each screen renders and exposes its root tag. The 27 e
 | `AuthScreen.kt` | 4 | 2 | 0 | 0 | 0 | 6 | 3 | 3 |
 | `BibleScreen.kt` | 2 | 7 | 0 | 0 | 2 | 11 | 1 | 10 |
 | `BudgetLedgerScreen.kt` | 1 | 1 | 0 | 0 | 0 | 2 | 0 | 2 |
-| `CanonViewerScreen.kt` | 6 | 2 | 1 | 0 | 4 | 13 | 0 | 13 |
+| `CanonViewerScreen.kt` | 6 | 2 | 1 | 0 | 3 | 12 | 0 | 12 |
 | `CharacterDeepDiveScreen.kt` | 2 | 0 | 0 | 2 | 2 | 6 | 0 | 6 |
 | `CharacterDetailScreen.kt` | 5 | 0 | 0 | 4 | 0 | 9 | 0 | 9 |
 | `CharacterListScreen.kt` | 7 | 3 | 1 | 0 | 0 | 11 | 3 | 8 |
@@ -252,7 +254,7 @@ The 33 screen tests prove each screen renders and exposes its root tag. The 27 e
 | `VisionAnalysisScreen.kt` | 1 | 2 | 0 | 0 | 0 | 3 | 0 | 3 |
 | `WorkerManagerScreen.kt` | 1 | 0 | 0 | 0 | 0 | 1 | 0 | 1 |
 | `WorkflowManagerScreen.kt` | 1 | 0 | 0 | 0 | 0 | 1 | 0 | 1 |
-| **Total** | **99** | **56** | **13** | **23** | **15** | **206** | **27** | **179** |
+| **Total** | **99** | **56** | **13** | **23** | **14** | **205** | **27** | **178** |
 
 ### Navigation coverage
 
@@ -452,6 +454,10 @@ The authoritative final run is `42536627981`.
 | Baseline lint artifacts | `reports/android-testing/evidence/ci-baseline/lint/` |
 | Baseline APK checksum | `reports/android-testing/evidence/ci-baseline/apk/app-debug.apk.sha256` |
 | Baseline run metadata | `reports/android-testing/evidence/ci-baseline/run-metadata.json` |
+| Backend CI run `42458161277` | `reports/android-testing/evidence/ci-backend-42458161277/` |
+| Worker CI run `42457744833` | `reports/android-testing/evidence/ci-worker-42457744833/` |
+| n8n static audit | `reports/android-testing/evidence/n8n-static-2026-11-09/` |
+| Android control-expansion assertion map | `reports/android-testing/evidence/android-control-expansion-2026-11-09/CONTROL_ASSERTION_MAP.md` |
 
 ## 18. Remaining defects and risks
 
@@ -459,7 +465,7 @@ No open confirmed defect remains from the executed JVM, lint, instrumentation, o
 
 Residual risks:
 
-1. **Control coverage:** 179 of 206 interactive controls are not individually asserted. A defect isolated to one of those controls could escape the current suite.
+1. **Control coverage:** 178 of 205 interactive controls are not individually asserted by the executed suite. A defect isolated to one of those controls could escape the current suite.
 2. **Manual accessibility:** TalkBack, font scaling, contrast, RTL, and Switch Access were not executed.
 3. **Backend authorization runtime:** Android navigation gating passed, but backend-enforced authorization was not exercised because the backend was not modified or deployed.
 4. **Physical device:** No OEM/physical-device test was performed.
@@ -477,7 +483,7 @@ Residual risks:
 
 ## 20. Follow-up conditions
 
-1. Add individual behavior assertions for high-risk controls among the 179 screen-smoke-only controls.
+1. Add and execute individual behavior assertions for high-risk controls among the 178 screen-smoke-only controls.
 2. Run manual accessibility checks (TalkBack, font scaling, contrast, RTL, Switch Access).
 3. Execute backend authorization tests in an approved non-production environment.
 4. Run a physical-device smoke pass before release.
@@ -496,3 +502,115 @@ Reason: all automated Android 4-batch gates passed on the exact pushed revision 
 - Cloud workflow: SUCCESS.
 
 Acceptance is conditional on the follow-up items in Section 20: broader control-level coverage, manual accessibility, backend runtime authorization, and physical-device validation. No unconditional release acceptance is claimed.
+
+## 22. Master continuation scope — backend, CPU worker, n8n, integration (2026-11-09)
+
+This section extends the report beyond the Android-only automated scope. It does not replace the tested Android revision `b01ee3c9094c71fb42a22e865b3bfc9ba078d518`.
+
+### 22.1 Repository state
+
+| Repository | Local path | Branch | HEAD | Working tree |
+|---|---|---|---|---|
+| Android | `ai-anime-android` | `opencode/android-4-batch-testing` | `e82aa27f1e7efa296519044e13723e282b641418` | Two uncommitted test-source changes: `Batch2TestHarness.kt`, `Batch2FullControlCoverageTest.kt` |
+| Backend | `ai-anime-backend` | `main` | `c6fc39865c44913eb0ba59065e99abff46f715fd` | Untracked `test-results/` |
+| CPU worker | `anime-cpu-worker` | `main` | `da069d3bb30d2389992cc8de82a9b5bad1e31eea` | Untracked `test-results/`, `tests/__pycache__/` |
+
+No production repository was modified, deployed, merged to `main`, or force-pushed.
+
+### 22.2 Backend
+
+**CI run:** `42458161277` on exact HEAD `c6fc39865c44913eb0ba59065e99abff46f715fd` — **SUCCESS**.
+
+| Suite | Executed | Failures | Status |
+|---|---:|---:|---|
+| Unit | 36 | 0 | PASS |
+| Routes | 60 | 0 | PASS |
+| Static (local + sibling) | 27 | 0 | PASS |
+| Regression | 19 | 0 | PASS |
+| Database integration | 4 | — | BLOCKED |
+
+The database integration job was skipped because `RUN_DB_TESTS` and a safe test database were unavailable. Production database credentials were not used. The four database integration tests remain **BLOCKED**, not passed.
+
+Evidence: `reports/android-testing/evidence/ci-backend-42458161277/`.
+
+### 22.3 CPU worker
+
+**CI run:** `42457744833` on exact HEAD `da069d3bb30d2389992cc8de82a9b5bad1e31eea` — **SUCCESS**.
+
+| Check | Result | Status |
+|---|---:|---|
+| Contract tests | 5/5 | PASS |
+| FFmpeg media generation E2E | Not executed | NOT TESTED |
+| TTS/audio E2E | Not executed | NOT TESTED |
+| Backend callback/communication E2E | Not executed | NOT TESTED |
+
+Evidence: `reports/android-testing/evidence/ci-worker-42457744833/`.
+
+### 22.4 n8n canonical workflows
+
+**Canonical directory:** `ai-anime-backend/n8n-workflows/` — exactly 14 JSON files.
+
+| Check | Result | Status |
+|---|---|---|
+| Canonical 14-file set | 14/14 | PASS (static) |
+| Unique workflow IDs | 14/14 | PASS (static) |
+| JSON metadata `active: true` | 14/14 | PASS (static) |
+| Connection integrity | 14/14 | PASS (static) |
+| Credential objects in JSON | 0 | PASS (static) |
+| `retryOnFail` / `maxTries` declared | 0 nodes | NOT TESTED / risk |
+| Runtime activation and execution history | API/instance access unavailable | BLOCKED |
+| End-to-end workflow execution | Not executed | NOT TESTED |
+
+The 14 workflow IDs are unique: `U4pLz7pXmG2OqXlt`, `UeEXeimGGwqIh84T`, `qRUdhg1PNDK2wJk6`, `s4RGuFSDlevgD5nC`, `8q9tF3VE0mLUZQfa`, `ADPseu4KBfVveYrq`, `WAB7tCTJSUilOp07`, `zvw63UrbObZhFUiW`, `MrWrz58aRUVTzpLr`, `gT1c0Hpvrwyf9YS6`, `swOEbQV3iNUNmMwu`, `baRqhI9JSob9m5oD`, `2fcuca0HkGxGIYMv`, `jI39p4vr4CnWhpgw`.
+
+Static audit evidence: `reports/android-testing/evidence/n8n-static-2026-11-09/n8n-static-audit.md` and `.json`.
+
+### 22.5 Android control-level expansion — implemented, not executed
+
+A 35-method control-level test source has been written locally:
+
+- `app/src/androidTest/java/org/dpdns/bnai/anime/ui/batch2/Batch2FullControlCoverageTest.kt`
+- `app/src/androidTest/java/org/dpdns/bnai/anime/ui/batch2/Batch2TestHarness.kt` (expanded fake data and fake state)
+
+The new tests wait for each screen-root `TestTags` entry and assert controls by text/content description, including dialogs, menus, tabs, conditional states, and scrollable lists. They have **not** been compiled, linted, or executed. Local Android build remains blocked by the Termux `aarch64` host and missing Android SDK/toolchain. Cloud execution requires an explicit branch push and workflow dispatch approval.
+
+**Status: NOT TESTED.**
+
+The 205-control inventory is corrected from 206: `CanonViewerScreen.kt` has one `TabRow` plus two `Tab` calls, not four tab occurrences. The executed suite remains 27 explicit controls and 178 screen-smoke-only controls. The new source is intended to reduce the 178 gap but cannot be credited until it passes cloud CI.
+
+### 22.6 Accessibility and integration
+
+| Area | Result | Status |
+|---|---|---|
+| TalkBack | Not performed | NOT TESTED |
+| Font scaling | Not performed | NOT TESTED |
+| Contrast | Not performed | NOT TESTED |
+| RTL | Not performed | NOT TESTED |
+| Switch Access | Not performed | NOT TESTED |
+| Physical device | No device available | NOT TESTED |
+| Android → Backend → n8n → Supabase/DB → Worker → Backend → Android | No approved deployed test environment, credentials, or execution logs | BLOCKED |
+
+### 22.7 Consolidated status
+
+| Scope | Status | Basis |
+|---|---|---|
+| Android JVM/lint/instrumentation/Maestro at `b01ee3c` | CONDITIONALLY ACCEPTED | Run `42536627981` green; 20 JVM, 81 instrumentation, 2 Maestro |
+| Android new control-level tests | NOT TESTED | Source exists locally; not compiled or executed |
+| Backend safe suites | PASS | Run `42458161277`; 36 unit, 60 routes, 27 static, 19 regression |
+| Backend database integration | BLOCKED | 4 tests skipped; no safe test DB |
+| Worker contract tests | PASS | Run `42457744833`; 5/5 |
+| Worker media/TTS/backend E2E | NOT TESTED | Not executed |
+| n8n static canonical audit | PASS | 14/14 static checks |
+| n8n runtime execution | BLOCKED | No approved n8n API/instance access |
+| End-to-end integration | BLOCKED | No deployed test environment or credentials |
+| Manual accessibility | NOT TESTED | Not performed |
+
+## 23. Consolidated final decision (2026-11-09)
+
+**Android automated scope:** **CONDITIONALLY ACCEPTED** — unchanged from Section 21. The exact tested revision remains `b01ee3c9094c71fb42a22e865b3bfc9ba078d518` with run `42536627981` green.
+
+**Full three-repository/n8n/integration scope:** **BLOCKED** — unconditional acceptance is not claimed. Backend database integration, n8n runtime execution, end-to-end Android→Backend→n8n→Supabase/DB→Worker→Backend→Android flow, the new Android control-level tests, and manual accessibility remain unexecuted or blocked.
+
+**Overall decision:** **CONDITIONALLY ACCEPTED for the Android automated scope; BLOCKED for full integration acceptance.**
+
+No blocked, skipped, or unexecuted check is reported as PASS.
