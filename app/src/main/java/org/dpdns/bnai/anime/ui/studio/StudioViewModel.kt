@@ -81,11 +81,11 @@ class StudioViewModel(
         }
     }
 
-    fun createNewProject(projectName: String) {
+    fun createNewProject(projectName: String, promptIds: List<String> = emptyList()) {
         val cleanName = projectName.trim()
         if (cleanName.isBlank()) return
         viewModelScope.launch {
-            when (val created = repository.createProjectSync(cleanName)) {
+            when (val created = repository.createProjectSync(cleanName, promptIds)) {
                 is Resource.Success -> {
                     tokenManager.saveActiveProjectId(created.data.id)
                     _homeSummary.value = _homeSummary.value.copy(createStatusMessage = "Project '$cleanName' created!")

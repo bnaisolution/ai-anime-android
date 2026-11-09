@@ -232,4 +232,24 @@ class AnimeRepositoryBehaviorTest {
         assertEquals("/v1/anime/prompts/prompt-1/favorite", recorded.path)
         assertTrue((result as Resource.Success<SystemPromptDto>).data.is_favorite)
     }
+
+    @Test
+    fun createProjectForwardsSelectedPromptIds() = runBlocking {
+        server.enqueue(
+            MockResponse()
+                .setResponseCode(201)
+                .setBody("""{"data":{"id":"project-9","name":"Prompt Project"}}""")
+        )
+
+        val result = repository.createProjectSync("Prompt Project", listOf("prompt-1", "prompt-2"))
+
+        val recorded = server.takeRequest()
+        val body = recorded.body.readUtf8()
+        assertTrue(result is Resource.Success<*>)
+        assertEquals("POST", recorded.method)
+        assertEquals("/v1/anime/projects", recorded.path)
+        assertTrue(body.contains("\"prompt_ids\":["))
+        assertTrue(body.contains("\"prompt-1\""))
+        assertTrue(body.contains("\"prompt-2\""))
+    }
 }

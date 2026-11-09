@@ -68,8 +68,10 @@ class AnimeRepository(
         Resource.Error(e.localizedMessage ?: "Network failure")
     }
 
-    override suspend fun createProjectSync(name: String): Resource<ProjectDto> = try {
-        mapEnvelope(apiService.createProjectSync(mapOf("name" to name))) { it }
+    override suspend fun createProjectSync(name: String, promptIds: List<String>): Resource<ProjectDto> = try {
+        val payload = mutableMapOf<String, Any?>("name" to name)
+        if (promptIds.isNotEmpty()) payload["prompt_ids"] = promptIds
+        mapEnvelope(apiService.createProjectSync(payload)) { it }
     } catch (e: Exception) {
         Resource.Error(e.localizedMessage ?: "Project creation failed")
     }
