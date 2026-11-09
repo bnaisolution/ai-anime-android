@@ -33,8 +33,15 @@ class AuthViewModel(
                     val token = body?.token?.takeIf { it.isNotBlank() }
                         ?: body?.access_token?.takeIf { it.isNotBlank() }
                     if (token != null) {
-                        tokenManager.saveToken(token)
-                        tokenManager.saveUserMeta(body?.userId, body?.workspaceId, body?.role, body?.email ?: email.trim())
+                        tokenManager.saveSession(
+                            accessToken = token,
+                            refreshToken = body?.refreshToken,
+                            expiresInSeconds = body?.expiresIn,
+                            userId = body?.userId,
+                            workspaceId = body?.workspaceId,
+                            role = body?.role,
+                            email = body?.email ?: email.trim()
+                        )
                         _authState.value = Resource.Success(token)
                     } else {
                         _authState.value = Resource.Error("Login response did not include a valid token.")

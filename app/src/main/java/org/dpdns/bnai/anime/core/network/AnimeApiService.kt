@@ -10,9 +10,15 @@ data class ApiMeta(val request_id: String? = null)
 data class ApiEnvelope<T>(val data: T?, val meta: ApiMeta? = null)
 
 data class LoginRequest(val email: String, val password: String)
+data class RefreshTokenRequest(
+    @SerializedName("refresh_token", alternate = ["refreshToken"]) val refreshToken: String
+)
 data class LoginResponse(
     val token: String? = null,
     val access_token: String? = null,
+    @SerializedName("refresh_token", alternate = ["refreshToken"]) val refreshToken: String? = null,
+    @SerializedName("expires_in", alternate = ["expiresIn"]) val expiresIn: Long? = null,
+    @SerializedName("token_type", alternate = ["tokenType"]) val tokenType: String? = null,
     @SerializedName("user_id", alternate = ["userId"]) val userId: String? = null,
     @SerializedName("workspace_id", alternate = ["workspaceId"]) val workspaceId: String? = null,
     val email: String? = null,
@@ -313,6 +319,12 @@ data class GpuSetupResponseDto(
 interface AnimeApiService {
     @POST("api/v1/auth/login")
     suspend fun login(@Body request: LoginRequest): Response<LoginResponse>
+
+    @POST("api/v1/auth/refresh")
+    suspend fun refresh(@Body request: RefreshTokenRequest): Response<LoginResponse>
+
+    @POST("api/v1/auth/logout")
+    suspend fun logout(): Response<JsonMap>
 
     @GET("api/v1/auth/me")
     suspend fun getMe(): Response<AuthMeResponse>

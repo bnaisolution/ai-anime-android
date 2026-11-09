@@ -286,10 +286,12 @@ fun AppNavGraph(navController: NavHostController) {
                         }
                         Button(
                             onClick = {
-                                scope.launch { drawerState.close() }
-                                tokenManager.clearToken()
-                                navController.navigate("auth") {
-                                    popUpTo(0) { inclusive = true }
+                                scope.launch {
+                                    drawerState.close()
+                                    repository.logout()
+                                    navController.navigate("auth") {
+                                        popUpTo(0) { inclusive = true }
+                                    }
                                 }
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),

@@ -15,6 +15,11 @@ interface RepositoryContext {
         throw UnsupportedOperationException("currentProjectId is not configured")
 }
 
+interface AuthRepository {
+    suspend fun logout(): Resource<Unit> =
+        throw UnsupportedOperationException("logout is not configured")
+}
+
 interface ProjectRepository : RepositoryContext {
     suspend fun fetchProjects(): Resource<List<Project>> =
         throw UnsupportedOperationException("fetchProjects is not configured")
@@ -325,6 +330,7 @@ interface AdminRepository : RepositoryContext {
 }
 
 interface AnimeRepositoryApi :
+    AuthRepository,
     ProjectRepository,
     CharacterRepository,
     EpisodeRepository,

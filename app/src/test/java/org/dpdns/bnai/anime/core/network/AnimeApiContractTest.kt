@@ -18,6 +18,20 @@ class AnimeApiContractTest {
     }
 
     @Test
+    fun authRefreshUsesTheCanonicalPostPath() {
+        val annotation = method("refresh").getAnnotation(POST::class.java)
+        assertNotNull(annotation)
+        assertEquals("api/v1/auth/refresh", annotation.value)
+    }
+
+    @Test
+    fun authLogoutUsesTheCanonicalPostPath() {
+        val annotation = method("logout").getAnnotation(POST::class.java)
+        assertNotNull(annotation)
+        assertEquals("api/v1/auth/logout", annotation.value)
+    }
+
+    @Test
     fun projectsAreReadFromTheCanonicalGetPath() {
         val annotation = method("getProjects").getAnnotation(GET::class.java)
         assertNotNull(annotation)

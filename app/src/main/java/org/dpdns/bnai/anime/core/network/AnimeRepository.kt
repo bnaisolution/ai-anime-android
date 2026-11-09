@@ -15,6 +15,19 @@ class AnimeRepository(
     override fun currentProjectId(): String =
         tokenManager.getActiveProjectId()
 
+    override suspend fun logout(): Resource<Unit> = try {
+        val response = apiService.logout()
+        tokenManager.clearToken()
+        if (response.isSuccessful || response.code() == 401) {
+            Resource.Success(Unit)
+        } else {
+            Resource.Error("Logout failed (HTTP ${response.code()})", response.code())
+        }
+    } catch (e: Exception) {
+        tokenManager.clearToken()
+        Resource.Error(e.localizedMessage ?: "Logout failed")
+    }
+
     private fun <T, R> mapEnvelope(
         response: Response<ApiEnvelope<T>>,
         transform: (T) -> R
