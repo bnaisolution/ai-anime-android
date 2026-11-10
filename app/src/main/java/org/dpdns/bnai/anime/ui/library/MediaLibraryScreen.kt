@@ -42,6 +42,7 @@ fun MediaLibraryScreen() {
     val scope = rememberCoroutineScope()
 
     var filterTab by remember { mutableStateOf("ALL") }
+    var playingItem by remember { mutableStateOf<StudioMediaItem?>(null) }
     var mediaState by remember { mutableStateOf<Resource<JsonMap>>(Resource.Loading) }
 
     fun loadMedia() {
@@ -175,15 +176,23 @@ fun MediaLibraryScreen() {
                                         },
                                         modifier = Modifier.weight(1f)
                                     )
-                                    PrimaryButton(
-                                        text = "Open Stream",
-                                        onClick = {
-                                            runCatching {
-                                                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(item.mediaUrl)))
-                                            }
-                                        },
-                                        modifier = Modifier.weight(1f)
-                                    )
+                                    if (item.category == "CLIPS") {
+                                        PrimaryButton(
+                                            text = "Play",
+                                            onClick = { playingItem = item },
+                                            modifier = Modifier.weight(1f).testTag(TestTags.Player.PLAY)
+                                        )
+                                    } else {
+                                        PrimaryButton(
+                                            text = "Open Stream",
+                                            onClick = {
+                                                runCatching {
+                                                    context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(item.mediaUrl)))
+                                                }
+                                            },
+                                            modifier = Modifier.weight(1f)
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -191,5 +200,13 @@ fun MediaLibraryScreen() {
                 }
             }
         }
+    }
+
+    playingItem?.let { item ->
+        VideoPlayerDialog(
+            mediaUrl = item.mediaUrl,
+            title = item.title,
+            onDismiss = { playingItem = null }
+        )
     }
 }

@@ -8,6 +8,12 @@ object TestTags {
         const val RETRY = "state.retry"
     }
 
+    object Player {
+        const val VIEW = "player.view"
+        const val CLOSE = "player.close"
+        const val PLAY = "player.play"
+    }
+
     object Dialog {
         const val CONFIRM = "dialog.confirm"
         const val CANCEL = "dialog.cancel"
