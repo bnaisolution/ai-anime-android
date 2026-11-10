@@ -252,4 +252,112 @@ class AnimeRepositoryBehaviorTest {
         assertTrue(body.contains("\"prompt-1\""))
         assertTrue(body.contains("\"prompt-2\""))
     }
+
+    @Test
+    fun readMemoryForwardsFiltersAndMapsItems() = runBlocking {
+        server.enqueue(
+            MockResponse()
+                .setResponseCode(200)
+                .setBody(
+                    """{"status":"completed","memory_items":[{"id":"mem-1","content":"Likes rain","scope":"project","category":"fact"}]}"""
+                )
+        )
+
+        val result = repository.readMemory("project-1", "project", "rain")
+
+        val recorded = server.takeRequest()
+        val body = recorded.body.readUtf8()
+        assertEquals("POST", recorded.method)
+        assertEquals("/api/v1/memory/read", recorded.path)
+        assertTrue(body.contains("\"project_id\":\"project-1\""))
+        assertTrue(body.contains("\"scope\":\"project\""))
+        assertTrue(body.contains("\"query\":\"rain\""))
+        assertEquals("mem-1", (result as Resource.Success<List<MemoryItemDto>>).data.single().id)
+    }
+
+    @Test
+    fun emptyMemoryReadMapsToEmptySuccessList() = runBlocking {
+        server.enqueue(
+            MockResponse()
+                .setResponseCode(200)
+                .setBody("""{"status":"completed","memory_items":[]}""")
+        )
+
+        val result = repository.readMemory("project-1", null, null)
+
+        assertTrue(result is Resource.Success<*>)
+        assertEquals(0, (result as Resource.Success<List<MemoryItemDto>>).data.size)
+    }
+
+    @Test
+    fun memoryReadFailureMapsToErrorWithStatusCode() = runBlocking {
+        server.enqueue(MockResponse().setResponseCode(500))
+
+        val result = repository.readMemory("project-1", null, null)
+
+        assertTrue(result is Resource.Error)
+        assertEquals(500, (result as Resource.Error).code)
+    }
+
+    @Test
+    fun writeMemoryForwardsIdempotencyKeyAndMapsItem() = runBlocking {
+        server.enqueue(
+            MockResponse()
+                .setResponseCode(200)
+                .setBody(
+                    """{"status":"completed","memory_item":{"id":"mem-2","content":"Use blue palette","scope":"project","category":"style"},"deduplicated":false}"""
+                )
+        )
+
+        val result = repository.writeMemory(
+            projectId = "project-1",
+            content = "Use blue palette",
+            scope = "project",
+            category = "style",
+            idempotencyKey = "msg-42"
+        )
+
+        val recorded = server.takeRequest()
+        val body = recorded.body.readUtf8()
+        assertEquals("POST", recorded.method)
+        assertEquals("/api/v1/memory/write", recorded.path)
+        assertTrue(body.contains("\"idempotency_key\":\"msg-42\""))
+        assertEquals("mem-2", (result as Resource.Success<MemoryItemDto>).data.id)
+    }
+
+    @Test
+    fun deleteMemoryRequiresSelectorBeforeNetworkCall() = runBlocking {
+        val result = repository.deleteMemory(null, null, null)
+
+        assertTrue(result is Resource.Error)
+        assertEquals(0, server.requestCount)
+    }
+
+    @Test
+    fun reconcileMemoryForwardsProjectAndMapsCounts() = runBlocking {
+        server.enqueue(
+            MockResponse()
+                .setResponseCode(200)
+                .setBody("""{"status":"completed","total":2,"by_scope":{"project":2},"by_status":{"observed":2}}""")
+        )
+
+        val result = repository.reconcileMemory("project-1")
+
+        val recorded = server.takeRequest()
+        val body = recorded.body.readUtf8()
+        assertEquals("POST", recorded.method)
+        assertEquals("/api/v1/memory/reconcile", recorded.path)
+        assertTrue(body.contains("\"project_id\":\"project-1\""))
+        assertEquals(2.0, (result as Resource.Success<JsonMap>).data["total"] as Double, 0.0)
+    }
+
+    @Test
+    fun systemPromptHttpFailureMapsToErrorWithStatusCode() = runBlocking {
+        server.enqueue(MockResponse().setResponseCode(503))
+
+        val result = repository.fetchSystemPrompts("project-1")
+
+        assertTrue(result is Resource.Error)
+        assertEquals(503, (result as Resource.Error).code)
+    }
 }
