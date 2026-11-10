@@ -1,8 +1,6 @@
 package org.dpdns.bnai.anime.ui.batch2
 
 import androidx.compose.ui.semantics.SemanticsActions
-import androidx.compose.ui.test.assertDoesNotExist
-import androidx.compose.ui.test.assertExists
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
