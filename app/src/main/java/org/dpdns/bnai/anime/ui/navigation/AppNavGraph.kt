@@ -397,7 +397,7 @@ fun AppNavGraph(navController: NavHostController) {
                                 .testTag(TestTags.Navigation.AI_DIRECTOR_FAB),
                             containerColor = MaterialTheme.colorScheme.primary
                         ) {
-                            Icon(Icons.Default.AutoAwesome, contentDescription = "Ask AI Director (drag to move)", tint = Color.White)
+                            Icon(Icons.Default.AutoAwesome, contentDescription = "Ask AI Director", tint = Color.White)
                         }
                     }
                 },

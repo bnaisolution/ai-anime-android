@@ -178,6 +178,23 @@ fun OwnerOverviewScreen() {
             }
         }
 
+        // Fix #330: DB Visuals & Latency Indicator Card
+        Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp)) {
+            Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text("Supabase PostgreSQL & Outbox Dispatcher", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
+                Text("Round-Trip Ping: ${latencyMs}ms • Connection Pool: Healthy", style = MaterialTheme.typography.bodyLarge)
+            }
+        }
+
+        // Fix #329: Emergency Stop Button
+        Button(
+            onClick = { showEmergencyDialog = true },
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
+            modifier = Modifier.fillMaxWidth().height(50.dp).testTag(TestTags.Owner.EMERGENCY_STOP)
+        ) {
+            Text("🚨 Emergency Stop All GPU Workers", fontWeight = FontWeight.Bold)
+        }
+
         Card(
             modifier = Modifier.fillMaxWidth().testTag(TestTags.Owner.PLATFORM_MANAGED),
             shape = RoundedCornerShape(12.dp)
@@ -205,21 +222,5 @@ fun OwnerOverviewScreen() {
             }
         }
 
-        // Fix #330: DB Visuals & Latency Indicator Card
-        Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp)) {
-            Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                Text("Supabase PostgreSQL & Outbox Dispatcher", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
-                Text("Round-Trip Ping: ${latencyMs}ms • Connection Pool: Healthy", style = MaterialTheme.typography.bodyLarge)
-            }
-        }
-
-        // Fix #329: Emergency Stop Button
-        Button(
-            onClick = { showEmergencyDialog = true },
-            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
-            modifier = Modifier.fillMaxWidth().height(50.dp).testTag(TestTags.Owner.EMERGENCY_STOP)
-        ) {
-            Text("🚨 Emergency Stop All GPU Workers", fontWeight = FontWeight.Bold)
-        }
     }
 }
