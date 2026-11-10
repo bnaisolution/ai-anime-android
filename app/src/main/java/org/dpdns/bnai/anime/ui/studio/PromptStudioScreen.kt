@@ -232,8 +232,20 @@ fun PromptStudioScreen() {
                     },
                     modifier = Modifier.testTag(TestTags.PromptStudio.MEDIUM)
                 ) {
-                    Text("M: $selectedMedium")
+                    Text("Medium: $selectedMedium")
                 }
+                FilterChip(
+                    selected = favoritesOnly,
+                    onClick = { favoritesOnly = !favoritesOnly },
+                    label = { Text("Favorites") },
+                    modifier = Modifier.testTag(TestTags.PromptStudio.FAVORITES)
+                )
+            }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 OutlinedButton(
                     onClick = {
                         val options = listOf<String?>(null) + availableGenres
@@ -242,7 +254,7 @@ fun PromptStudioScreen() {
                     },
                     modifier = Modifier.testTag(TestTags.PromptStudio.GENRE)
                 ) {
-                    Text("G: ${selectedGenre ?: "Any"}")
+                    Text("Genre: ${selectedGenre ?: "Any"}")
                 }
                 OutlinedButton(
                     onClick = {
@@ -252,27 +264,15 @@ fun PromptStudioScreen() {
                     },
                     modifier = Modifier.testTag(TestTags.PromptStudio.FORMAT)
                 ) {
-                    Text("F: ${selectedFormat ?: "Any"}")
+                    Text("Format: ${selectedFormat ?: "Any"}")
                 }
             }
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                FilterChip(
-                    selected = favoritesOnly,
-                    onClick = { favoritesOnly = !favoritesOnly },
-                    label = { Text("Favorites") },
-                    modifier = Modifier.testTag(TestTags.PromptStudio.FAVORITES)
-                )
-                FilterChip(
-                    selected = genreFilterEnabled,
-                    onClick = { genreFilterEnabled = !genreFilterEnabled },
-                    label = { Text("Match genre/format") },
-                    modifier = Modifier.testTag(TestTags.PromptStudio.FILTER_GENRE_FORMAT)
-                )
-            }
+            FilterChip(
+                selected = genreFilterEnabled,
+                onClick = { genreFilterEnabled = !genreFilterEnabled },
+                label = { Text("Match genre/format") },
+                modifier = Modifier.testTag(TestTags.PromptStudio.FILTER_GENRE_FORMAT)
+            )
             if (genreTemplates.isNotEmpty()) {
                 val template = genreTemplates[templateIndex.coerceIn(0, genreTemplates.lastIndex)]
                 Row(
