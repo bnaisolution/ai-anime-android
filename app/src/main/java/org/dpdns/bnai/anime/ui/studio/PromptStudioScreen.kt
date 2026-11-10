@@ -22,13 +22,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
 import org.dpdns.bnai.anime.core.network.Resource
+import org.dpdns.bnai.anime.core.network.GenreTemplateDto
 import org.dpdns.bnai.anime.core.network.SystemPromptDto
 import org.dpdns.bnai.anime.ui.components.ProjectSelectorBar
 import org.dpdns.bnai.anime.ui.designsystem.*
 import org.dpdns.bnai.anime.ui.testing.TestTags
 
 private val CATEGORIES = listOf("BIBLE", "EPISODE", "IMAGE", "AI_DIRECTOR")
-private val MEDIA_OPTIONS = listOf("ANIME", "REAL_HUMAN", "MANHWA", "3D", "HYBRID")
+private val MEDIA_OPTIONS = listOf("ANIME", "REAL_HUMAN", "LIVE_ACTION", "CINEMATIC", "MANHWA", "3D", "HYBRID")
+private val FALLBACK_GENRES = listOf("Action", "Horror", "Thriller", "Romance", "Comedy", "Mythology")
+private val FALLBACK_FORMATS = listOf("SERIES", "MOVIE", "SHORT", "MUSIC_VIDEO", "TRAILER")
 
 private val SYSTEM_DEFAULTS = mapOf(
     "BIBLE" to "You are the WF-01 Master Story Bible Architect. Build cohesive anime world rules, power scaling ceilings, and immutable character anchors.",
@@ -82,6 +85,13 @@ fun PromptStudioScreen() {
     var savedPrompts by remember { mutableStateOf<List<SystemPromptDto>>(emptyList()) }
     val promptIdByCat = remember { mutableStateMapOf<String, String>() }
     var selectedMedium by remember { mutableStateOf("ANIME") }
+    var selectedGenre by remember { mutableStateOf<String?>(null) }
+    var selectedFormat by remember { mutableStateOf<String?>(null) }
+    var genreFilterEnabled by remember { mutableStateOf(false) }
+    var availableGenres by remember { mutableStateOf(FALLBACK_GENRES) }
+    var availableFormats by remember { mutableStateOf(FALLBACK_FORMATS) }
+    var genreTemplates by remember { mutableStateOf<List<GenreTemplateDto>>(emptyList()) }
+    var templateIndex by remember { mutableStateOf(0) }
     var searchQuery by remember { mutableStateOf("") }
     var favoritesOnly by remember { mutableStateOf(false) }
     var isSaving by remember { mutableStateOf(false) }
@@ -123,6 +133,14 @@ fun PromptStudioScreen() {
 
     LaunchedEffect(Unit) {
         loadPromptsForProject()
+        when (val meta = repository.fetchPromptLibraryMeta()) {
+            is Resource.Success -> {
+                if (meta.data.genres.isNotEmpty()) availableGenres = meta.data.genres
+                if (meta.data.formats.isNotEmpty()) availableFormats = meta.data.formats
+                genreTemplates = meta.data.genre_templates
+            }
+            else -> {}
+        }
     }
 
     if (pendingTabSwitch != null) {
@@ -214,14 +232,73 @@ fun PromptStudioScreen() {
                     },
                     modifier = Modifier.testTag(TestTags.PromptStudio.MEDIUM)
                 ) {
-                    Text("Medium: $selectedMedium")
+                    Text("M: $selectedMedium")
                 }
+                OutlinedButton(
+                    onClick = {
+                        val options = listOf<String?>(null) + availableGenres
+                        val idx = options.indexOf(selectedGenre)
+                        selectedGenre = options[(idx + 1) % options.size]
+                    },
+                    modifier = Modifier.testTag(TestTags.PromptStudio.GENRE)
+                ) {
+                    Text("G: ${selectedGenre ?: "Any"}")
+                }
+                OutlinedButton(
+                    onClick = {
+                        val options = listOf<String?>(null) + availableFormats
+                        val idx = options.indexOf(selectedFormat)
+                        selectedFormat = options[(idx + 1) % options.size]
+                    },
+                    modifier = Modifier.testTag(TestTags.PromptStudio.FORMAT)
+                ) {
+                    Text("F: ${selectedFormat ?: "Any"}")
+                }
+            }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 FilterChip(
                     selected = favoritesOnly,
                     onClick = { favoritesOnly = !favoritesOnly },
                     label = { Text("Favorites") },
                     modifier = Modifier.testTag(TestTags.PromptStudio.FAVORITES)
                 )
+                FilterChip(
+                    selected = genreFilterEnabled,
+                    onClick = { genreFilterEnabled = !genreFilterEnabled },
+                    label = { Text("Match genre/format") },
+                    modifier = Modifier.testTag(TestTags.PromptStudio.FILTER_GENRE_FORMAT)
+                )
+            }
+            if (genreTemplates.isNotEmpty()) {
+                val template = genreTemplates[templateIndex.coerceIn(0, genreTemplates.lastIndex)]
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    OutlinedButton(
+                        onClick = { templateIndex = (templateIndex + 1) % genreTemplates.size },
+                        modifier = Modifier.testTag(TestTags.PromptStudio.TEMPLATE)
+                    ) {
+                        Text("Template: ${template.genre}")
+                    }
+                    SecondaryButton(
+                        text = "Apply Genre Template",
+                        onClick = {
+                            selectedGenre = template.genre
+                            selectedFormat = template.format
+                            selectedMedium = template.visual_medium
+                            titlesByCat[currentCategory] = template.title
+                            textByCat[currentCategory] = template.prompt_text
+                            editModeByCat[currentCategory] = true
+                        },
+                        modifier = Modifier.testTag(TestTags.PromptStudio.APPLY_TEMPLATE)
+                    )
+                }
             }
             OutlinedTextField(
                 value = searchQuery,
@@ -308,7 +385,9 @@ fun PromptStudioScreen() {
                                     title = title,
                                     promptText = currentText.trim(),
                                     visualMedium = selectedMedium,
-                                    promptCategory = currentCategory
+                                    promptCategory = currentCategory,
+                                    genre = selectedGenre,
+                                    format = selectedFormat
                                 )
                             } else {
                                 repository.updateSystemPrompt(
@@ -316,7 +395,9 @@ fun PromptStudioScreen() {
                                     title = title,
                                     promptText = currentText.trim(),
                                     visualMedium = selectedMedium,
-                                    promptCategory = currentCategory
+                                    promptCategory = currentCategory,
+                                    genre = selectedGenre,
+                                    format = selectedFormat
                                 )
                             }
                             isSaving = false
@@ -362,7 +443,11 @@ fun PromptStudioScreen() {
                 prompt.prompt_text.contains(searchQuery, ignoreCase = true) ||
                 (prompt.genre ?: "").contains(searchQuery, ignoreCase = true)
             val favoriteMatches = !favoritesOnly || prompt.is_favorite
-            categoryMatches && queryMatches && favoriteMatches
+            val genreMatches = !genreFilterEnabled || selectedGenre == null ||
+                prompt.genre.equals(selectedGenre, ignoreCase = true)
+            val formatMatches = !genreFilterEnabled || selectedFormat == null ||
+                prompt.format.equals(selectedFormat, ignoreCase = true)
+            categoryMatches && queryMatches && favoriteMatches && genreMatches && formatMatches
         }
         SectionHeader(
             title = "Saved $currentCategory Prompts (${categorySavedList.size})",
@@ -386,6 +471,9 @@ fun PromptStudioScreen() {
                         titlesByCat[currentCategory] = item.title
                         textByCat[currentCategory] = item.prompt_text
                         baselineByCat[currentCategory] = item.prompt_text
+                        selectedMedium = item.visual_medium
+                        selectedGenre = item.genre
+                        selectedFormat = item.format
                         editModeByCat[currentCategory] = false
                     }
                 ) {

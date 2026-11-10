@@ -41,9 +41,13 @@ interface ProjectRepository : RepositoryContext {
         genre: String? = null,
         autoApprove: Boolean? = null,
         coverImageUrl: String? = null,
-        budgetCeiling: Int? = null
+        budgetCeiling: Int? = null,
+        activeSystemPromptId: String? = null
     ): Resource<ProjectDto> =
         throw UnsupportedOperationException("updateProjectSettings is not configured")
+
+    suspend fun setActiveSystemPrompt(projectId: String, promptId: String): Resource<JsonMap> =
+        throw UnsupportedOperationException("setActiveSystemPrompt is not configured")
 
     suspend fun updateProjectSettings(
         projectId: String = currentProjectId(),
@@ -259,13 +263,25 @@ interface ProductionRepository : RepositoryContext {
 }
 
 interface PromptRepository : RepositoryContext {
+    suspend fun fetchPromptLibraryMeta(): Resource<PromptLibraryMetaDto> =
+        throw UnsupportedOperationException("fetchPromptLibraryMeta is not configured")
+
     suspend fun fetchSystemPrompts(
         projectId: String = currentProjectId(),
         promptCategory: String? = null,
         query: String? = null,
-        favoritesOnly: Boolean? = null
+        favoritesOnly: Boolean? = null,
+        genre: String? = null,
+        format: String? = null
     ): Resource<List<SystemPromptDto>> =
         throw UnsupportedOperationException("fetchSystemPrompts is not configured")
+
+    suspend fun associatePromptWithProject(
+        projectId: String,
+        promptId: String,
+        surface: String
+    ): Resource<JsonMap> =
+        throw UnsupportedOperationException("associatePromptWithProject is not configured")
 
     suspend fun saveSystemPrompt(
         projectId: String = currentProjectId(),
@@ -285,7 +301,10 @@ interface PromptRepository : RepositoryContext {
         promptText: String? = null,
         visualMedium: String? = null,
         promptCategory: String? = null,
-        isFavorite: Boolean? = null
+        isFavorite: Boolean? = null,
+        genre: String? = null,
+        format: String? = null,
+        modelHint: String? = null
     ): Resource<SystemPromptDto> =
         throw UnsupportedOperationException("updateSystemPrompt is not configured")
 
@@ -297,6 +316,37 @@ interface PromptRepository : RepositoryContext {
 
     suspend fun deleteSystemPrompt(promptId: String): Resource<JsonMap> =
         throw UnsupportedOperationException("deleteSystemPrompt is not configured")
+}
+
+interface MemoryRepository : RepositoryContext {
+    suspend fun readMemory(
+        projectId: String = currentProjectId(),
+        scope: String? = null,
+        query: String? = null
+    ): Resource<List<MemoryItemDto>> =
+        throw UnsupportedOperationException("readMemory is not configured")
+
+    suspend fun writeMemory(
+        projectId: String = currentProjectId(),
+        content: String,
+        scope: String = "project",
+        category: String = "general",
+        idempotencyKey: String? = null
+    ): Resource<MemoryItemDto> =
+        throw UnsupportedOperationException("writeMemory is not configured")
+
+    suspend fun correctMemory(memoryId: String, content: String): Resource<MemoryItemDto> =
+        throw UnsupportedOperationException("correctMemory is not configured")
+
+    suspend fun deleteMemory(
+        memoryId: String? = null,
+        projectId: String? = null,
+        scope: String? = null
+    ): Resource<JsonMap> =
+        throw UnsupportedOperationException("deleteMemory is not configured")
+
+    suspend fun reconcileMemory(projectId: String = currentProjectId()): Resource<JsonMap> =
+        throw UnsupportedOperationException("reconcileMemory is not configured")
 }
 
 interface AdminRepository : RepositoryContext {
@@ -356,4 +406,5 @@ interface AnimeRepositoryApi :
     MediaRepository,
     ProductionRepository,
     PromptRepository,
+    MemoryRepository,
     AdminRepository

@@ -25,6 +25,7 @@ import kotlinx.coroutines.launch
 import org.dpdns.bnai.anime.core.network.CommandIntent
 import org.dpdns.bnai.anime.core.network.JsonMap
 import org.dpdns.bnai.anime.core.network.Resource
+import org.dpdns.bnai.anime.core.network.SystemPromptDto
 import org.dpdns.bnai.anime.ui.components.ProjectSelectorBar
 import org.dpdns.bnai.anime.ui.components.friendlyPipelineStatus
 import org.dpdns.bnai.anime.ui.designsystem.*
@@ -62,6 +63,8 @@ fun BibleScreen() {
     var activeWf01CmdId by remember(projectId) { mutableStateOf(tokenManager.getActiveCommandId(projectId, "wf01_bible_gen")) }
     var activeWf01Status by remember { mutableStateOf<String?>(null) }
     var isSubmittingWf01 by remember { mutableStateOf(false) }
+    var biblePrompts by remember { mutableStateOf<List<SystemPromptDto>>(emptyList()) }
+    var activeBiblePromptId by remember(projectId) { mutableStateOf<String?>(null) }
 
     fun currentEditorSnapshot(): String {
         return listOf(
@@ -90,6 +93,7 @@ fun BibleScreen() {
         powerSystem = (bible["power_system"] ?: bible["magic_system"] ?: "").toString()
         characterFoundations = (bible["character_foundations"] ?: bible["main_cast_notes"] ?: "").toString()
         timelineFoundation = (bible["timeline"] ?: bible["season_arc"] ?: "").toString()
+        activeBiblePromptId = map["active_system_prompt_id"]?.toString()?.takeIf { it.isNotBlank() }
         savedSnapshot = currentEditorSnapshot()
     }
 
@@ -117,8 +121,20 @@ fun BibleScreen() {
         }
     }
 
+    fun loadBiblePrompts(targetPid: String) {
+        if (targetPid.isBlank()) return
+        scope.launch {
+            when (val res = repository.fetchSystemPrompts(targetPid, "BIBLE")) {
+                is Resource.Success -> biblePrompts = res.data
+                is Resource.Empty -> biblePrompts = emptyList()
+                else -> {}
+            }
+        }
+    }
+
     LaunchedEffect(projectId) {
         loadBibleFromServer(projectId)
+        loadBiblePrompts(projectId)
     }
 
     LaunchedEffect(activeWf01CmdId, projectId) {
@@ -186,6 +202,66 @@ fun BibleScreen() {
                 }
             }
         )
+
+        StandardCard(modifier = Modifier.testTag(TestTags.Bible.PROMPT_LIBRARY)) {
+            SectionHeader(
+                title = "Shared Prompt Library",
+                badgeText = "BIBLE"
+            )
+            Text(
+                text = "Reuse an owned Bible prompt from Prompt Studio. Selecting one associates it with this project and activates it for Bible generation.",
+                fontSize = 12.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            if (biblePrompts.isEmpty()) {
+                Text(
+                    text = "No saved BIBLE prompts yet. Create one in Prompt Studio.",
+                    fontSize = 13.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            } else {
+                biblePrompts.forEach { prompt ->
+                    val isActive = prompt.id == activeBiblePromptId
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(prompt.title, fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
+                            Text(
+                                text = "${prompt.genre ?: "Any genre"} | ${prompt.format ?: "Any format"} | v${prompt.version}",
+                                fontSize = 11.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        OutlinedButton(
+                            enabled = !isActive,
+                            onClick = {
+                                scope.launch {
+                                    val associated = repository.associatePromptWithProject(projectId, prompt.id, "BIBLE")
+                                    if (associated is Resource.Error) {
+                                        Toast.makeText(context, associated.message, Toast.LENGTH_LONG).show()
+                                        return@launch
+                                    }
+                                    when (val activated = repository.setActiveSystemPrompt(projectId, prompt.id)) {
+                                        is Resource.Success -> {
+                                            activeBiblePromptId = prompt.id
+                                            Toast.makeText(context, "Bible prompt activated", Toast.LENGTH_SHORT).show()
+                                        }
+                                        is Resource.Error -> Toast.makeText(context, activated.message, Toast.LENGTH_LONG).show()
+                                        else -> {}
+                                    }
+                                }
+                            },
+                            modifier = Modifier.testTag(TestTags.item(TestTags.Bible.PROMPT_OPTION_PREFIX, prompt.id))
+                        ) {
+                            Text(if (isActive) "Active" else "Use")
+                        }
+                    }
+                }
+            }
+        }
 
         if (!activeWf01CmdId.isNullOrBlank()) {
             StandardCard {

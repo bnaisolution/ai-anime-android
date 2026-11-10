@@ -217,6 +217,24 @@ class TokenManager(context: Context? = null) {
         prefs?.edit()?.remove("chat_history_$pid")?.apply()
     }
 
+    fun getMemoryTombstones(projectId: String): Set<String> {
+        val pid = projectId.ifBlank { "global_studio" }
+        return prefs?.getStringSet("memory_tombstones_$pid", emptySet())?.toSet() ?: emptySet()
+    }
+
+    fun addMemoryTombstone(projectId: String, stableId: String) {
+        if (stableId.isBlank()) return
+        val pid = projectId.ifBlank { "global_studio" }
+        val current = getMemoryTombstones(pid).toMutableSet()
+        current += stableId
+        prefs?.edit()?.putStringSet("memory_tombstones_$pid", current)?.apply()
+    }
+
+    fun saveMemoryTombstones(projectId: String, tombstones: Set<String>) {
+        val pid = projectId.ifBlank { "global_studio" }
+        prefs?.edit()?.putStringSet("memory_tombstones_$pid", tombstones)?.apply()
+    }
+
     fun getProjectConversationId(projectId: String): String {
         val pid = projectId.ifBlank { "global_studio" }
         val existing = prefs?.getString("conv_id_$pid", null)

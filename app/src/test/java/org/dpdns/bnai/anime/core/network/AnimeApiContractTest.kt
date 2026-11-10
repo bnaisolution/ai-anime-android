@@ -51,4 +51,11 @@ class AnimeApiContractTest {
         assertNotNull(annotation)
         assertEquals("v1/anime/projects/{id}", annotation.value)
     }
+
+    @Test
+    fun memoryReconciliationUsesTheCanonicalPostPath() {
+        val annotation = method("reconcileMemory").getAnnotation(POST::class.java)
+        assertNotNull(annotation)
+        assertEquals("api/v1/memory/reconcile", annotation.value)
+    }
 }

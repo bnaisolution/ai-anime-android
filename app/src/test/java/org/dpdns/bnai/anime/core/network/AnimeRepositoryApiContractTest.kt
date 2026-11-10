@@ -16,6 +16,7 @@ class AnimeRepositoryApiContractTest {
         assertTrue(unimplemented is MediaRepository)
         assertTrue(unimplemented is ProductionRepository)
         assertTrue(unimplemented is PromptRepository)
+        assertTrue(unimplemented is MemoryRepository)
         assertTrue(unimplemented is AdminRepository)
     }
 
@@ -33,6 +34,9 @@ class AnimeRepositoryApiContractTest {
         }
         assertThrows(UnsupportedOperationException::class.java) {
             runBlocking { unimplemented.checkBackendHealth() }
+        }
+        assertThrows(UnsupportedOperationException::class.java) {
+            runBlocking { unimplemented.readMemory() }
         }
     }
 }

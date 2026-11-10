@@ -70,8 +70,13 @@ object TestTags {
         const val TITLE_FIELD = "screen.prompt_studio.title"
         const val TEXT_FIELD = "screen.prompt_studio.text"
         const val MEDIUM = "screen.prompt_studio.medium"
+        const val GENRE = "screen.prompt_studio.genre"
+        const val FORMAT = "screen.prompt_studio.format"
+        const val TEMPLATE = "screen.prompt_studio.template"
+        const val APPLY_TEMPLATE = "screen.prompt_studio.apply_template"
         const val SEARCH = "screen.prompt_studio.search"
         const val FAVORITES = "screen.prompt_studio.favorites"
+        const val FILTER_GENRE_FORMAT = "screen.prompt_studio.filter_genre_format"
         const val CARD_PREFIX = "screen.prompt_studio.card"
         const val FAVORITE_PREFIX = "screen.prompt_studio.favorite"
     }
@@ -89,6 +94,8 @@ object TestTags {
 
     object Bible {
         const val SAVE_DRAFT = "screen.bible.save_draft"
+        const val PROMPT_LIBRARY = "screen.bible.prompt_library"
+        const val PROMPT_OPTION_PREFIX = "screen.bible.prompt_option"
     }
 
     object EpisodePlanner {

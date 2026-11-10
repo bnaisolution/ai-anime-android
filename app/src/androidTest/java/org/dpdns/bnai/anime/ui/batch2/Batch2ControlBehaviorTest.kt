@@ -131,6 +131,52 @@ class Batch2ControlBehaviorTest {
     }
 
     @Test
+    fun promptStudioAppliesGenreTemplateAndPersistsFormat() {
+        val container = Batch2RecordingContainer()
+        composeRule.setBatch2Content(container) { PromptStudioScreen() }
+        waitForCall(container, "fetchPromptLibraryMeta")
+        waitForCall(container, "fetchSystemPrompts")
+        waitForTag(TestTags.PromptStudio.APPLY_TEMPLATE)
+
+        composeRule.onNodeWithTag(TestTags.PromptStudio.APPLY_TEMPLATE)
+            .performScrollTo()
+            .performClick()
+        composeRule.waitForIdle()
+        composeRule.onNodeWithTag(TestTags.PromptStudio.SAVE)
+            .performScrollTo()
+            .assertIsEnabled()
+            .performSemanticsAction(SemanticsActions.OnClick)
+
+        waitForCall(container, "updateSystemPrompt")
+        val call = container.recorder.lastCall("updateSystemPrompt")
+        assertEquals("Horror", call?.args?.get(6))
+        assertEquals("SERIES", call?.args?.get(7))
+        assertEquals("CINEMATIC", call?.args?.get(3))
+    }
+
+    @Test
+    fun bibleScreenAssociatesAndActivatesOwnedPrompt() {
+        val container = Batch2RecordingContainer()
+        composeRule.setBatch2Content(container) { BibleScreen() }
+        waitForCall(container, "fetchSystemPrompts")
+        waitForTag(TestTags.item(TestTags.Bible.PROMPT_OPTION_PREFIX, "prompt-1"))
+
+        composeRule.onNodeWithTag(TestTags.item(TestTags.Bible.PROMPT_OPTION_PREFIX, "prompt-1"))
+            .performScrollTo()
+            .performClick()
+
+        waitForCall(container, "associatePromptWithProject")
+        waitForCall(container, "setActiveSystemPrompt")
+        val associate = container.recorder.lastCall("associatePromptWithProject")
+        assertEquals(BATCH2_PROJECT_ID, associate?.args?.get(0))
+        assertEquals("prompt-1", associate?.args?.get(1))
+        assertEquals("BIBLE", associate?.args?.get(2))
+        val activate = container.recorder.lastCall("setActiveSystemPrompt")
+        assertEquals(BATCH2_PROJECT_ID, activate?.args?.get(0))
+        assertEquals("prompt-1", activate?.args?.get(1))
+    }
+
+    @Test
     fun settingsSavePersistsInfrastructureAndProjectPolicy() {
         val container = Batch2RecordingContainer()
         composeRule.setBatch2Content(container) { SettingsScreen() }
