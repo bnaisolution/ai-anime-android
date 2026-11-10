@@ -36,6 +36,10 @@ fun OwnerOverviewScreen() {
     var latencyMs by remember { mutableLongStateOf(22L) }
     var activeWorkersCount by remember { mutableIntStateOf(1) }
     var pendingQueuesCount by remember { mutableIntStateOf(0) }
+    var platformManagedEnabled by remember { mutableStateOf(false) }
+    var platformManagedReason by remember { mutableStateOf("Disabled by policy. BYOD remains active.") }
+    var replicationStatus by remember { mutableStateOf("NOT CONFIGURED") }
+    var ownerQuotaSummary by remember { mutableStateOf("No tenant quota configured") }
     var showEmergencyDialog by remember { mutableStateOf(false) }
 
     fun refreshOwnerHub(pid: String) {
@@ -49,6 +53,25 @@ fun OwnerOverviewScreen() {
                 val queues = repository.fetchAdminQueues(pid)
                 val qData = (queues as? Resource.Success)?.data.orEmpty()
                 pendingQueuesCount = (qData["pending_count"] as? Number)?.toInt() ?: 0
+            }
+            val platform = (repository.fetchPlatformManagedStatus() as? Resource.Success)?.data.orEmpty()
+            platformManagedEnabled = platform["enabled"] == true
+            platformManagedReason = platform["reason"] as? String
+                ?: "Disabled by policy. BYOD remains active."
+            val replication = (repository.fetchReplicationStatus() as? Resource.Success)?.data.orEmpty()
+            replicationStatus = if (replication["configured"] == true) {
+                val secondary = replication["secondary"] as? Map<*, *>
+                "CONFIGURED • ${secondary?.get("healthy") ?: "UNKNOWN"}"
+            } else {
+                "NOT CONFIGURED"
+            }
+            val quota = (repository.fetchOwnerQuota() as? Resource.Success)?.data.orEmpty()
+            val used = (quota["used_units"] as? Number)?.toDouble() ?: 0.0
+            val limit = (quota["daily_limit_units"] as? Number)?.toDouble()
+            ownerQuotaSummary = if (limit != null) {
+                "${formatInt(used.toInt())} / ${formatInt(limit.toInt())} units today"
+            } else {
+                "${formatInt(used.toInt())} units today • no hard limit"
             }
         }
     }
@@ -171,5 +194,33 @@ fun OwnerOverviewScreen() {
         ) {
             Text("🚨 Emergency Stop All GPU Workers", fontWeight = FontWeight.Bold)
         }
+
+        Card(
+            modifier = Modifier.fillMaxWidth().testTag(TestTags.Owner.PLATFORM_MANAGED),
+            shape = RoundedCornerShape(12.dp)
+        ) {
+            Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                    Text("Platform-Managed Hosting", style = MaterialTheme.typography.labelLarge)
+                    StatusBadge(if (platformManagedEnabled) "ENABLED" else "COMING SOON")
+                }
+                Text(platformManagedReason, style = MaterialTheme.typography.bodyMedium)
+                Text(ownerQuotaSummary, style = MaterialTheme.typography.bodySmall)
+            }
+        }
+
+        Card(
+            modifier = Modifier.fillMaxWidth().testTag(TestTags.Owner.REPLICATION_STATUS),
+            shape = RoundedCornerShape(12.dp)
+        ) {
+            Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                    Text("Secondary Database / Replication", style = MaterialTheme.typography.labelLarge)
+                    StatusBadge(replicationStatus)
+                }
+                Text("Failover remains interface-only until an isolated secondary database is configured and approved.", style = MaterialTheme.typography.bodySmall)
+            }
+        }
+
     }
 }
