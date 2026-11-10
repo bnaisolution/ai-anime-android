@@ -2,6 +2,8 @@ package org.dpdns.bnai.anime.core.auth
 
 import android.content.Context
 import android.content.SharedPreferences
+import androidx.security.crypto.EncryptedSharedPreferences
+import androidx.security.crypto.MasterKey
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,9 +21,12 @@ data class PersistedChatMessage(
 
 class TokenManager(context: Context? = null) {
 
-    private val prefs: SharedPreferences? =
-        (context ?: appContext)?.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+    private val prefs: SharedPreferences? = (context ?: appContext)?.let { createSecurePreferences(it) }
     private val gson = Gson()
+    private var cachedUserId: String? = null
+    private var cachedWorkspaceId: String? = null
+    private var cachedUserRole: String? = null
+    private var cachedUserEmail: String? = null
 
     val sessionExpiredMessage: StateFlow<String?>
         get() = _sessionExpiredFlow.asStateFlow()
@@ -35,9 +40,58 @@ class TokenManager(context: Context? = null) {
         return cachedToken ?: prefs?.getString(KEY_JWT, null)?.also { cachedToken = it }
     }
 
+    fun saveSession(
+        accessToken: String,
+        refreshToken: String?,
+        expiresInSeconds: Long?,
+        userId: String?,
+        workspaceId: String? = "default-workspace",
+        role: String? = "normal_user",
+        email: String? = ""
+    ) {
+        saveToken(accessToken)
+        val expiresIn = expiresInSeconds?.takeIf { it > 0 } ?: 3600L
+        cachedRefreshToken = refreshToken?.takeIf { it.isNotBlank() }
+        cachedExpiresAt = System.currentTimeMillis() + expiresIn * 1000L
+        val editor = prefs?.edit()
+        if (cachedRefreshToken.isNullOrBlank()) {
+            editor?.remove(KEY_REFRESH_TOKEN)
+        } else {
+            editor?.putString(KEY_REFRESH_TOKEN, cachedRefreshToken)
+        }
+        editor?.putLong(KEY_EXPIRES_AT, cachedExpiresAt)
+        editor?.apply()
+        saveUserMeta(userId, workspaceId, role, email)
+    }
+
+    fun getRefreshToken(): String? =
+        cachedRefreshToken ?: prefs?.getString(KEY_REFRESH_TOKEN, null)?.also { cachedRefreshToken = it }
+
+    fun getAccessTokenExpiresAt(): Long =
+        cachedExpiresAt.takeIf { it > 0L } ?: (prefs?.getLong(KEY_EXPIRES_AT, 0L) ?: 0L).also { cachedExpiresAt = it }
+
+    fun isAccessTokenExpired(skewMs: Long = 60_000L): Boolean {
+        val expiresAt = getAccessTokenExpiresAt()
+        return expiresAt <= 0L || expiresAt <= System.currentTimeMillis() + skewMs
+    }
+
     fun clearToken(reason: String? = null) {
         cachedToken = null
-        prefs?.edit()?.remove(KEY_JWT)?.apply()
+        cachedRefreshToken = null
+        cachedExpiresAt = 0L
+        cachedUserId = null
+        cachedWorkspaceId = null
+        cachedUserRole = null
+        cachedUserEmail = null
+        prefs?.edit()
+            ?.remove(KEY_JWT)
+            ?.remove(KEY_REFRESH_TOKEN)
+            ?.remove(KEY_EXPIRES_AT)
+            ?.remove(KEY_USER_ID)
+            ?.remove(KEY_WORKSPACE_ID)
+            ?.remove(KEY_USER_ROLE)
+            ?.remove(KEY_USER_EMAIL)
+            ?.apply()
         if (!reason.isNullOrBlank()) {
             _sessionExpiredFlow.value = reason
         }
@@ -45,6 +99,12 @@ class TokenManager(context: Context? = null) {
 
     internal fun clearForTests() {
         cachedToken = null
+        cachedRefreshToken = null
+        cachedExpiresAt = 0L
+        cachedUserId = null
+        cachedWorkspaceId = null
+        cachedUserRole = null
+        cachedUserEmail = null
         cachedProjectId = null
         cachedProviderLabel = null
         prefs?.edit()?.clear()?.apply()
@@ -53,22 +113,26 @@ class TokenManager(context: Context? = null) {
     fun saveUserMeta(
         userId: String?,
         workspaceId: String? = "default-workspace",
-        role: String? = "owner",
+        role: String? = "normal_user",
         email: String? = ""
     ) {
+        cachedUserId = userId
+        cachedWorkspaceId = workspaceId ?: "default-workspace"
+        cachedUserRole = role ?: "normal_user"
+        cachedUserEmail = email ?: ""
         prefs?.edit()
             ?.putString(KEY_USER_ID, userId ?: "")
             ?.putString(KEY_WORKSPACE_ID, workspaceId ?: "default-workspace")
-            ?.putString(KEY_USER_ROLE, role ?: "owner")
+            ?.putString(KEY_USER_ROLE, role ?: "normal_user")
             ?.putString(KEY_USER_EMAIL, email ?: "")
             ?.apply()
     }
 
-    fun getUserId(): String = prefs?.getString(KEY_USER_ID, "") ?: ""
-    fun getWorkspaceId(): String = prefs?.getString(KEY_WORKSPACE_ID, "default-workspace") ?: "default-workspace"
-    fun getUserEmail(): String = prefs?.getString(KEY_USER_EMAIL, "director@studio.ai") ?: "director@studio.ai"
-    fun getUserRole(): String = prefs?.getString(KEY_USER_ROLE, "owner") ?: "owner"
-    fun isOwner(): Boolean = getUserRole().lowercase() in listOf("owner", "admin")
+    fun getUserId(): String = cachedUserId ?: prefs?.getString(KEY_USER_ID, "") ?: ""
+    fun getWorkspaceId(): String = cachedWorkspaceId ?: prefs?.getString(KEY_WORKSPACE_ID, "default-workspace") ?: "default-workspace"
+    fun getUserEmail(): String = cachedUserEmail ?: prefs?.getString(KEY_USER_EMAIL, "") ?: ""
+    fun getUserRole(): String = cachedUserRole ?: prefs?.getString(KEY_USER_ROLE, "normal_user") ?: "normal_user"
+    fun isOwner(): Boolean = getUserRole().lowercase() in listOf("owner", "owner_admin", "admin")
 
     fun notifySessionExpired(message: String = "Your session has expired. Please sign in again.") {
         _sessionExpiredFlow.value = message
@@ -162,9 +226,37 @@ class TokenManager(context: Context? = null) {
         return created
     }
 
+    private fun createSecurePreferences(context: Context): SharedPreferences? {
+        return try {
+            openEncryptedPreferences(context)
+        } catch (_: Exception) {
+            try {
+                context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit().clear().commit()
+                openEncryptedPreferences(context)
+            } catch (_: Exception) {
+                null
+            }
+        }
+    }
+
+    private fun openEncryptedPreferences(context: Context): SharedPreferences {
+        val masterKey = MasterKey.Builder(context)
+            .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+            .build()
+        return EncryptedSharedPreferences.create(
+            context,
+            PREFS_NAME,
+            masterKey,
+            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+        )
+    }
+
     companion object {
         private const val PREFS_NAME = "anime_engine_auth_prefs"
         private const val KEY_JWT = "jwt_access_token"
+        private const val KEY_REFRESH_TOKEN = "jwt_refresh_token"
+        private const val KEY_EXPIRES_AT = "jwt_expires_at"
         private const val KEY_USER_ID = "user_id"
         private const val KEY_WORKSPACE_ID = "workspace_id"
         private const val KEY_USER_ROLE = "user_role"
@@ -185,6 +277,12 @@ class TokenManager(context: Context? = null) {
 
         @Volatile
         var cachedToken: String? = null
+
+        @Volatile
+        private var cachedRefreshToken: String? = null
+
+        @Volatile
+        private var cachedExpiresAt: Long = 0L
 
         @Volatile
         var cachedProjectId: String? = null
@@ -218,6 +316,8 @@ class TokenManager(context: Context? = null) {
                 instance = null
                 appContext = null
                 cachedToken = null
+                cachedRefreshToken = null
+                cachedExpiresAt = 0L
                 cachedProjectId = null
                 cachedProviderLabel = null
                 _sessionExpiredFlow.value = null

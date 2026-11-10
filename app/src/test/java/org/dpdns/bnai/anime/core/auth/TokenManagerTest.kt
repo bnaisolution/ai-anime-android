@@ -2,7 +2,9 @@ package org.dpdns.bnai.anime.core.auth
 
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 
@@ -42,6 +44,26 @@ class TokenManagerTest {
         manager.saveActiveProjectId(projectId)
         val other = TokenManager(null)
         assertEquals(projectId, other.getActiveProjectId())
+    }
+
+    @Test
+    fun sessionPersistsRefreshTokenAndExpiryInMemory() {
+        manager.saveSession(
+            accessToken = "access-token",
+            refreshToken = "refresh-token",
+            expiresInSeconds = 3600,
+            userId = "user-1",
+            workspaceId = "workspace-1",
+            role = "owner_admin",
+            email = "owner@test.invalid"
+        )
+        assertEquals("access-token", manager.getToken())
+        assertEquals("refresh-token", manager.getRefreshToken())
+        assertFalse(manager.isAccessTokenExpired())
+        assertTrue(manager.isOwner())
+        manager.clearToken()
+        assertNull(manager.getRefreshToken())
+        assertTrue(manager.isAccessTokenExpired())
     }
 
     @Test
