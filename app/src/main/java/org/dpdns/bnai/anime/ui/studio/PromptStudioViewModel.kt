@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import org.dpdns.bnai.anime.core.auth.TokenManager
+import org.dpdns.bnai.anime.core.network.AnimeApiService
 import org.dpdns.bnai.anime.core.network.CreateSystemPromptRequest
 import org.dpdns.bnai.anime.core.network.RetrofitClient
 import org.dpdns.bnai.anime.core.network.SystemPromptDto
@@ -19,8 +20,12 @@ data class PromptStudioUiState(
     val statusMessage: String? = null
 )
 
-class PromptStudioViewModel : ViewModel() {
-    private val api = RetrofitClient.getApiService()
+class PromptStudioViewModel(
+    private val api: AnimeApiService = RetrofitClient.getApiService(),
+    private val activeProjectId: () -> String? = {
+        TokenManager.getInstance().getActiveProjectId().ifBlank { null }
+    }
+) : ViewModel() {
     private val _uiState = MutableStateFlow(PromptStudioUiState())
     val uiState: StateFlow<PromptStudioUiState> = _uiState.asStateFlow()
 
@@ -29,7 +34,7 @@ class PromptStudioViewModel : ViewModel() {
     }
 
     fun loadPrompts() {
-        val projectId = TokenManager.getInstance()?.getActiveProjectId()?.ifBlank { null }
+        val projectId = activeProjectId()
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true, statusMessage = null)
             try {
@@ -72,7 +77,7 @@ class PromptStudioViewModel : ViewModel() {
 
     fun createAndActivatePrompt(title: String, promptText: String) {
         if (title.isBlank() || promptText.isBlank()) return
-        val projectId = TokenManager.getInstance()?.getActiveProjectId()?.ifBlank { null }
+        val projectId = activeProjectId()
         val medium = _uiState.value.selectedVisualMedium
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true, statusMessage = null)
