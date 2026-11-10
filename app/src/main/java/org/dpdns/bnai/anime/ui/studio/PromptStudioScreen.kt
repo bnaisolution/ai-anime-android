@@ -219,7 +219,8 @@ fun PromptStudioScreen() {
                 FilterChip(
                     selected = favoritesOnly,
                     onClick = { favoritesOnly = !favoritesOnly },
-                    label = { Text("Favorites") }
+                    label = { Text("Favorites") },
+                    modifier = Modifier.testTag(TestTags.PromptStudio.FAVORITES)
                 )
             }
             OutlinedTextField(
@@ -227,7 +228,7 @@ fun PromptStudioScreen() {
                 onValueChange = { searchQuery = it },
                 label = { Text("Search prompts, genres, and text") },
                 singleLine = true,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth().testTag(TestTags.PromptStudio.SEARCH)
             )
         }
 
@@ -379,6 +380,7 @@ fun PromptStudioScreen() {
         } else {
             categorySavedList.forEach { item ->
                 StandardCard(
+                    modifier = Modifier.testTag(TestTags.item(TestTags.PromptStudio.CARD_PREFIX, item.id)),
                     onClick = {
                         promptIdByCat[currentCategory] = item.id
                         titlesByCat[currentCategory] = item.title
@@ -406,13 +408,16 @@ fun PromptStudioScreen() {
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
-                        IconButton(onClick = {
-                            if (item.id.isBlank()) return@IconButton
-                            scope.launch {
-                                repository.togglePromptFavorite(item.id)
-                                loadPromptsForProject()
-                            }
-                        }) {
+                        IconButton(
+                            onClick = {
+                                if (item.id.isBlank()) return@IconButton
+                                scope.launch {
+                                    repository.togglePromptFavorite(item.id)
+                                    loadPromptsForProject()
+                                }
+                            },
+                            modifier = Modifier.testTag(TestTags.item(TestTags.PromptStudio.FAVORITE_PREFIX, item.id))
+                        ) {
                             Text(
                                 text = if (item.is_favorite) "\u2605" else "\u2606",
                                 fontSize = 20.sp,

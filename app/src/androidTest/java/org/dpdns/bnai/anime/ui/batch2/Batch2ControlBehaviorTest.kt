@@ -1,6 +1,8 @@
 package org.dpdns.bnai.anime.ui.batch2
 
 import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.test.assertDoesNotExist
+import androidx.compose.ui.test.assertExists
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
@@ -14,6 +16,7 @@ import androidx.compose.ui.test.performTextReplacement
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import org.dpdns.bnai.anime.core.auth.TokenManager
 import org.dpdns.bnai.anime.core.network.CommandIntent
+import org.dpdns.bnai.anime.core.network.SystemPromptDto
 import org.dpdns.bnai.anime.ui.character.CharacterListScreen
 import org.dpdns.bnai.anime.ui.episode.EpisodePlannerScreen
 import org.dpdns.bnai.anime.ui.production.ProductionScreen
@@ -215,5 +218,118 @@ class Batch2ControlBehaviorTest {
         waitForCall(container, "updateEpisodeSync")
         val updates = container.recorder.lastCall("updateEpisodeSync")?.args?.get(2) as? Map<*, *>
         assertTrue(updates?.containsKey("script_text") == true)
+    }
+
+    @Test
+    fun promptStudioSearchFiltersSavedPrompts() {
+        val container = Batch2RecordingContainer(
+            fakeState = Batch2FakeState().apply {
+                systemPrompts = listOf(
+                    SystemPromptDto(
+                        id = "prompt-alpha",
+                        title = "Alpha Bible",
+                        prompt_text = "Alpha instructions",
+                        prompt_category = "BIBLE"
+                    ),
+                    SystemPromptDto(
+                        id = "prompt-beta",
+                        title = "Beta Bible",
+                        prompt_text = "Beta instructions",
+                        prompt_category = "BIBLE",
+                        is_favorite = true
+                    )
+                )
+            }
+        )
+        composeRule.setBatch2Content(container) { PromptStudioScreen() }
+        waitForTag(TestTags.item(TestTags.PromptStudio.CARD_PREFIX, "prompt-alpha"))
+
+        composeRule.onNodeWithTag(TestTags.PromptStudio.SEARCH).performTextInput("Beta")
+        composeRule.waitForIdle()
+
+        composeRule.onNodeWithText("Saved BIBLE Prompts (1)").assertExists()
+        composeRule.onNodeWithTag(TestTags.item(TestTags.PromptStudio.CARD_PREFIX, "prompt-beta")).assertExists()
+        composeRule.onNodeWithTag(TestTags.item(TestTags.PromptStudio.CARD_PREFIX, "prompt-alpha")).assertDoesNotExist()
+    }
+
+    @Test
+    fun promptStudioFavoritesFilterAndToggleDispatch() {
+        val container = Batch2RecordingContainer(
+            fakeState = Batch2FakeState().apply {
+                systemPrompts = listOf(
+                    SystemPromptDto(
+                        id = "prompt-alpha",
+                        title = "Alpha Bible",
+                        prompt_text = "Alpha instructions",
+                        prompt_category = "BIBLE"
+                    ),
+                    SystemPromptDto(
+                        id = "prompt-beta",
+                        title = "Beta Bible",
+                        prompt_text = "Beta instructions",
+                        prompt_category = "BIBLE",
+                        is_favorite = true
+                    )
+                )
+            }
+        )
+        composeRule.setBatch2Content(container) { PromptStudioScreen() }
+        waitForTag(TestTags.item(TestTags.PromptStudio.CARD_PREFIX, "prompt-alpha"))
+
+        composeRule.onNodeWithTag(TestTags.PromptStudio.FAVORITES).performClick()
+        composeRule.waitForIdle()
+
+        composeRule.onNodeWithText("Saved BIBLE Prompts (1)").assertExists()
+        composeRule.onNodeWithTag(TestTags.item(TestTags.PromptStudio.CARD_PREFIX, "prompt-beta")).assertExists()
+        composeRule.onNodeWithTag(TestTags.item(TestTags.PromptStudio.CARD_PREFIX, "prompt-alpha")).assertDoesNotExist()
+
+        composeRule.onNodeWithTag(TestTags.item(TestTags.PromptStudio.FAVORITE_PREFIX, "prompt-beta"))
+            .performScrollTo()
+            .performClick()
+
+        waitForCall(container, "togglePromptFavorite")
+        assertEquals("prompt-beta", container.recorder.lastCall("togglePromptFavorite")?.args?.get(0))
+    }
+
+    @Test
+    fun promptStudioMediumSelectionIsForwardedOnSave() {
+        val container = Batch2RecordingContainer()
+        composeRule.setBatch2Content(container) { PromptStudioScreen() }
+        waitForTag(TestTags.item(TestTags.PromptStudio.CARD_PREFIX, "prompt-1"))
+
+        composeRule.onNodeWithTag(TestTags.PromptStudio.MEDIUM).performClick()
+        composeRule.onNodeWithText("Medium: REAL_HUMAN").assertExists()
+
+        composeRule.onNodeWithTag(TestTags.PromptStudio.EDIT).performScrollTo().performClick()
+        composeRule.onNodeWithTag(TestTags.PromptStudio.TEXT_FIELD)
+            .performScrollTo()
+            .performClick()
+            .performTextReplacement("Medium aware prompt")
+        composeRule.onNodeWithTag(TestTags.PromptStudio.SAVE)
+            .performScrollTo()
+            .assertIsEnabled()
+            .performSemanticsAction(SemanticsActions.OnClick)
+
+        waitForCall(container, "updateSystemPrompt")
+        val call = container.recorder.lastCall("updateSystemPrompt")
+        assertEquals("prompt-1", call?.args?.get(0))
+        assertEquals("REAL_HUMAN", call?.args?.get(3))
+    }
+
+    @Test
+    fun studioCreateProjectAttachesSelectedPrompt() {
+        val container = Batch2RecordingContainer()
+        composeRule.setBatch2Content(container) { StudioDashboardScreen() }
+
+        composeRule.onNodeWithTag(TestTags.Studio.CREATE_PROJECT).performClick()
+        waitForTag(TestTags.item(TestTags.Studio.PROMPT_OPTION_PREFIX, "prompt-1"))
+        composeRule.onNodeWithTag(TestTags.item(TestTags.Studio.PROMPT_OPTION_PREFIX, "prompt-1")).performClick()
+        composeRule.onNodeWithTag(TestTags.Studio.PROJECT_NAME_FIELD).performTextInput("Attached Show")
+        composeRule.onNodeWithTag(TestTags.Studio.CREATE_CONFIRM).performClick()
+
+        waitForCall(container, "createProjectSync")
+        val call = container.recorder.lastCall("createProjectSync")
+        assertEquals("Attached Show", call?.args?.get(0))
+        assertEquals(listOf("prompt-1"), call?.args?.get(1))
     }
 }

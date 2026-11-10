@@ -100,6 +100,15 @@ internal class Batch2FakeState {
     var commandResult: JsonMap = mapOf("media_url" to BATCH2_MEDIA_URL)
     var jobsStatus: String = "FAILED"
     var overviewActiveCommandId: String? = null
+    var systemPrompts: List<SystemPromptDto> = listOf(
+        SystemPromptDto(
+            id = "prompt-1",
+            project_id = BATCH2_PROJECT_ID,
+            title = "Batch Prompt",
+            prompt_text = "Original prompt",
+            prompt_category = "BIBLE"
+        )
+    )
 }
 
 private fun batch2Job(fakeState: Batch2FakeState): JobDto =
@@ -189,17 +198,7 @@ internal fun batch2RecordingRepository(
                             )
                         )
                     )
-                    "fetchSystemPrompts" -> Resource.Success(
-                        listOf(
-                            SystemPromptDto(
-                                id = "prompt-1",
-                                project_id = BATCH2_PROJECT_ID,
-                                title = "Batch Prompt",
-                                prompt_text = "Original prompt",
-                                prompt_category = "BIBLE"
-                            )
-                        )
-                    )
+                    "fetchSystemPrompts" -> Resource.Success(fakeState.systemPrompts)
                     "fetchGpuInfrastructure" -> Resource.Success(
                         mapOf(
                             "preferred_mode" to "BYOD_CLOUD",

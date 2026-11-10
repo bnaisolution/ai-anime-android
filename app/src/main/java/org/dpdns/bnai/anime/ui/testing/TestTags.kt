@@ -41,6 +41,7 @@ object TestTags {
         const val PROJECT_ITEM_PREFIX = "screen.studio.project"
         const val PROJECT_NAME_FIELD = "screen.studio.project_name"
         const val CREATE_CONFIRM = "screen.studio.create_confirm"
+        const val PROMPT_OPTION_PREFIX = "screen.studio.prompt_option"
     }
 
     object ProjectDetail {
@@ -71,6 +72,8 @@ object TestTags {
         const val MEDIUM = "screen.prompt_studio.medium"
         const val SEARCH = "screen.prompt_studio.search"
         const val FAVORITES = "screen.prompt_studio.favorites"
+        const val CARD_PREFIX = "screen.prompt_studio.card"
+        const val FAVORITE_PREFIX = "screen.prompt_studio.favorite"
     }
 
     object Settings {

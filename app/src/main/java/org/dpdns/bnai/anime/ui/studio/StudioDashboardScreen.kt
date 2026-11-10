@@ -90,7 +90,8 @@ fun StudioDashboardScreen(
                                         selectedPromptIds + prompt.id
                                     }
                                 },
-                                label = { Text("${prompt.prompt_category ?: "BIBLE"}: ${prompt.title}") }
+                                label = { Text("${prompt.prompt_category ?: "BIBLE"}: ${prompt.title}") },
+                                modifier = Modifier.testTag(TestTags.item(TestTags.Studio.PROMPT_OPTION_PREFIX, prompt.id))
                             )
                         }
                     }
