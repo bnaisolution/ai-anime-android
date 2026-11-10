@@ -382,6 +382,14 @@ interface AdminRepository : RepositoryContext {
     suspend fun fetchAdminLedgerSummary(): Resource<JsonMap> =
         throw UnsupportedOperationException("fetchAdminLedgerSummary is not configured")
 
+    suspend fun fetchPlatformManagedStatus(): Resource<JsonMap> = Resource.Empty
+
+    suspend fun fetchReplicationStatus(): Resource<JsonMap> = Resource.Empty
+
+    suspend fun fetchOwnerQuota(): Resource<JsonMap> = Resource.Empty
+
+    suspend fun fetchOwnerTenants(): Resource<List<JsonMap>> = Resource.Empty
+
     suspend fun fetchGpuInfrastructure(): Resource<JsonMap> =
         throw UnsupportedOperationException("fetchGpuInfrastructure is not configured")
 

@@ -849,6 +849,46 @@ class AnimeRepository(
     override suspend fun deleteSystemPrompt(promptId: String): Resource<JsonMap> =
         deletePrompt(promptId)
 
+    override suspend fun fetchPlatformManagedStatus(): Resource<JsonMap> = withContext(Dispatchers.IO) {
+        try {
+            val response = apiService.getPlatformManagedStatus()
+            if (response.isSuccessful) Resource.Success(response.body()?.data ?: emptyMap())
+            else Resource.Error("Failed to fetch platform status (${response.code()})", response.code())
+        } catch (e: Exception) {
+            Resource.Error(e.localizedMessage ?: "Failed to fetch platform status")
+        }
+    }
+
+    override suspend fun fetchReplicationStatus(): Resource<JsonMap> = withContext(Dispatchers.IO) {
+        try {
+            val response = apiService.getReplicationStatus()
+            if (response.isSuccessful) Resource.Success(response.body()?.data ?: emptyMap())
+            else Resource.Error("Failed to fetch replication status (${response.code()})", response.code())
+        } catch (e: Exception) {
+            Resource.Error(e.localizedMessage ?: "Failed to fetch replication status")
+        }
+    }
+
+    override suspend fun fetchOwnerQuota(): Resource<JsonMap> = withContext(Dispatchers.IO) {
+        try {
+            val response = apiService.getOwnerQuota()
+            if (response.isSuccessful) Resource.Success(response.body()?.data ?: emptyMap())
+            else Resource.Error("Failed to fetch owner quota (${response.code()})", response.code())
+        } catch (e: Exception) {
+            Resource.Error(e.localizedMessage ?: "Failed to fetch owner quota")
+        }
+    }
+
+    override suspend fun fetchOwnerTenants(): Resource<List<JsonMap>> = withContext(Dispatchers.IO) {
+        try {
+            val response = apiService.getOwnerTenants()
+            if (response.isSuccessful) Resource.Success(response.body()?.data.orEmpty())
+            else Resource.Error("Failed to fetch owner tenants (${response.code()})", response.code())
+        } catch (e: Exception) {
+            Resource.Error(e.localizedMessage ?: "Failed to fetch owner tenants")
+        }
+    }
+
     override suspend fun fetchGpuInfrastructure(): Resource<JsonMap> = withContext(Dispatchers.IO) {
         try {
             val response = apiService.getGpuConfig()

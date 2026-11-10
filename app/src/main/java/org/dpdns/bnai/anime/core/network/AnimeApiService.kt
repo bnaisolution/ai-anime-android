@@ -615,6 +615,18 @@ interface AnimeApiService {
     @DELETE("v1/anime/prompts/{promptId}")
     suspend fun deleteSystemPrompt(@Path("promptId") promptId: String): Response<ApiEnvelope<JsonMap>>
 
+    @GET("v1/anime/platform/status")
+    suspend fun getPlatformManagedStatus(): Response<ApiEnvelope<JsonMap>>
+
+    @GET("v1/anime/owner/replication/status")
+    suspend fun getReplicationStatus(): Response<ApiEnvelope<JsonMap>>
+
+    @GET("v1/anime/owner/quota")
+    suspend fun getOwnerQuota(): Response<ApiEnvelope<JsonMap>>
+
+    @GET("v1/anime/owner/tenants")
+    suspend fun getOwnerTenants(): Response<ApiEnvelope<List<JsonMap>>>
+
     @GET("v1/anime/infrastructure/gpu")
     suspend fun getGpuConfig(): Response<ApiEnvelope<JsonMap>>
 
