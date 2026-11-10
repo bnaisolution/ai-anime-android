@@ -126,7 +126,8 @@ data class ProjectDto(
     val story_bible: JsonMap? = null,
     val current_season: Int? = 1,
     val current_episode: Int? = 1,
-    val budget_ceiling: Double? = null
+    val budget_ceiling: Double? = null,
+    val active_system_prompt_id: String? = null
 )
 
 data class UpdateProjectSettingsRequest(
@@ -135,7 +136,8 @@ data class UpdateProjectSettingsRequest(
     val genre: String? = null,
     val auto_approve: Boolean? = null,
     val cover_image_url: String? = null,
-    val budget_ceiling: Int? = null
+    val budget_ceiling: Int? = null,
+    val active_system_prompt_id: String? = null
 )
 
 data class UpdateBudgetRequest(
@@ -261,12 +263,64 @@ data class VisionAnalyzeRequest(
     val save_to_character: Boolean = false
 )
 
+data class GenreTemplateDto(
+    val id: String,
+    val genre: String,
+    val title: String,
+    val visual_medium: String = "ANIME",
+    val format: String = "SERIES",
+    val model_hint: String? = null,
+    val tags: List<String> = emptyList(),
+    val prompt_text: String
+)
+
+data class PromptLibraryMetaDto(
+    val categories: List<String> = emptyList(),
+    val media: List<String> = emptyList(),
+    val formats: List<String> = emptyList(),
+    val models: List<String> = emptyList(),
+    val genres: List<String> = emptyList(),
+    val genre_templates: List<GenreTemplateDto> = emptyList()
+)
+
+data class MemoryItemDto(
+    val id: String? = null,
+    val owner_id: String? = null,
+    val workspace_id: String? = null,
+    val project_id: String? = null,
+    val scope: String? = null,
+    val content: String = "",
+    val category: String? = null,
+    val knowledge_status: String? = null,
+    val idempotency_key: String? = null,
+    val created_at: String? = null
+)
+
+data class MemoryReadResultDto(
+    val status: String? = null,
+    val memory_items: List<MemoryItemDto> = emptyList()
+)
+
+data class MemoryWriteResultDto(
+    val status: String? = null,
+    val memory_item: MemoryItemDto? = null,
+    val deduplicated: Boolean = false,
+    val errors: List<JsonMap> = emptyList()
+)
+
 data class SystemPromptDto(
     val id: String,
     val project_id: String? = null,
     val title: String,
     val visual_medium: String = "ANIME",
     val prompt_category: String? = "BIBLE",
+    val genre: String? = null,
+    val format: String? = null,
+    val model_hint: String? = null,
+    val tags: List<String> = emptyList(),
+    val is_favorite: Boolean = false,
+    val is_archived: Boolean = false,
+    val version: Int = 1,
     val prompt_text: String,
     val is_default: Boolean? = false
 )
@@ -276,8 +330,26 @@ data class CreateSystemPromptRequest(
     val title: String,
     val visual_medium: String,
     val prompt_category: String = "BIBLE",
+    val genre: String? = null,
+    val format: String? = null,
+    val model_hint: String? = null,
+    val tags: List<String> = emptyList(),
+    val is_favorite: Boolean = false,
     val prompt_text: String,
     val set_active: Boolean = true
+)
+
+data class UpdateSystemPromptRequest(
+    val title: String? = null,
+    val visual_medium: String? = null,
+    val prompt_category: String? = null,
+    val genre: String? = null,
+    val format: String? = null,
+    val model_hint: String? = null,
+    val tags: List<String>? = null,
+    val is_favorite: Boolean? = null,
+    val is_archived: Boolean? = null,
+    val prompt_text: String? = null
 )
 
 data class CustomGpuConfigDto(
@@ -494,11 +566,51 @@ interface AnimeApiService {
     @GET("v1/admin/anime/ledger/summary")
     suspend fun getLedgerSummary(@Query("project_id") projectId: String): Response<ApiEnvelope<JsonMap>>
 
+    @POST("api/v1/memory/read")
+    suspend fun readMemory(@Body body: JsonMap): Response<MemoryReadResultDto>
+
+    @POST("api/v1/memory/write")
+    suspend fun writeMemory(@Body body: JsonMap): Response<MemoryWriteResultDto>
+
+    @POST("api/v1/memory/correct")
+    suspend fun correctMemory(@Body body: JsonMap): Response<MemoryWriteResultDto>
+
+    @POST("api/v1/memory/delete")
+    suspend fun deleteMemory(@Body body: JsonMap): Response<JsonMap>
+
+    @POST("api/v1/memory/reconcile")
+    suspend fun reconcileMemory(@Body body: JsonMap): Response<JsonMap>
+
+    @GET("v1/anime/prompts/library/meta")
+    suspend fun getPromptLibraryMeta(): Response<ApiEnvelope<PromptLibraryMetaDto>>
+
     @GET("v1/anime/prompts")
-    suspend fun getSystemPrompts(@Query("project_id") projectId: String? = null): Response<ApiEnvelope<List<SystemPromptDto>>>
+    suspend fun getSystemPrompts(
+        @Query("project_id") projectId: String? = null,
+        @Query("prompt_category") promptCategory: String? = null,
+        @Query("q") query: String? = null,
+        @Query("is_favorite") favoritesOnly: Boolean? = null,
+        @Query("genre") genre: String? = null,
+        @Query("format") format: String? = null
+    ): Response<ApiEnvelope<List<SystemPromptDto>>>
+
+    @POST("v1/anime/prompts/{promptId}/associate")
+    suspend fun associatePromptWithProject(
+        @Path("promptId") promptId: String,
+        @Body body: JsonMap
+    ): Response<ApiEnvelope<JsonMap>>
 
     @POST("v1/anime/prompts")
     suspend fun createSystemPrompt(@Body body: CreateSystemPromptRequest): Response<ApiEnvelope<SystemPromptDto>>
+
+    @PATCH("v1/anime/prompts/{promptId}")
+    suspend fun updateSystemPrompt(
+        @Path("promptId") promptId: String,
+        @Body body: UpdateSystemPromptRequest
+    ): Response<ApiEnvelope<SystemPromptDto>>
+
+    @POST("v1/anime/prompts/{promptId}/favorite")
+    suspend fun togglePromptFavorite(@Path("promptId") promptId: String): Response<ApiEnvelope<SystemPromptDto>>
 
     @DELETE("v1/anime/prompts/{promptId}")
     suspend fun deleteSystemPrompt(@Path("promptId") promptId: String): Response<ApiEnvelope<JsonMap>>

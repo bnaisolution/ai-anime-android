@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.dpdns.bnai.anime.core.auth.PersistedChatMessage
+import org.dpdns.bnai.anime.core.memory.MemoryCoordinator
 import org.dpdns.bnai.anime.core.network.CommandIntent
 import org.dpdns.bnai.anime.core.network.Resource
 import org.dpdns.bnai.anime.ui.components.ProjectSelectorBar
@@ -53,10 +54,19 @@ fun AIBrainScreen() {
 
     var activeCmdId by remember(projectId) { mutableStateOf(tokenManager.getActiveCommandId(projectId, "ai_brain_cmd")) }
     var activeCmdStatus by remember { mutableStateOf<String?>(null) }
+    val memoryCoordinator = remember(repository, tokenManager) { MemoryCoordinator(repository, tokenManager) }
 
     LaunchedEffect(projectId) {
         providerBadge = repository.resolveConfiguredAiProviderBadge()
         messages = tokenManager.getProjectChatHistory(projectId)
+        when (val sync = memoryCoordinator.reconcileProjectMemory(projectId)) {
+            is Resource.Success -> {
+                if (sync.data.pendingUpload.isNotEmpty()) {
+                    memoryCoordinator.uploadPending(projectId, sync.data)
+                }
+            }
+            else -> Unit
+        }
     }
 
     LaunchedEffect(activeCmdId, projectId) {

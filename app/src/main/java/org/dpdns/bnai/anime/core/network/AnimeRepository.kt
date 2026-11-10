@@ -68,8 +68,10 @@ class AnimeRepository(
         Resource.Error(e.localizedMessage ?: "Network failure")
     }
 
-    override suspend fun createProjectSync(name: String): Resource<ProjectDto> = try {
-        mapEnvelope(apiService.createProjectSync(mapOf("name" to name))) { it }
+    override suspend fun createProjectSync(name: String, promptIds: List<String>): Resource<ProjectDto> = try {
+        val payload = mutableMapOf<String, Any?>("name" to name)
+        if (promptIds.isNotEmpty()) payload["prompt_ids"] = promptIds
+        mapEnvelope(apiService.createProjectSync(payload)) { it }
     } catch (e: Exception) {
         Resource.Error(e.localizedMessage ?: "Project creation failed")
     }
@@ -92,7 +94,8 @@ class AnimeRepository(
                         "id" to dto.project?.id,
                         "name" to dto.project?.name,
                         "is_active" to dto.project?.is_active,
-                        "story_bible" to bible
+                        "story_bible" to bible,
+                        "active_system_prompt_id" to dto.project?.active_system_prompt_id
                     ),
                     "name" to (dto.project?.name ?: "Studio Project"),
                     "genre" to (bible["genre"] ?: "Action / Fantasy"),
@@ -122,7 +125,8 @@ class AnimeRepository(
         genre: String?,
         autoApprove: Boolean?,
         coverImageUrl: String?,
-        budgetCeiling: Int?
+        budgetCeiling: Int?,
+        activeSystemPromptId: String?
     ): Resource<ProjectDto> = try {
         mapEnvelope(
             apiService.updateProjectSettings(
@@ -132,12 +136,32 @@ class AnimeRepository(
                     genre = genre,
                     auto_approve = autoApprove,
                     cover_image_url = coverImageUrl,
-                    budget_ceiling = budgetCeiling
+                    budget_ceiling = budgetCeiling,
+                    active_system_prompt_id = activeSystemPromptId
                 )
             )
         ) { it }
     } catch (e: Exception) {
         Resource.Error(e.localizedMessage ?: "Failed to update project settings")
+    }
+
+    override suspend fun setActiveSystemPrompt(
+        projectId: String,
+        promptId: String
+    ): Resource<JsonMap> = withContext(Dispatchers.IO) {
+        try {
+            val response = apiService.updateProjectSettings(
+                projectId,
+                UpdateProjectSettingsRequest(active_system_prompt_id = promptId)
+            )
+            if (response.isSuccessful) {
+                Resource.Success(mapOf("active_system_prompt_id" to promptId))
+            } else {
+                Resource.Error("Failed to activate prompt (${response.code()})", response.code())
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.localizedMessage ?: "Failed to activate prompt")
+        }
     }
 
     override suspend fun updateProjectSettings(
@@ -677,9 +701,36 @@ class AnimeRepository(
         Resource.Error(e.localizedMessage ?: "Failed to load character reference history")
     }
 
-    override suspend fun fetchSystemPrompts(projectId: String): Resource<List<SystemPromptDto>> = withContext(Dispatchers.IO) {
+    override suspend fun fetchPromptLibraryMeta(): Resource<PromptLibraryMetaDto> = withContext(Dispatchers.IO) {
         try {
-            val response = apiService.getSystemPrompts(projectId.takeIf { it.isNotBlank() })
+            val response = apiService.getPromptLibraryMeta()
+            if (response.isSuccessful && response.body()?.data != null) {
+                Resource.Success(response.body()!!.data!!)
+            } else {
+                Resource.Error("Failed to load prompt library metadata (${response.code()})", response.code())
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.localizedMessage ?: "Failed to load prompt library metadata")
+        }
+    }
+
+    override suspend fun fetchSystemPrompts(
+        projectId: String,
+        promptCategory: String?,
+        query: String?,
+        favoritesOnly: Boolean?,
+        genre: String?,
+        format: String?
+    ): Resource<List<SystemPromptDto>> = withContext(Dispatchers.IO) {
+        try {
+            val response = apiService.getSystemPrompts(
+                projectId = projectId.takeIf { it.isNotBlank() },
+                promptCategory = promptCategory,
+                query = query,
+                favoritesOnly = favoritesOnly,
+                genre = genre,
+                format = format
+            )
             if (response.isSuccessful) {
                 val prompts = response.body()?.data.orEmpty()
                 if (prompts.isEmpty()) Resource.Empty else Resource.Success(prompts)
@@ -696,7 +747,10 @@ class AnimeRepository(
         title: String,
         promptText: String,
         visualMedium: String,
-        promptCategory: String
+        promptCategory: String,
+        genre: String?,
+        format: String?,
+        modelHint: String?
     ): Resource<SystemPromptDto> = withContext(Dispatchers.IO) {
         try {
             val req = CreateSystemPromptRequest(
@@ -704,7 +758,10 @@ class AnimeRepository(
                 title = title,
                 prompt_text = promptText,
                 visual_medium = visualMedium,
-                prompt_category = promptCategory
+                prompt_category = promptCategory,
+                genre = genre,
+                format = format,
+                model_hint = modelHint
             )
             val response = apiService.createSystemPrompt(req)
             if (response.isSuccessful && response.body()?.data != null) {
@@ -714,6 +771,72 @@ class AnimeRepository(
             }
         } catch (e: Exception) {
             Resource.Error(e.localizedMessage ?: "Failed to save prompt")
+        }
+    }
+
+    override suspend fun updateSystemPrompt(
+        promptId: String,
+        title: String?,
+        promptText: String?,
+        visualMedium: String?,
+        promptCategory: String?,
+        isFavorite: Boolean?,
+        genre: String?,
+        format: String?,
+        modelHint: String?
+    ): Resource<SystemPromptDto> = withContext(Dispatchers.IO) {
+        try {
+            val req = UpdateSystemPromptRequest(
+                title = title,
+                prompt_text = promptText,
+                visual_medium = visualMedium,
+                prompt_category = promptCategory,
+                is_favorite = isFavorite,
+                genre = genre,
+                format = format,
+                model_hint = modelHint
+            )
+            val response = apiService.updateSystemPrompt(promptId, req)
+            if (response.isSuccessful && response.body()?.data != null) {
+                Resource.Success(response.body()!!.data!!)
+            } else {
+                Resource.Error("Failed to update prompt (${response.code()})", response.code())
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.localizedMessage ?: "Failed to update prompt")
+        }
+    }
+
+    override suspend fun associatePromptWithProject(
+        projectId: String,
+        promptId: String,
+        surface: String
+    ): Resource<JsonMap> = withContext(Dispatchers.IO) {
+        try {
+            val response = apiService.associatePromptWithProject(
+                promptId,
+                mapOf("project_id" to projectId, "surface" to surface)
+            )
+            if (response.isSuccessful) {
+                Resource.Success(response.body()?.data ?: emptyMap())
+            } else {
+                Resource.Error("Failed to associate prompt (${response.code()})", response.code())
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.localizedMessage ?: "Failed to associate prompt")
+        }
+    }
+
+    override suspend fun togglePromptFavorite(promptId: String): Resource<SystemPromptDto> = withContext(Dispatchers.IO) {
+        try {
+            val response = apiService.togglePromptFavorite(promptId)
+            if (response.isSuccessful && response.body()?.data != null) {
+                Resource.Success(response.body()!!.data!!)
+            } else {
+                Resource.Error("Failed to favorite prompt (${response.code()})", response.code())
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.localizedMessage ?: "Failed to favorite prompt")
         }
     }
 
@@ -786,4 +909,110 @@ class AnimeRepository(
             return@withContext "AI: Disconnected"
         }
     }
+    override suspend fun readMemory(
+        projectId: String,
+        scope: String?,
+        query: String?
+    ): Resource<List<MemoryItemDto>> = withContext(Dispatchers.IO) {
+        try {
+            val body = buildMap<String, Any?> {
+                if (projectId.isNotBlank()) put("project_id", projectId)
+                if (!scope.isNullOrBlank()) put("scope", scope)
+                if (!query.isNullOrBlank()) put("query", query)
+            }
+            val response = apiService.readMemory(body)
+            if (response.isSuccessful) {
+                Resource.Success(response.body()?.memory_items.orEmpty())
+            } else {
+                Resource.Error("Failed to read memory (${response.code()})", response.code())
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.localizedMessage ?: "Failed to read memory")
+        }
+    }
+
+    override suspend fun writeMemory(
+        projectId: String,
+        content: String,
+        scope: String,
+        category: String,
+        idempotencyKey: String?
+    ): Resource<MemoryItemDto> = withContext(Dispatchers.IO) {
+        try {
+            val body = buildMap<String, Any?> {
+                if (projectId.isNotBlank()) put("project_id", projectId)
+                put("content", content)
+                put("scope", scope)
+                put("category", category)
+                if (!idempotencyKey.isNullOrBlank()) put("idempotency_key", idempotencyKey)
+            }
+            val response = apiService.writeMemory(body)
+            val item = response.body()?.memory_item
+            if (response.isSuccessful && item != null) {
+                Resource.Success(item)
+            } else {
+                Resource.Error("Failed to write memory (${response.code()})", response.code())
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.localizedMessage ?: "Failed to write memory")
+        }
+    }
+
+    override suspend fun correctMemory(memoryId: String, content: String): Resource<MemoryItemDto> =
+        withContext(Dispatchers.IO) {
+            try {
+                val response = apiService.correctMemory(
+                    mapOf("memory_id" to memoryId, "content" to content)
+                )
+                val item = response.body()?.memory_item
+                if (response.isSuccessful && item != null) {
+                    Resource.Success(item)
+                } else {
+                    Resource.Error("Failed to correct memory (${response.code()})", response.code())
+                }
+            } catch (e: Exception) {
+                Resource.Error(e.localizedMessage ?: "Failed to correct memory")
+            }
+        }
+
+    override suspend fun deleteMemory(
+        memoryId: String?,
+        projectId: String?,
+        scope: String?
+    ): Resource<JsonMap> = withContext(Dispatchers.IO) {
+        try {
+            val body = buildMap<String, Any?> {
+                if (!memoryId.isNullOrBlank()) put("memory_id", memoryId)
+                else if (!scope.isNullOrBlank()) put("scope", scope)
+                else if (!projectId.isNullOrBlank()) put("project_id", projectId)
+            }
+            if (body.isEmpty()) {
+                return@withContext Resource.Error("memory_id, scope, or project_id required")
+            }
+            val response = apiService.deleteMemory(body)
+            if (response.isSuccessful) {
+                Resource.Success(response.body() ?: emptyMap())
+            } else {
+                Resource.Error("Failed to delete memory (${response.code()})", response.code())
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.localizedMessage ?: "Failed to delete memory")
+        }
+    }
+
+    override suspend fun reconcileMemory(projectId: String): Resource<JsonMap> =
+        withContext(Dispatchers.IO) {
+            try {
+                val body = if (projectId.isBlank()) emptyMap<String, Any?>() else mapOf("project_id" to projectId)
+                val response = apiService.reconcileMemory(body)
+                if (response.isSuccessful) {
+                    Resource.Success(response.body() ?: emptyMap())
+                } else {
+                    Resource.Error("Failed to reconcile memory (${response.code()})", response.code())
+                }
+            } catch (e: Exception) {
+                Resource.Error(e.localizedMessage ?: "Failed to reconcile memory")
+            }
+        }
+
 }

@@ -17,11 +17,13 @@ import org.dpdns.bnai.anime.core.network.ApprovalDecisionDto
 import org.dpdns.bnai.anime.core.network.CharacterDto
 import org.dpdns.bnai.anime.core.network.ClipDto
 import org.dpdns.bnai.anime.core.network.EpisodeDto
+import org.dpdns.bnai.anime.core.network.GenreTemplateDto
 import org.dpdns.bnai.anime.core.network.HealthResponseDto
 import org.dpdns.bnai.anime.core.network.JobDto
 import org.dpdns.bnai.anime.core.network.JsonMap
 import org.dpdns.bnai.anime.core.network.ProjectDto
 import org.dpdns.bnai.anime.core.network.ProjectOverviewDto
+import org.dpdns.bnai.anime.core.network.PromptLibraryMetaDto
 import org.dpdns.bnai.anime.core.network.Resource
 import org.dpdns.bnai.anime.core.network.SceneDto
 import org.dpdns.bnai.anime.core.network.SubmitCommandResultDto
@@ -100,6 +102,15 @@ internal class Batch2FakeState {
     var commandResult: JsonMap = mapOf("media_url" to BATCH2_MEDIA_URL)
     var jobsStatus: String = "FAILED"
     var overviewActiveCommandId: String? = null
+    var systemPrompts: List<SystemPromptDto> = listOf(
+        SystemPromptDto(
+            id = "prompt-1",
+            project_id = BATCH2_PROJECT_ID,
+            title = "Batch Prompt",
+            prompt_text = "Original prompt",
+            prompt_category = "BIBLE"
+        )
+    )
 }
 
 private fun batch2Job(fakeState: Batch2FakeState): JobDto =
@@ -189,14 +200,21 @@ internal fun batch2RecordingRepository(
                             )
                         )
                     )
-                    "fetchSystemPrompts" -> Resource.Success(
-                        listOf(
-                            SystemPromptDto(
-                                id = "prompt-1",
-                                project_id = BATCH2_PROJECT_ID,
-                                title = "Batch Prompt",
-                                prompt_text = "Original prompt",
-                                prompt_category = "BIBLE"
+                    "fetchSystemPrompts" -> Resource.Success(fakeState.systemPrompts)
+                    "fetchPromptLibraryMeta" -> Resource.Success(
+                        PromptLibraryMetaDto(
+                            genres = listOf("Action", "Horror", "Thriller", "Romance", "Comedy", "Mythology"),
+                            formats = listOf("SERIES", "MOVIE", "SHORT", "MUSIC_VIDEO", "TRAILER"),
+                            media = listOf("ANIME", "REAL_HUMAN", "LIVE_ACTION", "CINEMATIC", "MANHWA", "3D", "HYBRID"),
+                            genre_templates = listOf(
+                                GenreTemplateDto(
+                                    id = "horror",
+                                    genre = "Horror",
+                                    title = "Horror Atmosphere Template",
+                                    visual_medium = "CINEMATIC",
+                                    format = "SERIES",
+                                    prompt_text = "Build dread through restrained pacing and negative space."
+                                )
                             )
                         )
                     )
@@ -454,6 +472,7 @@ internal fun batch2RecordingRepository(
                     )
                     "fetchBible" -> Resource.Success(
                         mapOf(
+                            "active_system_prompt_id" to null,
                             "premise" to "A hero rises",
                             "tone_genre" to "Action / Fantasy",
                             "world_setting" to "Neo Tokyo",
@@ -479,6 +498,8 @@ internal fun batch2RecordingRepository(
                         SceneDto(id = argList.getOrNull(2) as? String ?: "scene-1")
                     )
                     "deleteSystemPrompt" -> Resource.Success(emptyMap<String, Any?>())
+                    "associatePromptWithProject", "setActiveSystemPrompt" ->
+                        Resource.Success(emptyMap<String, Any?>())
                     "createProjectSync" -> Resource.Success(
                         ProjectDto(
                             id = "created-project",
@@ -513,6 +534,15 @@ internal fun batch2RecordingRepository(
                             project_id = argList.getOrNull(0) as? String,
                             title = argList.getOrNull(1) as? String ?: "Saved Prompt",
                             prompt_text = argList.getOrNull(2) as? String ?: "",
+                            prompt_category = argList.getOrNull(4) as? String
+                        )
+                    )
+                    "updateSystemPrompt" -> Resource.Success(
+                        SystemPromptDto(
+                            id = argList.getOrNull(0) as? String ?: "prompt-1",
+                            title = argList.getOrNull(1) as? String ?: "Updated Prompt",
+                            prompt_text = argList.getOrNull(2) as? String ?: "",
+                            visual_medium = argList.getOrNull(3) as? String ?: "ANIME",
                             prompt_category = argList.getOrNull(4) as? String
                         )
                     )

@@ -5,6 +5,8 @@ import org.dpdns.bnai.anime.ui.LocalAppContainer
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -22,6 +24,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import org.dpdns.bnai.anime.core.network.Resource
+import org.dpdns.bnai.anime.core.network.SystemPromptDto
 import org.dpdns.bnai.anime.ui.components.ResourceStateBox
 import org.dpdns.bnai.anime.ui.components.StatusBadge
 import org.dpdns.bnai.anime.ui.components.formatRelativeTime
@@ -37,9 +41,25 @@ fun StudioDashboardScreen(
 ) {
     val projectsResource by viewModel.projectsState.collectAsState()
     val summary by viewModel.homeSummary.collectAsState()
+    val repository = LocalAppContainer.current.repository
     var showCreateDialog by remember { mutableStateOf(false) }
     var newProjectName by remember { mutableStateOf("") }
+    var availablePrompts by remember { mutableStateOf<List<SystemPromptDto>>(emptyList()) }
+    var selectedPromptIds by remember { mutableStateOf<Set<String>>(emptySet()) }
     var showProdDialog by remember { mutableStateOf(false) }
+
+    LaunchedEffect(showCreateDialog) {
+        if (showCreateDialog) {
+            try {
+                when (val res = repository.fetchSystemPrompts()) {
+                    is Resource.Success -> availablePrompts = res.data
+                    else -> availablePrompts = emptyList()
+                }
+            } catch (_: Exception) {
+                availablePrompts = emptyList()
+            }
+        }
+    }
 
     // Fix #4: Create Project Dialog calling backend
     if (showCreateDialog) {
@@ -47,19 +67,42 @@ fun StudioDashboardScreen(
             onDismissRequest = { showCreateDialog = false },
             title = { Text("Create Project", fontWeight = FontWeight.Bold) },
             text = {
-                OutlinedTextField(
-                    value = newProjectName,
-                    onValueChange = { newProjectName = it },
-                    label = { Text("Project Title") },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth().testTag(TestTags.Studio.PROJECT_NAME_FIELD)
-                )
+                Column(
+                    modifier = Modifier.verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    OutlinedTextField(
+                        value = newProjectName,
+                        onValueChange = { newProjectName = it },
+                        label = { Text("Project Title") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth().testTag(TestTags.Studio.PROJECT_NAME_FIELD)
+                    )
+                    if (availablePrompts.isNotEmpty()) {
+                        Text("Attach library prompts", fontWeight = FontWeight.SemiBold)
+                        availablePrompts.take(12).forEach { prompt ->
+                            FilterChip(
+                                selected = prompt.id in selectedPromptIds,
+                                onClick = {
+                                    selectedPromptIds = if (prompt.id in selectedPromptIds) {
+                                        selectedPromptIds - prompt.id
+                                    } else {
+                                        selectedPromptIds + prompt.id
+                                    }
+                                },
+                                label = { Text("${prompt.prompt_category ?: "BIBLE"}: ${prompt.title}") },
+                                modifier = Modifier.testTag(TestTags.item(TestTags.Studio.PROMPT_OPTION_PREFIX, prompt.id))
+                            )
+                        }
+                    }
+                }
             },
             confirmButton = {
                 Button(
                     onClick = {
-                        viewModel.createNewProject(newProjectName)
+                        viewModel.createNewProject(newProjectName, selectedPromptIds.toList())
                         newProjectName = ""
+                        selectedPromptIds = emptySet()
                         showCreateDialog = false
                     },
                     enabled = newProjectName.isNotBlank(),
