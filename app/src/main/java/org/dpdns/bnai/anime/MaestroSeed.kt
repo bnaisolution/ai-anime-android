@@ -3,6 +3,7 @@ package org.dpdns.bnai.anime
 import android.content.Context
 import android.content.Intent
 import android.util.Log
+import androidx.lifecycle.ViewModelProvider
 import org.dpdns.bnai.anime.core.auth.TokenManager
 import org.dpdns.bnai.anime.core.di.AppContainer
 import org.dpdns.bnai.anime.core.model.Episode
@@ -13,6 +14,7 @@ import org.dpdns.bnai.anime.core.network.JobDto
 import org.dpdns.bnai.anime.core.network.JsonMap
 import org.dpdns.bnai.anime.core.network.Resource
 import org.dpdns.bnai.anime.core.network.SystemPromptDto
+import org.dpdns.bnai.anime.ui.AppViewModelFactory
 
 /**
  * Debug-only fixture used by the Maestro media-playback flow.
@@ -60,8 +62,14 @@ internal object MaestroSeed {
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
             .getBoolean(KEY_SEEDED, false)
 
-    fun container(base: AppContainer): AppContainer = object : AppContainer by base {
-        override val repository: AnimeRepositoryApi = MaestroFixtureRepository()
+    fun container(base: AppContainer): AppContainer {
+        val seeded = object : AppContainer by base {
+            override val repository: AnimeRepositoryApi = MaestroFixtureRepository()
+        }
+        return object : AppContainer by seeded {
+            override val viewModelFactory: ViewModelProvider.Factory =
+                AppViewModelFactory(seeded)
+        }
     }
 
     private class MaestroFixtureRepository : AnimeRepositoryApi {
