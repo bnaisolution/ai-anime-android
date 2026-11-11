@@ -30,3 +30,4 @@ appId: org.dpdns.bnai.anime
 - assertVisible: "Close player"
 - tapOn: "Close player"
 - assertNotVisible: "Playing"
+- stopApp
