@@ -2,6 +2,7 @@ package org.dpdns.bnai.anime
 
 import android.content.Context
 import android.content.Intent
+import android.util.Log
 import org.dpdns.bnai.anime.core.auth.TokenManager
 import org.dpdns.bnai.anime.core.di.AppContainer
 import org.dpdns.bnai.anime.core.model.Episode
@@ -22,16 +23,21 @@ import org.dpdns.bnai.anime.core.network.SystemPromptDto
 internal object MaestroSeed {
     private const val PREFS_NAME = "anime_maestro_seed"
     private const val KEY_SEEDED = "seeded"
+    private const val TAG = "MaestroSeed"
     private const val DEEP_LINK = "anime://maestro/seed"
     private const val EXTRA_SEED = "maestro_seed"
     private const val PROJECT_ID = "maestro-project"
     private const val MEDIA_URL = "android.resource://org.dpdns.bnai.anime/raw/maestro_tone"
 
     fun handle(context: Context, intent: Intent?): Boolean {
-        val fromDeepLink = intent?.data?.toString() == DEEP_LINK
+        val data = intent?.data?.toString()
+        val fromDeepLink = data == DEEP_LINK
+        val fromViewIntent = intent?.action == Intent.ACTION_VIEW
         val fromLaunchExtra = intent?.getBooleanExtra(EXTRA_SEED, false) == true ||
             intent?.getStringExtra(EXTRA_SEED)?.equals("true", ignoreCase = true) == true
-        if (!fromDeepLink && !fromLaunchExtra) return false
+        Log.i(TAG, "debug=${BuildConfig.DEBUG} action=${intent?.action} data=$data " +
+            "extra=$fromLaunchExtra view=$fromViewIntent")
+        if (!fromDeepLink && !fromLaunchExtra && !fromViewIntent) return false
         val tokenManager = TokenManager.init(context)
         tokenManager.saveSession(
             accessToken = "maestro-fixture-token",
