@@ -12,6 +12,7 @@ object TestTags {
         const val VIEW = "player.view"
         const val CLOSE = "player.close"
         const val PLAY = "player.play"
+        const val STATE = "player.state"
     }
 
     object Dialog {

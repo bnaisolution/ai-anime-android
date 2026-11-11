@@ -1,0 +1,23 @@
+appId: org.dpdns.bnai.anime
+---
+- launchApp:
+    clearState: true
+- openLink: "anime://maestro/seed"
+- extendedWaitUntil:
+    visible: "AI Studio"
+    timeout: 60000
+- tapOn: "Open Navigation Drawer"
+- extendedWaitUntil:
+    visible: "Media Library"
+    timeout: 30000
+- tapOn: "Media Library"
+- extendedWaitUntil:
+    visible: "Scene #1 Video Clip"
+    timeout: 30000
+- tapOn: "Play"
+- extendedWaitUntil:
+    visible: "Playing"
+    timeout: 30000
+- assertVisible: "Close player"
+- tapOn: "Close player"
+- assertNotVisible: "Playing"

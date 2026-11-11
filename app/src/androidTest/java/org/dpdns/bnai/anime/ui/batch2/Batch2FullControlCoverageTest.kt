@@ -404,6 +404,7 @@ class Batch2FullControlCoverageTest {
         assertText("CHARACTERS")
         assertText("SCENES")
         assertText("Copy URL")
+        assertText("Play")
         assertText("Open Stream")
     }
 

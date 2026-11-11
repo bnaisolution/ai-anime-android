@@ -160,7 +160,7 @@ fun MediaLibraryScreen() {
                                 Text(item.title, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
                                 StatusChip(label = item.status)
                             }
-                            if (item.mediaUrl.startsWith("http")) {
+                            if (item.mediaUrl.startsWith("http") || item.mediaUrl.startsWith("android.resource://")) {
                                 AsyncMediaPreview(
                                     mediaUrl = item.mediaUrl,
                                     contentDescription = item.title,
