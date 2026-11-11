@@ -29,8 +29,8 @@ internal object MaestroSeed {
 
     fun handle(context: Context, intent: Intent?): Boolean {
         val fromDeepLink = intent?.data?.toString() == DEEP_LINK
-        val fromLaunchExtra = intent?.getStringExtra(EXTRA_SEED)
-            ?.equals("true", ignoreCase = true) == true
+        val fromLaunchExtra = intent?.getBooleanExtra(EXTRA_SEED, false) == true ||
+            intent?.getStringExtra(EXTRA_SEED)?.equals("true", ignoreCase = true) == true
         if (!fromDeepLink && !fromLaunchExtra) return false
         val tokenManager = TokenManager.init(context)
         tokenManager.saveSession(

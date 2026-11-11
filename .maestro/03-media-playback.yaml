@@ -2,8 +2,8 @@ appId: org.dpdns.bnai.anime
 ---
 - launchApp:
     clearState: true
-    arguments:
-      maestro_seed: "true"
+- stopApp
+- openLink: "anime://maestro/seed"
 - extendedWaitUntil:
     visible: "AI Studio"
     timeout: 60000
