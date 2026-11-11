@@ -8,12 +8,16 @@ appId: org.dpdns.bnai.anime
     visible: "AI Studio"
     timeout: 60000
 - tapOn: "Open Navigation Drawer"
-- extendedWaitUntil:
-    visible: "PRODUCTION"
+- scrollUntilVisible:
+    element:
+      text: "PRODUCTION"
+    direction: DOWN
     timeout: 30000
 - tapOn: "PRODUCTION"
-- extendedWaitUntil:
-    visible: "Media Library"
+- scrollUntilVisible:
+    element:
+      text: "Media Library"
+    direction: DOWN
     timeout: 30000
 - tapOn: "Media Library"
 - extendedWaitUntil:
