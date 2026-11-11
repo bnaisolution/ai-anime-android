@@ -23,11 +23,15 @@ internal object MaestroSeed {
     private const val PREFS_NAME = "anime_maestro_seed"
     private const val KEY_SEEDED = "seeded"
     private const val DEEP_LINK = "anime://maestro/seed"
+    private const val EXTRA_SEED = "maestro_seed"
     private const val PROJECT_ID = "maestro-project"
     private const val MEDIA_URL = "android.resource://org.dpdns.bnai.anime/raw/maestro_tone"
 
     fun handle(context: Context, intent: Intent?): Boolean {
-        if (intent?.data?.toString() != DEEP_LINK) return false
+        val fromDeepLink = intent?.data?.toString() == DEEP_LINK
+        val fromLaunchExtra = intent?.getStringExtra(EXTRA_SEED)
+            ?.equals("true", ignoreCase = true) == true
+        if (!fromDeepLink && !fromLaunchExtra) return false
         val tokenManager = TokenManager.init(context)
         tokenManager.saveSession(
             accessToken = "maestro-fixture-token",
