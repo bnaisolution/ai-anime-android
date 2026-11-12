@@ -78,6 +78,16 @@ fun AppNavGraph(navController: NavHostController) {
     var fabOffsetX by remember { mutableStateOf(tokenManager.getFabOffsetX()) }
     var fabOffsetY by remember { mutableStateOf(tokenManager.getFabOffsetY()) }
 
+    val expandedSections = remember {
+        mutableStateMapOf(
+            "WORKSPACE" to true,
+            "STORY" to true,
+            "PRODUCTION" to false,
+            "INSIGHTS" to false,
+            "OWNER CONTROL" to false
+        )
+    }
+
     LaunchedEffect(currentRoute) {
         if (currentRoute != "auth") {
             isBackendHealthy = repository.checkBackendHealth()
@@ -200,7 +210,13 @@ fun AppNavGraph(navController: NavHostController) {
                                     Text(userEmail.substringBefore("@"), style = MaterialTheme.typography.titleMedium, maxLines = 1)
                                     Text(userEmail, style = MaterialTheme.typography.bodySmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
                                 }
-                                AssistChip(onClick = {}, label = { Text(userRole, fontSize = 10.sp) })
+                                AssistChip(
+                                    onClick = {
+                                        scope.launch { drawerState.close() }
+                                        navController.navigate("owner_overview") { launchSingleTop = true }
+                                    },
+                                    label = { Text(userRole, fontSize = 10.sp) }
+                                )
                             }
                             OutlinedButton(
                                 onClick = {
@@ -225,17 +241,28 @@ fun AppNavGraph(navController: NavHostController) {
                             .padding(vertical = 6.dp)
                     ) {
                         drawerSections.forEach { (sectionTitle, routes) ->
-                            // Always-visible sections: earlier collapsible headers did not respond to taps on device,
-                            // which blocked navigation to Project Detail / Story Bible / Owner Control.
-                            Text(
-                                text = sectionTitle,
-                                style = MaterialTheme.typography.labelLarge,
-                                color = MaterialTheme.colorScheme.primary,
-                                fontWeight = FontWeight.Bold,
+                            val isExpanded = expandedSections[sectionTitle] == true
+                            Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(start = 12.dp, end = 12.dp, top = 14.dp, bottom = 4.dp)
-                            )
+                                    .clickable { expandedSections[sectionTitle] = !isExpanded }
+                                    .padding(horizontal = 12.dp, vertical = 10.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = sectionTitle,
+                                    style = MaterialTheme.typography.labelLarge,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                Icon(
+                                    imageVector = if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                                    contentDescription = sectionTitle,
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                            if (isExpanded) {
                             routes.forEach { (route, title) ->
                                 NavigationDrawerItem(
                                     label = { Text(title) },
@@ -310,7 +337,7 @@ fun AppNavGraph(navController: NavHostController) {
                                         .background(if (isBackendHealthy) Color(0xFF10B981) else Color(0xFFEF4444))
                                 )
                                 Text(
-                                    text = if (isBackendHealthy) "Online" else "Offline",
+                                    text = if (isBackendHealthy) "Backend Online" else "Backend Offline",
                                     fontSize = 10.sp,
                                     color = if (isBackendHealthy) Color(0xFF10B981) else Color(0xFFEF4444)
                                 )
@@ -441,7 +468,8 @@ fun AppNavGraph(navController: NavHostController) {
                                 StudioDashboardScreen(
                                     onProjectClick = { navController.navigate("project_detail") },
                                     onOpenReviews = { navController.navigate("review_inbox") },
-                                    onOpenEpisodes = { navController.navigate("episodes") }
+                                    onOpenEpisodes = { navController.navigate("episodes") },
+                                    onOpenJobsMonitor = { navController.navigate("jobs_monitor") }
                                 )
                             }
                             composable("project_detail") {
@@ -449,9 +477,25 @@ fun AppNavGraph(navController: NavHostController) {
                                     onOpenBible = { navController.navigate("bible") },
                                     onOpenCharacters = { navController.navigate("characters") },
                                     onOpenEpisodes = { navController.navigate("episodes") },
+                                    onOpenProduction = { navController.navigate("production") },
+                                    onOpenScenes = { navController.navigate("scenes") },
+                                    onOpenQC = { navController.navigate("qc") },
+                                    onOpenPublish = { navController.navigate("publish") },
                                     onOpenReviews = { navController.navigate("review_inbox") },
                                     onOpenReviewInbox = { navController.navigate("review_inbox") },
-                                    onOpenAnalytics = { navController.navigate("analytics") }
+                                    onOpenAiBrain = { navController.navigate("ai_brain") },
+                                    onOpenQuickTools = { navController.navigate("quick_tools") },
+                                    onOpenVision = { navController.navigate("vision_analysis") },
+                                    onOpenCanon = { navController.navigate("canon") },
+                                    onOpenContinuity = { navController.navigate("continuity") },
+                                    onOpenLore = { navController.navigate("lore_explorer") },
+                                    onOpenCharDeepDive = { navController.navigate("character_deep_dive") },
+                                    onOpenMediaLibrary = { navController.navigate("media_library") },
+                                    onOpenAnalytics = { navController.navigate("analytics") },
+                                    onOpenJobsMonitor = { navController.navigate("jobs_monitor") },
+                                    onOpenQuota = { navController.navigate("quota_dashboard") },
+                                    onOpenBudget = { navController.navigate("budget_ledger") },
+                                    onOpenNotifications = { navController.navigate("notifications") }
                                 )
                             }
                             composable("bible") { BibleScreen() }

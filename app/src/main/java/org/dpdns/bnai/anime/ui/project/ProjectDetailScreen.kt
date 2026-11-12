@@ -3,6 +3,7 @@ package org.dpdns.bnai.anime.ui.project
 import org.dpdns.bnai.anime.ui.LocalAppContainer
 
 import android.widget.Toast
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -75,11 +76,15 @@ fun ProjectDetailScreen(
 
     var showSettingsDialog by remember { mutableStateOf(false) }
     var editName by remember { mutableStateOf("") }
-    var editGenre by remember { mutableStateOf("Action / Fantasy") }
+    var editGenre by remember { mutableStateOf("") }
     var editMedium by remember { mutableStateOf("ANIME") }
     var editCoverUrl by remember { mutableStateOf("") }
     var editAutoApprove by remember { mutableStateOf(false) }
     var isSavingSettings by remember { mutableStateOf(false) }
+    var settingsDirty by remember { mutableStateOf(false) }
+    val builtInGenres = listOf("Action", "Thriller", "Horror", "Comedy", "Dark Fantasy", "Fantasy", "Sci-Fi", "Romance", "Drama", "Slice of Life")
+    val mediumOptions = listOf("ANIME", "MANHWA", "3D", "2D ANIMATION")
+    var selectedGenres by remember { mutableStateOf<Set<String>>(emptySet()) }
 
     fun loadProjectOverviewData(targetPid: String = repository.currentProjectId()) {
         if (targetPid.isBlank()) {
@@ -170,32 +175,52 @@ fun ProjectDetailScreen(
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     OutlinedTextField(
                         value = editName,
-                        onValueChange = { editName = it },
+                        onValueChange = { editName = it; settingsDirty = true },
                         label = { Text("Project Title") },
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth()
                     )
                     OutlinedTextField(
-                        value = editGenre,
-                        onValueChange = { editGenre = it },
-                        label = { Text("Genre") },
-                        singleLine = true,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    OutlinedTextField(
-                        value = editMedium,
-                        onValueChange = { editMedium = it },
-                        label = { Text("Visual Medium (ANIME / MANHWA / 3D)") },
-                        singleLine = true,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    OutlinedTextField(
                         value = editCoverUrl,
-                        onValueChange = { editCoverUrl = it },
+                        onValueChange = { editCoverUrl = it; settingsDirty = true },
                         label = { Text("Cover Image URL (https://...)") },
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth()
                     )
+                    Text("Genre (select multiple)", fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        modifier = Modifier.horizontalScroll(rememberScrollState())
+                    ) {
+                        builtInGenres.forEach { genre ->
+                            OutlinedButton(
+                                onClick = {
+                                    selectedGenres = if (selectedGenres.contains(genre)) selectedGenres - genre else selectedGenres + genre
+                                    settingsDirty = true
+                                },
+                                shape = RoundedCornerShape(8.dp),
+                                modifier = Modifier.height(34.dp)
+                            ) {
+                                Text(genre, fontSize = 11.sp)
+                            }
+                        }
+                    }
+                    Text("Visual Medium", fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        modifier = Modifier.horizontalScroll(rememberScrollState())
+                    ) {
+                        mediumOptions.forEach { medium ->
+                            OutlinedButton(
+                                onClick = { editMedium = medium; settingsDirty = true },
+                                shape = RoundedCornerShape(8.dp),
+                                modifier = Modifier.height(34.dp),
+                                colors = if (editMedium == medium) OutlinedButtonDefaults.outlinedButtonColors(containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)) else OutlinedButtonDefaults.outlinedButtonColors()
+                            ) {
+                                Text(medium, fontSize = 11.sp)
+                            }
+                        }
+                    }
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -205,7 +230,7 @@ fun ProjectDetailScreen(
                             Text("Auto-Approve Policy", fontWeight = FontWeight.SemiBold)
                             Text("Automatically approve QC & Canon gates when checks pass", fontSize = 11.sp)
                         }
-                        Switch(checked = editAutoApprove, onCheckedChange = { editAutoApprove = it })
+                        Switch(checked = editAutoApprove, onCheckedChange = { editAutoApprove = it; settingsDirty = true })
                     }
                 }
             },
@@ -213,6 +238,7 @@ fun ProjectDetailScreen(
                 PrimaryButton(
                     text = "Save Settings",
                     isLoading = isSavingSettings,
+                    enabled = !isSavingSettings && settingsDirty,
                     modifier = Modifier.testTag(TestTags.ProjectDetail.SAVE_SETTINGS),
                     onClick = {
                         val pid = repository.currentProjectId()
@@ -223,7 +249,7 @@ fun ProjectDetailScreen(
                                 projectId = pid,
                                 updates = mapOf(
                                     "name" to editName.trim(),
-                                    "genre" to editGenre.trim(),
+                                    "genre" to (if (selectedGenres.isNotEmpty()) selectedGenres.joinToString(", ") else editGenre.trim()),
                                     "visual_medium" to editMedium.trim(),
                                     "cover_image_url" to editCoverUrl.trim(),
                                     "auto_approve" to editAutoApprove
@@ -231,6 +257,7 @@ fun ProjectDetailScreen(
                             )
                             isSavingSettings = false
                             if (res is Resource.Success) {
+                                settingsDirty = false
                                 showSettingsDialog = false
                                 loadProjectOverviewData(pid)
                                 Toast.makeText(context, "Project settings saved", Toast.LENGTH_SHORT).show()
@@ -288,7 +315,11 @@ fun ProjectDetailScreen(
                 subtitle = "Medium: $editMedium • Genre: $editGenre • Policy: ${if (editAutoApprove) "Auto-Approve" else "Review Gate"}",
                 trailingContent = {
                     IconButton(
-                        onClick = { showSettingsDialog = true },
+                        onClick = {
+                            selectedGenres = editGenre.split(",").map { it.trim() }.filter { it.isNotBlank() }.toSet()
+                            settingsDirty = false
+                            showSettingsDialog = true
+                        },
                         modifier = Modifier.testTag(TestTags.ProjectDetail.SETTINGS_BUTTON)
                     ) {
                         Icon(Icons.Default.Edit, contentDescription = "Edit Project Settings")
@@ -358,7 +389,7 @@ fun ProjectDetailScreen(
                     )
                 } else {
                     PrimaryButton(
-                        text = "Generate Next Episode",
+                        text = "Create Episode ${((episodesCount.toIntOrNull() ?: 0) + 1)}",
                         isLoading = isSubmittingGen,
                         enabled = !isSubmittingGen && activeJobsCount == "0",
                         onClick = {

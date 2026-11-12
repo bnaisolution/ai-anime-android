@@ -4,6 +4,7 @@ import org.dpdns.bnai.anime.ui.LocalAppContainer
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -40,6 +41,7 @@ fun StudioDashboardScreen(
     onProjectClick: (String) -> Unit = {},
     onOpenReviews: () -> Unit = {},
     onOpenEpisodes: () -> Unit = {},
+    onOpenJobsMonitor: () -> Unit = {},
     viewModel: StudioViewModel = viewModel(factory = LocalAppContainer.current.viewModelFactory)
 ) {
     val projectsResource by viewModel.projectsState.collectAsState()
@@ -156,6 +158,17 @@ fun StudioDashboardScreen(
                     Text("Active Project: ${summary.activeProjectName}")
                     Text("Current Pipeline State: ${friendlyPipelineStatus(summary.activeProductionStatus)}")
                     Text("Pending Approvals: ${summary.pendingApprovalsCount}")
+                    if (summary.activeProductionStatus.equals("FAILED", true)) {
+                        Text(
+                            text = "A job failed. Open the Job Monitor for logs and retry.",
+                            color = MaterialTheme.colorScheme.error,
+                            fontSize = 12.sp,
+                            modifier = Modifier.clickable {
+                                showProdDialog = false
+                                navController.navigate("jobs_monitor") { launchSingleTop = true }
+                            }
+                        )
+                    }
                 }
             },
             confirmButton = {
