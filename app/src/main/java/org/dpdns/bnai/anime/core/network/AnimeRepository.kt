@@ -82,7 +82,7 @@ class AnimeRepository(
         val response = apiService.deleteProject(projectId)
         if (response.isSuccessful) {
             if (currentProjectId() == projectId) {
-                tokenManager.saveActiveProjectId("")
+                tokenManager.clearActiveProjectId()
             }
             Resource.Success(Unit)
         } else {

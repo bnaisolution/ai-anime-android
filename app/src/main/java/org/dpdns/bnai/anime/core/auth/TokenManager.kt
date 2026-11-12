@@ -148,6 +148,12 @@ class TokenManager(context: Context? = null) {
         prefs?.edit()?.putString(KEY_ACTIVE_PROJECT_ID, projectId)?.apply()
     }
 
+    /** Clears the persisted selection (e.g. after the selected project was deleted). */
+    fun clearActiveProjectId() {
+        cachedProjectId = ""
+        prefs?.edit()?.putString(KEY_ACTIVE_PROJECT_ID, "")?.apply()
+    }
+
     fun getActiveProjectId(): String {
         return cachedProjectId ?: prefs?.getString(KEY_ACTIVE_PROJECT_ID, "")?.also { cachedProjectId = it } ?: ""
     }
