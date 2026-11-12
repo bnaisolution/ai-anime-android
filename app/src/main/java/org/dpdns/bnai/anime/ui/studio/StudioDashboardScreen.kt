@@ -163,10 +163,7 @@ fun StudioDashboardScreen(
                             text = "A job failed. Open the Job Monitor for logs and retry.",
                             color = MaterialTheme.colorScheme.error,
                             fontSize = 12.sp,
-                            modifier = Modifier.clickable {
-                                showProdDialog = false
-                                navController.navigate("jobs_monitor") { launchSingleTop = true }
-                            }
+                            modifier = Modifier.clickable { onOpenJobsMonitor() }
                         )
                     }
                 }

@@ -215,7 +215,6 @@ fun ProjectDetailScreen(
                                 onClick = { editMedium = medium; settingsDirty = true },
                                 shape = RoundedCornerShape(8.dp),
                                 modifier = Modifier.height(34.dp),
-                                colors = if (editMedium == medium) OutlinedButtonDefaults.outlinedButtonColors(containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)) else OutlinedButtonDefaults.outlinedButtonColors()
                             ) {
                                 Text(medium, fontSize = 11.sp)
                             }

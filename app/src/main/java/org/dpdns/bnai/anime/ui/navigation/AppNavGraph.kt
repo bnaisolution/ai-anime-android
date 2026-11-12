@@ -263,18 +263,19 @@ fun AppNavGraph(navController: NavHostController) {
                                 )
                             }
                             if (isExpanded) {
-                            routes.forEach { (route, title) ->
-                                NavigationDrawerItem(
-                                    label = { Text(title) },
-                                    selected = currentRoute == route,
-                                    onClick = {
-                                        scope.launch { drawerState.close() }
-                                        navController.navigate(route) { launchSingleTop = true }
-                                    },
-                                    modifier = Modifier
-                                        .padding(vertical = 2.dp)
-                                        .testTag(TestTags.item(TestTags.Navigation.DRAWER_ITEM_PREFIX, route))
-                                )
+                                routes.forEach { (route, title) ->
+                                    NavigationDrawerItem(
+                                        label = { Text(title) },
+                                        selected = currentRoute == route,
+                                        onClick = {
+                                            scope.launch { drawerState.close() }
+                                            navController.navigate(route) { launchSingleTop = true }
+                                        },
+                                        modifier = Modifier
+                                            .padding(vertical = 2.dp)
+                                            .testTag(TestTags.item(TestTags.Navigation.DRAWER_ITEM_PREFIX, route))
+                                    )
+                                }
                             }
                         }
                     }
