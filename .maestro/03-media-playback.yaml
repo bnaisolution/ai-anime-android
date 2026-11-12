@@ -8,12 +8,7 @@ appId: org.dpdns.bnai.anime
     visible: "AI Studio"
     timeout: 60000
 - tapOn: "Open Navigation Drawer"
-- scrollUntilVisible:
-    element:
-      text: "PRODUCTION"
-    direction: DOWN
-    timeout: 30000
-- tapOn: "PRODUCTION"
+# Drawer sections are always expanded (no collapse toggle).
 - scrollUntilVisible:
     element:
       text: "Media Library"

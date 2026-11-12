@@ -53,6 +53,13 @@ class AnimeApiContractTest {
     }
 
     @Test
+    fun projectDeleteUsesTheCanonicalPath() {
+        val annotation = method("deleteProject").getAnnotation(retrofit2.http.DELETE::class.java)
+        assertNotNull(annotation)
+        assertEquals("v1/anime/projects/{id}", annotation.value)
+    }
+
+    @Test
     fun memoryReconciliationUsesTheCanonicalPostPath() {
         val annotation = method("reconcileMemory").getAnnotation(POST::class.java)
         assertNotNull(annotation)

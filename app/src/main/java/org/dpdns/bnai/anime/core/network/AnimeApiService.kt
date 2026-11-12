@@ -422,6 +422,9 @@ interface AnimeApiService {
     @POST("v1/anime/projects")
     suspend fun createProjectSync(@Body body: JsonMap): Response<ApiEnvelope<ProjectDto>>
 
+    @DELETE("v1/anime/projects/{id}")
+    suspend fun deleteProject(@Path("id") projectId: String): Response<ApiEnvelope<JsonMap>>
+
     @GET("v1/anime/projects/{id}/overview")
     suspend fun getProjectOverview(@Path("id") projectId: String): Response<ApiEnvelope<ProjectOverviewDto>>
 

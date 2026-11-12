@@ -28,9 +28,9 @@ class FabOffsetTest {
     }
 
     @Test
-    fun globalFabIsHiddenOnlyOnFullScreenAiAndStudioRoutes() {
+    fun globalFabIsHiddenOnlyOnFullScreenAiRoute() {
         assertFalse(isGlobalFabVisible("ai_brain"))
-        assertFalse(isGlobalFabVisible("studio"))
+        assertTrue(isGlobalFabVisible("studio"))
         assertTrue(isGlobalFabVisible("project_detail"))
         assertTrue(isGlobalFabVisible("production"))
     }

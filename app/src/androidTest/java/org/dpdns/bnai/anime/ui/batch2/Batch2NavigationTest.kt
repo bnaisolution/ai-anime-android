@@ -87,9 +87,8 @@ class Batch2NavigationTest {
         composeRule.onNodeWithContentDescription("Open Navigation Drawer").performClick()
         composeRule.waitForIdle()
         composeRule.onNodeWithText("Home Dashboard").assertExists()
-        composeRule.onNodeWithText("OWNER CONTROL").performScrollTo().performClick()
-        composeRule.waitForIdle()
-        composeRule.onNodeWithText("Owner Overview").assertExists()
+        composeRule.onNodeWithText("OWNER CONTROL").performScrollTo()
+        composeRule.onNodeWithText("Owner Overview").performScrollTo().assertExists()
     }
 
     @Test

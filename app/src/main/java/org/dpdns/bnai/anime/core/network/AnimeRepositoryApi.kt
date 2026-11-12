@@ -27,6 +27,9 @@ interface ProjectRepository : RepositoryContext {
     suspend fun createProjectSync(name: String, promptIds: List<String> = emptyList()): Resource<ProjectDto> =
         throw UnsupportedOperationException("createProjectSync is not configured")
 
+    suspend fun deleteProject(projectId: String): Resource<Unit> =
+        throw UnsupportedOperationException("deleteProject is not configured")
+
     suspend fun fetchProjectOverview(projectId: String): Resource<ProjectOverviewDto> =
         throw UnsupportedOperationException("fetchProjectOverview is not configured")
 

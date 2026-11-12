@@ -234,6 +234,24 @@ class AnimeRepositoryBehaviorTest {
     }
 
     @Test
+    fun deleteProjectUsesDeleteEndpointAndClearsActiveProject() = runBlocking {
+        server.enqueue(
+            MockResponse()
+                .setResponseCode(200)
+                .setBody("""{"data":{"id":"project-1","deleted":true}}""")
+        )
+        tokenManager.saveActiveProjectId("project-1")
+
+        val result = repository.deleteProject("project-1")
+
+        val recorded = server.takeRequest()
+        assertEquals("DELETE", recorded.method)
+        assertEquals("/v1/anime/projects/project-1", recorded.path)
+        assertTrue(result is Resource.Success<*>)
+        assertEquals("", repository.currentProjectId())
+    }
+
+    @Test
     fun createProjectForwardsSelectedPromptIds() = runBlocking {
         server.enqueue(
             MockResponse()

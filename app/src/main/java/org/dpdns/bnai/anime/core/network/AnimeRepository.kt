@@ -48,16 +48,18 @@ class AnimeRepository(
             if (dtoList.isEmpty()) {
                 Resource.Empty
             } else {
-                val activeId = currentProjectId()
-                if (activeId.isBlank() || dtoList.none { it.id == activeId }) {
-                    tokenManager.saveActiveProjectId(dtoList.first().id)
+                val currentActiveId = currentProjectId()
+                val effectiveActiveId = if (currentActiveId.isBlank() || dtoList.none { it.id == currentActiveId }) {
+                    dtoList.first().id.also { tokenManager.saveActiveProjectId(it) }
+                } else {
+                    currentActiveId
                 }
                 Resource.Success(dtoList.map { dto ->
                     Project(
                         id = dto.id,
                         name = dto.name,
-                        activeEpisode = "Season ${dto.current_season ?: 1} • Episode ${dto.current_episode ?: 1}",
-                        status = if (dto.is_active == true) "ACTIVE" else "INACTIVE"
+                        activeEpisode = projectProgressLabel(dto.current_season, dto.current_episode),
+                        status = if (dto.id == effectiveActiveId) "SELECTED" else "IDLE"
                     )
                 })
             }
@@ -74,6 +76,20 @@ class AnimeRepository(
         mapEnvelope(apiService.createProjectSync(payload)) { it }
     } catch (e: Exception) {
         Resource.Error(e.localizedMessage ?: "Project creation failed")
+    }
+
+    override suspend fun deleteProject(projectId: String): Resource<Unit> = try {
+        val response = apiService.deleteProject(projectId)
+        if (response.isSuccessful) {
+            if (currentProjectId() == projectId) {
+                tokenManager.saveActiveProjectId("")
+            }
+            Resource.Success(Unit)
+        } else {
+            Resource.Error("HTTP ${response.code()}", response.code())
+        }
+    } catch (e: Exception) {
+        Resource.Error(e.localizedMessage ?: "Project deletion failed")
     }
 
     override suspend fun fetchProjectOverview(projectId: String): Resource<ProjectOverviewDto> = try {
@@ -939,12 +955,12 @@ class AnimeRepository(
                     val cleanFallback = if (!fallback.isNullOrBlank() && fallback != "null" && !fallback.equals(primary, ignoreCase = true)) {
                         " • ${fallback.replace("_", " ")}"
                     } else ""
-                    val label = "$cleanPrimary$cleanFallback"
+                    val label = "AI: $cleanPrimary$cleanFallback"
                     TokenManager.cachedProviderLabel = label
                     return@withContext label
                 }
             }
-            return@withContext TokenManager.cachedProviderLabel ?: "Groq • Gemini"
+            return@withContext TokenManager.cachedProviderLabel ?: "AI: Groq • Gemini"
         } catch (_: Exception) {
             return@withContext "AI: Disconnected"
         }

@@ -173,9 +173,11 @@ class TokenManager(context: Context? = null) {
     }
 
     fun getConfiguredProviderLabel(): String {
-        return cachedProviderLabel
-            ?: prefs?.getString(KEY_PROVIDER_LABEL, "Groq • Gemini")?.also { cachedProviderLabel = it }
+        val raw = cachedProviderLabel
+            ?: prefs?.getString(KEY_PROVIDER_LABEL, null)?.also { cachedProviderLabel = it }
             ?: "Groq • Gemini"
+        // Always render as an explicit "AI: …" indicator so users know what the chip means (B-15).
+        return if (raw.startsWith("AI:", ignoreCase = true)) raw else "AI: $raw"
     }
 
     fun saveFabOffset(offsetX: Float, offsetY: Float) {

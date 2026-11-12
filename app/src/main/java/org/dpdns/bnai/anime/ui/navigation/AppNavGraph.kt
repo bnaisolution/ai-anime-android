@@ -78,16 +78,6 @@ fun AppNavGraph(navController: NavHostController) {
     var fabOffsetX by remember { mutableStateOf(tokenManager.getFabOffsetX()) }
     var fabOffsetY by remember { mutableStateOf(tokenManager.getFabOffsetY()) }
 
-    val expandedSections = remember {
-        mutableStateMapOf(
-            "WORKSPACE" to true,
-            "STORY" to true,
-            "PRODUCTION" to false,
-            "INSIGHTS" to false,
-            "OWNER CONTROL" to false
-        )
-    }
-
     LaunchedEffect(currentRoute) {
         if (currentRoute != "auth") {
             isBackendHealthy = repository.checkBackendHealth()
@@ -179,6 +169,7 @@ fun AppNavGraph(navController: NavHostController) {
 
     ModalNavigationDrawer(
         drawerState = drawerState,
+        gesturesEnabled = currentRoute != "auth",
         modifier = Modifier.testTag(TestTags.Navigation.DRAWER),
         drawerContent = {
             ModalDrawerSheet {
@@ -234,41 +225,29 @@ fun AppNavGraph(navController: NavHostController) {
                             .padding(vertical = 6.dp)
                     ) {
                         drawerSections.forEach { (sectionTitle, routes) ->
-                            val isExpanded = expandedSections[sectionTitle] == true
-                            Row(
+                            // Always-visible sections: earlier collapsible headers did not respond to taps on device,
+                            // which blocked navigation to Project Detail / Story Bible / Owner Control.
+                            Text(
+                                text = sectionTitle,
+                                style = MaterialTheme.typography.labelLarge,
+                                color = MaterialTheme.colorScheme.primary,
+                                fontWeight = FontWeight.Bold,
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .clickable { expandedSections[sectionTitle] = !isExpanded }
-                                    .padding(horizontal = 12.dp, vertical = 10.dp),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(
-                                    text = sectionTitle,
-                                    style = MaterialTheme.typography.labelLarge,
-                                    color = MaterialTheme.colorScheme.primary,
-                                    fontWeight = FontWeight.Bold
+                                    .padding(start = 12.dp, end = 12.dp, top = 14.dp, bottom = 4.dp)
+                            )
+                            routes.forEach { (route, title) ->
+                                NavigationDrawerItem(
+                                    label = { Text(title) },
+                                    selected = currentRoute == route,
+                                    onClick = {
+                                        scope.launch { drawerState.close() }
+                                        navController.navigate(route) { launchSingleTop = true }
+                                    },
+                                    modifier = Modifier
+                                        .padding(vertical = 2.dp)
+                                        .testTag(TestTags.item(TestTags.Navigation.DRAWER_ITEM_PREFIX, route))
                                 )
-                                Icon(
-                                    imageVector = if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                                    contentDescription = sectionTitle,
-                                    tint = MaterialTheme.colorScheme.primary
-                                )
-                            }
-                            if (isExpanded) {
-                                routes.forEach { (route, title) ->
-                                    NavigationDrawerItem(
-                                        label = { Text(title) },
-                                        selected = currentRoute == route,
-                                        onClick = {
-                                            scope.launch { drawerState.close() }
-                                            navController.navigate(route) { launchSingleTop = true }
-                                        },
-                                        modifier = Modifier
-                                            .padding(vertical = 2.dp)
-                                            .testTag(TestTags.item(TestTags.Navigation.DRAWER_ITEM_PREFIX, route))
-                                    )
-                                }
                             }
                         }
                     }
@@ -314,7 +293,7 @@ fun AppNavGraph(navController: NavHostController) {
             val isTablet = maxWidth >= 600.dp
             Scaffold(
                 topBar = {
-                    TopAppBar(
+                    if (currentRoute != "auth") TopAppBar(
                         title = {
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
@@ -330,11 +309,17 @@ fun AppNavGraph(navController: NavHostController) {
                                         .clip(CircleShape)
                                         .background(if (isBackendHealthy) Color(0xFF10B981) else Color(0xFFEF4444))
                                 )
+                                Text(
+                                    text = if (isBackendHealthy) "Online" else "Offline",
+                                    fontSize = 10.sp,
+                                    color = if (isBackendHealthy) Color(0xFF10B981) else Color(0xFFEF4444)
+                                )
                             }
                         },
                         navigationIcon = {
-                            val isRootDestination = currentRoute in setOf("studio", "project_detail", "ai_brain", "production", "episodes")
-                            if (isRootDestination) {
+                            // Only Home shows the drawer hamburger. Every other screen shows an explicit
+                            // back arrow so users never get stuck without navigation (B-10).
+                            if (currentRoute == "studio") {
                                 IconButton(onClick = { scope.launch { drawerState.open() } }) {
                                     Icon(Icons.Default.Menu, contentDescription = "Open Navigation Drawer")
                                 }
@@ -351,11 +336,14 @@ fun AppNavGraph(navController: NavHostController) {
                             }
                         },
                         actions = {
-                            AssistChip(
-                                onClick = { navController.navigate("settings") { launchSingleTop = true } },
-                                label = { Text(activeProviderBadge, fontSize = 11.sp) }
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
+                            // Provider badge is a Home-only indicator (B-15): it is contextual, not a global control.
+                            if (currentRoute == "studio") {
+                                AssistChip(
+                                    onClick = { navController.navigate("settings") { launchSingleTop = true } },
+                                    label = { Text(activeProviderBadge, fontSize = 11.sp) }
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                            }
                         }
                     )
                 },
@@ -364,13 +352,16 @@ fun AppNavGraph(navController: NavHostController) {
                         val density = LocalDensity.current
                         val maxLeftDp = (maxWidth.value - 72f).coerceAtLeast(0f)
                         val maxUpDp = (maxHeight.value - 140f).coerceAtLeast(0f)
+                        // Home already has its own "Create Project" FAB in the bottom-end slot,
+                        // so the AI FAB floats above it instead of overlapping it.
+                        val baseLiftDp = if (currentRoute == "studio") -88f else 0f
                         FloatingActionButton(
                             onClick = { showGlobalAiSheet = true },
                             modifier = Modifier
                                 .offset {
                                     IntOffset(
                                         with(density) { fabOffsetX.dp.roundToPx() },
-                                        with(density) { fabOffsetY.dp.roundToPx() }
+                                        with(density) { (fabOffsetY + baseLiftDp).dp.roundToPx() }
                                     )
                                 }
                                 .pointerInput(maxLeftDp, maxUpDp) {
@@ -402,7 +393,7 @@ fun AppNavGraph(navController: NavHostController) {
                     }
                 },
                 bottomBar = {
-                    if (!isTablet) {
+                    if (!isTablet && currentRoute != "auth") {
                         NavigationBar {
                             bottomDestinations.forEach { item ->
                                 NavigationBarItem(

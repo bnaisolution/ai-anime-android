@@ -11,4 +11,8 @@ fun clampFabOffset(xDp: Float, yDp: Float, maxLeftDp: Float, maxUpDp: Float): Fa
     )
 }
 
-fun isGlobalFabVisible(route: String): Boolean = route !in setOf("ai_brain", "studio")
+/**
+ * The AI Director FAB is available on every screen except the AI Director chat itself
+ * (where it would open a duplicate of the current screen). Home must show it too (B-12).
+ */
+fun isGlobalFabVisible(route: String): Boolean = route != "ai_brain"

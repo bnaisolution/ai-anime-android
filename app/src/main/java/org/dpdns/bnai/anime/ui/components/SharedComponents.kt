@@ -82,7 +82,7 @@ fun cleanDisplayTitle(raw: String?, fallback: String = "Studio Item"): String {
 }
 
 fun friendlyPipelineStatus(rawStatus: String?): String {
-    return when (rawStatus?.uppercase()?.trim()) {
+    return when (val upper = rawStatus?.uppercase()?.trim()) {
         "RECONCILING" -> "Rendering..."
         "QUEUED" -> "Waiting in Queue..."
         "DISPATCHED", "ACKNOWLEDGED", "RUNNING" -> "Generating..."
@@ -90,8 +90,16 @@ fun friendlyPipelineStatus(rawStatus: String?): String {
         "FAILED", "ERROR", "DEAD_LETTER" -> "Failed"
         "CANCELLED" -> "Cancelled"
         "IDLE", null, "" -> "Idle"
-        else -> rawStatus
+        // Raw SCREAMING_SNAKE enum values must never reach the user (B-04).
+        else -> if (upper != null && upper.matches(Regex("[A-Z0-9_]+"))) humanizeStatus(upper) else rawStatus
     }
+}
+
+/** "SCENE_PLAN_READY" -> "Scene plan ready" */
+internal fun humanizeStatus(rawStatus: String): String {
+    val words = rawStatus.trim().lowercase().split(Regex("[_\\s]+")).filter { it.isNotEmpty() }
+    if (words.isEmpty()) return rawStatus
+    return words.joinToString(" ").replaceFirstChar { it.uppercase() }
 }
 
 @Composable

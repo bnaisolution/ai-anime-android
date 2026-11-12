@@ -81,6 +81,22 @@ class StudioViewModel(
         }
     }
 
+    fun deleteProject(projectId: String) {
+        if (projectId.isBlank()) return
+        viewModelScope.launch {
+            when (val res = repository.deleteProject(projectId)) {
+                is Resource.Success -> {
+                    _homeSummary.value = _homeSummary.value.copy(createStatusMessage = "Project deleted.")
+                    loadProjects()
+                }
+                is Resource.Error -> {
+                    _homeSummary.value = _homeSummary.value.copy(createStatusMessage = "Delete failed: ${res.message}")
+                }
+                else -> Unit
+            }
+        }
+    }
+
     fun createNewProject(projectName: String, promptIds: List<String> = emptyList()) {
         val cleanName = projectName.trim()
         if (cleanName.isBlank()) return

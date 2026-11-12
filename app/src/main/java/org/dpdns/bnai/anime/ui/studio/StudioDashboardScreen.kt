@@ -14,6 +14,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -21,9 +22,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import org.dpdns.bnai.anime.core.model.Project
 import org.dpdns.bnai.anime.core.network.Resource
 import org.dpdns.bnai.anime.core.network.SystemPromptDto
 import org.dpdns.bnai.anime.ui.components.ResourceStateBox
@@ -47,6 +50,7 @@ fun StudioDashboardScreen(
     var availablePrompts by remember { mutableStateOf<List<SystemPromptDto>>(emptyList()) }
     var selectedPromptIds by remember { mutableStateOf<Set<String>>(emptySet()) }
     var showProdDialog by remember { mutableStateOf(false) }
+    var projectPendingDelete by remember { mutableStateOf<Project?>(null) }
 
     LaunchedEffect(showCreateDialog) {
         if (showCreateDialog) {
@@ -115,6 +119,33 @@ fun StudioDashboardScreen(
         )
     }
 
+    // Delete project confirmation (B-11): destructive action always needs an explicit confirmation
+    projectPendingDelete?.let { target ->
+        AlertDialog(
+            onDismissRequest = { projectPendingDelete = null },
+            title = { Text("Delete project?", fontWeight = FontWeight.Bold) },
+            text = {
+                Text(
+                    "“${target.name}” and all of its episodes, characters, scenes, media and story bible " +
+                        "will be permanently deleted. This cannot be undone."
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        viewModel.deleteProject(target.id)
+                        projectPendingDelete = null
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
+                    modifier = Modifier.testTag(TestTags.Studio.PROJECT_DELETE_CONFIRM)
+                ) { Text("Delete") }
+            },
+            dismissButton = {
+                TextButton(onClick = { projectPendingDelete = null }) { Text("Cancel") }
+            }
+        )
+    }
+
     // Fix #7: Clickable Production State AlertDialog
     if (showProdDialog) {
         AlertDialog(
@@ -165,7 +196,13 @@ fun StudioDashboardScreen(
                 ) {
                     Column(modifier = Modifier.padding(12.dp)) {
                         Text("Production State", style = MaterialTheme.typography.labelLarge)
-                        Text("Tap for details", fontSize = 11.sp, color = MaterialTheme.colorScheme.secondary)
+                        Text(
+                            text = summary.activeProjectName,
+                            fontSize = 11.sp,
+                            color = MaterialTheme.colorScheme.secondary,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
                         Spacer(modifier = Modifier.height(6.dp))
                         StatusBadge(friendlyPipelineStatus(summary.activeProductionStatus))
                     }
@@ -184,8 +221,14 @@ fun StudioDashboardScreen(
             }
 
             // Fix #6: Recent Episodes with project_name and formatted relative time ("2h ago")
-            if (summary.recentEpisodes.isNotEmpty()) {
-                Text("Recent Episodes", style = MaterialTheme.typography.headlineMedium)
+            Text("Recent Episodes", style = MaterialTheme.typography.headlineMedium)
+            if (summary.recentEpisodes.isEmpty()) {
+                Text(
+                    "No episodes yet for ${summary.activeProjectName}. Start production from a project to see them here.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.secondary
+                )
+            } else {
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     items(summary.recentEpisodes, key = { it.id }) { ep ->
                         Card(
@@ -194,7 +237,18 @@ fun StudioDashboardScreen(
                         ) {
                             Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                                 Text(ep.projectName ?: summary.activeProjectName, fontSize = 11.sp, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.SemiBold)
-                                Text("Ep ${ep.episodeNumber}: ${ep.title}", style = MaterialTheme.typography.labelLarge, maxLines = 1, fontWeight = FontWeight.Bold)
+                                val rawTitle = ep.title.orEmpty()
+                                val cleanTitle = rawTitle
+                                    .replace(Regex("^Episode\\s*\\d+\\s*[:\\-–]\\s*", RegexOption.IGNORE_CASE), "")
+                                    .ifBlank { rawTitle }
+                                    .ifBlank { "Untitled episode" }
+                                Text(
+                                    "Ep ${ep.episodeNumber}: $cleanTitle",
+                                    style = MaterialTheme.typography.labelLarge,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                    fontWeight = FontWeight.Bold
+                                )
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
                                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -257,7 +311,25 @@ fun StudioDashboardScreen(
                                         Spacer(modifier = Modifier.height(4.dp))
                                         Text(project.activeEpisode, style = MaterialTheme.typography.bodyLarge)
                                     }
-                                    StatusBadge(project.status)
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                    ) {
+                                        StatusBadge(project.status)
+                                        IconButton(
+                                            onClick = { projectPendingDelete = project },
+                                            modifier = Modifier
+                                                .size(36.dp)
+                                                .testTag(TestTags.item(TestTags.Studio.PROJECT_DELETE_PREFIX, project.id))
+                                        ) {
+                                            Icon(
+                                                Icons.Default.Delete,
+                                                contentDescription = "Delete ${project.name}",
+                                                tint = MaterialTheme.colorScheme.error,
+                                                modifier = Modifier.size(18.dp)
+                                            )
+                                        }
+                                    }
                                 }
                             }
                         }
