@@ -363,7 +363,11 @@ fun ProjectDetailScreen(
                             Text("Auto-Approve Policy", fontWeight = FontWeight.SemiBold)
                             Text("Automatically approve QC & Canon gates when checks pass", fontSize = 11.sp)
                         }
-                        Switch(checked = editAutoApprove, onCheckedChange = { editAutoApprove = it; settingsDirty = true })
+                        Switch(
+                            checked = editAutoApprove,
+                            onCheckedChange = { editAutoApprove = it; settingsDirty = true },
+                            modifier = Modifier.testTag(TestTags.ProjectDetail.AUTO_APPROVE)
+                        )
                     }
                 }
             },

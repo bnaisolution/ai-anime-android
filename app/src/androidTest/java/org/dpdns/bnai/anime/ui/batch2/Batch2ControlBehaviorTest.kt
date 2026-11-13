@@ -202,6 +202,8 @@ class Batch2ControlBehaviorTest {
         waitForCall(container, "fetchProjectOverviewRaw")
 
         composeRule.onNodeWithTag(TestTags.ProjectDetail.SETTINGS_BUTTON).performClick()
+        composeRule.onNodeWithTag(TestTags.ProjectDetail.AUTO_APPROVE).performClick()
+        composeRule.onNodeWithTag(TestTags.ProjectDetail.AUTO_APPROVE).performClick()
         composeRule.onNodeWithTag(TestTags.ProjectDetail.SAVE_SETTINGS).performClick()
 
         waitForCall(container, "updateProjectSettings")

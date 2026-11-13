@@ -575,7 +575,7 @@ class Batch2FullControlCoverageTest {
         assertText("Active Jobs")
         assertText("Pending Approvals")
         assertText("Queued Actions")
-        assertText("Generate Next Episode")
+        assertText("Create Episode 2")
         assertText("Story Bible")
         assertText("Episode Planner")
         assertText("Scene Inspector")

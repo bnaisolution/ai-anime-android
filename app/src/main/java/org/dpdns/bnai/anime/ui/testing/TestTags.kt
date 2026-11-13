@@ -56,6 +56,7 @@ object TestTags {
     object ProjectDetail {
         const val SAVE_SETTINGS = "screen.project_detail.save_settings"
         const val SETTINGS_BUTTON = "screen.project_detail.settings"
+        const val AUTO_APPROVE = "screen.project_detail.auto_approve"
     }
 
     object Production {
