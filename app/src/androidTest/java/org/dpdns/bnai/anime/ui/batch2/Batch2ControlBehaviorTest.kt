@@ -252,6 +252,54 @@ class Batch2ControlBehaviorTest {
         waitForCall(container, "updateProjectBible")
         val payload = container.recorder.lastCall("updateProjectBible")?.args?.get(1) as? Map<*, *>
         assertTrue(payload?.containsKey("premise") == true)
+        assertTrue(payload?.containsKey("genre") == true)
+        assertTrue(payload?.containsKey("world_setting") == true)
+        assertTrue(payload?.containsKey("world_rules") == true)
+        assertTrue(payload?.containsKey("power_system") == true)
+        assertTrue(payload?.containsKey("character_foundations") == true)
+        assertTrue(payload?.containsKey("timeline") == true)
+    }
+
+    @Test
+    fun bibleAiExpandDispatchesSaveBibleStudioCommand() {
+        val container = Batch2RecordingContainer()
+        composeRule.setBatch2Content(container) { BibleScreen() }
+
+        composeRule.onNodeWithText("AI Expand Bible").performScrollTo().performClick()
+
+        waitForCall(container, "submitStudioCommand")
+        val call = container.recorder.lastCall("submitStudioCommand")
+        assertEquals(BATCH2_PROJECT_ID, call?.args?.get(0))
+        assertEquals(CommandIntent.SAVE_BIBLE, call?.args?.get(1))
+        val payload = call?.args?.get(4) as? Map<*, *>
+        assertTrue(payload?.containsKey("premise") == true)
+        assertTrue(payload?.containsKey("genre") == true)
+        assertTrue(payload?.containsKey("world_setting") == true)
+        assertTrue(payload?.containsKey("world_rules") == true)
+        assertTrue(payload?.containsKey("power_system") == true)
+    }
+
+    @Test
+    fun bibleDiscardDialogShowsOnUnsavedChanges() {
+        val container = Batch2RecordingContainer()
+        composeRule.setBatch2Content(container) { BibleScreen() }
+        waitForCall(container, "fetchBible")
+        composeRule.waitForIdle()
+
+        composeRule.onNodeWithTag(TestTags.Bible.PREMISE_FIELD)
+            .performTextReplacement("Edited premise")
+        composeRule.waitForIdle()
+
+        composeRule.onNodeWithText("UNSAVED EDITS").assertExists()
+
+        composeRule.activity.onBackPressedDispatcher.onBackPressed()
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            composeRule.onAllNodesWithTag(TestTags.Dialog.UNSAVED_DISCARD).fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.onNodeWithTag(TestTags.Dialog.UNSAVED_DISCARD).assertExists()
+        composeRule.onNodeWithTag(TestTags.Dialog.UNSAVED_KEEP_EDITING).performClick()
+        composeRule.waitForIdle()
+        composeRule.onNodeWithTag(TestTags.Dialog.UNSAVED_DISCARD).assertDoesNotExist()
     }
 
     @Test

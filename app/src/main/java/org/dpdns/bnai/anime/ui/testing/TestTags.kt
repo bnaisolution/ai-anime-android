@@ -106,6 +106,13 @@ object TestTags {
         const val SAVE_DRAFT = "screen.bible.save_draft"
         const val PROMPT_LIBRARY = "screen.bible.prompt_library"
         const val PROMPT_OPTION_PREFIX = "screen.bible.prompt_option"
+        const val PREMISE_FIELD = "screen.bible.premise"
+        const val TONE_GENRE_FIELD = "screen.bible.tone_genre"
+        const val WORLD_SETTING_FIELD = "screen.bible.world_setting"
+        const val WORLD_RULES_FIELD = "screen.bible.world_rules"
+        const val POWER_SYSTEM_FIELD = "screen.bible.power_system"
+        const val CHARACTER_FOUNDATIONS_FIELD = "screen.bible.character_foundations"
+        const val TIMELINE_FIELD = "screen.bible.timeline"
     }
 
     object EpisodePlanner {

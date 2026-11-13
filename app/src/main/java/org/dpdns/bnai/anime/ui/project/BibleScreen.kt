@@ -311,14 +311,14 @@ fun BibleScreen() {
                         onValueChange = { premise = it },
                         label = { Text("Master Premise / Logline") },
                         minLines = 4,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth().testTag(TestTags.Bible.PREMISE_FIELD)
                     )
                     OutlinedTextField(
                         value = toneGenre,
                         onValueChange = { toneGenre = it },
                         label = { Text("Tone & Genre") },
                         singleLine = true,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth().testTag(TestTags.Bible.TONE_GENRE_FIELD)
                     )
                 }
             }
@@ -330,14 +330,14 @@ fun BibleScreen() {
                         onValueChange = { worldSetting = it },
                         label = { Text("World Setting & Geography") },
                         minLines = 4,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth().testTag(TestTags.Bible.WORLD_SETTING_FIELD)
                     )
                     OutlinedTextField(
                         value = worldRules,
                         onValueChange = { worldRules = it },
                         label = { Text("Immutable World Rules (Enforced by Canon)") },
                         minLines = 4,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth().testTag(TestTags.Bible.WORLD_RULES_FIELD)
                     )
                 }
             }
@@ -349,7 +349,7 @@ fun BibleScreen() {
                         onValueChange = { powerSystem = it },
                         label = { Text("Power System Rules, Costs & Ceilings") },
                         minLines = 6,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth().testTag(TestTags.Bible.POWER_SYSTEM_FIELD)
                     )
                 }
             }
@@ -361,14 +361,14 @@ fun BibleScreen() {
                         onValueChange = { characterFoundations = it },
                         label = { Text("Core Cast Foundations & Factions") },
                         minLines = 4,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth().testTag(TestTags.Bible.CHARACTER_FOUNDATIONS_FIELD)
                     )
                     OutlinedTextField(
                         value = timelineFoundation,
                         onValueChange = { timelineFoundation = it },
                         label = { Text("Timeline & Season Arc Structure") },
                         minLines = 4,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth().testTag(TestTags.Bible.TIMELINE_FIELD)
                     )
                 }
             }
