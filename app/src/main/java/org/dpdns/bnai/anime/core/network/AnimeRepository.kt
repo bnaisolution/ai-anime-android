@@ -1,5 +1,6 @@
 package org.dpdns.bnai.anime.core.network
 
+import android.util.Base64
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.dpdns.bnai.anime.core.auth.TokenManager
@@ -902,6 +903,58 @@ class AnimeRepository(
             else Resource.Error("Failed to fetch owner tenants (${response.code()})", response.code())
         } catch (e: Exception) {
             Resource.Error(e.localizedMessage ?: "Failed to fetch owner tenants")
+        }
+    }
+
+    override suspend fun fetchReadiness(): Resource<JsonMap> = withContext(Dispatchers.IO) {
+        try {
+            val response = apiService.getReadiness()
+            if (response.isSuccessful) {
+                Resource.Success(response.body() ?: emptyMap())
+            } else {
+                Resource.Error("Readiness check failed (${response.code()})", response.code())
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.localizedMessage ?: "Readiness check failed")
+        }
+    }
+
+    override suspend fun fetchStorageStatus(): Resource<JsonMap> = withContext(Dispatchers.IO) {
+        try {
+            val response = apiService.getStorageStatus()
+            if (response.isSuccessful) {
+                Resource.Success(response.body()?.data ?: emptyMap())
+            } else {
+                Resource.Error("Storage status failed (${response.code()})", response.code())
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.localizedMessage ?: "Storage status failed")
+        }
+    }
+
+    override suspend fun uploadStorageObject(
+        key: String,
+        filename: String,
+        contentType: String,
+        bytes: ByteArray
+    ): Resource<JsonMap> = withContext(Dispatchers.IO) {
+        try {
+            val encoded = Base64.encodeToString(bytes, Base64.NO_WRAP)
+            val response = apiService.uploadStorageObject(
+                StorageUploadRequest(
+                    key = key,
+                    filename = filename,
+                    content_type = contentType,
+                    data_base64 = encoded
+                )
+            )
+            if (response.isSuccessful) {
+                Resource.Success(response.body()?.data ?: emptyMap())
+            } else {
+                Resource.Error("Cover upload failed (${response.code()})", response.code())
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.localizedMessage ?: "Cover upload failed")
         }
     }
 

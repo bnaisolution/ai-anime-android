@@ -144,6 +144,7 @@ object TestTags {
         const val MEDIA_LIBRARY = "screen.media_library"
         const val NOTIFICATIONS = "screen.notifications"
         const val OWNER_OVERVIEW = "screen.owner_overview"
+        const val PREFLIGHT = "screen.preflight"
         const val PRODUCTION = "screen.production"
         const val PROJECT_DETAIL = "screen.project_detail"
         const val PROMPT_STUDIO = "screen.prompt_studio"

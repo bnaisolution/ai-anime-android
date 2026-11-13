@@ -44,6 +44,7 @@ import org.dpdns.bnai.anime.ui.episode.EpisodePlannerScreen
 import org.dpdns.bnai.anime.ui.library.MediaLibraryScreen
 import org.dpdns.bnai.anime.ui.notifications.NotificationScreen
 import org.dpdns.bnai.anime.ui.owner.*
+import org.dpdns.bnai.anime.ui.preflight.PreflightScreen
 import org.dpdns.bnai.anime.ui.production.ProductionScreen
 import org.dpdns.bnai.anime.ui.production.SceneDetailScreen
 import org.dpdns.bnai.anime.ui.project.BibleScreen
@@ -82,9 +83,9 @@ fun AppNavGraph(navController: NavHostController) {
         mutableStateMapOf(
             "WORKSPACE" to true,
             "STORY" to true,
-            "PRODUCTION" to false,
-            "INSIGHTS" to false,
-            "OWNER CONTROL" to false
+            "PRODUCTION" to true,
+            "INSIGHTS" to true,
+            "OWNER CONTROL" to true
         )
     }
 
@@ -215,7 +216,13 @@ fun AppNavGraph(navController: NavHostController) {
                                         scope.launch { drawerState.close() }
                                         navController.navigate("owner_overview") { launchSingleTop = true }
                                     },
-                                    label = { Text(userRole, fontSize = 10.sp) }
+                                    label = {
+                                        Text(
+                                            if (tokenManager.isOwner()) "OWNER ADMIN" else userRole.replace("_", " ").uppercase(),
+                                            fontSize = 10.sp,
+                                            fontWeight = FontWeight.SemiBold
+                                        )
+                                    }
                                 )
                             }
                             OutlinedButton(
@@ -496,7 +503,17 @@ fun AppNavGraph(navController: NavHostController) {
                                     onOpenJobsMonitor = { navController.navigate("jobs_monitor") },
                                     onOpenQuota = { navController.navigate("quota_dashboard") },
                                     onOpenBudget = { navController.navigate("budget_ledger") },
-                                    onOpenNotifications = { navController.navigate("notifications") }
+                                    onOpenNotifications = { navController.navigate("notifications") },
+                                    onOpenPromptStudio = { navController.navigate("prompt_studio") },
+                                    onOpenPreflight = { pid -> navController.navigate("preflight/$pid") }
+                                )
+                            }
+                            composable("preflight/{pid}") { entry ->
+                                val pid = entry.arguments?.getString("pid").orEmpty()
+                                PreflightScreen(
+                                    projectId = pid,
+                                    onNavigate = { route -> navController.navigate(route) { launchSingleTop = true } },
+                                    onGenerated = { navController.popBackStack() }
                                 )
                             }
                             composable("bible") { BibleScreen() }

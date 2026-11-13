@@ -144,6 +144,13 @@ data class UpdateBudgetRequest(
     val budget_ceiling: Int
 )
 
+data class StorageUploadRequest(
+    val key: String,
+    val filename: String,
+    val content_type: String,
+    val data_base64: String
+)
+
 data class ProjectOverviewDto(
     val project: ProjectDto? = null,
     val stats: JsonMap? = null,
@@ -629,6 +636,15 @@ interface AnimeApiService {
 
     @GET("v1/anime/owner/tenants")
     suspend fun getOwnerTenants(): Response<ApiEnvelope<List<JsonMap>>>
+
+    @GET("v1/anime/ready")
+    suspend fun getReadiness(): Response<JsonMap>
+
+    @GET("v1/anime/storage/status")
+    suspend fun getStorageStatus(): Response<ApiEnvelope<JsonMap>>
+
+    @POST("v1/anime/storage/upload")
+    suspend fun uploadStorageObject(@Body body: StorageUploadRequest): Response<ApiEnvelope<JsonMap>>
 
     @GET("v1/anime/infrastructure/gpu")
     suspend fun getGpuConfig(): Response<ApiEnvelope<JsonMap>>

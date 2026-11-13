@@ -234,7 +234,7 @@ fun StudioDashboardScreen(
             Text("Recent Episodes", style = MaterialTheme.typography.headlineMedium)
             if (summary.recentEpisodes.isEmpty()) {
                 Text(
-                    "No episodes yet for ${summary.activeProjectName}. Start production from a project to see them here.",
+                    "No episodes yet…",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.secondary
                 )

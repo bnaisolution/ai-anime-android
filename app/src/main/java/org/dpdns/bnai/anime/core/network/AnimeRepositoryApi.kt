@@ -393,6 +393,20 @@ interface AdminRepository : RepositoryContext {
 
     suspend fun fetchOwnerTenants(): Resource<List<JsonMap>> = Resource.Empty
 
+    suspend fun fetchReadiness(): Resource<JsonMap> =
+        throw UnsupportedOperationException("fetchReadiness is not configured")
+
+    suspend fun fetchStorageStatus(): Resource<JsonMap> =
+        throw UnsupportedOperationException("fetchStorageStatus is not configured")
+
+    suspend fun uploadStorageObject(
+        key: String,
+        filename: String,
+        contentType: String,
+        bytes: ByteArray
+    ): Resource<JsonMap> =
+        throw UnsupportedOperationException("uploadStorageObject is not configured")
+
     suspend fun fetchGpuInfrastructure(): Resource<JsonMap> =
         throw UnsupportedOperationException("fetchGpuInfrastructure is not configured")
 

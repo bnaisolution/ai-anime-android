@@ -3,6 +3,9 @@ package org.dpdns.bnai.anime.ui.project
 import org.dpdns.bnai.anime.ui.LocalAppContainer
 
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -20,15 +23,19 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import org.dpdns.bnai.anime.core.network.CommandIntent
+import kotlinx.coroutines.withContext
 import org.dpdns.bnai.anime.core.network.JsonMap
 import org.dpdns.bnai.anime.core.network.Resource
 import org.dpdns.bnai.anime.ui.components.ProjectSelectorBar
+import org.dpdns.bnai.anime.ui.components.StatusBadge
 import org.dpdns.bnai.anime.ui.components.formatInt
 import org.dpdns.bnai.anime.ui.components.friendlyPipelineStatus
 import org.dpdns.bnai.anime.ui.designsystem.*
+import org.dpdns.bnai.anime.ui.preflight.ReadinessReport
+import org.dpdns.bnai.anime.ui.preflight.loadReadiness
 import org.dpdns.bnai.anime.ui.testing.TestTags
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -57,6 +64,8 @@ fun ProjectDetailScreen(
     onOpenQuota: () -> Unit = {},
     onOpenBudget: () -> Unit = {},
     onOpenNotifications: () -> Unit = {},
+    onOpenPromptStudio: () -> Unit = {},
+    onOpenPreflight: (String) -> Unit = {},
     viewModel: ProjectViewModel = viewModel(factory = LocalAppContainer.current.viewModelFactory)
 ) {
     val context = LocalContext.current
@@ -71,8 +80,9 @@ fun ProjectDetailScreen(
 
     var activeCmdId by remember(activePid) { mutableStateOf(tokenManager.getActiveCommandId(activePid, "quick_gen_episode")) }
     var activeCmdStatus by remember { mutableStateOf<String?>(null) }
-    var isSubmittingGen by remember { mutableStateOf(false) }
-    val idempotencyKey = remember(activePid) { "ep_gen_${activePid.take(8)}_${System.currentTimeMillis() / 60000}" }
+    var readinessReport by remember { mutableStateOf<ReadinessReport?>(null) }
+    var isCheckingReadiness by remember { mutableStateOf(false) }
+    var isUploadingCover by remember { mutableStateOf(false) }
 
     var showSettingsDialog by remember { mutableStateOf(false) }
     var editName by remember { mutableStateOf("") }
@@ -85,6 +95,61 @@ fun ProjectDetailScreen(
     val builtInGenres = listOf("Action", "Thriller", "Horror", "Comedy", "Dark Fantasy", "Fantasy", "Sci-Fi", "Romance", "Drama", "Slice of Life")
     val mediumOptions = listOf("ANIME", "MANHWA", "3D", "2D ANIMATION")
     var selectedGenres by remember { mutableStateOf<Set<String>>(emptySet()) }
+
+    fun refreshReadiness(pid: String) {
+        if (pid.isBlank()) return
+        scope.launch {
+            isCheckingReadiness = true
+            readinessReport = loadReadiness(repository, pid)
+            isCheckingReadiness = false
+        }
+    }
+
+    val coverPicker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+        if (uri == null) return@rememberLauncherForActivityResult
+        val pid = activePid.ifBlank { repository.currentProjectId() }
+        if (pid.isBlank()) return@rememberLauncherForActivityResult
+        isUploadingCover = true
+        scope.launch {
+            val bytes = withContext(Dispatchers.IO) {
+                context.contentResolver.openInputStream(uri)?.use { it.readBytes() }
+            }
+            if (bytes == null || bytes.isEmpty()) {
+                isUploadingCover = false
+                Toast.makeText(context, "Could not read selected image", Toast.LENGTH_LONG).show()
+                return@launch
+            }
+            if (bytes.size > 12 * 1024 * 1024) {
+                isUploadingCover = false
+                Toast.makeText(context, "Image is larger than 12 MB. Choose a smaller file.", Toast.LENGTH_LONG).show()
+                return@launch
+            }
+            val contentType = context.contentResolver.getType(uri) ?: "image/jpeg"
+            val filename = uri.lastPathSegment?.substringAfterLast('/')?.takeIf { it.isNotBlank() } ?: "cover.jpg"
+            val key = "projects/$pid/cover/${System.currentTimeMillis()}-${filename.replace(Regex("[^A-Za-z0-9._-]"), "_")}"
+            when (val res = repository.uploadStorageObject(key, filename, contentType, bytes)) {
+                is Resource.Success -> {
+                    val url = (res.data["url"] ?: res.data["public_url"] ?: res.data["download_url"])
+                        ?.toString()?.takeIf { it.startsWith("http") }
+                    if (url != null) {
+                        editCoverUrl = url
+                        settingsDirty = true
+                        showSettingsDialog = true
+                        Toast.makeText(context, "Cover uploaded. Save settings to apply.", Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(
+                            context,
+                            "Uploaded, but storage returned no public URL. Paste a URL manually.",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
+                }
+                is Resource.Error -> Toast.makeText(context, res.message, Toast.LENGTH_LONG).show()
+                else -> Unit
+            }
+            isUploadingCover = false
+        }
+    }
 
     fun loadProjectOverviewData(targetPid: String = repository.currentProjectId()) {
         if (targetPid.isBlank()) {
@@ -130,6 +195,10 @@ fun ProjectDetailScreen(
         loadProjectOverviewData(activePid)
     }
 
+    LaunchedEffect(activePid, activeCmdId) {
+        refreshReadiness(activePid)
+    }
+
     LaunchedEffect(activeCmdId, activePid) {
         val cid = activeCmdId ?: return@LaunchedEffect
         while (true) {
@@ -167,6 +236,16 @@ fun ProjectDetailScreen(
     val pendingApprovalsCount = formatInt(countsObj["pending_approvals_count"] ?: overviewMap["pending_approvals_count"] ?: 0)
     val pendingActionsCount = formatInt(countsObj["pending_actions_count"] ?: overviewMap["pending_actions_count"] ?: 0)
 
+    val nextEpisodeNo = (episodesCount.toIntOrNull() ?: 0) + 1
+    val generationLabel = if (nextEpisodeNo == 1) "Create 1st Episode" else "Create Episode $nextEpisodeNo"
+    val readinessReady = readinessReport?.allReady == true
+    val readinessBadge = when {
+        !activeCmdId.isNullOrBlank() -> friendlyPipelineStatus(activeCmdStatus ?: "RUNNING")
+        isCheckingReadiness -> "CHECKING"
+        readinessReady -> "READY"
+        else -> "PENDING"
+    }
+
     if (showSettingsDialog) {
         AlertDialog(
             onDismissRequest = { if (!isSavingSettings) showSettingsDialog = false },
@@ -187,22 +266,54 @@ fun ProjectDetailScreen(
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth()
                     )
+                    SecondaryButton(
+                        text = if (isUploadingCover) "Uploading..." else "Upload / Change Cover Image",
+                        enabled = !isUploadingCover,
+                        modifier = Modifier.fillMaxWidth(),
+                        onClick = { coverPicker.launch("image/*") }
+                    )
                     Text("Genre (select multiple)", fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(6.dp),
                         modifier = Modifier.horizontalScroll(rememberScrollState())
                     ) {
                         builtInGenres.forEach { genre ->
-                            OutlinedButton(
-                                onClick = {
-                                    selectedGenres = if (selectedGenres.contains(genre)) selectedGenres - genre else selectedGenres + genre
-                                    settingsDirty = true
-                                },
-                                shape = RoundedCornerShape(8.dp),
-                                modifier = Modifier.height(34.dp)
-                            ) {
-                                Text(genre, fontSize = 11.sp)
+                            val selected = selectedGenres.contains(genre)
+                            if (selected) {
+                                Button(
+                                    onClick = {
+                                        selectedGenres = selectedGenres - genre
+                                        settingsDirty = true
+                                    },
+                                    shape = RoundedCornerShape(8.dp),
+                                    modifier = Modifier.height(34.dp),
+                                    contentPadding = PaddingValues(horizontal = 10.dp)
+                                ) {
+                                    Text(genre, fontSize = 11.sp)
+                                }
+                            } else {
+                                OutlinedButton(
+                                    onClick = {
+                                        selectedGenres = selectedGenres + genre
+                                        settingsDirty = true
+                                    },
+                                    shape = RoundedCornerShape(8.dp),
+                                    modifier = Modifier.height(34.dp),
+                                    contentPadding = PaddingValues(horizontal = 10.dp)
+                                ) {
+                                    Text(genre, fontSize = 11.sp)
+                                }
                             }
+                        }
+                        OutlinedButton(
+                            onClick = {
+                                showSettingsDialog = false
+                                onOpenPromptStudio()
+                            },
+                            shape = RoundedCornerShape(8.dp),
+                            modifier = Modifier.height(34.dp)
+                        ) {
+                            Text("+ Add more genre", fontSize = 11.sp)
                         }
                     }
                     Text("Visual Medium", fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
@@ -211,13 +322,36 @@ fun ProjectDetailScreen(
                         modifier = Modifier.horizontalScroll(rememberScrollState())
                     ) {
                         mediumOptions.forEach { medium ->
-                            OutlinedButton(
-                                onClick = { editMedium = medium; settingsDirty = true },
-                                shape = RoundedCornerShape(8.dp),
-                                modifier = Modifier.height(34.dp),
-                            ) {
-                                Text(medium, fontSize = 11.sp)
+                            val selected = editMedium.equals(medium, ignoreCase = true)
+                            if (selected) {
+                                Button(
+                                    onClick = { editMedium = medium; settingsDirty = true },
+                                    shape = RoundedCornerShape(8.dp),
+                                    modifier = Modifier.height(34.dp),
+                                    contentPadding = PaddingValues(horizontal = 10.dp)
+                                ) {
+                                    Text(medium, fontSize = 11.sp)
+                                }
+                            } else {
+                                OutlinedButton(
+                                    onClick = { editMedium = medium; settingsDirty = true },
+                                    shape = RoundedCornerShape(8.dp),
+                                    modifier = Modifier.height(34.dp),
+                                    contentPadding = PaddingValues(horizontal = 10.dp)
+                                ) {
+                                    Text(medium, fontSize = 11.sp)
+                                }
                             }
+                        }
+                        OutlinedButton(
+                            onClick = {
+                                showSettingsDialog = false
+                                onOpenPromptStudio()
+                            },
+                            shape = RoundedCornerShape(8.dp),
+                            modifier = Modifier.height(34.dp)
+                        ) {
+                            Text("+ Add more medium", fontSize = 11.sp)
                         }
                     }
                     Row(
@@ -302,12 +436,36 @@ fun ProjectDetailScreen(
                 SecondaryButton(text = "Retry", onClick = { loadProjectOverviewData(repository.currentProjectId()) })
             }
         } else {
-            AsyncMediaPreview(
-                mediaUrl = coverUrl,
-                contentDescription = "$projName Cover Banner",
-                height = 150.dp,
-                emptyLabel = "$projName • $editMedium ($editGenre)"
-            )
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable(enabled = !isUploadingCover) { coverPicker.launch("image/*") }
+            ) {
+                AsyncMediaPreview(
+                    mediaUrl = coverUrl,
+                    contentDescription = "$projName Cover Banner",
+                    height = 150.dp,
+                    emptyLabel = "$projName • $editMedium ($editGenre)"
+                )
+                Row(
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    OutlinedButton(
+                        onClick = { coverPicker.launch("image/*") },
+                        enabled = !isUploadingCover,
+                        modifier = Modifier.height(34.dp)
+                    ) {
+                        if (isUploadingCover) {
+                            CircularProgressIndicator(modifier = Modifier.size(14.dp), strokeWidth = 2.dp)
+                        } else {
+                            Text(if (coverUrl == null) "Upload cover" else "Change cover", fontSize = 11.sp)
+                        }
+                    }
+                }
+            }
 
             ScreenHeader(
                 title = projName,
@@ -370,58 +528,6 @@ fun ProjectDetailScreen(
                 )
             }
 
-            StandardCard {
-                SectionHeader(
-                    title = "Episode Production Control",
-                    badgeText = if (!activeCmdId.isNullOrBlank()) friendlyPipelineStatus(activeCmdStatus ?: "RUNNING") else "READY"
-                )
-                if (!activeCmdId.isNullOrBlank()) {
-                    Text(
-                        text = "Active Job #${activeCmdId?.take(8)} is currently ${friendlyPipelineStatus(activeCmdStatus ?: "RUNNING")}. Duplicate submission is locked.",
-                        fontSize = 12.sp,
-                        color = StudioTokens.Warning
-                    )
-                    SecondaryButton(
-                        text = "Open Active Job in Pipeline Monitor",
-                        onClick = onOpenProduction,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                } else {
-                    PrimaryButton(
-                        text = "Create Episode ${((episodesCount.toIntOrNull() ?: 0) + 1)}",
-                        isLoading = isSubmittingGen,
-                        enabled = !isSubmittingGen && activeJobsCount == "0",
-                        onClick = {
-                            val pid = repository.currentProjectId()
-                            if (pid.isBlank() || isSubmittingGen) return@PrimaryButton
-                            isSubmittingGen = true
-                            scope.launch {
-                                val nextEp = (episodesCount.toIntOrNull() ?: 0) + 1
-                                val res = repository.submitStudioCommand(
-                                    projectId = pid,
-                                    intent = CommandIntent.GENERATE_EPISODE,
-                                    episodeNo = nextEp,
-                                    payload = mapOf("idempotency_key" to idempotencyKey)
-                                )
-                                isSubmittingGen = false
-                                if (res is Resource.Success) {
-                                    val cid = res.data.command_id.orEmpty()
-                                    if (cid.isNotBlank()) {
-                                        activeCmdId = cid
-                                        activeCmdStatus = res.data.status ?: "QUEUED"
-                                        tokenManager.saveActiveCommandId(pid, "quick_gen_episode", cid)
-                                        Toast.makeText(context, "Episode $nextEp queued (#${cid.take(6)})", Toast.LENGTH_SHORT).show()
-                                    }
-                                } else if (res is Resource.Error) {
-                                    Toast.makeText(context, res.message, Toast.LENGTH_LONG).show()
-                                }
-                            }
-                        },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
-            }
-
             SectionHeader(title = "Studio Modules")
             val modules = listOf(
                 "Story Bible" to onOpenBible,
@@ -437,7 +543,8 @@ fun ProjectDetailScreen(
                 "Review Inbox" to onOpenReviewInbox,
                 "Publish Studio" to onOpenPublish,
                 "Analytics" to onOpenAnalytics,
-                "Quota & Budget" to onOpenBudget
+                "Quota Dashboard" to onOpenQuota,
+                "Budget Ledger" to onOpenBudget
             )
 
             modules.chunked(2).forEach { pair ->
@@ -451,6 +558,62 @@ fun ProjectDetailScreen(
                             Text(label, fontSize = 12.sp, maxLines = 1)
                         }
                     }
+                }
+            }
+
+            StandardCard {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        "Episode Production Control",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Box(
+                        modifier = Modifier.clickable { if (activePid.isNotBlank()) onOpenPreflight(activePid) }
+                    ) {
+                        StatusBadge(readinessBadge)
+                    }
+                }
+                if (!activeCmdId.isNullOrBlank()) {
+                    Text(
+                        text = "Active Job #${activeCmdId?.take(8)} is currently ${friendlyPipelineStatus(activeCmdStatus ?: "RUNNING")}. Duplicate submission is locked.",
+                        fontSize = 12.sp,
+                        color = StudioTokens.Warning
+                    )
+                    SecondaryButton(
+                        text = "Open Active Job in Pipeline Monitor",
+                        onClick = onOpenProduction,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                } else {
+                    val pending = readinessReport?.pending.orEmpty()
+                    if (!readinessReady) {
+                        Text(
+                            if (isCheckingReadiness) {
+                                "Checking production readiness..."
+                            } else {
+                                "${pending.size} readiness check(s) pending: ${pending.take(3).joinToString(", ") { it.label }}"
+                            },
+                            fontSize = 12.sp,
+                            color = StudioTokens.Warning
+                        )
+                    }
+                    PrimaryButton(
+                        text = generationLabel,
+                        enabled = readinessReady && !isCheckingReadiness,
+                        onClick = { if (activePid.isNotBlank()) onOpenPreflight(activePid) },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    SecondaryButton(
+                        text = if (readinessReady) "Review Readiness" else "View Pending Checks",
+                        onClick = { if (activePid.isNotBlank()) onOpenPreflight(activePid) },
+                        modifier = Modifier.fillMaxWidth()
+                    )
                 }
             }
 
