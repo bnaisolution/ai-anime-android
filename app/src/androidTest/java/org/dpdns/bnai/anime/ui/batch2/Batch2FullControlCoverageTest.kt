@@ -588,7 +588,8 @@ class Batch2FullControlCoverageTest {
         assertText("Review Inbox")
         assertText("Publish Studio")
         assertText("Analytics")
-        assertText("Quota & Budget")
+        assertText("Quota Dashboard")
+        assertText("Budget Ledger")
 
         clickDesc("Edit Project Settings")
         waitForText("Project Settings")
