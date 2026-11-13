@@ -137,7 +137,10 @@ data class UpdateProjectSettingsRequest(
     val auto_approve: Boolean? = null,
     val cover_image_url: String? = null,
     val budget_ceiling: Int? = null,
-    val active_system_prompt_id: String? = null
+    val active_system_prompt_id: String? = null,
+    val target_episode_count: Int? = null,
+    val episode_duration_min: Int? = null,
+    val script_word_count: Int? = null
 )
 
 data class UpdateBudgetRequest(

@@ -143,7 +143,10 @@ class AnimeRepository(
         autoApprove: Boolean?,
         coverImageUrl: String?,
         budgetCeiling: Int?,
-        activeSystemPromptId: String?
+        activeSystemPromptId: String?,
+        targetEpisodeCount: Int?,
+        episodeDurationMin: Int?,
+        scriptWordCount: Int?
     ): Resource<ProjectDto> = try {
         mapEnvelope(
             apiService.updateProjectSettings(
@@ -154,7 +157,10 @@ class AnimeRepository(
                     auto_approve = autoApprove,
                     cover_image_url = coverImageUrl,
                     budget_ceiling = budgetCeiling,
-                    active_system_prompt_id = activeSystemPromptId
+                    active_system_prompt_id = activeSystemPromptId,
+                    target_episode_count = targetEpisodeCount,
+                    episode_duration_min = episodeDurationMin,
+                    script_word_count = scriptWordCount
                 )
             )
         ) { it }
@@ -192,7 +198,10 @@ class AnimeRepository(
                 genre = updates["genre"] as? String,
                 auto_approve = updates["auto_approve"] as? Boolean,
                 cover_image_url = updates["cover_image_url"] as? String,
-                budget_ceiling = (updates["budget_ceiling"] as? Number)?.toInt()
+                budget_ceiling = (updates["budget_ceiling"] as? Number)?.toInt(),
+                target_episode_count = (updates["target_episode_count"] as? Number)?.toInt(),
+                episode_duration_min = (updates["episode_duration_min"] as? Number)?.toInt(),
+                script_word_count = (updates["script_word_count"] as? Number)?.toInt()
             )
             val response = apiService.updateProjectSettings(projectId, req)
             if (response.isSuccessful) {

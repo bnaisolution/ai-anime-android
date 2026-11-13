@@ -90,6 +90,9 @@ fun ProjectDetailScreen(
     var editMedium by remember { mutableStateOf("ANIME") }
     var editCoverUrl by remember { mutableStateOf("") }
     var editAutoApprove by remember { mutableStateOf(false) }
+    var editTargetEpisodeCount by remember { mutableStateOf<Int?>(null) }
+    var editEpisodeDurationMin by remember { mutableStateOf<Int?>(null) }
+    var editScriptWordCount by remember { mutableStateOf<Int?>(null) }
     var isSavingSettings by remember { mutableStateOf(false) }
     var settingsDirty by remember { mutableStateOf(false) }
     val builtInGenres = listOf("Action", "Thriller", "Horror", "Comedy", "Dark Fantasy", "Fantasy", "Sci-Fi", "Romance", "Drama", "Slice of Life")
@@ -172,6 +175,9 @@ fun ProjectDetailScreen(
                     editCoverUrl = (res.data["cover_image_url"] ?: projObj["cover_image_url"] ?: bibleObj["cover_image_url"] ?: "").toString()
                         .let { if (it == "null") "" else it }
                     editAutoApprove = (res.data["auto_approve"] ?: projObj["auto_approve"] ?: bibleObj["auto_approve"]) == true
+                    editTargetEpisodeCount = (bibleObj["target_episode_count"] as? Number)?.toInt()
+                    editEpisodeDurationMin = (bibleObj["episode_duration_min"] as? Number)?.toInt()
+                    editScriptWordCount = (bibleObj["script_word_count"] as? Number)?.toInt()
 
                     val backendActiveCmd = (res.data["status"] as? Map<*, *>)?.get("active_command_id")?.toString()
                     if (!backendActiveCmd.isNullOrBlank() && backendActiveCmd != "null") {
@@ -382,15 +388,19 @@ fun ProjectDetailScreen(
                         if (pid.isBlank()) return@PrimaryButton
                         isSavingSettings = true
                         scope.launch {
+                            val updates = mutableMapOf<String, Any?>(
+                                "name" to editName.trim(),
+                                "genre" to (if (selectedGenres.isNotEmpty()) selectedGenres.joinToString(", ") else editGenre.trim()),
+                                "visual_medium" to editMedium.trim(),
+                                "cover_image_url" to editCoverUrl.trim(),
+                                "auto_approve" to editAutoApprove
+                            )
+                            editTargetEpisodeCount?.let { updates["target_episode_count"] = it }
+                            editEpisodeDurationMin?.let { updates["episode_duration_min"] = it }
+                            editScriptWordCount?.let { updates["script_word_count"] = it }
                             val res = repository.updateProjectSettings(
                                 projectId = pid,
-                                updates = mapOf(
-                                    "name" to editName.trim(),
-                                    "genre" to (if (selectedGenres.isNotEmpty()) selectedGenres.joinToString(", ") else editGenre.trim()),
-                                    "visual_medium" to editMedium.trim(),
-                                    "cover_image_url" to editCoverUrl.trim(),
-                                    "auto_approve" to editAutoApprove
-                                )
+                                updates = updates
                             )
                             isSavingSettings = false
                             if (res is Resource.Success) {
