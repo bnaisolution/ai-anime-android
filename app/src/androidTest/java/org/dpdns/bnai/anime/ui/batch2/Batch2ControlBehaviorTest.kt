@@ -186,7 +186,7 @@ class Batch2ControlBehaviorTest {
 
         waitForCall(container, "saveGpuInfrastructure")
         val infra = container.recorder.lastCall("saveGpuInfrastructure")?.args?.get(0) as? Map<*, *>
-        assertEquals("BYOD_CLOUD", infra?.get("preferred_mode"))
+        assertEquals("CUSTOM_GPU", infra?.get("preferred_mode"))
         assertEquals("groq", infra?.get("primary_llm_provider"))
 
         waitForCall(container, "updateProjectSettings")
