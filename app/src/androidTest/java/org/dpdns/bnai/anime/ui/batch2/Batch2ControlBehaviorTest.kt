@@ -292,7 +292,9 @@ class Batch2ControlBehaviorTest {
 
         composeRule.onNodeWithText("UNSAVED EDITS").assertExists()
 
-        composeRule.activity.onBackPressedDispatcher.onBackPressed()
+        composeRule.activityRule.scenario.onActivity { activity ->
+            activity.onBackPressedDispatcher.onBackPressed()
+        }
         composeRule.waitUntil(timeoutMillis = 5_000) {
             composeRule.onAllNodesWithTag(TestTags.Dialog.UNSAVED_DISCARD).fetchSemanticsNodes().isNotEmpty()
         }
