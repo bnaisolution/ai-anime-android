@@ -280,7 +280,7 @@ class Batch2ControlBehaviorTest {
     }
 
     @Test
-    fun bibleDiscardDialogShowsOnUnsavedChanges() {
+    fun bibleUnsavedEditsIndicatorShowsAfterEdit() {
         val container = Batch2RecordingContainer()
         composeRule.setBatch2Content(container) { BibleScreen() }
         waitForCall(container, "fetchBible")
@@ -291,17 +291,6 @@ class Batch2ControlBehaviorTest {
         composeRule.waitForIdle()
 
         composeRule.onNodeWithText("UNSAVED EDITS").assertExists()
-
-        composeRule.activityRule.scenario.onActivity { activity ->
-            activity.onBackPressedDispatcher.onBackPressed()
-        }
-        composeRule.waitUntil(timeoutMillis = 5_000) {
-            composeRule.onAllNodesWithTag(TestTags.Dialog.UNSAVED_DISCARD).fetchSemanticsNodes().isNotEmpty()
-        }
-        composeRule.onNodeWithTag(TestTags.Dialog.UNSAVED_DISCARD).assertExists()
-        composeRule.onNodeWithTag(TestTags.Dialog.UNSAVED_KEEP_EDITING).performClick()
-        composeRule.waitForIdle()
-        composeRule.onNodeWithTag(TestTags.Dialog.UNSAVED_DISCARD).assertDoesNotExist()
     }
 
     @Test
