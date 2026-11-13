@@ -35,7 +35,7 @@ fun SettingsScreen() {
     var primaryProvider by remember { mutableStateOf("groq") }
     var fallbackProvider by remember { mutableStateOf("gemini") }
     var visionProvider by remember { mutableStateOf("gemini") }
-    var preferredComputeMode by remember { mutableStateOf("BYOD_CLOUD") }
+    var preferredComputeMode by remember { mutableStateOf("CUSTOM_GPU") }
     var kaggleUsername by remember { mutableStateOf("") }
     var cpuWorkerRepo by remember { mutableStateOf("bnaisolution/anime-cpu-worker") }
     var telegramChatId by remember { mutableStateOf("") }
@@ -261,8 +261,10 @@ fun SettingsScreen() {
             onClick = {
                 isSaving = true
                 scope.launch {
+                    val preferredModeRaw = preferredComputeMode.trim()
+                    val preferredMode = if (preferredModeRaw == "KAGGLE_AUTO" || preferredModeRaw == "CUSTOM_GPU") preferredModeRaw else "CUSTOM_GPU"
                     val infraPayload = mutableMapOf<String, Any?>(
-                        "preferred_mode" to preferredComputeMode.trim(),
+                        "preferred_mode" to preferredMode,
                         "primary_llm_provider" to primaryProvider.trim(),
                         "fallback_llm_provider" to fallbackProvider.trim(),
                         "vision_provider" to visionProvider.trim(),
