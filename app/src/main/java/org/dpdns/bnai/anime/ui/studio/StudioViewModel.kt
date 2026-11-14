@@ -34,7 +34,8 @@ data class HomeSummaryUi(
     val pendingApprovalsCount: Int = 0,
     val activeProductionStatus: String = "IDLE",
     val createStatusMessage: String? = null,
-    val latestProduction: LatestProduction = LatestProduction()
+    val latestProduction: LatestProduction = LatestProduction(),
+    val debugTag: String = "debug"
 )
 
 class StudioViewModel(

@@ -59,7 +59,7 @@ fun BibleScreen() {
     var savedSnapshot by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(true) }
     var isSavingDraft by remember { mutableStateOf(false) }
-    var errorMessage by remember { mutableStateOf<String?>(null) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }\n    var baselineLoaded by remember { false }
     var showDiscardDialog by remember { mutableStateOf(false) }
     var showProjectConfirmation by remember { mutableStateOf(false) }
     var pendingProjectSwitchBy: String? = null
