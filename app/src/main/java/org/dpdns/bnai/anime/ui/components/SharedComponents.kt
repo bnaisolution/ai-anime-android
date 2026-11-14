@@ -275,15 +275,21 @@ fun KeyValueMapList(items: List<JsonMap>) {
 @Composable
 fun ProjectSelectorBar(
     modifier: Modifier = Modifier,
+    selectedProjectIdOverride: String? = null,
     onProjectChanged: (String) -> Unit = {},
     onRefreshClick: (() -> Unit)? = null
 ) {
-    val context = LocalContext.current
     val tokenManager = LocalAppContainer.current.tokenManager
     val repository = LocalAppContainer.current.repository
     var projects by remember { mutableStateOf<List<Project>>(emptyList()) }
     var expanded by remember { mutableStateOf(false) }
-    var selectedProjectId by remember { mutableStateOf(repository.currentProjectId()) }
+    var selectedProjectId by remember { mutableStateOf(selectedProjectIdOverride ?: repository.currentProjectId()) }
+
+    LaunchedEffect(selectedProjectIdOverride) {
+        if (!selectedProjectIdOverride.isNullOrBlank()) {
+            selectedProjectId = selectedProjectIdOverride
+        }
+    }
 
     LaunchedEffect(Unit) {
         when (val res = repository.fetchProjects()) {

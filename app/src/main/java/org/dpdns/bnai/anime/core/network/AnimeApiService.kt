@@ -94,6 +94,7 @@ data class CreateCommandRequest(
     val intent: String,
     val mode: String = "SAVE",
     val episode_no: Int? = null,
+    val season_no: Int? = null,
     val payload: JsonMap = emptyMap()
 )
 
@@ -127,7 +128,11 @@ data class ProjectDto(
     val current_season: Int? = 1,
     val current_episode: Int? = 1,
     val budget_ceiling: Double? = null,
-    val active_system_prompt_id: String? = null
+    val active_system_prompt_id: String? = null,
+    val production_status: String? = null,
+    val active_jobs_count: Int? = null,
+    val latest_job_status: String? = null,
+    val latest_job_at: String? = null
 )
 
 data class UpdateProjectSettingsRequest(
@@ -139,6 +144,8 @@ data class UpdateProjectSettingsRequest(
     val budget_ceiling: Int? = null,
     val active_system_prompt_id: String? = null,
     val target_episode_count: Int? = null,
+    val total_seasons: Int? = null,
+    val episodes_per_season: Int? = null,
     val episode_duration_min: Int? = null,
     val script_word_count: Int? = null
 )
@@ -157,8 +164,15 @@ data class StorageUploadRequest(
 data class ProjectOverviewDto(
     val project: ProjectDto? = null,
     val stats: JsonMap? = null,
+    val counts: JsonMap? = null,
+    val status: JsonMap? = null,
+    val errors: JsonMap? = null,
+    val series: JsonMap? = null,
+    val latest_episode: JsonMap? = null,
+    val next_episode: JsonMap? = null,
     val episodes_count: Int? = null,
     val characters_count: Int? = null,
+    val scenes_count: Int? = null,
     val pending_approvals: Int? = null,
     val active_jobs: Int? = null,
     val canon_status: String? = null,
@@ -168,6 +182,7 @@ data class ProjectOverviewDto(
 data class EpisodeDto(
     val id: String,
     val project_id: String? = null,
+    val season_no: Int? = null,
     val episode_no: Int,
     val title: String? = null,
     val synopsis: String? = null,

@@ -60,7 +60,11 @@ class AnimeRepository(
                         id = dto.id,
                         name = dto.name,
                         activeEpisode = projectProgressLabel(dto.current_season, dto.current_episode),
-                        status = if (dto.id == effectiveActiveId) "SELECTED" else "IDLE"
+                        status = dto.production_status
+                            ?: when {
+                                (dto.current_episode ?: 0) > 0 -> "IN PROGRESS"
+                                else -> "NOT STARTED"
+                            }
                     )
                 })
             }
@@ -111,6 +115,8 @@ class AnimeRepository(
                         "id" to dto.project?.id,
                         "name" to dto.project?.name,
                         "is_active" to dto.project?.is_active,
+                        "current_season" to dto.project?.current_season,
+                        "current_episode" to dto.project?.current_episode,
                         "story_bible" to bible,
                         "active_system_prompt_id" to dto.project?.active_system_prompt_id
                     ),
@@ -121,14 +127,21 @@ class AnimeRepository(
                     "cover_image_url" to bible["cover_image_url"],
                     "budget_ceiling" to (bible["budget_ceiling"] ?: dto.project?.budget_ceiling ?: 1000),
                     "stats" to (dto.stats ?: emptyMap<String, Any?>()),
-                    "episodes_count" to (dto.episodes_count ?: 0),
-                    "characters_count" to (dto.characters_count ?: 0),
-                    "pending_approvals" to (dto.pending_approvals ?: 0),
-                    "pending_approvals_count" to (dto.pending_approvals ?: 0),
-                    "active_jobs" to (dto.active_jobs ?: 0),
-                    "active_jobs_count" to (dto.active_jobs ?: 0),
-                    "canon_status" to (dto.canon_status ?: "UNSET"),
-                    "continuity_status" to (dto.continuity_status ?: "UNCHECKED")
+                    "counts" to dto.counts,
+                    "status" to dto.status,
+                    "errors" to (dto.errors ?: emptyMap<String, Any?>()),
+                    "series" to dto.series,
+                    "latest_episode" to dto.latest_episode,
+                    "next_episode" to dto.next_episode,
+                    "episodes_count" to dto.episodes_count,
+                    "characters_count" to dto.characters_count,
+                    "scenes_count" to dto.scenes_count,
+                    "pending_approvals" to dto.pending_approvals,
+                    "pending_approvals_count" to dto.pending_approvals,
+                    "active_jobs" to dto.active_jobs,
+                    "active_jobs_count" to dto.active_jobs,
+                    "canon_status" to dto.canon_status,
+                    "continuity_status" to dto.continuity_status
                 ))
             }
             is Resource.Error -> res
@@ -200,6 +213,8 @@ class AnimeRepository(
                 cover_image_url = updates["cover_image_url"] as? String,
                 budget_ceiling = (updates["budget_ceiling"] as? Number)?.toInt(),
                 target_episode_count = (updates["target_episode_count"] as? Number)?.toInt(),
+                total_seasons = (updates["total_seasons"] as? Number)?.toInt(),
+                episodes_per_season = (updates["episodes_per_season"] as? Number)?.toInt(),
                 episode_duration_min = (updates["episode_duration_min"] as? Number)?.toInt(),
                 script_word_count = (updates["script_word_count"] as? Number)?.toInt()
             )
@@ -343,6 +358,7 @@ class AnimeRepository(
                 }
                 Episode(
                     id = dto.id,
+                    seasonNumber = dto.season_no ?: 1,
                     episodeNumber = dto.episode_no,
                     title = cleanTitle,
                     status = dto.current_state ?: dto.status ?: "DRAFT",
@@ -531,7 +547,8 @@ class AnimeRepository(
         mode: String,
         episodeNo: Int?,
         payload: JsonMap,
-        customIdempotencyKey: String?
+        customIdempotencyKey: String?,
+        seasonNo: Int?
     ): Resource<SubmitCommandResultDto> {
         if (projectId.isBlank()) {
             return Resource.Error("Please select or create a project first.")
@@ -540,7 +557,7 @@ class AnimeRepository(
         return try {
             val response = apiService.submitCommand(
                 idempotencyKey,
-                CreateCommandRequest(projectId, intent.name, mode, episodeNo, payload)
+                CreateCommandRequest(projectId, intent.name, mode, episodeNo, seasonNo, payload)
             )
             if (response.isSuccessful && response.body()?.data != null) {
                 Resource.Success(response.body()!!.data!!)

@@ -55,6 +55,7 @@ fun BibleScreen() {
     var timelineFoundation by rememberSaveable(projectId) { mutableStateOf("") }
     var totalSeasons by rememberSaveable(projectId) { mutableStateOf<Int?>(null) }
     var episodesPerSeason by rememberSaveable(projectId) { mutableStateOf<Int?>(null) }
+    var episodeDurationMin by rememberSaveable(projectId) { mutableStateOf<Int?>(null) }
 
     var savedSnapshot by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(true) }
@@ -81,7 +82,8 @@ fun BibleScreen() {
             characterFoundations,
             timelineFoundation,
             totalSeasons,
-            episodesPerSeason
+            episodesPerSeason,
+            episodeDurationMin
         ).joinToString("||")
     }
 
@@ -100,6 +102,11 @@ fun BibleScreen() {
         powerSystem = (bible["power_system"] ?: bible["magic_system"] ?: "").toString()
         characterFoundations = (bible["character_foundations"] ?: bible["main_cast_notes"] ?: "").toString()
         timelineFoundation = (bible["timeline"] ?: bible["season_arc"] ?: "").toString()
+        totalSeasons = (bible["total_seasons"] as? Number)?.toInt() ?: 1
+        episodesPerSeason = (bible["episodes_per_season"] as? Number)?.toInt()
+            ?: (bible["target_episode_count"] as? Number)?.toInt()
+            ?: 12
+        episodeDurationMin = (bible["episode_duration_min"] as? Number)?.toInt() ?: 24
         activeBiblePromptId = map["active_system_prompt_id"]?.toString()?.takeIf { it.isNotBlank() }
         savedSnapshot = currentEditorSnapshot()
     }
@@ -375,6 +382,15 @@ fun BibleScreen() {
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth().testTag(TestTags.Bible.TONE_GENRE_FIELD)
                     )
+                    Text("Series Structure", fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
+                    Text("Total Seasons: ${totalSeasons ?: "—"}", fontSize = 12.sp)
+                    Text("Episodes per Season: ${episodesPerSeason ?: "—"}", fontSize = 12.sp)
+                    Text("Episode Duration: ${episodeDurationMin ?: "—"} minutes", fontSize = 12.sp)
+                    Text(
+                        "Series Structure is read-only here. Edit it in Project Settings.",
+                        fontSize = 12.sp,
+                        color = StudioTokens.Warning
+                    )
                 }
             }
             1 -> {
@@ -537,26 +553,6 @@ fun BibleScreen() {
                 onValueChange = {},
                 readOnly = true,
                 label = { Text("Visual Medium") }
-            )
-            OutlinedTextField(
-                value = totalSeasons?.toString() ?: "",
-                onValueChange = { totalSeasons = it.toIntOrNull() },
-                readOnly = false,
-                label = { Text("Total Seasons") },
-                modifier = Modifier.weight(1f)
-            )
-            OutlinedTextField(
-                value = episodesPerSeason?.toString() ?: "",
-                onValueChange = { episodesPerSeason = it.toIntOrNull() },
-                readOnly = false,
-                label = { Text("Episodes per Season") },
-                modifier = Modifier.weight(1f)
-            )
-            OutlinedTextField(
-                value = "",
-                onValueChange = {},
-                readOnly = true,
-                label = { Text("Episode Duration (min)") }
             )
         }
 

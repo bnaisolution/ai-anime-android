@@ -60,6 +60,9 @@ object TestTags {
         const val SAVE_SETTINGS = "screen.project_detail.save_settings"
         const val SETTINGS_BUTTON = "screen.project_detail.settings"
         const val AUTO_APPROVE = "screen.project_detail.auto_approve"
+        const val TOTAL_SEASONS = "screen.project_detail.total_seasons"
+        const val EPISODES_PER_SEASON = "screen.project_detail.episodes_per_season"
+        const val EPISODE_DURATION = "screen.project_detail.episode_duration"
     }
 
     object Production {

@@ -13,6 +13,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -73,10 +75,11 @@ fun ProjectDetailScreen(
     val repository = LocalAppContainer.current.repository
     val scope = rememberCoroutineScope()
 
-    val activePid = projectId.ifBlank { repository.currentProjectId() }
+    var activePid by remember { mutableStateOf(projectId.ifBlank { repository.currentProjectId() }) }
     var overviewMap by remember { mutableStateOf<JsonMap>(emptyMap()) }
     var isLoading by remember { mutableStateOf(true) }
     var loadError by remember { mutableStateOf<String?>(null) }
+    var pendingSwitchPid by remember { mutableStateOf<String?>(null) }
 
     var activeCmdId by remember(activePid) { mutableStateOf(tokenManager.getActiveCommandId(activePid, "quick_gen_episode")) }
     var activeCmdStatus by remember { mutableStateOf<String?>(null) }
@@ -93,6 +96,9 @@ fun ProjectDetailScreen(
     var editTargetEpisodeCount by remember { mutableStateOf<Int?>(null) }
     var editEpisodeDurationMin by remember { mutableStateOf<Int?>(null) }
     var editScriptWordCount by remember { mutableStateOf<Int?>(null) }
+    var editTotalSeasons by remember { mutableStateOf("1") }
+    var editEpisodesPerSeason by remember { mutableStateOf("12") }
+    var editEpisodeDuration by remember { mutableStateOf("24") }
     var isSavingSettings by remember { mutableStateOf(false) }
     var settingsDirty by remember { mutableStateOf(false) }
     val builtInGenres = listOf("Action", "Thriller", "Horror", "Comedy", "Dark Fantasy", "Fantasy", "Sci-Fi", "Romance", "Drama", "Slice of Life")
@@ -154,7 +160,7 @@ fun ProjectDetailScreen(
         }
     }
 
-    fun loadProjectOverviewData(targetPid: String = repository.currentProjectId()) {
+    fun loadProjectOverviewData(targetPid: String = activePid) {
         if (targetPid.isBlank()) {
             isLoading = false
             loadError = "No active project selected."
@@ -178,6 +184,13 @@ fun ProjectDetailScreen(
                     editTargetEpisodeCount = (bibleObj["target_episode_count"] as? Number)?.toInt()
                     editEpisodeDurationMin = (bibleObj["episode_duration_min"] as? Number)?.toInt()
                     editScriptWordCount = (bibleObj["script_word_count"] as? Number)?.toInt()
+                    editTotalSeasons = ((bibleObj["total_seasons"] as? Number)?.toInt() ?: 1).toString()
+                    editEpisodesPerSeason = (
+                        (bibleObj["episodes_per_season"] as? Number)?.toInt()
+                            ?: (bibleObj["target_episode_count"] as? Number)?.toInt()
+                            ?: 12
+                        ).toString()
+                    editEpisodeDuration = ((bibleObj["episode_duration_min"] as? Number)?.toInt() ?: 24).toString()
 
                     val backendActiveCmd = (res.data["status"] as? Map<*, *>)?.get("active_command_id")?.toString()
                     if (!backendActiveCmd.isNullOrBlank() && backendActiveCmd != "null") {
@@ -229,27 +242,82 @@ fun ProjectDetailScreen(
     val coverUrl = (overviewMap["cover_image_url"] ?: (overviewMap["project"] as? Map<*, *>)?.get("cover_image_url"))
         ?.toString()?.takeIf { it.isNotBlank() && it != "null" }
 
-    val canonStatus = (overviewMap["canon_status"] ?: (overviewMap["status"] as? Map<*, *>)?.get("canon_status"))
-        ?.toString()?.takeIf { it.isNotBlank() && it != "null" } ?: "UNSET"
-    val continuityStatus = (overviewMap["continuity_status"] ?: (overviewMap["status"] as? Map<*, *>)?.get("continuity_status"))
-        ?.toString()?.takeIf { it.isNotBlank() && it != "null" } ?: "UNCHECKED"
+    val errorsObj = (overviewMap["errors"] as? Map<*, *>) ?: emptyMap<String, Any?>()
+    val statusObj = overviewMap["status"] as? Map<*, *>
+    val countsObj = overviewMap["counts"] as? Map<*, *>
 
-    val countsObj = (overviewMap["counts"] as? Map<*, *>) ?: overviewMap
-    val episodesCount = formatInt(countsObj["episodes_count"] ?: overviewMap["episodes_count"] ?: 0)
-    val charactersCount = formatInt(countsObj["characters_count"] ?: overviewMap["characters_count"] ?: 0)
-    val scenesCount = formatInt(countsObj["scenes_count"] ?: overviewMap["scenes_count"] ?: 0)
-    val activeJobsCount = formatInt(countsObj["active_jobs_count"] ?: overviewMap["active_jobs_count"] ?: 0)
-    val pendingApprovalsCount = formatInt(countsObj["pending_approvals_count"] ?: overviewMap["pending_approvals_count"] ?: 0)
-    val pendingActionsCount = formatInt(countsObj["pending_actions_count"] ?: overviewMap["pending_actions_count"] ?: 0)
+    val canonStatus = when {
+        isLoading -> "LOADING"
+        errorsObj["canon"] != null -> "UNAVAILABLE"
+        else -> (overviewMap["canon_status"] ?: statusObj?.get("canon_status"))
+            ?.toString()?.takeIf { it.isNotBlank() && it != "null" } ?: "UNSET"
+    }
+    val continuityStatus = when {
+        isLoading -> "LOADING"
+        errorsObj["continuity"] != null -> "UNAVAILABLE"
+        else -> (overviewMap["continuity_status"] ?: statusObj?.get("continuity_status"))
+            ?.toString()?.takeIf { it.isNotBlank() && it != "null" } ?: "UNCHECKED"
+    }
 
-    val nextEpisodeNo = (episodesCount.toIntOrNull() ?: 0) + 1
-    val generationLabel = if (nextEpisodeNo == 1) "Create 1st Episode" else "Create Episode $nextEpisodeNo"
+    fun metricValue(errorKey: String, countKey: String): String {
+        if (isLoading) return "…"
+        if (errorsObj[errorKey] != null) return "—"
+        val value = countsObj?.get(countKey) ?: overviewMap[countKey]
+        return if (value == null) "—" else formatInt(value)
+    }
+
+    val episodesCount = metricValue("episodes", "episodes_count")
+    val charactersCount = metricValue("characters", "characters_count")
+    val scenesCount = metricValue("scenes", "scenes_count")
+    val activeJobsCount = metricValue("jobs", "active_jobs_count")
+    val pendingApprovalsCount = metricValue("approvals", "pending_approvals_count")
+    val pendingActionsCount = metricValue("pending_actions", "pending_actions_count")
+
+    val seriesObj = overviewMap["series"] as? Map<*, *> ?: emptyMap<String, Any?>()
+    val overviewTotalSeasons = (seriesObj["total_seasons"] as? Number)?.toInt()
+    val overviewEpisodesPerSeason = (seriesObj["episodes_per_season"] as? Number)?.toInt()
+    val overviewDuration = (seriesObj["episode_duration_min"] as? Number)?.toInt()
+
+    val nextObj = overviewMap["next_episode"] as? Map<*, *>
+    val nextEpisodeNo = (nextObj?.get("episode_no") as? Number)?.toInt()
+        ?: ((countsObj?.get("episodes_count") as? Number)?.toInt() ?: 0) + 1
+    val nextSeasonNo = (nextObj?.get("season_no") as? Number)?.toInt()
+        ?: (overviewMap["project"] as? Map<*, *>)?.get("current_season")?.let { (it as? Number)?.toInt() }
+        ?: 1
+    val totalSeasonsForLabel = overviewTotalSeasons ?: 1
+
+    val generationLabel = when {
+        nextEpisodeNo <= 1 -> "Create 1st Episode"
+        totalSeasonsForLabel > 1 || nextSeasonNo > 1 -> "Create S$nextSeasonNo E$nextEpisodeNo"
+        else -> "Create Episode $nextEpisodeNo"
+    }
+
+    val totalSeasonsInput = editTotalSeasons.toIntOrNull()
+    val episodesPerSeasonInput = editEpisodesPerSeason.toIntOrNull()
+    val durationInput = editEpisodeDuration.toIntOrNull()
+    val seriesError = when {
+        totalSeasonsInput == null || episodesPerSeasonInput == null || durationInput == null ->
+            "Series values must be whole numbers."
+        (totalSeasonsInput ?: 0) !in 1..100 -> "Total Seasons must be between 1 and 100."
+        (episodesPerSeasonInput ?: 0) !in 1..500 -> "Episodes per Season must be between 1 and 500."
+        (durationInput ?: 0) !in 1..120 -> "Episode Duration must be between 1 and 120 minutes."
+        (totalSeasonsInput ?: 0).toLong() * (episodesPerSeasonInput ?: 0).toLong() > 50_000L ->
+            "Total planned episodes cannot exceed 50,000."
+        else -> null
+    }
+    val seriesSummary = if (seriesError == null) {
+        "${totalSeasonsInput} Season${if (totalSeasonsInput == 1) "" else "s"} · " +
+            "${totalSeasonsInput!!.toLong() * episodesPerSeasonInput!!.toLong()} Episodes · " +
+            "$durationInput Minutes/Episode"
+    } else null
+
     val readinessReady = readinessReport?.allReady == true
     val readinessBadge = when {
         !activeCmdId.isNullOrBlank() -> friendlyPipelineStatus(activeCmdStatus ?: "RUNNING")
         isCheckingReadiness -> "CHECKING"
         readinessReady -> "READY"
-        else -> "PENDING"
+        readinessReport == null -> "UNAVAILABLE"
+        else -> "NEEDS ATTENTION"
     }
 
     if (showSettingsDialog) {
@@ -257,7 +325,12 @@ fun ProjectDetailScreen(
             onDismissRequest = { if (!isSavingSettings) showSettingsDialog = false },
             title = { Text("Project Settings", fontWeight = FontWeight.Bold) },
             text = {
-                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Column(
+                    modifier = Modifier
+                        .heightIn(max = 460.dp)
+                        .verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
                     OutlinedTextField(
                         value = editName,
                         onValueChange = { editName = it; settingsDirty = true },
@@ -278,12 +351,20 @@ fun ProjectDetailScreen(
                         modifier = Modifier.fillMaxWidth(),
                         onClick = { coverPicker.launch("image/*") }
                     )
+                    if (editCoverUrl.isNotBlank()) {
+                        AsyncMediaPreview(
+                            mediaUrl = editCoverUrl,
+                            contentDescription = "Cover image preview",
+                            height = 100.dp,
+                            emptyLabel = "Cover preview"
+                        )
+                    }
                     Text("Genre (select multiple)", fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(6.dp),
                         modifier = Modifier.horizontalScroll(rememberScrollState())
                     ) {
-                        builtInGenres.forEach { genre ->
+                        (builtInGenres + selectedGenres).distinct().forEach { genre ->
                             val selected = selectedGenres.contains(genre)
                             if (selected) {
                                 Button(
@@ -360,6 +441,48 @@ fun ProjectDetailScreen(
                             Text("+ Add more medium", fontSize = 11.sp)
                         }
                     }
+                    Text("Series Configuration", fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        OutlinedTextField(
+                            value = editTotalSeasons,
+                            onValueChange = {
+                                editTotalSeasons = it.filter(Char::isDigit)
+                                settingsDirty = true
+                            },
+                            label = { Text("Total Seasons") },
+                            singleLine = true,
+                            isError = seriesError != null && (totalSeasonsInput ?: 0) !in 1..100,
+                            modifier = Modifier.weight(1f).testTag(TestTags.ProjectDetail.TOTAL_SEASONS)
+                        )
+                        OutlinedTextField(
+                            value = editEpisodesPerSeason,
+                            onValueChange = {
+                                editEpisodesPerSeason = it.filter(Char::isDigit)
+                                settingsDirty = true
+                            },
+                            label = { Text("Episodes / Season") },
+                            singleLine = true,
+                            isError = seriesError != null && (episodesPerSeasonInput ?: 0) !in 1..500,
+                            modifier = Modifier.weight(1f).testTag(TestTags.ProjectDetail.EPISODES_PER_SEASON)
+                        )
+                    }
+                    OutlinedTextField(
+                        value = editEpisodeDuration,
+                        onValueChange = {
+                            editEpisodeDuration = it.filter(Char::isDigit)
+                            settingsDirty = true
+                        },
+                        label = { Text("Episode Duration (minutes)") },
+                        singleLine = true,
+                        isError = seriesError != null && (durationInput ?: 0) !in 1..120,
+                        modifier = Modifier.fillMaxWidth().testTag(TestTags.ProjectDetail.EPISODE_DURATION)
+                    )
+                    if (seriesError != null) {
+                        Text(seriesError, color = StudioTokens.Error, fontSize = 12.sp)
+                    } else if (seriesSummary != null) {
+                        Text("Summary: $seriesSummary", fontSize = 12.sp, color = StudioTokens.Success)
+                    }
+
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -381,11 +504,11 @@ fun ProjectDetailScreen(
                 PrimaryButton(
                     text = "Save Settings",
                     isLoading = isSavingSettings,
-                    enabled = !isSavingSettings && settingsDirty,
+                    enabled = !isSavingSettings && settingsDirty && seriesError == null,
                     modifier = Modifier.testTag(TestTags.ProjectDetail.SAVE_SETTINGS),
                     onClick = {
-                        val pid = repository.currentProjectId()
-                        if (pid.isBlank()) return@PrimaryButton
+                        val pid = activePid
+                        if (pid.isBlank() || seriesError != null) return@PrimaryButton
                         isSavingSettings = true
                         scope.launch {
                             val updates = mutableMapOf<String, Any?>(
@@ -396,7 +519,11 @@ fun ProjectDetailScreen(
                                 "auto_approve" to editAutoApprove
                             )
                             editTargetEpisodeCount?.let { updates["target_episode_count"] = it }
-                            editEpisodeDurationMin?.let { updates["episode_duration_min"] = it }
+                            seriesSummary?.let {
+                                updates["total_seasons"] = totalSeasonsInput!!
+                                updates["episodes_per_season"] = episodesPerSeasonInput!!
+                                updates["episode_duration_min"] = durationInput!!
+                            }
                             editScriptWordCount?.let { updates["script_word_count"] = it }
                             val res = repository.updateProjectSettings(
                                 projectId = pid,
@@ -426,6 +553,32 @@ fun ProjectDetailScreen(
         )
     }
 
+    pendingSwitchPid?.let { targetPid ->
+        AlertDialog(
+            onDismissRequest = {
+                pendingSwitchPid = null
+                tokenManager.saveActiveProjectId(activePid)
+            },
+            title = { Text("Unsaved project changes", fontWeight = FontWeight.Bold) },
+            text = { Text("Finish or discard the current Project Settings edits before switching projects.") },
+            confirmButton = {
+                Button(onClick = {
+                    settingsDirty = false
+                    showSettingsDialog = false
+                    pendingSwitchPid = null
+                    tokenManager.saveActiveProjectId(targetPid)
+                    activePid = targetPid
+                }) { Text("Discard & Switch") }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    pendingSwitchPid = null
+                    tokenManager.saveActiveProjectId(activePid)
+                }) { Text("Stay Here") }
+            }
+        )
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -435,8 +588,15 @@ fun ProjectDetailScreen(
         verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
         ProjectSelectorBar(
-            onProjectChanged = { newPid -> loadProjectOverviewData(newPid) },
-            onRefreshClick = { loadProjectOverviewData(repository.currentProjectId()) }
+            selectedProjectIdOverride = activePid,
+            onProjectChanged = { newPid ->
+                if (settingsDirty) {
+                    pendingSwitchPid = newPid
+                } else if (newPid != activePid) {
+                    activePid = newPid
+                }
+            },
+            onRefreshClick = { if (activePid.isNotBlank()) loadProjectOverviewData(activePid) }
         )
 
         if (isLoading) {
@@ -447,7 +607,7 @@ fun ProjectDetailScreen(
             StandardCard {
                 Text("Error Loading Project", color = StudioTokens.Error, fontWeight = FontWeight.Bold)
                 Text(loadError ?: "Unknown error", fontSize = 13.sp)
-                SecondaryButton(text = "Retry", onClick = { loadProjectOverviewData(repository.currentProjectId()) })
+                SecondaryButton(text = "Retry", onClick = { loadProjectOverviewData(activePid) })
             }
         } else {
             Box(
@@ -498,6 +658,28 @@ fun ProjectDetailScreen(
                 }
             )
 
+            StandardCard {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text("Series Plan", fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
+                        Text(
+                            seriesSummary ?: "Review series configuration in Project Settings",
+                            fontSize = 12.sp,
+                            color = if (seriesError == null) StudioTokens.Success else StudioTokens.Warning
+                        )
+                    }
+                    TextButton(onClick = {
+                        selectedGenres = editGenre.split(",").map { it.trim() }.filter { it.isNotBlank() }.toSet()
+                        settingsDirty = false
+                        showSettingsDialog = true
+                    }) { Text("Configure") }
+                }
+            }
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -543,33 +725,71 @@ fun ProjectDetailScreen(
             }
 
             SectionHeader(title = "Studio Modules")
-            val modules = listOf(
-                "Story Bible" to onOpenBible,
-                "Episode Planner" to onOpenEpisodes,
-                "Scene Inspector" to onOpenScenes,
-                "Characters" to onOpenCharacters,
-                "Character Deep Dive" to onOpenCharDeepDive,
-                "World Wiki" to onOpenLore,
-                "Vision DNA" to onOpenVision,
-                "Quick Generate" to onOpenQuickTools,
-                "Media Library" to onOpenMediaLibrary,
-                "Quality Control (QC)" to onOpenQC,
-                "Review Inbox" to onOpenReviewInbox,
-                "Publish Studio" to onOpenPublish,
-                "Analytics" to onOpenAnalytics,
-                "Quota Dashboard" to onOpenQuota,
-                "Budget Ledger" to onOpenBudget
+            var expandedGroups by remember { mutableStateOf<Set<String>>(emptySet()) }
+            val moduleGroups = listOf(
+                "Story & Planning" to listOf(
+                    "Story Bible" to onOpenBible,
+                    "Episode Planner" to onOpenEpisodes,
+                    "Characters" to onOpenCharacters,
+                    "Character Deep Dive" to onOpenCharDeepDive,
+                    "World Wiki" to onOpenLore
+                ),
+                "Visual Development" to listOf(
+                    "Vision DNA" to onOpenVision,
+                    "Media Library" to onOpenMediaLibrary
+                ),
+                "Scene & Production" to listOf(
+                    "Scene Inspector" to onOpenScenes,
+                    "Quick Generate" to onOpenQuickTools
+                ),
+                "Quality & Review" to listOf(
+                    "Quality Control (QC)" to onOpenQC,
+                    "Review Inbox" to onOpenReviewInbox
+                ),
+                "Publishing & Insights" to listOf(
+                    "Publish Studio" to onOpenPublish,
+                    "Analytics" to onOpenAnalytics,
+                    "Quota Dashboard" to onOpenQuota,
+                    "Budget Ledger" to onOpenBudget
+                )
             )
 
-            modules.chunked(2).forEach { pair ->
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    pair.forEach { (label, action) ->
-                        OutlinedButton(
-                            onClick = action,
-                            modifier = Modifier.weight(1f).heightIn(min = 48.dp),
-                            shape = RoundedCornerShape(10.dp)
-                        ) {
-                            Text(label, fontSize = 12.sp, maxLines = 1)
+            moduleGroups.forEach { (groupName, modules) ->
+                val expanded = groupName in expandedGroups
+                StandardCard(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable {
+                            expandedGroups = if (expanded) expandedGroups - groupName else expandedGroups + groupName
+                        }
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(groupName, fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
+                        Icon(
+                            imageVector = if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                            contentDescription = if (expanded) "Collapse $groupName" else "Expand $groupName"
+                        )
+                    }
+                }
+                if (expanded) {
+                    modules.chunked(2).forEach { pair ->
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            pair.forEach { (label, action) ->
+                                OutlinedButton(
+                                    onClick = action,
+                                    modifier = Modifier.weight(1f).heightIn(min = 48.dp),
+                                    shape = RoundedCornerShape(10.dp)
+                                ) {
+                                    Text(label, fontSize = 12.sp, maxLines = 1)
+                                }
+                            }
+                            if (pair.size == 1) {
+                                Spacer(modifier = Modifier.weight(1f))
+                            }
                         }
                     }
                 }
@@ -608,10 +828,10 @@ fun ProjectDetailScreen(
                     val pending = readinessReport?.pending.orEmpty()
                     if (!readinessReady) {
                         Text(
-                            if (isCheckingReadiness) {
-                                "Checking production readiness..."
-                            } else {
-                                "${pending.size} readiness check(s) pending: ${pending.take(3).joinToString(", ") { it.label }}"
+                            when {
+                                isCheckingReadiness -> "Checking production readiness..."
+                                readinessReport == null -> "Readiness unavailable. Open Preflight to retry."
+                                else -> "${pending.size} readiness check(s) pending: ${pending.take(3).joinToString(", ") { it.label }}"
                             },
                             fontSize = 12.sp,
                             color = StudioTokens.Warning

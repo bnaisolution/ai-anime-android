@@ -27,6 +27,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import org.dpdns.bnai.anime.core.model.Project
 import org.dpdns.bnai.anime.core.network.Resource
@@ -46,8 +47,8 @@ fun StudioDashboardScreen(
     onOpenJobsMonitor: () -> Unit = {},
     viewModel: StudioViewModel = viewModel(factory = LocalAppContainer.current.viewModelFactory)
 ) {
-    val projectsResource by viewModel.projectsState.collectAsState()
-    val summary by viewModel.homeSummary.collectAsState()
+    val projectsResource by viewModel.projectsState.collectAsStateWithLifecycle()
+    val summary by viewModel.homeSummary.collectAsStateWithLifecycle()
     val repository = LocalAppContainer.current.repository
     var showCreateDialog by remember { mutableStateOf(false) }
     var menuOpenId by remember { mutableStateOf<String?>(null) }
@@ -192,6 +193,7 @@ fun StudioDashboardScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
+                .verticalScroll(rememberScrollState())
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
@@ -252,6 +254,13 @@ fun StudioDashboardScreen(
                                     latestProd.statusText,
                                     style = MaterialTheme.typography.bodySmall,
                                     color = if (latestProd.jobStatus.equals("FAILED", ignoreCase = true)) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface
+                                )
+                            }
+                            if (summary.activeJobsCount > 0) {
+                                Text(
+                                    "${summary.activeJobsCount} active job${if (summary.activeJobsCount == 1) "" else "s"}",
+                                    fontSize = 11.sp,
+                                    color = MaterialTheme.colorScheme.secondary
                                 )
                             }
                             TextButton(onClick = onOpenJobsMonitor) { Text("View Details") }
@@ -361,12 +370,13 @@ fun StudioDashboardScreen(
                         }
                     }
 
-                    LazyColumn(
-                        modifier = Modifier.testTag(TestTags.Studio.PROJECT_LIST),
-                        verticalArrangement = Arrangement.spacedBy(10.dp),
-                        contentPadding = PaddingValues(bottom = 80.dp)
+                    Column(
+                        modifier = Modifier
+                            .testTag(TestTags.Studio.PROJECT_LIST)
+                            .padding(bottom = 80.dp),
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
-                        items(orderedProjects, key = { it.id }) { project ->
+                        orderedProjects.forEach { project ->
                             val isActive = project.id == summary.activeProjectId
                             Card(
                                 modifier = Modifier.fillMaxWidth().testTag(TestTags.item(TestTags.Studio.PROJECT_ITEM_PREFIX, project.id)).clickable {

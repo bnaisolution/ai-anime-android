@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import org.dpdns.bnai.anime.core.auth.TokenManager
@@ -32,6 +33,7 @@ data class HomeSummaryUi(
     val activeProjectName: String = "Active Project",
     val recentEpisodes: List<EpisodeSummary> = emptyList(),
     val pendingApprovalsCount: Int = 0,
+    val activeJobsCount: Int = 0,
     val activeProductionStatus: String = "IDLE",
     val createStatusMessage: String? = null,
     val latestProduction: LatestProduction = LatestProduction(),
@@ -47,6 +49,7 @@ class StudioViewModel(
     private val repository: AnimeRepositoryApi,
     private val tokenManager: TokenManager
 ) : ViewModel() {
+    private var metricsJob: Job? = null
     private val _projectsState = MutableStateFlow<Resource<List<Project>>>(Resource.Loading)
     val projectsState: StateFlow<Resource<List<Project>>> = _projectsState.asStateFlow()
 
@@ -89,13 +92,16 @@ class StudioViewModel(
 
     fun loadProjectHomeMetrics(projectId: String, projectName: String = "Active Project") {
         if (projectId.isBlank()) return
+        metricsJob?.cancel()
         _homeSummary.value = _homeSummary.value.copy(
+            activeProjectId = projectId,
+            activeProjectName = projectName,
             isLoadingMetrics = true,
             episodesError = null,
             approvalsError = null,
             jobsError = null
         )
-        viewModelScope.launch {
+        metricsJob = viewModelScope.launch {
             val episodesRes = repository.fetchEpisodes(projectId)
             val approvalsRes = repository.fetchApprovals(projectId)
             val jobsRes = repository.fetchJobs(projectId)
@@ -116,11 +122,12 @@ class StudioViewModel(
             val jobs = (jobsRes as? Resource.Success)?.data.orEmpty()
             val latestJobState = jobs.firstOrNull()?.status ?: "IDLE"
 
-            // Determine latest production from jobs
+            // Latest production must reflect the most recent job, not merely the
+            // most recent active job. The active count is shown separately.
             val activeStatuses = setOf("QUEUED", "DISPATCHED", "ACKNOWLEDGED", "RUNNING", "RECONCILING")
             val activeJobs = jobs.filter { activeStatuses.contains((it.status ?: "").uppercase()) }
-            val latestProduction = if (activeJobs.isNotEmpty()) {
-                val latest = activeJobs.first()
+            val latest = jobs.firstOrNull()
+            val latestProduction = if (latest != null) {
                 LatestProduction(
                     projectName = projectName,
                     episodeNumber = latest.episode_no
@@ -138,8 +145,8 @@ class StudioViewModel(
             } else {
                 LatestProduction(
                     projectName = projectName,
-                    jobStatus = latestJobState,
-                    statusText = if (latestJobState.equals("FAILED", ignoreCase = true)) "FAILED" else latestJobState
+                    jobStatus = "IDLE",
+                    statusText = ""
                 )
             }
 
@@ -148,6 +155,7 @@ class StudioViewModel(
                 activeProjectName = projectName,
                 recentEpisodes = recentEps,
                 pendingApprovalsCount = pendingCount,
+                activeJobsCount = activeJobs.size,
                 activeProductionStatus = latestJobState,
                 latestProduction = latestProduction,
                 isLoadingMetrics = false,

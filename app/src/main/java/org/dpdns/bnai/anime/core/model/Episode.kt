@@ -2,6 +2,7 @@ package org.dpdns.bnai.anime.core.model
 
 data class Episode(
     val id: String,
+    val seasonNumber: Int = 1,
     val episodeNumber: Int,
     val title: String,
     val status: String,

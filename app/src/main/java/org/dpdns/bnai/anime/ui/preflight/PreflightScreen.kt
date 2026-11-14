@@ -102,6 +102,26 @@ suspend fun loadReadiness(
         aiFix = AiFixKind.StoryBible
     )
 
+    val bibleRoot = (bibleMap["story_bible"] as? Map<*, *>) ?: bibleMap
+    val totalSeasons = (bibleRoot["total_seasons"] as? Number)?.toInt()
+    val episodesPerSeason = (bibleRoot["episodes_per_season"] as? Number)?.toInt()
+        ?: (bibleRoot["target_episode_count"] as? Number)?.toInt()
+    val episodeDuration = (bibleRoot["episode_duration_min"] as? Number)?.toInt()
+    val seriesReady = (totalSeasons ?: 0) >= 1 &&
+        (episodesPerSeason ?: 0) >= 1 &&
+        (episodeDuration ?: 0) >= 1
+    checks += ReadinessCheck(
+        key = "series_config",
+        label = "Series Configuration",
+        ready = seriesReady,
+        detail = if (seriesReady) {
+            "$totalSeasons season(s), $episodesPerSeason episode(s) per season, $episodeDuration min/episode."
+        } else {
+            "Total Seasons, Episodes per Season and Episode Duration must be configured in Project Settings."
+        },
+        fixRoute = "project_detail"
+    )
+
     val charsRes = safeResource { repository.fetchCharacters(projectId) }
     val charCount = charsRes.dataOrNull()?.size ?: 0
     checks += ReadinessCheck(
@@ -200,8 +220,13 @@ fun PreflightScreen(
     }
 
     val report = state.report
-    val nextEpisode = (state.episodeCount + 1).coerceAtLeast(1)
-    val generateLabel = if (nextEpisode == 1) "Generate 1st Episode" else "Generate Episode $nextEpisode"
+    val nextEpisode = state.nextEpisode.coerceAtLeast(1)
+    val nextSeason = state.latestSeason.coerceAtLeast(1)
+    val generateLabel = when {
+        nextEpisode <= 1 -> "Generate 1st Episode"
+        nextSeason > 1 -> "Generate S$nextSeason E$nextEpisode"
+        else -> "Generate Episode $nextEpisode"
+    }
 
     Column(
         modifier = Modifier
@@ -286,6 +311,7 @@ fun PreflightScreen(
                                                     projectId = projectId,
                                                     intent = CommandIntent.GENERATE_EPISODE,
                                                     episodeNo = nextEpisode,
+                                                    seasonNo = nextSeason,
                                                     payload = mapOf(
                                                         "idempotency_key" to "preflight_${projectId.take(8)}_${nextEpisode}"
                                                     )

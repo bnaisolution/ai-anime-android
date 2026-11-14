@@ -221,7 +221,8 @@ interface ProductionRepository : RepositoryContext {
         mode: String = "SAVE",
         episodeNo: Int? = null,
         payload: JsonMap = emptyMap(),
-        customIdempotencyKey: String? = null
+        customIdempotencyKey: String? = null,
+        seasonNo: Int? = null
     ): Resource<SubmitCommandResultDto> =
         throw UnsupportedOperationException("submitStudioCommand is not configured")
 

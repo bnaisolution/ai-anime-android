@@ -13,6 +13,8 @@ data class PreflightUiState(
     val isLoading: Boolean = true,
     val report: ReadinessReport? = null,
     val episodeCount: Int = 0,
+    val latestSeason: Int = 1,
+    val nextEpisode: Int = 1,
     val error: String? = null
 )
 
@@ -32,12 +34,18 @@ class PreflightViewModel(
             }
             @Suppress("UNCHECKED_CAST")
             val episodes = (episodesRes as? Resource.Success<List<org.dpdns.bnai.anime.core.model.Episode>>)?.data.orEmpty()
-            val episodeCount = episodes.maxOfOrNull { it.episodeNumber } ?: 0
+            val latest = episodes.maxWithOrNull(
+                compareBy<org.dpdns.bnai.anime.core.model.Episode> { it.seasonNumber }
+                    .thenBy { it.episodeNumber }
+            )
+            val episodeCount = latest?.episodeNumber ?: 0
             val report = loadReadiness(repository, projectId, episodeCount)
             _state.value = PreflightUiState(
                 isLoading = false,
                 report = report,
                 episodeCount = episodeCount,
+                latestSeason = latest?.seasonNumber ?: 1,
+                nextEpisode = episodeCount + 1,
                 error = null
             )
         }
