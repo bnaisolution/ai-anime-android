@@ -475,6 +475,7 @@ fun AppNavGraph(navController: NavHostController) {
                             composable("studio") {
                                 StudioDashboardScreen(
                                     onProjectClick = { navController.navigate("project_detail") },
+                                    onProjectSettings = { navController.navigate("project_detail") },
                                     onOpenReviews = { navController.navigate("review_inbox") },
                                     onOpenEpisodes = { navController.navigate("episodes") },
                                     onOpenJobsMonitor = { navController.navigate("jobs_monitor") }

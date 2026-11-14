@@ -3,7 +3,7 @@ package org.dpdns.bnai.anime.ui.studio
 import org.dpdns.bnai.anime.ui.LocalAppContainer
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -11,6 +11,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -39,6 +40,7 @@ import org.dpdns.bnai.anime.ui.testing.TestTags
 @Composable
 fun StudioDashboardScreen(
     onProjectClick: (String) -> Unit = {},
+    onProjectSettings: (String) -> Unit = {},
     onOpenReviews: () -> Unit = {},
     onOpenEpisodes: () -> Unit = {},
     onOpenJobsMonitor: () -> Unit = {},
@@ -48,6 +50,7 @@ fun StudioDashboardScreen(
     val summary by viewModel.homeSummary.collectAsState()
     val repository = LocalAppContainer.current.repository
     var showCreateDialog by remember { mutableStateOf(false) }
+    var menuOpenId by remember { mutableStateOf<String?>(null) }
     var newProjectName by remember { mutableStateOf("") }
     var availablePrompts by remember { mutableStateOf<List<SystemPromptDto>>(emptyList()) }
     var selectedPromptIds by remember { mutableStateOf<Set<String>>(emptySet()) }
@@ -192,6 +195,22 @@ fun StudioDashboardScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    Text("Home", style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold)
+                    Text(
+                        "Production command center",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                BackendStatusChip(summary.backendOnline)
+            }
+
             summary.createStatusMessage?.let { msg ->
                 Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.15f))) {
                     Text(msg, modifier = Modifier.padding(12.dp), style = MaterialTheme.typography.bodyLarge)
@@ -206,29 +225,37 @@ fun StudioDashboardScreen(
             ) {
                 Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     Text("Latest Production", style = MaterialTheme.typography.labelLarge)
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                        Text(
-                            latestProd.projectName.ifBlank { summary.activeProjectName },
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.Medium,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                        Text("#${latestProd.episodeNumber}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.secondary)
-                    }
-                    val isIdle = latestProd.jobStatus.equals("IDLE", ignoreCase = true) && latestProd.statusText.isBlank()
-                    if (isIdle) {
-                        Text("No production yet", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    if (summary.isLoadingMetrics) {
+                        LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+                        Text("Loading latest production…", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    } else if (summary.jobsError != null) {
+                        Text("Unable to load production", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.error)
+                        TextButton(onClick = { viewModel.loadProjectHomeMetrics(summary.activeProjectId, summary.activeProjectName) }) { Text("Retry") }
                     } else {
-                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            StatusBadge(friendlyPipelineStatus(latestProd.jobStatus))
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                             Text(
-                                latestProd.statusText,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = if (latestProd.jobStatus.equals("FAILED", ignoreCase = true)) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface
+                                latestProd.projectName.ifBlank { summary.activeProjectName },
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.Medium,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
                             )
+                            Text("#${latestProd.episodeNumber}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.secondary)
                         }
-                        TextButton(onClick = onOpenJobsMonitor) { Text("View Details") }
+                        val isIdle = latestProd.jobStatus.equals("IDLE", ignoreCase = true) && latestProd.statusText.isBlank()
+                        if (isIdle) {
+                            Text("No production yet", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        } else {
+                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                StatusBadge(friendlyPipelineStatus(latestProd.jobStatus))
+                                Text(
+                                    latestProd.statusText,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = if (latestProd.jobStatus.equals("FAILED", ignoreCase = true)) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface
+                                )
+                            }
+                            TextButton(onClick = onOpenJobsMonitor) { Text("View Details") }
+                        }
                     }
                 }
             }
@@ -240,7 +267,11 @@ fun StudioDashboardScreen(
             ) {
                 Column(modifier = Modifier.padding(12.dp)) {
                     Text("Pending Approvals", style = MaterialTheme.typography.labelLarge)
-                    if (summary.pendingApprovalsCount == 0) {
+                    if (summary.isLoadingMetrics) {
+                        Text("Checking…", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    } else if (summary.approvalsError != null) {
+                        Text("Unavailable", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.error)
+                    } else if (summary.pendingApprovalsCount == 0) {
                         Text("All clear", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.secondary)
                         Text("No approvals waiting", fontSize = 11.sp, color = MaterialTheme.colorScheme.secondary)
                     } else {
@@ -250,8 +281,27 @@ fun StudioDashboardScreen(
             }
 
             // Fix #6: Recent Episodes with project_name and formatted relative time ("2h ago")
-            Text("Recent Episodes", style = MaterialTheme.typography.headlineMedium)
-            if (summary.recentEpisodes.isEmpty()) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("Recent Episodes", style = MaterialTheme.typography.headlineMedium)
+                TextButton(
+                    onClick = onOpenEpisodes,
+                    modifier = Modifier.testTag(TestTags.Studio.VIEW_ALL_EPISODES)
+                ) { Text("View All") }
+            }
+            if (summary.isLoadingMetrics) {
+                LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+            } else if (summary.episodesError != null) {
+                Text(
+                    summary.episodesError ?: "Failed to load episodes",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.error
+                )
+                TextButton(onClick = { viewModel.loadProjectHomeMetrics(summary.activeProjectId, summary.activeProjectName) }) { Text("Retry") }
+            } else if (summary.recentEpisodes.isEmpty()) {
                 Text(
                     "No episodes yet…",
                     style = MaterialTheme.typography.bodyMedium,
@@ -298,6 +348,7 @@ fun StudioDashboardScreen(
                 emptyMessage = "No projects found. Tap 'Create Project' to begin.",
                 onRetry = { viewModel.loadProjects() }
             ) { projects ->
+                val orderedProjects = projects.sortedByDescending { it.id == summary.activeProjectId }
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -315,7 +366,7 @@ fun StudioDashboardScreen(
                         verticalArrangement = Arrangement.spacedBy(10.dp),
                         contentPadding = PaddingValues(bottom = 80.dp)
                     ) {
-                        items(projects, key = { it.id }) { project ->
+                        items(orderedProjects, key = { it.id }) { project ->
                             val isActive = project.id == summary.activeProjectId
                             Card(
                                 modifier = Modifier.fillMaxWidth().testTag(TestTags.item(TestTags.Studio.PROJECT_ITEM_PREFIX, project.id)).clickable {
@@ -345,18 +396,48 @@ fun StudioDashboardScreen(
                                         horizontalArrangement = Arrangement.spacedBy(4.dp)
                                     ) {
                                         StatusBadge(project.status)
-                                        IconButton(
-                                            onClick = { projectPendingDelete = project },
-                                            modifier = Modifier
-                                                .size(36.dp)
-                                                .testTag(TestTags.item(TestTags.Studio.PROJECT_MENU_PREFIX, project.id))
-                                        ) {
-                                            Icon(
-                                                Icons.Filled.MoreVert,
-                                                contentDescription = "More options for ${project.name}",
-                                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                                modifier = Modifier.size(18.dp)
-                                            )
+                                        Box {
+                                            IconButton(
+                                                onClick = { menuOpenId = project.id },
+                                                modifier = Modifier
+                                                    .size(36.dp)
+                                                    .testTag(TestTags.item(TestTags.Studio.PROJECT_MENU_PREFIX, project.id))
+                                            ) {
+                                                Icon(
+                                                    Icons.Filled.MoreVert,
+                                                    contentDescription = "More options for ${project.name}",
+                                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                    modifier = Modifier.size(18.dp)
+                                                )
+                                            }
+                                            DropdownMenu(
+                                                expanded = menuOpenId == project.id,
+                                                onDismissRequest = { menuOpenId = null }
+                                            ) {
+                                                DropdownMenuItem(
+                                                    text = { Text("Open") },
+                                                    onClick = {
+                                                        menuOpenId = null
+                                                        viewModel.selectProject(project.id)
+                                                        onProjectClick(project.id)
+                                                    }
+                                                )
+                                                DropdownMenuItem(
+                                                    text = { Text("Settings") },
+                                                    onClick = {
+                                                        menuOpenId = null
+                                                        viewModel.selectProject(project.id)
+                                                        onProjectSettings(project.id)
+                                                    }
+                                                )
+                                                DropdownMenuItem(
+                                                    text = { Text("Delete") },
+                                                    onClick = {
+                                                        menuOpenId = null
+                                                        projectPendingDelete = project
+                                                    }
+                                                )
+                                            }
                                         }
                                     }
                                 }
@@ -365,6 +446,34 @@ fun StudioDashboardScreen(
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun BackendStatusChip(online: Boolean?) {
+    val color = when (online) {
+        true -> MaterialTheme.colorScheme.secondary
+        false -> MaterialTheme.colorScheme.error
+        null -> MaterialTheme.colorScheme.onSurfaceVariant
+    }
+    val label = when (online) {
+        true -> "Backend Online"
+        false -> "Backend Offline"
+        null -> "Checking backend…"
+    }
+    Surface(
+        shape = RoundedCornerShape(50),
+        color = color.copy(alpha = 0.15f),
+        modifier = Modifier.testTag(TestTags.Studio.BACKEND_STATUS)
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            Box(modifier = Modifier.size(8.dp).background(color, CircleShape))
+            Text(label, fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = color)
         }
     }
 }

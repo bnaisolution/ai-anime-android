@@ -52,6 +52,8 @@ object TestTags {
         const val PROJECT_DELETE_PREFIX = "screen.studio.project_delete"
         const val PROJECT_DELETE_CONFIRM = "screen.studio.project_delete_confirm"
         const val PROJECT_MENU_PREFIX = "screen.studio.project_menu"
+        const val BACKEND_STATUS = "screen.studio.backend_status"
+        const val VIEW_ALL_EPISODES = "screen.studio.view_all_episodes"
     }
 
     object ProjectDetail {

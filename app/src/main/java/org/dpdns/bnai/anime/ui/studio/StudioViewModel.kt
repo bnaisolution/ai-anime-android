@@ -35,6 +35,11 @@ data class HomeSummaryUi(
     val activeProductionStatus: String = "IDLE",
     val createStatusMessage: String? = null,
     val latestProduction: LatestProduction = LatestProduction(),
+    val backendOnline: Boolean? = null,
+    val isLoadingMetrics: Boolean = false,
+    val episodesError: String? = null,
+    val approvalsError: String? = null,
+    val jobsError: String? = null,
     val debugTag: String = "debug"
 )
 
@@ -52,7 +57,15 @@ class StudioViewModel(
         loadProjects()
     }
 
+    fun refreshBackendStatus() {
+        viewModelScope.launch {
+            val ok = runCatching { repository.checkBackendHealth() }.getOrDefault(false)
+            _homeSummary.value = _homeSummary.value.copy(backendOnline = ok)
+        }
+    }
+
     fun loadProjects() {
+        refreshBackendStatus()
         viewModelScope.launch {
             _projectsState.value = Resource.Loading
             val res = repository.fetchProjects()
@@ -76,6 +89,12 @@ class StudioViewModel(
 
     fun loadProjectHomeMetrics(projectId: String, projectName: String = "Active Project") {
         if (projectId.isBlank()) return
+        _homeSummary.value = _homeSummary.value.copy(
+            isLoadingMetrics = true,
+            episodesError = null,
+            approvalsError = null,
+            jobsError = null
+        )
         viewModelScope.launch {
             val episodesRes = repository.fetchEpisodes(projectId)
             val approvalsRes = repository.fetchApprovals(projectId)
@@ -130,7 +149,11 @@ class StudioViewModel(
                 recentEpisodes = recentEps,
                 pendingApprovalsCount = pendingCount,
                 activeProductionStatus = latestJobState,
-                latestProduction = latestProduction
+                latestProduction = latestProduction,
+                isLoadingMetrics = false,
+                episodesError = (episodesRes as? Resource.Error)?.message,
+                approvalsError = (approvalsRes as? Resource.Error)?.message,
+                jobsError = (jobsRes as? Resource.Error)?.message
             )
         }
     }

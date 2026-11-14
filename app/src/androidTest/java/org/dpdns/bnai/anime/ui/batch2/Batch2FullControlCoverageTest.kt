@@ -732,14 +732,10 @@ class Batch2FullControlCoverageTest {
         waitForText("Projects (1)")
         assertText("Create Project")
         assertDesc("Refresh Projects")
-        assertText("Production State")
+        assertText("Latest Production")
         assertText("Pending Approvals")
-
-        clickClickableText("Production State")
-        waitForText("Pipeline Status Details")
-        assertText("Pipeline Status Details")
-        assertText("Close")
-        clickText("Close")
+        assertText("View All")
+        clickTag(TestTags.Studio.VIEW_ALL_EPISODES)
 
         clickTag(TestTags.Studio.CREATE_PROJECT)
         waitForText("Project Title")
