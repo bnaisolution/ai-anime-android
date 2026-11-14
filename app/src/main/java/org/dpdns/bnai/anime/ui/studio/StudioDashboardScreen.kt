@@ -16,7 +16,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material3.MenuButton
+
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -329,13 +329,13 @@ fun StudioDashboardScreen(
                                         horizontalArrangement = Arrangement.spacedBy(4.dp)
                                     ) {
                                         StatusBadge(project.status)
-                                        MenuButton(
+                                        IconButton(
                                             modifier = Modifier.testTag(TestTags.item(TestTags.Studio.PROJECT_MENU_PREFIX, project.id)),
                                             onClick = {
                                                 projectPendingDelete = project
                                             }
                                         ) {
-                                            Icon(MoreVert, contentDescription = "More options for ${project.name}", tint = MaterialTheme.colorScheme.error)
+                                            Icon(Icons.Filled.MoreVert, contentDescription = "More options for ${project.name}", tint = MaterialTheme.colorScheme.error)
                                         }
                                     }
                                 }

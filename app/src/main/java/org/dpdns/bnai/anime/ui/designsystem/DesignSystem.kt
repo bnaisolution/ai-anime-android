@@ -64,6 +64,7 @@ object StudioTokens {
 }
 
 @Composable
+ * Provides a standardized dialog for unsaved changes confirmation.
 fun ScreenHeader(
     title: String,
     subtitle: String? = null,

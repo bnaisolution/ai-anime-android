@@ -86,6 +86,7 @@ fun PromptStudioScreen() {
     val promptIdByCat = remember { mutableStateMapOf<String, String>() }
     var selectedMedium by remember { mutableStateOf("ANIME") }
     var selectedGenre by remember { mutableStateOf<String?>(null) }
+    val selectedGenreDisplay = selectedGenre?.value ?: "Genre"
     var selectedFormat by remember { mutableStateOf<String?>(null) }
     var genreFilterEnabled by remember { mutableStateOf(false) }
     var availableGenres by remember { mutableStateOf(FALLBACK_GENRES) }
