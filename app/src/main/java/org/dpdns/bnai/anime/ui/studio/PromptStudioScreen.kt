@@ -32,7 +32,6 @@ private val CATEGORIES = listOf("BIBLE", "EPISODE", "IMAGE", "AI_DIRECTOR")
 private val MEDIA_OPTIONS = listOf("ANIME", "REAL_HUMAN", "LIVE_ACTION", "CINEMATIC", "MANHWA", "3D", "HYBRID")
 private val FALLBACK_GENRES = listOf("Action", "Horror", "Thriller", "Romance", "Comedy", "Mythology")
 private val FALLBACK_FORMATS = listOf("SERIES", "MOVIE", "SHORT", "MUSIC_VIDEO", "TRAILER")
-
 private val SYSTEM_DEFAULTS = mapOf(
     "BIBLE" to "You are the WF-01 Master Story Bible Architect. Build cohesive anime world rules, power scaling ceilings, and immutable character anchors.",
     "EPISODE" to "You are the WF-02 Episode Screenwriter. Write tight, high-retention multi-scene anime scripts strictly obeying locked Canon and character Visual DNA.",
@@ -48,6 +47,7 @@ fun PromptStudioScreen() {
 
     var selectedCatIndex by remember { mutableStateOf(0) }
     val currentCategory = CATEGORIES[selectedCatIndex]
+    var promptScopeBy = remember { mutableStateOf("this_project") }
 
     val titlesByCat = remember {
         mutableStateMapOf(
@@ -374,7 +374,11 @@ fun PromptStudioScreen() {
                     isLoading = isSaving,
                     enabled = isEditMode && currentText.isNotBlank() && !isSaving,
                     onClick = {
-                        val pid = repository.currentProjectId()
+                        val pid = when (promptScopeBy) {
+                            "this_project" -> repository.currentProjectId()
+                            "global" -> null
+                            else -> repository.currentProjectId()
+                        }
                         isSaving = true
                         scope.launch {
                             val title = currentTitle.trim().ifBlank { "$currentCategory Prompt" }

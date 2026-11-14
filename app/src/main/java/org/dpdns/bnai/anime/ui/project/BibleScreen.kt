@@ -53,16 +53,21 @@ fun BibleScreen() {
     var powerSystem by rememberSaveable(projectId) { mutableStateOf("") }
     var characterFoundations by rememberSaveable(projectId) { mutableStateOf("") }
     var timelineFoundation by rememberSaveable(projectId) { mutableStateOf("") }
+    var totalSeasons by rememberSaveable(projectId) { mutableStateOf<Int?>(null) }
+    var episodesPerSeason by rememberSaveable(projectId) { mutableStateOf<Int?>(null) }
 
     var savedSnapshot by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(true) }
     var isSavingDraft by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var showDiscardDialog by remember { mutableStateOf(false) }
+    var showProjectConfirmation by remember { mutableStateOf(false) }
+    var pendingProjectSwitchBy: String? = null
 
     var activeWf01CmdId by remember(projectId) { mutableStateOf(tokenManager.getActiveCommandId(projectId, "wf01_bible_gen")) }
     var activeWf01Status by remember { mutableStateOf<String?>(null) }
     var isSubmittingWf01 by remember { mutableStateOf(false) }
+    var structureInstruction by remember { mutableStateOf("") }
     var biblePrompts by remember { mutableStateOf<List<SystemPromptDto>>(emptyList()) }
     var activeBiblePromptId by remember(projectId) { mutableStateOf<String?>(null) }
 
@@ -74,11 +79,13 @@ fun BibleScreen() {
             worldRules,
             powerSystem,
             characterFoundations,
-            timelineFoundation
+            timelineFoundation,
+            totalSeasons,
+            episodesPerSeason
         ).joinToString("||")
     }
 
-    val hasUnsavedChanges = !isLoading && savedSnapshot.isNotEmpty() && currentEditorSnapshot() != savedSnapshot
+    val hasUnsavedChanges = !isLoading && (baselineLoaded || savedSnapshot.isNotEmpty()) && currentEditorSnapshot() != savedSnapshot
 
     BackHandler(enabled = hasUnsavedChanges) {
         showDiscardDialog = true
@@ -124,6 +131,7 @@ fun BibleScreen() {
     fun loadBiblePrompts(targetPid: String) {
         if (targetPid.isBlank()) return
         scope.launch {
+            biblePrompts = null  // Clear stale list before loading
             when (val res = repository.fetchSystemPrompts(targetPid, "BIBLE")) {
                 is Resource.Success -> biblePrompts = res.data
                 is Resource.Empty -> biblePrompts = emptyList()
@@ -132,7 +140,7 @@ fun BibleScreen() {
         }
     }
 
-    LaunchedEffect(projectId) {
+    LaunchedEffect(projectId, savedSnapshot) {
         loadBibleFromServer(projectId)
         loadBiblePrompts(projectId)
     }
@@ -168,11 +176,50 @@ fun BibleScreen() {
 
     if (showDiscardDialog) {
         UnsavedChangesDialog(
+            title = "Unsaved Changes",
+            message = "You have unsaved edits on Story Bible. Switching projects will lose your changes.",
+            onSave = {
+                showProjectConfirmation = false
+                pendingProjectSwitchBy = null
+                isSavingDraft = true
+                scope.launch {
+                    val payload: JsonMap = mapOf(
+                        "premise" to premise,
+                        "genre" to toneGenre,
+                        "world_setting" to worldSetting,
+                        "world_rules" to worldRules,
+                        "power_system" to powerSystem,
+                        "character_foundations" to characterFoundations,
+                        "timeline" to timelineFoundation
+                    )
+                    when (val res = repository.updateProjectBible(projectId, payload)) {
+                        is Resource.Success -> {
+                            savedSnapshot = currentEditorSnapshot()
+                            isSavingDraft = false
+                            projectId = pendingProjectSwitchBy!!
+                            pendingProjectSwitchBy = null
+                            loadBibleFromServer(projectId)
+                        }
+                        is Resource.Error -> {
+                            errorMessage = res.message
+                            isSavingDraft = false
+                            showProjectConfirmation = false
+                        }
+                    }
+                }
+            },
             onDiscard = {
-                showDiscardDialog = false
+                showProjectConfirmation = false
+                pendingProjectSwitchBy = null
+                savedSnapshot = currentEditorSnapshot()
+                baselineLoaded = true
+                projectId = pendingProjectSwitchBy!!
+                pendingProjectSwitchBy = null
                 loadBibleFromServer(projectId)
             },
-            onKeepEditing = { showDiscardDialog = false }
+            onCancel = {
+                showProjectConfirmation = false
+            }
         )
     }
 
@@ -185,6 +232,12 @@ fun BibleScreen() {
     ) {
         ProjectSelectorBar(
             onProjectChanged = { newPid ->
+                if (hasUnsavedChanges) {
+                    showProjectConfirmation = true
+                    pendingProjectSwitchBy = newPid
+                    return@ProjectSelectorBar
+                }
+                pendingProjectSwitchBy = null
                 projectId = newPid
                 loadBibleFromServer(newPid)
             },
@@ -413,6 +466,21 @@ fun BibleScreen() {
             OutlinedButton(
                 onClick = {
                     if (projectId.isBlank() || isSubmittingWf01 || !activeWf01CmdId.isNullOrBlank()) return@OutlinedButton
+                    if (toneGenre.isBlank()) {
+                        Toast.makeText(context, "Please enter Tone & Genre first", Toast.LENGTH_SHORT).show()
+                        isSubmittingWf01 = false
+                        return@OutlinedButton
+                    }
+                    if (premise.isBlank()) {
+                        Toast.makeText(context, "Please enter Master Premise first", Toast.LENGTH_SHORT).show()
+                        isSubmittingWf01 = false
+                        return@OutlinedButton
+                    }
+                    if (structureInstruction.isBlank()) {
+                        Toast.makeText(context, "Please enter Structure Instruction first", Toast.LENGTH_SHORT).show()
+                        isSubmittingWf01 = false
+                        return@OutlinedButton
+                    }
                     isSubmittingWf01 = true
                     scope.launch {
                         val res = repository.submitStudioCommand(
@@ -423,7 +491,11 @@ fun BibleScreen() {
                                 "genre" to toneGenre,
                                 "world_setting" to worldSetting,
                                 "world_rules" to worldRules,
-                                "power_system" to powerSystem
+                                "power_system" to powerSystem,
+                                "character_foundations" to characterFoundations,
+                                "timeline" to timelineFoundation,
+                                "userPrompt" to structureInstruction,
+                                "operation" to "STRUCTURE"
                             )
                         )
                         isSubmittingWf01 = false
@@ -448,6 +520,43 @@ fun BibleScreen() {
                 Text("AI Expand Bible")
             }
         }
+
+        // Project Context (read-only, sourced from Project Settings)
+        StandardCard(modifier = Modifier.fillMaxWidth()) {
+            SectionHeader(title = "Project Context")
+            OutlinedTextField(
+                value = toneGenre,
+                onValueChange = {},
+                readOnly = true,
+                label = { Text("Genre") }
+            )
+            OutlinedTextField(
+                value = worldSetting,
+                onValueChange = {},
+                readOnly = true,
+                label = { Text("Visual Medium") }
+            )
+            OutlinedTextField(
+                value = totalSeasons?.toString() ?: "",
+                onValueChange = { totalSeasons = if (it == null) null else it.toInt() },
+                readOnly = false,
+                label = { Text("Total Seasons") },
+                modifier = Modifier.weight(1f)
+            )
+            OutlinedTextField(
+                value = episodesPerSeason?.toString() ?: "",
+                onValueChange = { episodesPerSeason = if (it == null) null else it.toInt() },
+                readOnly = false,
+                label = { Text("Episodes per Season") },
+                modifier = Modifier.weight(1f)
+            )
+            OutlinedTextField(
+                value = "",
+                onValueChange = {},
+                readOnly = true,
+                label = { Text("Episode Duration (min)") }
+            )
+        },
 
         Spacer(modifier = Modifier.height(64.dp))
     }

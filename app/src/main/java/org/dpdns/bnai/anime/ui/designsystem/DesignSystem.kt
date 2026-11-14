@@ -364,21 +364,106 @@ fun ConfirmationDialog(
 }
 
 @Composable
+fun ConfirmationDialog(
+    title: String,
+    message: String,
+    confirmText: String = "Confirm",
+    dismissText: String = "Cancel",
+    saveText: String = "Save",
+    isDestructive: Boolean = false,
+    confirmTestTag: String = TestTags.Dialog.CONFIRM,
+    dismissTestTag: String = TestTags.Dialog.CANCEL,
+    saveTestTag: String = TestTags.Dialog.SAVE,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit,
+    onSave: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        shape = RoundedCornerShape(StudioTokens.DialogRadius),
+        title = { Text(title, fontWeight = FontWeight.Bold) },
+        text = { Text(message) },
+        confirmButton = {
+            Button(
+                onClick = onClick@{
+                    onConfirm()
+                },
+                modifier = Modifier.testTag(confirmTestTag),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if (isDestructive) StudioTokens.Error else StudioTokens.Primary
+                )
+            ) {
+                Text(confirmText, color = Color.White)
+            }
+        },
+        dismissButton = {
+            TextButton(
+                onClick = onDismiss,
+                modifier = Modifier.testTag(dismissTestTag)
+            ) {
+                Text(dismissText)
+            }
+        },
+        secondaryButton = {
+            if (onSave != null) {
+                Button(
+                    onClick = onClick@{
+                        onSave()
+                    },
+                    modifier = Modifier.testTag(saveTestTag),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = StudioTokens.Warning
+                    )
+                ) {
+                    Text(saveText, color = Color.White)
+                }
+            }
+        }
+    )
+}
+
+/**
+ * Displays a dialog when unsaved changes exist on the current screen.
+ * Provides options to discard changes, keep editing, or save before leaving.
+ *
+ * @param onDiscard Called when user chooses to discard changes and leave.
+ * @param onKeepEditing Called when user chooses to keep editing and stay on screen.
+ * @param onSave Called when user chooses to save changes before leaving. Optional;
+ *               if null, the "Save" button is not shown and the dialog has two options.
+ */
 fun UnsavedChangesDialog(
     onDiscard: () -> Unit,
-    onKeepEditing: () -> Unit
+    onKeepEditing: () -> Unit,
+    onSave: () -> Unit? = null
 ) {
-    ConfirmationDialog(
-        title = "Discard Unsaved Changes?",
-        message = "You have unsaved edits on this screen. Leaving now will discard your changes.",
-        confirmText = "Discard Changes",
-        dismissText = "Keep Editing",
-        isDestructive = true,
-        confirmTestTag = TestTags.Dialog.UNSAVED_DISCARD,
-        dismissTestTag = TestTags.Dialog.UNSAVED_KEEP_EDITING,
-        onConfirm = onDiscard,
-        onDismiss = onKeepEditing
-    )
+    if (onSave != null) {
+        ConfirmationDialog(
+            title = "Unsaved Changes",
+            message = "You have unsaved edits. Would you like to save before leaving?",
+            confirmText = "Discard",
+            dismissText = "Keep Editing",
+            saveText = "Save",
+            isDestructive = true,
+            confirmTestTag = TestTags.Dialog.UNSAVED_DISCARD,
+            dismissTestTag = TestTags.Dialog.UNSAVED_KEEP_EDITING,
+            saveTestTag = TestTags.Dialog.SAVE,
+            onConfirm = onDiscard,
+            onDismiss = onKeepEditing,
+            onSave = onSave
+        )
+    } else {
+        ConfirmationDialog(
+            title = "Discard Unsaved Changes?",
+            message = "You have unsaved edits on this screen. Leaving now will discard your changes.",
+            confirmText = "Discard Changes",
+            dismissText = "Keep Editing",
+            isDestructive = true,
+            confirmTestTag = TestTags.Dialog.UNSAVED_DISCARD,
+            dismissTestTag = TestTags.Dialog.UNSAVED_KEEP_EDITING,
+            onConfirm = onDiscard,
+            onDismiss = onKeepEditing
+        )
+    }
 }
 
 /**
