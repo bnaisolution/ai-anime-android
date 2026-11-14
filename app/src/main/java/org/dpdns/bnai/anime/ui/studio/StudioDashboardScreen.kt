@@ -16,7 +16,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.MoreVert
-
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -201,37 +200,54 @@ fun StudioDashboardScreen(
 
             // Card A: Latest Production
             val latestProd = summary.latestProduction
-            Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.5f))) {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.5f))
+            ) {
                 Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     Text("Latest Production", style = MaterialTheme.typography.labelLarge)
-                    if (latestProd != null) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(latestProd.projectName, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium)
-                            Text("#${latestProd.episodeNumber}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.secondary)
-                        }
-                        Spacer(modifier = Modifier.height(4.dp))
-                        StatusBadge(friendlyPipelineStatus(latestProd.jobStatus))
-                        Text(latestProd.statusText, style = MaterialTheme.typography.bodySmall, color = if (latestProd.jobStatus.equals("FAILED", ignoreCase = true)) { MaterialTheme.colorScheme.error } else { MaterialTheme.colorScheme.onSurface })
-                        Button(onClick = { /* TODO: open job details */ }) {
-                            Text("View Details", style = MaterialTheme.typography.caption)
-                        }
-                    } else {
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Text(
+                            latestProd.projectName.ifBlank { summary.activeProjectName },
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Medium,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        Text("#${latestProd.episodeNumber}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.secondary)
+                    }
+                    val isIdle = latestProd.jobStatus.equals("IDLE", ignoreCase = true) && latestProd.statusText.isBlank()
+                    if (isIdle) {
                         Text("No production yet", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    } else {
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            StatusBadge(friendlyPipelineStatus(latestProd.jobStatus))
+                            Text(
+                                latestProd.statusText,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = if (latestProd.jobStatus.equals("FAILED", ignoreCase = true)) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                        TextButton(onClick = onOpenJobsMonitor) { Text("View Details") }
                     }
                 }
             }
 
             // Card B: Pending Approvals
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                Card(
-                    modifier = Modifier.weight(1f).clickable { onOpenReviews() },
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Column(modifier = Modifier.padding(12.dp)) {
-                        Text("Pending Approvals", style = MaterialTheme.typography.labelLarge)
+            Card(
+                modifier = Modifier.fillMaxWidth().clickable { onOpenReviews() },
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Column(modifier = Modifier.padding(12.dp)) {
+                    Text("Pending Approvals", style = MaterialTheme.typography.labelLarge)
+                    if (summary.pendingApprovalsCount == 0) {
+                        Text("All clear", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.secondary)
+                        Text("No approvals waiting", fontSize = 11.sp, color = MaterialTheme.colorScheme.secondary)
+                    } else {
                         Text("${summary.pendingApprovalsCount} awaiting", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
                     }
                 }
+            }
 
             // Fix #6: Recent Episodes with project_name and formatted relative time ("2h ago")
             Text("Recent Episodes", style = MaterialTheme.typography.headlineMedium)
@@ -249,8 +265,8 @@ fun StudioDashboardScreen(
                             shape = RoundedCornerShape(12.dp)
                         ) {
                             Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                                Text(ep.projectName ?: summary.activeProjectName, fontSize = 11.sp, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.SemiBold)
-                                val rawTitle = ep.title.orEmpty()
+                                Text(ep.projectName.ifBlank { summary.activeProjectName }, fontSize = 11.sp, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.SemiBold)
+                                val rawTitle = ep.title
                                 val cleanTitle = rawTitle
                                     .replace(Regex("^Episode\\s*\\d+\\s*[:\\-–]\\s*", RegexOption.IGNORE_CASE), "")
                                     .ifBlank { rawTitle }
@@ -330,12 +346,17 @@ fun StudioDashboardScreen(
                                     ) {
                                         StatusBadge(project.status)
                                         IconButton(
-                                            modifier = Modifier.testTag(TestTags.item(TestTags.Studio.PROJECT_MENU_PREFIX, project.id)),
-                                            onClick = {
-                                                projectPendingDelete = project
-                                            }
+                                            onClick = { projectPendingDelete = project },
+                                            modifier = Modifier
+                                                .size(36.dp)
+                                                .testTag(TestTags.item(TestTags.Studio.PROJECT_MENU_PREFIX, project.id))
                                         ) {
-                                            Icon(Icons.Filled.MoreVert, contentDescription = "More options for ${project.name}", tint = MaterialTheme.colorScheme.error)
+                                            Icon(
+                                                Icons.Filled.MoreVert,
+                                                contentDescription = "More options for ${project.name}",
+                                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                modifier = Modifier.size(18.dp)
+                                            )
                                         }
                                     }
                                 }
@@ -346,5 +367,4 @@ fun StudioDashboardScreen(
             }
         }
     }
-}
 }

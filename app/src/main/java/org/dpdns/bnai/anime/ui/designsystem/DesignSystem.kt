@@ -64,7 +64,6 @@ object StudioTokens {
 }
 
 @Composable
- * Provides a standardized dialog for unsaved changes confirmation.
 fun ScreenHeader(
     title: String,
     subtitle: String? = null,
@@ -364,65 +363,6 @@ fun ConfirmationDialog(
     )
 }
 
-@Composable
-fun ConfirmationDialog(
-    title: String,
-    message: String,
-    confirmText: String = "Confirm",
-    dismissText: String = "Cancel",
-    saveText: String = "Save",
-    isDestructive: Boolean = false,
-    confirmTestTag: String = TestTags.Dialog.CONFIRM,
-    dismissTestTag: String = TestTags.Dialog.CANCEL,
-    saveTestTag: String = TestTags.Dialog.SAVE,
-    onConfirm: () -> Unit,
-    onDismiss: () -> Unit,
-    onSave: () -> Unit
-) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        shape = RoundedCornerShape(StudioTokens.DialogRadius),
-        title = { Text(title, fontWeight = FontWeight.Bold) },
-        text = { Text(message) },
-        confirmButton = {
-            Button(
-                onClick = onClick@{
-                    onConfirm()
-                },
-                modifier = Modifier.testTag(confirmTestTag),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = if (isDestructive) StudioTokens.Error else StudioTokens.Primary
-                )
-            ) {
-                Text(confirmText, color = Color.White)
-            }
-        },
-        dismissButton = {
-            TextButton(
-                onClick = onDismiss,
-                modifier = Modifier.testTag(dismissTestTag)
-            ) {
-                Text(dismissText)
-            }
-        },
-        secondaryButton = {
-            if (onSave != null) {
-                Button(
-                    onClick = onClick@{
-                        onSave()
-                    },
-                    modifier = Modifier.testTag(saveTestTag),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = StudioTokens.Warning
-                    )
-                ) {
-                    Text(saveText, color = Color.White)
-                }
-            }
-        }
-    )
-}
-
 /**
  * Displays a dialog when unsaved changes exist on the current screen.
  * Provides options to discard changes, keep editing, or save before leaving.
@@ -432,39 +372,53 @@ fun ConfirmationDialog(
  * @param onSave Called when user chooses to save changes before leaving. Optional;
  *               if null, the "Save" button is not shown and the dialog has two options.
  */
+@Composable
 fun UnsavedChangesDialog(
     onDiscard: () -> Unit,
     onKeepEditing: () -> Unit,
-    onSave: () -> Unit? = null
+    onSave: (() -> Unit)? = null
 ) {
-    if (onSave != null) {
-        ConfirmationDialog(
-            title = "Unsaved Changes",
-            message = "You have unsaved edits. Would you like to save before leaving?",
-            confirmText = "Discard",
-            dismissText = "Keep Editing",
-            saveText = "Save",
-            isDestructive = true,
-            confirmTestTag = TestTags.Dialog.UNSAVED_DISCARD,
-            dismissTestTag = TestTags.Dialog.UNSAVED_KEEP_EDITING,
-            saveTestTag = TestTags.Dialog.SAVE,
-            onConfirm = onDiscard,
-            onDismiss = onKeepEditing,
-            onSave = onSave
-        )
-    } else {
-        ConfirmationDialog(
-            title = "Discard Unsaved Changes?",
-            message = "You have unsaved edits on this screen. Leaving now will discard your changes.",
-            confirmText = "Discard Changes",
-            dismissText = "Keep Editing",
-            isDestructive = true,
-            confirmTestTag = TestTags.Dialog.UNSAVED_DISCARD,
-            dismissTestTag = TestTags.Dialog.UNSAVED_KEEP_EDITING,
-            onConfirm = onDiscard,
-            onDismiss = onKeepEditing
-        )
-    }
+    AlertDialog(
+        onDismissRequest = onKeepEditing,
+        shape = RoundedCornerShape(StudioTokens.DialogRadius),
+        title = { Text("Unsaved Changes", fontWeight = FontWeight.Bold) },
+        text = {
+            Text(
+                if (onSave != null) {
+                    "You have unsaved edits. Save before leaving?"
+                } else {
+                    "You have unsaved edits on this screen. Leaving now will discard your changes."
+                }
+            )
+        },
+        confirmButton = {
+            Button(
+                onClick = onDiscard,
+                modifier = Modifier.testTag(TestTags.Dialog.UNSAVED_DISCARD),
+                colors = ButtonDefaults.buttonColors(containerColor = StudioTokens.Error)
+            ) {
+                Text("Discard", color = Color.White)
+            }
+        },
+        dismissButton = {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                TextButton(
+                    onClick = onKeepEditing,
+                    modifier = Modifier.testTag(TestTags.Dialog.UNSAVED_KEEP_EDITING)
+                ) {
+                    Text("Keep Editing")
+                }
+                if (onSave != null) {
+                    Button(
+                        onClick = onSave,
+                        colors = ButtonDefaults.buttonColors(containerColor = StudioTokens.Warning)
+                    ) {
+                        Text("Save", color = Color.White)
+                    }
+                }
+            }
+        }
+    )
 }
 
 /**

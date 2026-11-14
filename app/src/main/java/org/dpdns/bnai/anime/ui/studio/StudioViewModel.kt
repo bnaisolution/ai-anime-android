@@ -17,7 +17,7 @@ data class EpisodeSummary(
     val title: String = "",
     val projectName: String = "",
     val status: String = "",
-    val updatedAt: Long = 0L
+    val updatedAt: String? = null
 )
 
 data class LatestProduction(
@@ -85,41 +85,40 @@ class StudioViewModel(
                 EpisodeSummary(
                     id = it.id,
                     episodeNumber = it.episodeNumber,
-                    title = it.title ?: "",
+                    title = it.title,
                     projectName = projectName,
-                    status = it.current_state ?: "",
-                    updatedAt = it.updated_at?.toLong() ?: 0L
+                    status = it.status,
+                    updatedAt = it.updatedAt
                 )
             }.orEmpty()
             val pendingCount = (approvalsRes as? Resource.Success)?.data?.count {
                 it.status == null || it.status.equals("PENDING", ignoreCase = true)
             } ?: 0
-            val latestJobState = (jobsRes as? Resource.Success)?.data?.firstOrNull()?.status ?: "IDLE"
+            val jobs = (jobsRes as? Resource.Success)?.data.orEmpty()
+            val latestJobState = jobs.firstOrNull()?.status ?: "IDLE"
 
             // Determine latest production from jobs
             val activeStatuses = setOf("QUEUED", "DISPATCHED", "ACKNOWLEDGED", "RUNNING", "RECONCILING")
-            val activeJobs = (jobsRes as? Resource.Success)?.data?.filter { activeStatuses.contains((it.status ?? "").toUpperCase()) } ?: emptyList()
-            val latestProduction = latestJobState.run {
-                if (activeJobs.isNotEmpty()) {
-                    val latest = activeJobs.first()
-                    LatestProduction(
-                        projectName = projectName,
-                        episodeNumber = (latest.payload?.episode_no ?? latest.payload?.episode_number ?: 1),
-                        jobStatus = latest.status ?: "IDLE",
-                        statusText = when {
-                            latest.status?.equals("FAILED", ignoreCase = true) -> "FAILED"
-                            latest.status?.equals("RUNNING", ignoreCase = true) -> "Running"
-                            latest.status?.equals("DISPATCHED", ignoreCase = true) -> "Queued"
-                            else -> latest.status
-                        }
-                    )
-                } else {
-                    LatestProduction(
-                        projectName = projectName,
-                        jobStatus = latestJobState,
-                        statusText = when (latestJobState.equals("FAILED", ignoreCase = true)) { "FAILED" } else { latestJobState }
-                    )
-                }
+            val activeJobs = jobs.filter { activeStatuses.contains((it.status ?: "").uppercase()) }
+            val latestProduction = if (activeJobs.isNotEmpty()) {
+                val latest = activeJobs.first()
+                LatestProduction(
+                    projectName = projectName,
+                    episodeNumber = latest.episode_no ?: 1,
+                    jobStatus = latest.status ?: "IDLE",
+                    statusText = when {
+                        latest.status?.equals("FAILED", ignoreCase = true) == true -> "FAILED"
+                        latest.status?.equals("RUNNING", ignoreCase = true) == true -> "Running"
+                        latest.status?.equals("DISPATCHED", ignoreCase = true) == true -> "Queued"
+                        else -> latest.status ?: "IDLE"
+                    }
+                )
+            } else {
+                LatestProduction(
+                    projectName = projectName,
+                    jobStatus = latestJobState,
+                    statusText = if (latestJobState.equals("FAILED", ignoreCase = true)) "FAILED" else latestJobState
+                )
             }
 
             _homeSummary.value = _homeSummary.value.copy(

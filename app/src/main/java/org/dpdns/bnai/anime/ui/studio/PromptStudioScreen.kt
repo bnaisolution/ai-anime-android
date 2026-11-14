@@ -47,7 +47,7 @@ fun PromptStudioScreen() {
 
     var selectedCatIndex by remember { mutableStateOf(0) }
     val currentCategory = CATEGORIES[selectedCatIndex]
-    var promptScopeBy = remember { mutableStateOf("this_project") }
+    var promptScopeBy by remember { mutableStateOf("this_project") }
 
     val titlesByCat = remember {
         mutableStateMapOf(
@@ -86,7 +86,7 @@ fun PromptStudioScreen() {
     val promptIdByCat = remember { mutableStateMapOf<String, String>() }
     var selectedMedium by remember { mutableStateOf("ANIME") }
     var selectedGenre by remember { mutableStateOf<String?>(null) }
-    val selectedGenreDisplay = selectedGenre?.value ?: "Genre"
+    val selectedGenreDisplay = selectedGenre ?: "Genre"
     var selectedFormat by remember { mutableStateOf<String?>(null) }
     var genreFilterEnabled by remember { mutableStateOf(false) }
     var availableGenres by remember { mutableStateOf(FALLBACK_GENRES) }
@@ -377,7 +377,7 @@ fun PromptStudioScreen() {
                     onClick = {
                         val pid = when (promptScopeBy) {
                             "this_project" -> repository.currentProjectId()
-                            "global" -> null
+                            "global" -> ""
                             else -> repository.currentProjectId()
                         }
                         isSaving = true

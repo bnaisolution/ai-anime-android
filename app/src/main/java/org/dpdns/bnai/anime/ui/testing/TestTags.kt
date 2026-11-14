@@ -51,6 +51,7 @@ object TestTags {
         const val PROMPT_OPTION_PREFIX = "screen.studio.prompt_option"
         const val PROJECT_DELETE_PREFIX = "screen.studio.project_delete"
         const val PROJECT_DELETE_CONFIRM = "screen.studio.project_delete_confirm"
+        const val PROJECT_MENU_PREFIX = "screen.studio.project_menu"
     }
 
     object ProjectDetail {

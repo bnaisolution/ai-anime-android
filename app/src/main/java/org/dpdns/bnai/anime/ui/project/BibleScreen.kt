@@ -60,9 +60,8 @@ fun BibleScreen() {
     var isLoading by remember { mutableStateOf(true) }
     var isSavingDraft by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
-    var baselineLoaded by remember { false }
+    var baselineLoaded by remember { mutableStateOf(false) }
     var showDiscardDialog by remember { mutableStateOf(false) }
-    var showProjectConfirmation by remember { mutableStateOf(false) }
     var pendingProjectSwitchBy: String? = null
 
     var activeWf01CmdId by remember(projectId) { mutableStateOf(tokenManager.getActiveCommandId(projectId, "wf01_bible_gen")) }
@@ -132,7 +131,7 @@ fun BibleScreen() {
     fun loadBiblePrompts(targetPid: String) {
         if (targetPid.isBlank()) return
         scope.launch {
-            biblePrompts = null  // Clear stale list before loading
+            biblePrompts = emptyList()
             when (val res = repository.fetchSystemPrompts(targetPid, "BIBLE")) {
                 is Resource.Success -> biblePrompts = res.data
                 is Resource.Empty -> biblePrompts = emptyList()
@@ -141,7 +140,7 @@ fun BibleScreen() {
         }
     }
 
-    LaunchedEffect(projectId, savedSnapshot) {
+    LaunchedEffect(projectId) {
         loadBibleFromServer(projectId)
         loadBiblePrompts(projectId)
     }
@@ -177,11 +176,8 @@ fun BibleScreen() {
 
     if (showDiscardDialog) {
         UnsavedChangesDialog(
-            title = "Unsaved Changes",
-            message = "You have unsaved edits on Story Bible. Switching projects will lose your changes.",
             onSave = {
-                showProjectConfirmation = false
-                pendingProjectSwitchBy = null
+                showDiscardDialog = false
                 isSavingDraft = true
                 scope.launch {
                     val payload: JsonMap = mapOf(
@@ -197,29 +193,34 @@ fun BibleScreen() {
                         is Resource.Success -> {
                             savedSnapshot = currentEditorSnapshot()
                             isSavingDraft = false
-                            projectId = pendingProjectSwitchBy!!
+                            pendingProjectSwitchBy?.let { next ->
+                                projectId = next
+                                loadBibleFromServer(next)
+                            }
                             pendingProjectSwitchBy = null
-                            loadBibleFromServer(projectId)
                         }
                         is Resource.Error -> {
                             errorMessage = res.message
                             isSavingDraft = false
-                            showProjectConfirmation = false
+                        }
+                        else -> {
+                            isSavingDraft = false
                         }
                     }
                 }
             },
             onDiscard = {
-                showProjectConfirmation = false
-                pendingProjectSwitchBy = null
+                showDiscardDialog = false
                 savedSnapshot = currentEditorSnapshot()
                 baselineLoaded = true
-                projectId = pendingProjectSwitchBy!!
+                pendingProjectSwitchBy?.let { next ->
+                    projectId = next
+                    loadBibleFromServer(next)
+                }
                 pendingProjectSwitchBy = null
-                loadBibleFromServer(projectId)
             },
-            onCancel = {
-                showProjectConfirmation = false
+            onKeepEditing = {
+                showDiscardDialog = false
             }
         )
     }
@@ -234,8 +235,8 @@ fun BibleScreen() {
         ProjectSelectorBar(
             onProjectChanged = { newPid ->
                 if (hasUnsavedChanges) {
-                    showProjectConfirmation = true
                     pendingProjectSwitchBy = newPid
+                    showDiscardDialog = true
                     return@ProjectSelectorBar
                 }
                 pendingProjectSwitchBy = null
@@ -539,14 +540,14 @@ fun BibleScreen() {
             )
             OutlinedTextField(
                 value = totalSeasons?.toString() ?: "",
-                onValueChange = { totalSeasons = if (it == null) null else it.toInt() },
+                onValueChange = { totalSeasons = it.toIntOrNull() },
                 readOnly = false,
                 label = { Text("Total Seasons") },
                 modifier = Modifier.weight(1f)
             )
             OutlinedTextField(
                 value = episodesPerSeason?.toString() ?: "",
-                onValueChange = { episodesPerSeason = if (it == null) null else it.toInt() },
+                onValueChange = { episodesPerSeason = it.toIntOrNull() },
                 readOnly = false,
                 label = { Text("Episodes per Season") },
                 modifier = Modifier.weight(1f)
@@ -557,7 +558,7 @@ fun BibleScreen() {
                 readOnly = true,
                 label = { Text("Episode Duration (min)") }
             )
-        },
+        }
 
         Spacer(modifier = Modifier.height(64.dp))
     }
