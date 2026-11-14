@@ -16,6 +16,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.MenuButton
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -210,7 +211,7 @@ fun StudioDashboardScreen(
                         }
                         Spacer(modifier = Modifier.height(4.dp))
                         StatusBadge(friendlyPipelineStatus(latestProd.jobStatus))
-                        Text(latestProd.statusText, style = MaterialTheme.typography.bodySmall, color = when (latestProd.jobStatus.equals("FAILED", ignoreCase = true)) { MaterialTheme.colorScheme.error } else { MaterialTheme.colorScheme.onSurface })
+                        Text(latestProd.statusText, style = MaterialTheme.typography.bodySmall, color = if (latestProd.jobStatus.equals("FAILED", ignoreCase = true)) { MaterialTheme.colorScheme.error } else { MaterialTheme.colorScheme.onSurface })
                         Button(onClick = { /* TODO: open job details */ }) {
                             Text("View Details", style = MaterialTheme.typography.caption)
                         }
@@ -345,4 +346,5 @@ fun StudioDashboardScreen(
             }
         }
     }
+}
 }
