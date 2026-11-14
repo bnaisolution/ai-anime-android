@@ -227,6 +227,7 @@ data class JobDto(
     val status: String? = null,
     val episode_no: Int? = null,
     val episode_state: JsonMap? = null,
+    val payload: JsonMap? = null,
     val pending_actions: List<JsonMap>? = null,
     val attempt_count: Int? = 0,
     val max_attempts: Int? = 3,

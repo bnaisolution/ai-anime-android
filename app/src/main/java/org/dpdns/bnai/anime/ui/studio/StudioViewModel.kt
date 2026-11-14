@@ -81,7 +81,7 @@ class StudioViewModel(
             val approvalsRes = repository.fetchApprovals(projectId)
             val jobsRes = repository.fetchJobs(projectId)
 
-            val recentEps = (episodesRes as? Resource.Success)?.data?.take(5)?.map {
+            val recentEps = (episodesRes as? Resource.Success)?.data?.sortedByDescending { it.updatedAt ?: "" }?.take(5)?.map {
                 EpisodeSummary(
                     id = it.id,
                     episodeNumber = it.episodeNumber,
@@ -104,7 +104,10 @@ class StudioViewModel(
                 val latest = activeJobs.first()
                 LatestProduction(
                     projectName = projectName,
-                    episodeNumber = latest.episode_no ?: 1,
+                    episodeNumber = latest.episode_no
+                        ?: (latest.payload?.get("episode_no") as? Number)?.toInt()
+                        ?: (latest.payload?.get("episode_number") as? Number)?.toInt()
+                        ?: 1,
                     jobStatus = latest.status ?: "IDLE",
                     statusText = when {
                         latest.status?.equals("FAILED", ignoreCase = true) == true -> "FAILED"
