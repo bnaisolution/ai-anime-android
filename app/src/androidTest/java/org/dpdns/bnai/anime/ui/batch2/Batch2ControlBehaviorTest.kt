@@ -202,8 +202,8 @@ class Batch2ControlBehaviorTest {
         waitForCall(container, "fetchProjectOverviewRaw")
 
         composeRule.onNodeWithTag(TestTags.ProjectDetail.SETTINGS_BUTTON).performClick()
-        composeRule.onNodeWithTag(TestTags.ProjectDetail.AUTO_APPROVE).performClick()
-        composeRule.onNodeWithTag(TestTags.ProjectDetail.AUTO_APPROVE).performClick()
+        composeRule.onNodeWithTag(TestTags.ProjectDetail.AUTO_APPROVE).performScrollTo().performClick()
+        composeRule.onNodeWithTag(TestTags.ProjectDetail.AUTO_APPROVE).performScrollTo().performClick()
         composeRule.onNodeWithTag(TestTags.ProjectDetail.SAVE_SETTINGS).performClick()
 
         waitForCall(container, "updateProjectSettings")
@@ -265,6 +265,9 @@ class Batch2ControlBehaviorTest {
         val container = Batch2RecordingContainer()
         composeRule.setBatch2Content(container) { BibleScreen() }
 
+        composeRule.onNodeWithTag(TestTags.Bible.STRUCTURE_INSTRUCTION)
+            .performScrollTo()
+            .performTextInput("Expand into a complete production-ready story bible")
         composeRule.onNodeWithText("AI Expand Bible").performScrollTo().performClick()
 
         waitForCall(container, "submitStudioCommand")

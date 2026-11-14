@@ -445,6 +445,14 @@ fun BibleScreen() {
             }
         }
 
+        OutlinedTextField(
+            value = structureInstruction,
+            onValueChange = { structureInstruction = it },
+            label = { Text("Structure Instruction (required for AI Expand)") },
+            minLines = 2,
+            modifier = Modifier.fillMaxWidth().testTag(TestTags.Bible.STRUCTURE_INSTRUCTION)
+        )
+
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(10.dp)

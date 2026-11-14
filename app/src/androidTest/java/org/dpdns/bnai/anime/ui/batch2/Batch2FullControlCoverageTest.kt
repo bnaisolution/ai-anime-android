@@ -11,6 +11,7 @@ import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performTextInput
 import androidx.navigation.compose.rememberNavController
@@ -603,7 +604,9 @@ class Batch2FullControlCoverageTest {
         assertText("Quota Dashboard")
         assertText("Budget Ledger")
 
-        clickDesc("Edit Project Settings")
+        composeRule.onAllNodesWithContentDescription("Edit Project Settings", useUnmergedTree = true)[0]
+            .performScrollTo()
+            .performClick()
         waitForText("Project Settings")
         assertText("Project Title")
         assertText("Genre (select multiple)")

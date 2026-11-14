@@ -119,6 +119,7 @@ object TestTags {
         const val POWER_SYSTEM_FIELD = "screen.bible.power_system"
         const val CHARACTER_FOUNDATIONS_FIELD = "screen.bible.character_foundations"
         const val TIMELINE_FIELD = "screen.bible.timeline"
+        const val STRUCTURE_INSTRUCTION = "screen.bible.structure_instruction"
     }
 
     object EpisodePlanner {
