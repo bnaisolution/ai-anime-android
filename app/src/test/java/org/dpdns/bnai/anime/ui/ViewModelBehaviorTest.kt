@@ -118,7 +118,7 @@ class ViewModelBehaviorTest {
         )
         coEvery { repository.currentProjectId() } returns ""
         coEvery { repository.fetchEpisodes("project-1") } returns Resource.Success(
-            listOf(Episode("episode-1", 1, "Pilot", "DONE"))
+            listOf(Episode(id = "episode-1", episodeNumber = 1, title = "Pilot", status = "DONE"))
         )
         coEvery { repository.fetchApprovals("project-1") } returns Resource.Success(
             listOf(ApprovalDecisionDto(id = "approval-1", status = "PENDING"))
@@ -219,7 +219,7 @@ class ViewModelBehaviorTest {
         val repository = mockk<AnimeRepositoryApi>(relaxed = true)
         coEvery { repository.currentProjectId() } returns "project-1"
         coEvery { repository.fetchEpisodes("project-1") } returns Resource.Success(
-            listOf(Episode("episode-2", 2, "The Gate", "DONE"))
+            listOf(Episode(id = "episode-2", episodeNumber = 2, title = "The Gate", status = "DONE"))
         )
         coEvery { repository.fetchJobs("project-1") } returns Resource.Success(
             listOf(JobDto(id = "job-1", status = "RUNNING", episode_no = 2))
