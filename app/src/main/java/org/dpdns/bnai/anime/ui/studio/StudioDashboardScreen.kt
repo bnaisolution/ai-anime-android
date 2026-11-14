@@ -15,7 +15,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -198,37 +198,39 @@ fun StudioDashboardScreen(
                 }
             }
 
-            // Fix #1, #5, #7: No WF-xx tags, Clickable Production State, Pending Approvals subtitle
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                Card(
-                    modifier = Modifier.weight(1f).clickable { showProdDialog = true },
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Column(modifier = Modifier.padding(12.dp)) {
-                        Text("Production State", style = MaterialTheme.typography.labelLarge)
-                        Text(
-                            text = summary.activeProjectName,
-                            fontSize = 11.sp,
-                            color = MaterialTheme.colorScheme.secondary,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                        Spacer(modifier = Modifier.height(6.dp))
-                        StatusBadge(friendlyPipelineStatus(summary.activeProductionStatus))
+            // Card A: Latest Production
+            val latestProd = summary.latestProduction
+            Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.5f))) {
+                Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Text("Latest Production", style = MaterialTheme.typography.labelLarge)
+                    if (latestProd != null) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(latestProd.projectName, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium)
+                            Text("#${latestProd.episodeNumber}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.secondary)
+                        }
+                        Spacer(modifier = Modifier.height(4.dp))
+                        StatusBadge(friendlyPipelineStatus(latestProd.jobStatus))
+                        Text(latestProd.statusText, style = MaterialTheme.typography.bodySmall, color = when (latestProd.jobStatus.equals("FAILED", ignoreCase = true)) { MaterialTheme.colorScheme.error } else { MaterialTheme.colorScheme.onSurface })
+                        Button(onClick = { /* TODO: open job details */ }) {
+                            Text("View Details", style = MaterialTheme.typography.caption)
+                        }
+                    } else {
+                        Text("No production yet", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
+            }
+
+            // Card B: Pending Approvals
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 Card(
                     modifier = Modifier.weight(1f).clickable { onOpenReviews() },
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Column(modifier = Modifier.padding(12.dp)) {
                         Text("Pending Approvals", style = MaterialTheme.typography.labelLarge)
-                        Text("QC • Voice • Canon changes", fontSize = 11.sp, color = MaterialTheme.colorScheme.secondary)
-                        Spacer(modifier = Modifier.height(4.dp))
                         Text("${summary.pendingApprovalsCount} awaiting", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
                     }
                 }
-            }
 
             // Fix #6: Recent Episodes with project_name and formatted relative time ("2h ago")
             Text("Recent Episodes", style = MaterialTheme.typography.headlineMedium)
@@ -326,18 +328,13 @@ fun StudioDashboardScreen(
                                         horizontalArrangement = Arrangement.spacedBy(4.dp)
                                     ) {
                                         StatusBadge(project.status)
-                                        IconButton(
-                                            onClick = { projectPendingDelete = project },
-                                            modifier = Modifier
-                                                .size(36.dp)
-                                                .testTag(TestTags.item(TestTags.Studio.PROJECT_DELETE_PREFIX, project.id))
+                                        MenuButton(
+                                            modifier = Modifier.testTag(TestTags.item(TestTags.Studio.PROJECT_MENU_PREFIX, project.id)),
+                                            onClick = {
+                                                projectPendingDelete = project
+                                            }
                                         ) {
-                                            Icon(
-                                                Icons.Default.Delete,
-                                                contentDescription = "Delete ${project.name}",
-                                                tint = MaterialTheme.colorScheme.error,
-                                                modifier = Modifier.size(18.dp)
-                                            )
+                                            Icon(MoreVert, contentDescription = "More options for ${project.name}", tint = MaterialTheme.colorScheme.error)
                                         }
                                     }
                                 }

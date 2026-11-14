@@ -11,13 +11,30 @@ import org.dpdns.bnai.anime.core.model.Episode
 import org.dpdns.bnai.anime.core.model.Project
 import org.dpdns.bnai.anime.core.network.*
 
+data class EpisodeSummary(
+    val id: String = "",
+    val episodeNumber: Int = 1,
+    val title: String = "",
+    val projectName: String = "",
+    val status: String = "",
+    val updatedAt: Long = 0L
+)
+
+data class LatestProduction(
+    val projectName: String = "",
+    val episodeNumber: Int = 1,
+    val jobStatus: String = "IDLE",
+    val statusText: String = ""
+)
+
 data class HomeSummaryUi(
     val activeProjectId: String = "",
     val activeProjectName: String = "Active Project",
-    val recentEpisodes: List<Episode> = emptyList(),
+    val recentEpisodes: List<EpisodeSummary> = emptyList(),
     val pendingApprovalsCount: Int = 0,
     val activeProductionStatus: String = "IDLE",
-    val createStatusMessage: String? = null
+    val createStatusMessage: String? = null,
+    val latestProduction: LatestProduction = LatestProduction()
 )
 
 class StudioViewModel(
@@ -64,19 +81,53 @@ class StudioViewModel(
             val jobsRes = repository.fetchJobs(projectId)
 
             val recentEps = (episodesRes as? Resource.Success)?.data?.take(5)?.map {
-                it.copy(projectName = projectName)
+                EpisodeSummary(
+                    id = it.id,
+                    episodeNumber = it.episodeNumber,
+                    title = it.title ?: "",
+                    projectName = projectName,
+                    status = it.current_state ?: "",
+                    updatedAt = it.updated_at?.toLong() ?: 0L
+                )
             }.orEmpty()
             val pendingCount = (approvalsRes as? Resource.Success)?.data?.count {
                 it.status == null || it.status.equals("PENDING", ignoreCase = true)
             } ?: 0
             val latestJobState = (jobsRes as? Resource.Success)?.data?.firstOrNull()?.status ?: "IDLE"
 
+            // Determine latest production from jobs
+            val activeStatuses = setOf("QUEUED", "DISPATCHED", "ACKNOWLEDGED", "RUNNING", "RECONCILING")
+            val activeJobs = (jobsRes as? Resource.Success)?.data?.filter { activeStatuses.contains((it.status ?? "").toUpperCase()) } ?: emptyList()
+            val latestProduction = latestJobState.run {
+                if (activeJobs.isNotEmpty()) {
+                    val latest = activeJobs.first()
+                    LatestProduction(
+                        projectName = projectName,
+                        episodeNumber = (latest.payload?.episode_no ?? latest.payload?.episode_number ?: 1),
+                        jobStatus = latest.status ?: "IDLE",
+                        statusText = when {
+                            latest.status?.equals("FAILED", ignoreCase = true) -> "FAILED"
+                            latest.status?.equals("RUNNING", ignoreCase = true) -> "Running"
+                            latest.status?.equals("DISPATCHED", ignoreCase = true) -> "Queued"
+                            else -> latest.status
+                        }
+                    )
+                } else {
+                    LatestProduction(
+                        projectName = projectName,
+                        jobStatus = latestJobState,
+                        statusText = when (latestJobState.equals("FAILED", ignoreCase = true)) { "FAILED" } else { latestJobState }
+                    )
+                }
+            }
+
             _homeSummary.value = _homeSummary.value.copy(
                 activeProjectId = projectId,
                 activeProjectName = projectName,
                 recentEpisodes = recentEps,
                 pendingApprovalsCount = pendingCount,
-                activeProductionStatus = latestJobState
+                activeProductionStatus = latestJobState,
+                latestProduction = latestProduction
             )
         }
     }
