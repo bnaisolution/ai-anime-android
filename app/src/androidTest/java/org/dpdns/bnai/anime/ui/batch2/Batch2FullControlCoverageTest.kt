@@ -390,7 +390,7 @@ class Batch2FullControlCoverageTest {
 
         scrollToText("Regenerate...")
         clickTag(TestTags.EpisodePlanner.REGENERATE)
-        waitForText("Regenerate Episode 2?")
+        waitForText("Regenerate S1 E2?")
         assertText("Regenerate Episode")
         assertText("Cancel")
     }

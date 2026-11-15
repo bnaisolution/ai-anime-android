@@ -1,5 +1,6 @@
 appId: org.dpdns.bnai.anime
 ---
+- stopApp
 - launchApp:
     clearState: true
 - tapOn:
