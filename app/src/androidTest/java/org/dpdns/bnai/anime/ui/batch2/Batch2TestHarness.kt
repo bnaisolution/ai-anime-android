@@ -13,6 +13,7 @@ import org.dpdns.bnai.anime.core.model.Project
 import org.dpdns.bnai.anime.core.network.AnimeApiService
 import org.dpdns.bnai.anime.core.network.AnimeRepositoryApi
 import org.dpdns.bnai.anime.core.network.ApiCommandRecordDto
+import org.dpdns.bnai.anime.core.network.BiblePatchDto
 import org.dpdns.bnai.anime.core.network.ApprovalDecisionDto
 import org.dpdns.bnai.anime.core.network.CharacterDto
 import org.dpdns.bnai.anime.core.network.ClipDto
@@ -102,6 +103,7 @@ internal class Batch2FakeState {
     var commandResult: JsonMap = mapOf("media_url" to BATCH2_MEDIA_URL)
     var jobsStatus: String = "FAILED"
     var overviewActiveCommandId: String? = null
+    var biblePatches: List<BiblePatchDto> = emptyList()
     var systemPrompts: List<SystemPromptDto> = listOf(
         SystemPromptDto(
             id = "prompt-1",
@@ -473,15 +475,24 @@ internal fun batch2RecordingRepository(
                     "fetchBible" -> Resource.Success(
                         mapOf(
                             "active_system_prompt_id" to null,
+                            "genre" to "Action / Fantasy",
+                            "visual_medium" to "ANIME",
+                            "bible_hash" to "batch2-bible-hash",
                             "premise" to "A hero rises",
-                            "tone_genre" to "Action / Fantasy",
+                            "tone" to "Dark and hopeful",
                             "world_setting" to "Neo Tokyo",
                             "world_rules" to "No time travel",
                             "power_system" to "Spirit energy",
                             "character_foundations" to "Aki",
-                            "timeline" to "Season 1"
+                            "timeline" to "Season 1",
+                            "total_seasons" to 1,
+                            "episodes_per_season" to 12,
+                            "episode_duration_min" to 24
                         )
                     )
+                    "fetchBiblePatches" -> Resource.Success(fakeState.biblePatches)
+                    "approveBiblePatch", "rejectBiblePatch", "activateSystemPrompt" ->
+                        Resource.Success(emptyMap<String, Any?>())
                     "fetchCommandStatus" -> Resource.Success(
                         ApiCommandRecordDto(
                             id = argList.getOrNull(0) as? String ?: "cmd-batch2",

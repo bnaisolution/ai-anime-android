@@ -264,6 +264,26 @@ class AnimeRepository(
         }
     }
 
+    override suspend fun fetchBiblePatches(projectId: String): Resource<List<BiblePatchDto>> = try {
+        mapEnvelope(apiService.getBiblePatches(projectId)) { it }
+    } catch (e: Exception) {
+        Resource.Error(e.localizedMessage ?: "Failed to load Bible patches")
+    }
+
+    override suspend fun approveBiblePatch(projectId: String, patchId: String, baseHash: String?): Resource<JsonMap> = try {
+        val body = if (baseHash.isNullOrBlank()) emptyMap<String, Any?>() else mapOf("expected_base_hash" to baseHash)
+        mapEnvelope(apiService.approveBiblePatch(projectId, patchId, body)) { it }
+    } catch (e: Exception) {
+        Resource.Error(e.localizedMessage ?: "Failed to apply Bible patch")
+    }
+
+    override suspend fun rejectBiblePatch(projectId: String, patchId: String, reason: String?): Resource<JsonMap> = try {
+        val body = if (reason.isNullOrBlank()) emptyMap<String, Any?>() else mapOf("reason" to reason)
+        mapEnvelope(apiService.rejectBiblePatch(projectId, patchId, body)) { it }
+    } catch (e: Exception) {
+        Resource.Error(e.localizedMessage ?: "Failed to reject Bible patch")
+    }
+
     override suspend fun fetchCharacters(projectId: String): Resource<List<Character>> = try {
         mapEnvelope(apiService.getProjectCharacters(projectId)) { list ->
             list.mapIndexed { idx, dto ->
@@ -848,6 +868,12 @@ class AnimeRepository(
         } catch (e: Exception) {
             Resource.Error(e.localizedMessage ?: "Failed to update prompt")
         }
+    }
+
+    override suspend fun activateSystemPrompt(projectId: String, promptId: String, surface: String): Resource<JsonMap> = try {
+        mapEnvelope(apiService.activateSystemPrompt(promptId, mapOf("project_id" to projectId, "surface" to surface))) { it }
+    } catch (e: Exception) {
+        Resource.Error(e.localizedMessage ?: "Failed to activate prompt")
     }
 
     override suspend fun associatePromptWithProject(

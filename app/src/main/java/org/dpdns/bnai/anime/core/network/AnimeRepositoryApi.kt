@@ -79,6 +79,15 @@ interface ProjectRepository : RepositoryContext {
     ): Resource<JsonMap> =
         throw UnsupportedOperationException("updateProjectBible is not configured")
 
+    suspend fun fetchBiblePatches(projectId: String): Resource<List<BiblePatchDto>> =
+        throw UnsupportedOperationException("fetchBiblePatches is not configured")
+
+    suspend fun approveBiblePatch(projectId: String, patchId: String, baseHash: String?): Resource<JsonMap> =
+        throw UnsupportedOperationException("approveBiblePatch is not configured")
+
+    suspend fun rejectBiblePatch(projectId: String, patchId: String, reason: String?): Resource<JsonMap> =
+        throw UnsupportedOperationException("rejectBiblePatch is not configured")
+
     suspend fun fetchQuota(projectId: String = currentProjectId()): Resource<JsonMap> =
         throw UnsupportedOperationException("fetchQuota is not configured")
 
@@ -282,6 +291,9 @@ interface PromptRepository : RepositoryContext {
         format: String? = null
     ): Resource<List<SystemPromptDto>> =
         throw UnsupportedOperationException("fetchSystemPrompts is not configured")
+
+    suspend fun activateSystemPrompt(projectId: String, promptId: String, surface: String = "BIBLE"): Resource<JsonMap> =
+        throw UnsupportedOperationException("activateSystemPrompt is not configured")
 
     suspend fun associatePromptWithProject(
         projectId: String,

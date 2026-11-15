@@ -125,6 +125,8 @@ data class ProjectDto(
     val name: String,
     val is_active: Boolean? = true,
     val story_bible: JsonMap? = null,
+    val genre: String? = null,
+    val visual_medium: String? = null,
     val current_season: Int? = 1,
     val current_episode: Int? = 1,
     val budget_ceiling: Double? = null,
@@ -159,6 +161,18 @@ data class StorageUploadRequest(
     val filename: String,
     val content_type: String,
     val data_base64: String
+)
+
+data class BiblePatchDto(
+    val id: String,
+    val status: String? = null,
+    val base_hash: String? = null,
+    val base_version: Int? = null,
+    val fields: JsonMap = emptyMap(),
+    val summary: String? = null,
+    val created_at: String? = null,
+    val expires_at: String? = null,
+    val error: String? = null
 )
 
 data class ProjectOverviewDto(
@@ -463,6 +477,29 @@ interface AnimeApiService {
     @PATCH("v1/anime/projects/{id}/bible")
     suspend fun updateProjectBible(
         @Path("id") projectId: String,
+        @Body body: JsonMap
+    ): Response<ApiEnvelope<JsonMap>>
+
+    @GET("v1/anime/projects/{id}/bible/patches")
+    suspend fun getBiblePatches(@Path("id") projectId: String): Response<ApiEnvelope<List<BiblePatchDto>>>
+
+    @POST("v1/anime/projects/{id}/bible/patches/{patchId}/approve")
+    suspend fun approveBiblePatch(
+        @Path("id") projectId: String,
+        @Path("patchId") patchId: String,
+        @Body body: JsonMap
+    ): Response<ApiEnvelope<JsonMap>>
+
+    @POST("v1/anime/projects/{id}/bible/patches/{patchId}/reject")
+    suspend fun rejectBiblePatch(
+        @Path("id") projectId: String,
+        @Path("patchId") patchId: String,
+        @Body body: JsonMap
+    ): Response<ApiEnvelope<JsonMap>>
+
+    @POST("v1/anime/prompts/{promptId}/activate")
+    suspend fun activateSystemPrompt(
+        @Path("promptId") promptId: String,
         @Body body: JsonMap
     ): Response<ApiEnvelope<JsonMap>>
 

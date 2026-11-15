@@ -276,6 +276,7 @@ fun KeyValueMapList(items: List<JsonMap>) {
 fun ProjectSelectorBar(
     modifier: Modifier = Modifier,
     selectedProjectIdOverride: String? = null,
+    persistSelection: Boolean = true,
     onProjectChanged: (String) -> Unit = {},
     onRefreshClick: (() -> Unit)? = null
 ) {
@@ -339,7 +340,7 @@ fun ProjectSelectorBar(
                         text = { Text(proj.name, fontWeight = if (proj.id == selectedProjectId) FontWeight.Bold else FontWeight.Normal) },
                         onClick = {
                             selectedProjectId = proj.id
-                            tokenManager.saveActiveProjectId(proj.id)
+                            if (persistSelection) tokenManager.saveActiveProjectId(proj.id)
                             expanded = false
                             onProjectChanged(proj.id)
                         }

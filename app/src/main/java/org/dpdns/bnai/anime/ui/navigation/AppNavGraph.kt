@@ -173,7 +173,7 @@ fun AppNavGraph(navController: NavHostController) {
             currentScreen = currentRoute,
             currentScreenName = currentRoute,
             onDismiss = { showGlobalAiSheet = false },
-            onNavigateToRoute = { target -> navController.navigate(target) },
+            onNavigateToRoute = { target -> AppNavigationGuard.runOrProceed { navController.navigate(target) } },
             onOpenFullAiBrain = { navController.navigate("ai_brain") { launchSingleTop = true } }
         )
     }
@@ -275,8 +275,10 @@ fun AppNavGraph(navController: NavHostController) {
                                         label = { Text(title) },
                                         selected = currentRoute == route,
                                         onClick = {
-                                            scope.launch { drawerState.close() }
-                                            navController.navigate(route) { launchSingleTop = true }
+                                            AppNavigationGuard.runOrProceed {
+                                                scope.launch { drawerState.close() }
+                                                navController.navigate(route) { launchSingleTop = true }
+                                            }
                                         },
                                         modifier = Modifier
                                             .padding(vertical = 2.dp)
@@ -360,9 +362,11 @@ fun AppNavGraph(navController: NavHostController) {
                                 }
                             } else {
                                 IconButton(onClick = {
-                                    if (!navController.popBackStack()) {
-                                        navController.navigate("studio") {
-                                            popUpTo("studio") { inclusive = true }
+                                    AppNavigationGuard.runOrProceed {
+                                        if (!navController.popBackStack()) {
+                                            navController.navigate("studio") {
+                                                popUpTo("studio") { inclusive = true }
+                                            }
                                         }
                                     }
                                 }) {
@@ -517,7 +521,7 @@ fun AppNavGraph(navController: NavHostController) {
                                     onGenerated = { navController.popBackStack() }
                                 )
                             }
-                            composable("bible") { BibleScreen() }
+                            composable("bible") { BibleScreen(onOpenCanon = { navController.navigate("canon") { launchSingleTop = true } }) }
                             composable("characters") {
                                 CharacterListScreen(
                                     onCharacterClick = { ch ->

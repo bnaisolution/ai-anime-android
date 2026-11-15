@@ -112,6 +112,7 @@ object TestTags {
         const val SAVE_DRAFT = "screen.bible.save_draft"
         const val PROMPT_LIBRARY = "screen.bible.prompt_library"
         const val PROMPT_OPTION_PREFIX = "screen.bible.prompt_option"
+        const val PATCH_APPROVE_PREFIX = "screen.bible.patch_approve"
         const val PREMISE_FIELD = "screen.bible.premise"
         const val TONE_GENRE_FIELD = "screen.bible.tone_genre"
         const val WORLD_SETTING_FIELD = "screen.bible.world_setting"

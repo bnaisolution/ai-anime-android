@@ -13,6 +13,7 @@ import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTextReplacement
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import org.dpdns.bnai.anime.core.auth.TokenManager
+import org.dpdns.bnai.anime.core.network.BiblePatchDto
 import org.dpdns.bnai.anime.core.network.CommandIntent
 import org.dpdns.bnai.anime.core.network.SystemPromptDto
 import org.dpdns.bnai.anime.ui.character.CharacterListScreen
@@ -165,15 +166,11 @@ class Batch2ControlBehaviorTest {
             .performScrollTo()
             .performClick()
 
-        waitForCall(container, "associatePromptWithProject")
-        waitForCall(container, "setActiveSystemPrompt")
-        val associate = container.recorder.lastCall("associatePromptWithProject")
-        assertEquals(BATCH2_PROJECT_ID, associate?.args?.get(0))
-        assertEquals("prompt-1", associate?.args?.get(1))
-        assertEquals("BIBLE", associate?.args?.get(2))
-        val activate = container.recorder.lastCall("setActiveSystemPrompt")
+        waitForCall(container, "activateSystemPrompt")
+        val activate = container.recorder.lastCall("activateSystemPrompt")
         assertEquals(BATCH2_PROJECT_ID, activate?.args?.get(0))
         assertEquals("prompt-1", activate?.args?.get(1))
+        assertEquals("BIBLE", activate?.args?.get(2))
     }
 
     @Test
@@ -246,13 +243,20 @@ class Batch2ControlBehaviorTest {
     fun bibleSaveDraftSubmitsBiblePayload() {
         val container = Batch2RecordingContainer()
         composeRule.setBatch2Content(container) { BibleScreen() }
+        waitForCall(container, "fetchBible")
+        composeRule.waitForIdle()
+        composeRule.onNodeWithTag(TestTags.Bible.PREMISE_FIELD)
+            .performScrollTo()
+            .performTextReplacement("Edited premise")
+        composeRule.waitForIdle()
 
         composeRule.onNodeWithTag(TestTags.Bible.SAVE_DRAFT).performScrollTo().performClick()
 
         waitForCall(container, "updateProjectBible")
         val payload = container.recorder.lastCall("updateProjectBible")?.args?.get(1) as? Map<*, *>
         assertTrue(payload?.containsKey("premise") == true)
-        assertTrue(payload?.containsKey("genre") == true)
+        assertTrue(payload?.containsKey("tone") == true)
+        assertTrue(payload?.containsKey("genre") != true)
         assertTrue(payload?.containsKey("world_setting") == true)
         assertTrue(payload?.containsKey("world_rules") == true)
         assertTrue(payload?.containsKey("power_system") == true)
@@ -276,7 +280,8 @@ class Batch2ControlBehaviorTest {
         assertEquals(CommandIntent.SAVE_BIBLE, call?.args?.get(1))
         val payload = call?.args?.get(4) as? Map<*, *>
         assertTrue(payload?.containsKey("premise") == true)
-        assertTrue(payload?.containsKey("genre") == true)
+        assertTrue(payload?.containsKey("tone") == true)
+        assertTrue(payload?.containsKey("base_hash") == true)
         assertTrue(payload?.containsKey("world_setting") == true)
         assertTrue(payload?.containsKey("world_rules") == true)
         assertTrue(payload?.containsKey("power_system") == true)
@@ -290,10 +295,42 @@ class Batch2ControlBehaviorTest {
         composeRule.waitForIdle()
 
         composeRule.onNodeWithTag(TestTags.Bible.PREMISE_FIELD)
+            .performScrollTo()
             .performTextReplacement("Edited premise")
         composeRule.waitForIdle()
 
         composeRule.onNodeWithText("UNSAVED EDITS").assertExists()
+    }
+
+    @Test
+    fun biblePatchPreviewRequiresExplicitApproval() {
+        val container = Batch2RecordingContainer(
+            fakeState = Batch2FakeState().apply {
+                biblePatches = listOf(
+                    BiblePatchDto(
+                        id = "patch-1",
+                        status = "PATCH_READY",
+                        base_hash = "batch2-bible-hash",
+                        base_version = 1,
+                        fields = mapOf("premise" to "A darker hero rises"),
+                        summary = "Tighten the premise"
+                    )
+                )
+            }
+        )
+        composeRule.setBatch2Content(container) { BibleScreen() }
+        waitForCall(container, "fetchBiblePatches")
+        waitForTag(TestTags.item(TestTags.Bible.PATCH_APPROVE_PREFIX, "patch-1"))
+
+        composeRule.onNodeWithTag(TestTags.item(TestTags.Bible.PATCH_APPROVE_PREFIX, "patch-1"))
+            .performScrollTo()
+            .performClick()
+
+        waitForCall(container, "approveBiblePatch")
+        val call = container.recorder.lastCall("approveBiblePatch")
+        assertEquals(BATCH2_PROJECT_ID, call?.args?.get(0))
+        assertEquals("patch-1", call?.args?.get(1))
+        assertEquals("batch2-bible-hash", call?.args?.get(2))
     }
 
     @Test
