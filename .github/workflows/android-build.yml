@@ -3,6 +3,7 @@ name: Build Anime APK
 on:
   push:
     branches: [main]
+  pull_request:
   workflow_dispatch:
 
 permissions:
@@ -35,6 +36,8 @@ jobs:
           sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0"
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v3
+      - name: Compile debug Kotlin
+        run: ./gradlew :app:compileDebugKotlin --no-daemon --stacktrace
       - name: Build debug APK
         run: ./gradlew assembleDebug --no-daemon --stacktrace
       - name: Verify APK and generate checksum

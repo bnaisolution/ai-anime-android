@@ -320,6 +320,10 @@ data class PromptLibraryMetaDto(
     val formats: List<String> = emptyList(),
     val models: List<String> = emptyList(),
     val genres: List<String> = emptyList(),
+    val genre_definitions: List<JsonMap> = emptyList(),
+    val medium_definitions: List<JsonMap> = emptyList(),
+    val project_selected_genres: List<String> = emptyList(),
+    val project_visual_medium: String = "ANIME",
     val genre_templates: List<GenreTemplateDto> = emptyList()
 )
 
@@ -510,7 +514,10 @@ interface AnimeApiService {
     ): Response<ApiEnvelope<JsonMap>>
 
     @GET("v1/anime/projects/{id}/episodes")
-    suspend fun getProjectEpisodes(@Path("id") projectId: String): Response<ApiEnvelope<List<EpisodeDto>>>
+    suspend fun getProjectEpisodes(
+        @Path("id") projectId: String,
+        @Query("seasonNo") seasonNo: Int? = null
+    ): Response<ApiEnvelope<List<EpisodeDto>>>
 
     @GET("v1/anime/projects/{id}/episodes/{episodeNo}")
     suspend fun getEpisodeDetail(@Path("id") projectId: String, @Path("episodeNo") episodeNo: Int): Response<ApiEnvelope<EpisodeDto>>
@@ -523,10 +530,18 @@ interface AnimeApiService {
     ): Response<ApiEnvelope<EpisodeDto>>
 
     @GET("v1/anime/projects/{id}/episodes/{episodeNo}/plan")
-    suspend fun getEpisodePlan(@Path("id") projectId: String, @Path("episodeNo") episodeNo: Int): Response<ApiEnvelope<JsonMap>>
+    suspend fun getEpisodePlan(
+        @Path("id") projectId: String,
+        @Path("episodeNo") episodeNo: Int,
+        @Query("seasonNo") seasonNo: Int? = null
+    ): Response<ApiEnvelope<JsonMap>>
 
     @GET("v1/anime/projects/{id}/episodes/{episodeNo}/scenes")
-    suspend fun getEpisodeScenes(@Path("id") projectId: String, @Path("episodeNo") episodeNo: Int): Response<ApiEnvelope<List<SceneDto>>>
+    suspend fun getEpisodeScenes(
+        @Path("id") projectId: String,
+        @Path("episodeNo") episodeNo: Int,
+        @Query("seasonNo") seasonNo: Int? = null
+    ): Response<ApiEnvelope<List<SceneDto>>>
 
     @PATCH("v1/anime/projects/{id}/episodes/{episodeNo}/scenes/{sceneId}")
     suspend fun updateScene(

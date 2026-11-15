@@ -143,7 +143,8 @@ interface EpisodeRepository : RepositoryContext {
         throw UnsupportedOperationException("fetchEpisodes is not configured")
 
     suspend fun fetchEpisodesRaw(
-        projectId: String = currentProjectId()
+        projectId: String = currentProjectId(),
+        seasonNo: Int = 1
     ): Resource<List<EpisodeDto>> =
         throw UnsupportedOperationException("fetchEpisodesRaw is not configured")
 
@@ -154,10 +155,10 @@ interface EpisodeRepository : RepositoryContext {
     ): Resource<EpisodeDto> =
         throw UnsupportedOperationException("updateEpisodeSync is not configured")
 
-    suspend fun fetchEpisodePlan(projectId: String, episodeNo: Int): Resource<JsonMap> =
+    suspend fun fetchEpisodePlan(projectId: String, episodeNo: Int, seasonNo: Int = 1): Resource<JsonMap> =
         throw UnsupportedOperationException("fetchEpisodePlan is not configured")
 
-    suspend fun fetchScenes(projectId: String, episodeNo: Int): Resource<List<SceneDto>> =
+    suspend fun fetchScenes(projectId: String, episodeNo: Int, seasonNo: Int = 1): Resource<List<SceneDto>> =
         throw UnsupportedOperationException("fetchScenes is not configured")
 
     suspend fun fetchScenesRaw(

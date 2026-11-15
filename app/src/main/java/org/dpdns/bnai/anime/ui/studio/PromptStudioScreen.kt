@@ -28,25 +28,34 @@ import org.dpdns.bnai.anime.ui.components.ProjectSelectorBar
 import org.dpdns.bnai.anime.ui.designsystem.*
 import org.dpdns.bnai.anime.ui.testing.TestTags
 
-private val CATEGORIES = listOf("BIBLE", "EPISODE", "IMAGE", "AI_DIRECTOR")
-private val MEDIA_OPTIONS = listOf("ANIME", "REAL_HUMAN", "LIVE_ACTION", "CINEMATIC", "MANHWA", "3D", "HYBRID")
-private val FALLBACK_GENRES = listOf("Action", "Horror", "Thriller", "Romance", "Comedy", "Mythology")
+private val CATEGORIES = listOf("BIBLE", "EPISODE", "IMAGE", "AI_DIRECTOR", "GENRE", "VISUAL_MEDIUM")
+private val MEDIA_OPTIONS = listOf("ANIME", "MANHWA", "3D", "2D_ANIMATION", "REAL_HUMAN", "LIVE_ACTION", "CINEMATIC", "HYBRID")
+private val FALLBACK_GENRES = listOf("Action", "Fantasy", "Dark Fantasy", "Action Fantasy", "Thriller", "Horror", "Romance", "Comedy", "Sci-Fi", "Mystery", "Drama", "Slice of Life", "Mythology", "Music")
 private val FALLBACK_FORMATS = listOf("SERIES", "MOVIE", "SHORT", "MUSIC_VIDEO", "TRAILER")
 private val SYSTEM_DEFAULTS = mapOf(
     "BIBLE" to "You are the WF-01 Master Story Bible Architect. Build cohesive anime world rules, power scaling ceilings, and immutable character anchors.",
     "EPISODE" to "You are the WF-02 Episode Screenwriter. Write tight, high-retention multi-scene anime scripts strictly obeying locked Canon and character Visual DNA.",
     "IMAGE" to "Masterpiece cinematic anime keyframe, ultra-detailed cel shading, dynamic volumetric lighting, strict adherence to character 11-field Visual DNA.",
-    "AI_DIRECTOR" to "You are the AI Anime Studio Director overseeing StoryWF-00..13. Provide actionable production guidance and never mutate state without user confirmation."
+    "AI_DIRECTOR" to "You are the AI Anime Studio Director overseeing StoryWF-00..13. Provide actionable production guidance and never mutate state without user confirmation.",
+    "GENRE" to "Define the selected genre's mandatory story promises, conflicts, pacing, character archetypes, and forbidden clichés.",
+    "VISUAL_MEDIUM" to "Define the authoritative visual language for the selected medium, including rendering, linework, lighting, texture, framing, and motion rules."
 )
 
 @Composable
-fun PromptStudioScreen() {
+fun PromptStudioScreen(
+    initialTab: String = "BIBLE",
+    initialGenre: String? = null,
+    initialMedium: String? = null
+) {
     val context = LocalContext.current
     val repository = LocalAppContainer.current.repository
     val scope = rememberCoroutineScope()
 
-    var selectedCatIndex by remember { mutableStateOf(0) }
-    val currentCategory = CATEGORIES[selectedCatIndex]
+    var categories by remember { mutableStateOf(CATEGORIES) }
+    var selectedCatIndex by remember {
+        mutableStateOf(CATEGORIES.indexOf(initialTab.uppercase()).coerceAtLeast(0))
+    }
+    val currentCategory = categories.getOrElse(selectedCatIndex) { CATEGORIES.first() }
     var promptScopeBy by remember { mutableStateOf("this_project") }
 
     val titlesByCat = remember {
@@ -54,7 +63,9 @@ fun PromptStudioScreen() {
             "BIBLE" to "Default Bible Architect Prompt",
             "EPISODE" to "Default Episode Screenplay Prompt",
             "IMAGE" to "Default Visual Keyframe Prompt",
-            "AI_DIRECTOR" to "Default AI Director System Prompt"
+            "AI_DIRECTOR" to "Default AI Director System Prompt",
+            "GENRE" to "Default Genre Story Prompt",
+            "VISUAL_MEDIUM" to "Default Visual Medium Prompt"
         )
     }
     val textByCat = remember {
@@ -62,7 +73,9 @@ fun PromptStudioScreen() {
             "BIBLE" to (SYSTEM_DEFAULTS["BIBLE"] ?: ""),
             "EPISODE" to (SYSTEM_DEFAULTS["EPISODE"] ?: ""),
             "IMAGE" to (SYSTEM_DEFAULTS["IMAGE"] ?: ""),
-            "AI_DIRECTOR" to (SYSTEM_DEFAULTS["AI_DIRECTOR"] ?: "")
+            "AI_DIRECTOR" to (SYSTEM_DEFAULTS["AI_DIRECTOR"] ?: ""),
+            "GENRE" to (SYSTEM_DEFAULTS["GENRE"] ?: ""),
+            "VISUAL_MEDIUM" to (SYSTEM_DEFAULTS["VISUAL_MEDIUM"] ?: "")
         )
     }
     val baselineByCat = remember {
@@ -70,7 +83,9 @@ fun PromptStudioScreen() {
             "BIBLE" to (SYSTEM_DEFAULTS["BIBLE"] ?: ""),
             "EPISODE" to (SYSTEM_DEFAULTS["EPISODE"] ?: ""),
             "IMAGE" to (SYSTEM_DEFAULTS["IMAGE"] ?: ""),
-            "AI_DIRECTOR" to (SYSTEM_DEFAULTS["AI_DIRECTOR"] ?: "")
+            "AI_DIRECTOR" to (SYSTEM_DEFAULTS["AI_DIRECTOR"] ?: ""),
+            "GENRE" to (SYSTEM_DEFAULTS["GENRE"] ?: ""),
+            "VISUAL_MEDIUM" to (SYSTEM_DEFAULTS["VISUAL_MEDIUM"] ?: "")
         )
     }
     val editModeByCat = remember {
@@ -78,14 +93,19 @@ fun PromptStudioScreen() {
             "BIBLE" to false,
             "EPISODE" to false,
             "IMAGE" to false,
-            "AI_DIRECTOR" to false
+            "AI_DIRECTOR" to false,
+            "GENRE" to false,
+            "VISUAL_MEDIUM" to false
         )
     }
 
     var savedPrompts by remember { mutableStateOf<List<SystemPromptDto>>(emptyList()) }
     val promptIdByCat = remember { mutableStateMapOf<String, String>() }
-    var selectedMedium by remember { mutableStateOf("ANIME") }
-    var selectedGenre by remember { mutableStateOf<String?>(null) }
+    var availableMedia by remember { mutableStateOf(MEDIA_OPTIONS) }
+    var selectedMedium by remember { mutableStateOf(initialMedium?.uppercase() ?: "ANIME") }
+    var selectedGenre by remember { mutableStateOf(initialGenre) }
+    var genrePromptMap by remember { mutableStateOf<Map<String, String>>(emptyMap()) }
+    var mediumPromptMap by remember { mutableStateOf<Map<String, String>>(emptyMap()) }
     val selectedGenreDisplay = selectedGenre ?: "Genre"
     var selectedFormat by remember { mutableStateOf<String?>(null) }
     var genreFilterEnabled by remember { mutableStateOf(false) }
@@ -115,8 +135,12 @@ fun PromptStudioScreen() {
             when (val res = repository.fetchSystemPrompts(pid)) {
                 is Resource.Success -> {
                     savedPrompts = res.data
-                    CATEGORIES.forEach { cat ->
-                        val match = res.data.firstOrNull { (it.prompt_category ?: "BIBLE").uppercase() == cat }
+                    categories.forEach { cat ->
+                        val match = res.data.firstOrNull {
+                            (it.prompt_category ?: "BIBLE").uppercase() == cat &&
+                                (cat != "GENRE" || selectedGenre == null || it.genre.equals(selectedGenre, ignoreCase = true)) &&
+                                (cat != "VISUAL_MEDIUM" || it.visual_medium.equals(selectedMedium, ignoreCase = true))
+                        }
                         if (match != null) {
                             promptIdByCat[cat] = match.id
                             if (baselineByCat[cat] == SYSTEM_DEFAULTS[cat]) {
@@ -136,9 +160,21 @@ fun PromptStudioScreen() {
         loadPromptsForProject()
         when (val meta = repository.fetchPromptLibraryMeta()) {
             is Resource.Success -> {
+                if (meta.data.categories.isNotEmpty()) categories = meta.data.categories
                 if (meta.data.genres.isNotEmpty()) availableGenres = meta.data.genres
+                if (meta.data.media.isNotEmpty()) availableMedia = meta.data.media
                 if (meta.data.formats.isNotEmpty()) availableFormats = meta.data.formats
                 genreTemplates = meta.data.genre_templates
+                genrePromptMap = meta.data.genre_definitions.associate {
+                    (it["title"] ?: it["key"] ?: "").toString() to (it["prompt_text"] ?: "").toString()
+                }
+                mediumPromptMap = meta.data.medium_definitions.associate {
+                    (it["key"] ?: it["title"] ?: "").toString().uppercase() to (it["prompt_text"] ?: "").toString()
+                }
+                if (meta.data.project_selected_genres.isNotEmpty() && selectedGenre == null) {
+                    selectedGenre = meta.data.project_selected_genres.first()
+                }
+                if (meta.data.project_visual_medium.isNotBlank()) selectedMedium = meta.data.project_visual_medium.uppercase()
             }
             else -> {}
         }
@@ -165,7 +201,11 @@ fun PromptStudioScreen() {
             isDestructive = true,
             onConfirm = {
                 showResetConfirm = false
-                val defText = SYSTEM_DEFAULTS[currentCategory] ?: ""
+                val defText = when (currentCategory) {
+                    "GENRE" -> genrePromptMap[selectedGenre] ?: SYSTEM_DEFAULTS["GENRE"].orEmpty()
+                    "VISUAL_MEDIUM" -> mediumPromptMap[selectedMedium] ?: SYSTEM_DEFAULTS["VISUAL_MEDIUM"].orEmpty()
+                    else -> SYSTEM_DEFAULTS[currentCategory] ?: ""
+                }
                 titlesByCat[currentCategory] = "Default $currentCategory Prompt"
                 textByCat[currentCategory] = defText
                 editModeByCat[currentCategory] = true
@@ -200,7 +240,7 @@ fun PromptStudioScreen() {
         )
 
         ScrollableTabRow(selectedTabIndex = selectedCatIndex, edgePadding = 0.dp) {
-            CATEGORIES.forEachIndexed { idx, cat ->
+            categories.forEachIndexed { idx, cat ->
                 val dirty = (textByCat[cat] ?: "") != (baselineByCat[cat] ?: "")
                 Tab(
                     selected = selectedCatIndex == idx,
@@ -228,8 +268,8 @@ fun PromptStudioScreen() {
             ) {
                 OutlinedButton(
                     onClick = {
-                        val idx = MEDIA_OPTIONS.indexOf(selectedMedium)
-                        selectedMedium = MEDIA_OPTIONS[(idx + 1) % MEDIA_OPTIONS.size]
+                        val idx = availableMedia.indexOf(selectedMedium)
+                        selectedMedium = availableMedia[(idx + 1) % availableMedia.size]
                     },
                     modifier = Modifier.testTag(TestTags.PromptStudio.MEDIUM)
                 ) {
@@ -300,6 +340,36 @@ fun PromptStudioScreen() {
                         modifier = Modifier.testTag(TestTags.PromptStudio.APPLY_TEMPLATE)
                     )
                 }
+            }
+            if (currentCategory == "GENRE" && selectedGenre != null) {
+                SecondaryButton(
+                    text = "Load Built-in Genre Prompt",
+                    onClick = {
+                        val prompt = genrePromptMap[selectedGenre] ?: ""
+                        if (prompt.isNotBlank()) {
+                            titlesByCat[currentCategory] = "${selectedGenre} Genre Prompt"
+                            textByCat[currentCategory] = prompt
+                            baselineByCat[currentCategory] = prompt
+                            editModeByCat[currentCategory] = true
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+            if (currentCategory == "VISUAL_MEDIUM") {
+                SecondaryButton(
+                    text = "Load Built-in Medium Prompt",
+                    onClick = {
+                        val prompt = mediumPromptMap[selectedMedium] ?: ""
+                        if (prompt.isNotBlank()) {
+                            titlesByCat[currentCategory] = "$selectedMedium Visual Medium Prompt"
+                            textByCat[currentCategory] = prompt
+                            baselineByCat[currentCategory] = prompt
+                            editModeByCat[currentCategory] = true
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                )
             }
             OutlinedTextField(
                 value = searchQuery,
@@ -391,7 +461,7 @@ fun PromptStudioScreen() {
                                     promptText = currentText.trim(),
                                     visualMedium = selectedMedium,
                                     promptCategory = currentCategory,
-                                    genre = selectedGenre,
+                                    genre = if (currentCategory == "GENRE") (selectedGenre ?: title) else selectedGenre,
                                     format = selectedFormat
                                 )
                             } else {
@@ -401,7 +471,7 @@ fun PromptStudioScreen() {
                                     promptText = currentText.trim(),
                                     visualMedium = selectedMedium,
                                     promptCategory = currentCategory,
-                                    genre = selectedGenre,
+                                    genre = if (currentCategory == "GENRE") (selectedGenre ?: title) else selectedGenre,
                                     format = selectedFormat
                                 )
                             }

@@ -35,8 +35,13 @@ fun EpisodePlannerScreen(
     val scope = rememberCoroutineScope()
 
     var episodes by remember { mutableStateOf<List<EpisodeDto>>(emptyList()) }
+    var selectedSeason by remember { mutableStateOf(1) }
+    var totalSeasons by remember { mutableStateOf(5) }
+    var episodesPerSeason by remember { mutableStateOf(50) }
+    var seasonInitialized by remember { mutableStateOf(false) }
     var selectedEpNo by remember { mutableStateOf(1) }
     var epDropdownExpanded by remember { mutableStateOf(false) }
+    var seasonDropdownExpanded by remember { mutableStateOf(false) }
 
     var editTitle by remember { mutableStateOf("") }
     var editSynopsis by remember { mutableStateOf("") }
@@ -80,7 +85,20 @@ fun EpisodePlannerScreen(
         }
         scope.launch {
             isLoading = true
-            val epRes = repository.fetchEpisodesRaw(pid)
+            when (val overview = repository.fetchProjectOverviewRaw(pid)) {
+                is Resource.Success -> {
+                    val projObj = (overview.data["project"] as? Map<*, *>) ?: overview.data
+                    val bibleObj = (projObj["story_bible"] as? Map<*, *>) ?: emptyMap<String, Any?>()
+                    totalSeasons = ((bibleObj["total_seasons"] as? Number)?.toInt() ?: 5).coerceAtLeast(1)
+                    episodesPerSeason = ((bibleObj["episodes_per_season"] as? Number)?.toInt() ?: 50).coerceAtLeast(1)
+                    if (!seasonInitialized) {
+                        selectedSeason = ((projObj["current_season"] as? Number)?.toInt() ?: 1).coerceIn(1, totalSeasons)
+                        seasonInitialized = true
+                    }
+                }
+                else -> Unit
+            }
+            val epRes = repository.fetchEpisodesRaw(pid, selectedSeason)
             val prRes = repository.fetchSystemPrompts(pid)
 
             if (epRes is Resource.Success) {
@@ -112,6 +130,11 @@ fun EpisodePlannerScreen(
         scope.launch {
             val payload = mutableMapOf<String, Any?>(
                 "episode_no" to selectedEpNo,
+                "episode_number" to selectedEpNo,
+                "season_no" to selectedSeason,
+                "season_number" to selectedSeason,
+                "episode_title" to editTitle.trim(),
+                "episode_synopsis" to editSynopsis.trim(),
                 "title" to editTitle.trim(),
                 "synopsis" to editSynopsis.trim(),
                 "force_regenerate" to isRegeneration
@@ -132,7 +155,7 @@ fun EpisodePlannerScreen(
             if (res is Resource.Success) {
                 val cid = res.data.command_id.orEmpty()
                 if (cid.isNotBlank()) {
-                    Toast.makeText(context, "Episode $selectedEpNo production queued!", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "S$selectedSeason E$selectedEpNo production queued!", Toast.LENGTH_SHORT).show()
                     onStartProduction(cid)
                 }
             } else if (res is Resource.Error) {
@@ -143,8 +166,8 @@ fun EpisodePlannerScreen(
 
     if (showRegenerateConfirm) {
         ConfirmationDialog(
-            title = "Regenerate Episode $selectedEpNo?",
-            message = "This will start a new AI story/production run for Episode $selectedEpNo. Ordinary script edits should use 'Save Script & Metadata' instead.",
+            title = "Regenerate S$selectedSeason E$selectedEpNo?",
+            message = "This will start a new AI story/production run for S$selectedSeason E$selectedEpNo. Ordinary script edits should use 'Save Script & Metadata' instead.",
             confirmText = "Regenerate Episode",
             onConfirm = {
                 showRegenerateConfirm = false
@@ -178,6 +201,37 @@ fun EpisodePlannerScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             ExposedDropdownMenuBox(
+                expanded = seasonDropdownExpanded,
+                onExpandedChange = { seasonDropdownExpanded = !seasonDropdownExpanded },
+                modifier = Modifier.weight(0.45f)
+            ) {
+                OutlinedTextField(
+                    value = "Season $selectedSeason",
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("Season") },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = seasonDropdownExpanded) },
+                    singleLine = true,
+                    modifier = Modifier.menuAnchor().fillMaxWidth()
+                )
+                ExposedDropdownMenu(
+                    expanded = seasonDropdownExpanded,
+                    onDismissRequest = { seasonDropdownExpanded = false }
+                ) {
+                    (1..totalSeasons).forEach { season ->
+                        DropdownMenuItem(
+                            text = { Text("Season $season") },
+                            onClick = {
+                                selectedSeason = season
+                                selectedEpNo = 1
+                                seasonDropdownExpanded = false
+                                loadPlannerData()
+                            }
+                        )
+                    }
+                }
+            }
+            ExposedDropdownMenuBox(
                 expanded = epDropdownExpanded,
                 onExpandedChange = { epDropdownExpanded = !epDropdownExpanded },
                 modifier = Modifier.weight(1f)
@@ -195,7 +249,7 @@ fun EpisodePlannerScreen(
                     expanded = epDropdownExpanded,
                     onDismissRequest = { epDropdownExpanded = false }
                 ) {
-                    val epNums = (episodes.map { it.episode_no } + listOf(1, 2, 3, 4, 5)).distinct().sorted()
+                    val epNums = (1..maxOf(episodesPerSeason, selectedEpNo)).toList()
                     epNums.forEach { num ->
                         val match = episodes.find { it.episode_no == num }
                         DropdownMenuItem(
@@ -320,6 +374,7 @@ fun EpisodePlannerScreen(
                     isSavingMetadata = true
                     scope.launch {
                         val updates = mutableMapOf<String, Any?>(
+                            "season_no" to selectedSeason,
                             "title" to editTitle.trim(),
                             "synopsis" to editSynopsis.trim(),
                             "script_text" to editScriptText

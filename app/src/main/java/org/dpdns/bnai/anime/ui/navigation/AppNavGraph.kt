@@ -509,7 +509,7 @@ fun AppNavGraph(navController: NavHostController) {
                                     onOpenQuota = { navController.navigate("quota_dashboard") },
                                     onOpenBudget = { navController.navigate("budget_ledger") },
                                     onOpenNotifications = { navController.navigate("notifications") },
-                                    onOpenPromptStudio = { navController.navigate("prompt_studio") },
+                                    onOpenPromptStudio = { tab -> navController.navigate("prompt_studio?tab=$tab") },
                                     onOpenPreflight = { pid -> navController.navigate("preflight/$pid") }
                                 )
                             }
@@ -575,7 +575,20 @@ fun AppNavGraph(navController: NavHostController) {
                                 QuickToolsScreen(onOpenProductionPoll = { cmdId -> navController.navigate("production/$cmdId") })
                             }
                             composable("settings") { SettingsScreen() }
-                            composable("prompt_studio") { PromptStudioScreen() }
+                            composable(
+                                route = "prompt_studio?tab={tab}&genre={genre}&medium={medium}",
+                                arguments = listOf(
+                                    androidx.navigation.navArgument("tab") { defaultValue = "BIBLE" },
+                                    androidx.navigation.navArgument("genre") { defaultValue = "" },
+                                    androidx.navigation.navArgument("medium") { defaultValue = "" }
+                                )
+                            ) { entry ->
+                                PromptStudioScreen(
+                                    initialTab = entry.arguments?.getString("tab").orEmpty().ifBlank { "BIBLE" },
+                                    initialGenre = entry.arguments?.getString("genre").orEmpty().ifBlank { null },
+                                    initialMedium = entry.arguments?.getString("medium").orEmpty().ifBlank { null }
+                                )
+                            }
                             composable("owner_overview") { OwnerOverviewScreen() }
                             composable("workflows") { WorkflowManagerScreen() }
                             composable("workers") { WorkerManagerScreen() }

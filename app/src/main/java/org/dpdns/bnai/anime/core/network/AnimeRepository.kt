@@ -395,9 +395,9 @@ class AnimeRepository(
         Resource.Error(e.localizedMessage ?: "Failed to load episodes")
     }
 
-    override suspend fun fetchEpisodesRaw(projectId: String): Resource<List<EpisodeDto>> = withContext(Dispatchers.IO) {
+    override suspend fun fetchEpisodesRaw(projectId: String, seasonNo: Int): Resource<List<EpisodeDto>> = withContext(Dispatchers.IO) {
         try {
-            val response = apiService.getProjectEpisodes(projectId)
+            val response = apiService.getProjectEpisodes(projectId, seasonNo)
             if (response.isSuccessful) {
                 val list = response.body()?.data ?: emptyList()
                 if (list.isEmpty()) Resource.Empty else Resource.Success(list)
@@ -426,20 +426,20 @@ class AnimeRepository(
         }
     }
 
-    override suspend fun fetchEpisodePlan(projectId: String, episodeNo: Int): Resource<JsonMap> = try {
-        mapEnvelope(apiService.getEpisodePlan(projectId, episodeNo)) { it }
+    override suspend fun fetchEpisodePlan(projectId: String, episodeNo: Int, seasonNo: Int): Resource<JsonMap> = try {
+        mapEnvelope(apiService.getEpisodePlan(projectId, episodeNo, seasonNo)) { it }
     } catch (e: Exception) {
         Resource.Error(e.localizedMessage ?: "Failed to load episode plan")
     }
 
-    override suspend fun fetchScenes(projectId: String, episodeNo: Int): Resource<List<SceneDto>> = try {
-        mapEnvelope(apiService.getEpisodeScenes(projectId, episodeNo)) { it }
+    override suspend fun fetchScenes(projectId: String, episodeNo: Int, seasonNo: Int): Resource<List<SceneDto>> = try {
+        mapEnvelope(apiService.getEpisodeScenes(projectId, episodeNo, seasonNo)) { it }
     } catch (e: Exception) {
         Resource.Error(e.localizedMessage ?: "Failed to load scenes")
     }
 
     override suspend fun fetchScenesRaw(projectId: String, episodeNo: Int): Resource<List<SceneDto>> {
-        return fetchScenes(projectId, episodeNo)
+        return fetchScenes(projectId, episodeNo, 1)
     }
 
     override suspend fun updateSceneSync(

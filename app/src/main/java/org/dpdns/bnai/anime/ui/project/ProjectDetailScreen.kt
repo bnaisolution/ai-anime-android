@@ -66,7 +66,7 @@ fun ProjectDetailScreen(
     onOpenQuota: () -> Unit = {},
     onOpenBudget: () -> Unit = {},
     onOpenNotifications: () -> Unit = {},
-    onOpenPromptStudio: () -> Unit = {},
+    onOpenPromptStudio: (String) -> Unit = {},
     onOpenPreflight: (String) -> Unit = {},
     viewModel: ProjectViewModel = viewModel(factory = LocalAppContainer.current.viewModelFactory)
 ) {
@@ -101,8 +101,12 @@ fun ProjectDetailScreen(
     var editEpisodeDuration by remember { mutableStateOf("24") }
     var isSavingSettings by remember { mutableStateOf(false) }
     var settingsDirty by remember { mutableStateOf(false) }
-    val builtInGenres = listOf("Action", "Thriller", "Horror", "Comedy", "Dark Fantasy", "Fantasy", "Sci-Fi", "Romance", "Drama", "Slice of Life")
-    val mediumOptions = listOf("ANIME", "MANHWA", "3D", "2D ANIMATION")
+    var builtInGenres by remember {
+        mutableStateOf(listOf("Action", "Fantasy", "Dark Fantasy", "Action Fantasy", "Thriller", "Horror", "Romance", "Comedy", "Sci-Fi", "Mystery", "Drama", "Slice of Life", "Mythology", "Music"))
+    }
+    var mediumOptions by remember {
+        mutableStateOf(listOf("ANIME", "MANHWA", "3D", "2D_ANIMATION", "REAL_HUMAN", "LIVE_ACTION", "CINEMATIC", "HYBRID"))
+    }
     var selectedGenres by remember { mutableStateOf<Set<String>>(emptySet()) }
 
     fun refreshReadiness(pid: String) {
@@ -212,6 +216,20 @@ fun ProjectDetailScreen(
 
     LaunchedEffect(activePid) {
         loadProjectOverviewData(activePid)
+    }
+
+    LaunchedEffect(Unit) {
+        when (val meta = repository.fetchPromptLibraryMeta()) {
+            is Resource.Success -> {
+                if (meta.data.genres.isNotEmpty()) builtInGenres = meta.data.genres
+                if (meta.data.media.isNotEmpty()) mediumOptions = meta.data.media
+                if (meta.data.project_visual_medium.isNotBlank()) editMedium = meta.data.project_visual_medium
+                if (meta.data.project_selected_genres.isNotEmpty()) {
+                    selectedGenres = meta.data.project_selected_genres.toSet()
+                }
+            }
+            else -> Unit
+        }
     }
 
     LaunchedEffect(activePid, activeCmdId) {
@@ -395,7 +413,7 @@ fun ProjectDetailScreen(
                         OutlinedButton(
                             onClick = {
                                 showSettingsDialog = false
-                                onOpenPromptStudio()
+                                onOpenPromptStudio("GENRE")
                             },
                             shape = RoundedCornerShape(8.dp),
                             modifier = Modifier.height(34.dp)
@@ -433,7 +451,7 @@ fun ProjectDetailScreen(
                         OutlinedButton(
                             onClick = {
                                 showSettingsDialog = false
-                                onOpenPromptStudio()
+                                onOpenPromptStudio("VISUAL_MEDIUM")
                             },
                             shape = RoundedCornerShape(8.dp),
                             modifier = Modifier.height(34.dp)
