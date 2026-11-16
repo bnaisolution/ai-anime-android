@@ -227,6 +227,7 @@ fun PromptStudioScreen(
                 is Resource.Success -> savedPrompts = promptResult.data
                 is Resource.Empty -> savedPrompts = emptyList()
                 is Resource.Error -> Unit
+                else -> Unit
             }
             when (val metaResult = repository.fetchPromptLibraryMeta()) {
                 is Resource.Success -> {
@@ -241,6 +242,7 @@ fun PromptStudioScreen(
                 }
                 is Resource.Error -> libraryError = metaResult.message
                 is Resource.Empty -> libraryError = "Prompt library metadata is empty."
+                else -> Unit
             }
             isLoadingLibrary = false
         }
@@ -360,6 +362,7 @@ fun PromptStudioScreen(
                 }
                 is Resource.Error -> Toast.makeText(context, result.message, Toast.LENGTH_LONG).show()
                 is Resource.Empty -> Toast.makeText(context, "Prompt was not saved", Toast.LENGTH_LONG).show()
+                else -> Unit
             }
         }
     }
@@ -443,6 +446,7 @@ fun PromptStudioScreen(
                 }
                 is Resource.Error -> addError = result.message
                 is Resource.Empty -> addError = "Prompt was not saved."
+                else -> Unit
             }
         }
     }
@@ -461,6 +465,7 @@ fun PromptStudioScreen(
                 }
                 is Resource.Error -> Toast.makeText(context, result.message, Toast.LENGTH_LONG).show()
                 is Resource.Empty -> closeEditor()
+                else -> Unit
             }
         }
     }
@@ -472,6 +477,7 @@ fun PromptStudioScreen(
                 is Resource.Success -> loadLibrary()
                 is Resource.Error -> Toast.makeText(context, result.message, Toast.LENGTH_LONG).show()
                 is Resource.Empty -> Unit
+                else -> Unit
             }
         }
     }
