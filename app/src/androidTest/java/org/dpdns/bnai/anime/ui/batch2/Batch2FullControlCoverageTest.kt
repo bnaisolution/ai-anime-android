@@ -817,6 +817,10 @@ class Batch2FullControlCoverageTest {
         waitForTag(TestTags.PromptStudio.EDIT)
         clickTag(TestTags.PromptStudio.EDIT)
         waitForTag(TestTags.PromptStudio.SAVE)
+        composeRule.onNodeWithTag(TestTags.PromptStudio.TEXT_FIELD)
+            .performScrollTo()
+            .performTextInput(" Updated")
+        composeRule.waitForIdle()
         composeRule.onNodeWithTag(TestTags.PromptStudio.SAVE).assertIsEnabled()
     }
 }
