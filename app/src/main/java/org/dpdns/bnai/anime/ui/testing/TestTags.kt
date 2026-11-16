@@ -95,6 +95,7 @@ object TestTags {
         const val FILTER_GENRE_FORMAT = "screen.prompt_studio.filter_genre_format"
         const val CARD_PREFIX = "screen.prompt_studio.card"
         const val FAVORITE_PREFIX = "screen.prompt_studio.favorite"
+        const val ADD = "screen.prompt_studio.add"
     }
 
     object Settings {
