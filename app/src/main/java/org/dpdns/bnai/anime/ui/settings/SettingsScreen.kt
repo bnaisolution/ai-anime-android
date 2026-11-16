@@ -1,8 +1,7 @@
 package org.dpdns.bnai.anime.ui.settings
 
-import org.dpdns.bnai.anime.ui.LocalAppContainer
-
 import android.widget.Toast
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -10,50 +9,133 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
 import org.dpdns.bnai.anime.core.network.Resource
+import org.dpdns.bnai.anime.ui.LocalAppContainer
 import org.dpdns.bnai.anime.ui.components.ProjectSelectorBar
 import org.dpdns.bnai.anime.ui.designsystem.*
 import org.dpdns.bnai.anime.ui.testing.TestTags
 
+private data class AiProviderSpec(
+    val id: String,
+    val label: String,
+    val models: List<String>,
+    val available: Boolean = true
+)
+
+private data class DropdownOption(
+    val id: String,
+    val label: String,
+    val enabled: Boolean = true
+)
+
+private val AI_PROVIDERS = listOf(
+    AiProviderSpec(
+        id = "groq",
+        label = "Groq",
+        models = listOf("llama-3.3-70b-versatile", "llama-3.1-8b-instant", "mixtral-8x7b-32768")
+    ),
+    AiProviderSpec(
+        id = "gemini",
+        label = "Google Gemini",
+        models = listOf("gemini-2.0-flash", "gemini-1.5-pro", "gemini-1.5-flash")
+    ),
+    AiProviderSpec("openai", "OpenAI-Compatible", emptyList(), available = false),
+    AiProviderSpec("nvidia_nim", "NVIDIA NIM", emptyList(), available = false)
+)
+
+private fun providerSpec(id: String): AiProviderSpec? = AI_PROVIDERS.firstOrNull { it.id == id }
+
+private fun modelsFor(providerId: String): List<String> = providerSpec(providerId)?.models.orEmpty()
+
+private fun text(value: Any?): String =
+    value?.toString()?.takeUnless { it.isBlank() || it == "null" }.orEmpty()
+
+private fun map(value: Any?): Map<*, *>? = value as? Map<*, *>
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsScreen() {
+fun SettingsScreen(onOpenOwnerConsole: (() -> Unit)? = null) {
     val context = LocalContext.current
     val tokenManager = LocalAppContainer.current.tokenManager
     val repository = LocalAppContainer.current.repository
     val scope = rememberCoroutineScope()
+    val isOwner = tokenManager.isOwner()
 
-    var selectedTab by remember { mutableStateOf(0) }
-    val tabs = listOf("AI & Vision", "Compute Workers", "Storage & Policy", "Session")
+    var selectedTab by remember { mutableIntStateOf(0) }
+    val tabs = listOf("AI & Vision", "Compute Workers", "Storage & Policy", "Database", "Session")
 
-    var primaryProvider by remember { mutableStateOf("groq") }
-    var fallbackProvider by remember { mutableStateOf("gemini") }
-    var visionProvider by remember { mutableStateOf("gemini") }
-    var preferredComputeMode by remember { mutableStateOf("CUSTOM_GPU") }
-    var kaggleUsername by remember { mutableStateOf("") }
-    var cpuWorkerRepo by remember { mutableStateOf("bnaisolution/anime-cpu-worker") }
+    var primaryProvider by remember { mutableStateOf("") }
+    var fallbackProvider by remember { mutableStateOf("") }
+    var visionProvider by remember { mutableStateOf("") }
+    var primaryModel by remember { mutableStateOf("") }
+    var fallbackModel by remember { mutableStateOf("") }
+    var visionModel by remember { mutableStateOf("") }
+
+    var gpuChoice by remember { mutableStateOf("KAGGLE_PRIMARY") }
+    var cpuChoice by remember { mutableStateOf("GITHUB_CPU") }
+    var storageChoice by remember { mutableStateOf("TELEGRAM") }
+
+    var kagglePrimaryUsername by remember { mutableStateOf("") }
+    var kaggleSecondaryUsername by remember { mutableStateOf("") }
+    var customGpuUrl by remember { mutableStateOf("") }
+    var githubWorkerRepo by remember { mutableStateOf("bnaisolution/anime-cpu-worker") }
+    var githubWorkerUrl by remember { mutableStateOf("") }
+    var ownCpuUrl by remember { mutableStateOf("") }
     var telegramChatId by remember { mutableStateOf("") }
     var autoApprovePolicy by remember { mutableStateOf(false) }
 
     var newGroqKey by remember { mutableStateOf("") }
     var newGeminiKey by remember { mutableStateOf("") }
-    var newKaggleKey by remember { mutableStateOf("") }
+    var newKagglePrimaryKey by remember { mutableStateOf("") }
+    var newKaggleSecondaryKey by remember { mutableStateOf("") }
+    var newCustomGpuKey by remember { mutableStateOf("") }
     var newGithubToken by remember { mutableStateOf("") }
+    var newOwnCpuToken by remember { mutableStateOf("") }
     var newTelegramBotToken by remember { mutableStateOf("") }
 
     var hasSavedGroqKey by remember { mutableStateOf(false) }
     var hasSavedGeminiKey by remember { mutableStateOf(false) }
-    var hasSavedKaggleKey by remember { mutableStateOf(false) }
+    var hasSavedKagglePrimaryKey by remember { mutableStateOf(false) }
+    var hasSavedKaggleSecondaryKey by remember { mutableStateOf(false) }
+    var hasSavedCustomGpuKey by remember { mutableStateOf(false) }
+    var hasSavedGithubToken by remember { mutableStateOf(false) }
+    var hasSavedOwnCpuToken by remember { mutableStateOf(false) }
+    var hasSavedTelegramToken by remember { mutableStateOf(false) }
+
+    var showAddProviderDialog by remember { mutableStateOf(false) }
+    var newProviderId by remember { mutableStateOf("groq") }
+    var newProviderKey by remember { mutableStateOf("") }
 
     var isLoading by remember { mutableStateOf(true) }
     var isSaving by remember { mutableStateOf(false) }
+    var isCheckingDatabase by remember { mutableStateOf(false) }
+    var databaseHealthy by remember { mutableStateOf(false) }
     var connectionStatus by remember { mutableStateOf<String?>(null) }
+
+    val configuredProviderIds = buildList {
+        if (hasSavedGroqKey || newGroqKey.isNotBlank()) add("groq")
+        if (hasSavedGeminiKey || newGeminiKey.isNotBlank()) add("gemini")
+    }
+
+    fun checkDatabaseConnection() {
+        scope.launch {
+            isCheckingDatabase = true
+            databaseHealthy = repository.checkBackendHealth()
+            connectionStatus = if (databaseHealthy) {
+                "Central database reachable • backend round-trip verified"
+            } else {
+                "Database unreachable • check backend gateway"
+            }
+            isCheckingDatabase = false
+        }
+    }
 
     fun hydrateSettingsFromServer() {
         val pid = repository.currentProjectId()
@@ -62,22 +144,80 @@ fun SettingsScreen() {
             val gpuRes = repository.fetchGpuInfrastructure()
             if (gpuRes is Resource.Success) {
                 val d = gpuRes.data
-                primaryProvider = (d["primary_llm_provider"] ?: d["llm_provider"] ?: primaryProvider).toString()
-                fallbackProvider = (d["fallback_llm_provider"] ?: fallbackProvider).toString()
-                visionProvider = (d["vision_provider"] ?: visionProvider).toString()
-                preferredComputeMode = (d["preferred_mode"] ?: preferredComputeMode).toString()
-                kaggleUsername = (d["kaggle_username"] ?: "").toString().let { if (it == "null") "" else it }
-                telegramChatId = (d["telegram_chat_id"] ?: "").toString().let { if (it == "null") "" else it }
+                val routing = map(d["gpu_routing"])
+                val kagglePrimary = map(d["kaggle_primary"]) ?: map(routing?.get("kaggle_primary"))
+                val kaggleSecondary = map(d["kaggle_secondary"]) ?: map(routing?.get("kaggle_secondary"))
+                val customGpu = map(routing?.get("custom_gpu"))
+                val github = map(d["github_worker"])
+                val cpuWorker = map(d["cpu_worker"])
+                val telegram = map(d["telegram_storage"])
 
-                hasSavedGroqKey = !d["groq_api_key"]?.toString().isNullOrBlank() && d["groq_api_key"].toString() != "null"
-                hasSavedGeminiKey = !d["gemini_api_key"]?.toString().isNullOrBlank() && d["gemini_api_key"].toString() != "null"
-                hasSavedKaggleKey = !d["kaggle_key"]?.toString().isNullOrBlank() && d["kaggle_key"].toString() != "null"
+                val hasGroq = text(d["groq_api_key"]).isNotBlank()
+                val hasGemini = text(d["gemini_api_key"]).isNotBlank()
+                hasSavedGroqKey = hasGroq
+                hasSavedGeminiKey = hasGemini
+
+                val loadedProviders = buildList {
+                    if (hasGroq) add("groq")
+                    if (hasGemini) add("gemini")
+                }
+
+                val serverPrimary = text(d["primary_llm_provider"])
+                primaryProvider = serverPrimary.takeIf { loadedProviders.contains(it) }.orEmpty()
+                val serverFallback = text(d["fallback_llm_provider"])
+                fallbackProvider = serverFallback.takeIf { loadedProviders.contains(it) }.orEmpty()
+                val serverVision = text(d["vision_provider"])
+                visionProvider = serverVision.takeIf { loadedProviders.contains(it) }.orEmpty()
+
+                primaryModel = text(d["primary_llm_model"]).ifBlank {
+                    modelsFor(primaryProvider).firstOrNull().orEmpty()
+                }
+                fallbackModel = text(d["fallback_llm_model"]).ifBlank {
+                    modelsFor(fallbackProvider).firstOrNull().orEmpty()
+                }
+                visionModel = text(d["vision_model"]).ifBlank {
+                    modelsFor(visionProvider).firstOrNull().orEmpty()
+                }
+
+                kagglePrimaryUsername = text(kagglePrimary?.get("username"))
+                kaggleSecondaryUsername = text(kaggleSecondary?.get("username"))
+                hasSavedKagglePrimaryKey = text(kagglePrimary?.get("api_key")).isNotBlank()
+                hasSavedKaggleSecondaryKey = text(kaggleSecondary?.get("api_key")).isNotBlank()
+
+                customGpuUrl = text(customGpu?.get("worker_url"))
+                hasSavedCustomGpuKey = text(customGpu?.get("api_key")).isNotBlank()
+
+                val loadedGpuChoice = text(d["gpu_choice"])
+                gpuChoice = when {
+                    loadedGpuChoice in setOf("KAGGLE_PRIMARY", "KAGGLE_SECONDARY", "CUSTOM_GPU", "PLATFORM_GPU") -> loadedGpuChoice
+                    text(d["preferred_mode"]) == "CUSTOM_GPU" || customGpuUrl.isNotBlank() -> "CUSTOM_GPU"
+                    kagglePrimaryUsername.isNotBlank() -> "KAGGLE_PRIMARY"
+                    kaggleSecondaryUsername.isNotBlank() -> "KAGGLE_SECONDARY"
+                    else -> "KAGGLE_PRIMARY"
+                }
+
+                githubWorkerRepo = text(github?.get("repository")).ifBlank { "bnaisolution/anime-cpu-worker" }
+                githubWorkerUrl = text(github?.get("worker_url")).ifBlank { text(d["github_worker_url"]) }
+                hasSavedGithubToken = text(github?.get("token")).isNotBlank()
+
+                val loadedCpuChoice = text(d["cpu_choice"])
+                cpuChoice = when {
+                    loadedCpuChoice in setOf("GITHUB_CPU", "OWN_CPU", "PLATFORM_CPU") -> loadedCpuChoice
+                    text(cpuWorker?.get("mode")) == "OWN_CPU" || ownCpuUrl.isNotBlank() -> "OWN_CPU"
+                    else -> "GITHUB_CPU"
+                }
+                ownCpuUrl = text(cpuWorker?.get("worker_url"))
+                hasSavedOwnCpuToken = text(cpuWorker?.get("token")).isNotBlank()
+
+                storageChoice = text(d["storage_choice"]).ifBlank { "TELEGRAM" }
+                telegramChatId = text(telegram?.get("storage_chat_id")).ifBlank { text(d["telegram_chat_id"]) }
+                hasSavedTelegramToken = text(telegram?.get("bot_token")).isNotBlank()
             }
 
             if (pid.isNotBlank()) {
-                val ovRes = repository.fetchProjectOverviewRaw(pid)
-                if (ovRes is Resource.Success) {
-                    autoApprovePolicy = ovRes.data["auto_approve"] == true
+                val overview = repository.fetchProjectOverviewRaw(pid)
+                if (overview is Resource.Success) {
+                    autoApprovePolicy = overview.data["auto_approve"] == true
                 }
             }
             isLoading = false
@@ -86,6 +226,74 @@ fun SettingsScreen() {
 
     LaunchedEffect(Unit) {
         hydrateSettingsFromServer()
+        checkDatabaseConnection()
+    }
+
+    fun addProvider(id: String, key: String) {
+        when (id) {
+            "groq" -> {
+                newGroqKey = key
+                hasSavedGroqKey = true
+            }
+            "gemini" -> {
+                newGeminiKey = key
+                hasSavedGeminiKey = true
+            }
+        }
+        if (primaryProvider.isBlank()) {
+            primaryProvider = id
+            primaryModel = modelsFor(id).firstOrNull().orEmpty()
+        } else if (fallbackProvider.isBlank() && fallbackProvider != primaryProvider) {
+            fallbackProvider = id
+            fallbackModel = modelsFor(id).firstOrNull().orEmpty()
+        }
+        if (visionProvider.isBlank()) {
+            visionProvider = id
+            visionModel = modelsFor(id).firstOrNull().orEmpty()
+        }
+    }
+
+    if (showAddProviderDialog) {
+        AlertDialog(
+            onDismissRequest = { showAddProviderDialog = false },
+            title = { Text("Add AI Provider") },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Text(
+                        "Groq and Gemini are available now. More providers are shown for the roadmap.",
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    AiDropdown(
+                        label = "Provider",
+                        selectedId = newProviderId,
+                        options = AI_PROVIDERS.map { DropdownOption(it.id, it.label, it.available) },
+                        onSelected = { newProviderId = it }
+                    )
+                    OutlinedTextField(
+                        value = newProviderKey,
+                        onValueChange = { newProviderKey = it },
+                        label = { Text("${providerSpec(newProviderId)?.label ?: "Provider"} API Key") },
+                        visualTransformation = PasswordVisualTransformation(),
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth().testTag(TestTags.Settings.AI_ADD_KEY)
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    enabled = newProviderKey.isNotBlank() && providerSpec(newProviderId)?.available == true,
+                    onClick = {
+                        addProvider(newProviderId, newProviderKey.trim())
+                        newProviderKey = ""
+                        showAddProviderDialog = false
+                    }
+                ) { Text("Add Provider") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showAddProviderDialog = false }) { Text("Cancel") }
+            }
+        )
     }
 
     Column(
@@ -98,123 +306,326 @@ fun SettingsScreen() {
     ) {
         ProjectSelectorBar(
             onProjectChanged = { hydrateSettingsFromServer() },
-            onRefreshClick = { hydrateSettingsFromServer() }
+            onRefreshClick = {
+                hydrateSettingsFromServer()
+                checkDatabaseConnection()
+            }
         )
 
         ScreenHeader(
             title = "Studio Infrastructure & Settings",
-            subtitle = "Hydrated from backend with masked secrets & read-after-write verification"
+            subtitle = "User workspace admin: AI providers, workers, storage, database and session"
         )
 
         ScrollableTabRow(selectedTabIndex = selectedTab, edgePadding = 0.dp) {
             tabs.forEachIndexed { idx, title ->
-                Tab(selected = selectedTab == idx, onClick = { selectedTab = idx }, text = { Text(title) })
+                Tab(
+                    selected = selectedTab == idx,
+                    onClick = { selectedTab = idx },
+                    text = { Text(title) },
+                    modifier = if (title == "Database") Modifier.testTag(TestTags.Settings.DB_TAB) else Modifier
+                )
             }
         }
 
         when (selectedTab) {
             0 -> {
                 StandardCard {
-                    SectionHeader(title = "AI & Vision Providers")
-                    OutlinedTextField(
-                        value = primaryProvider,
-                        onValueChange = { primaryProvider = it },
-                        label = { Text("Primary LLM Provider (groq / gemini / openrouter)") },
-                        singleLine = true,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    OutlinedTextField(
-                        value = fallbackProvider,
-                        onValueChange = { fallbackProvider = it },
-                        label = { Text("Fallback LLM Provider") },
-                        singleLine = true,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    OutlinedTextField(
-                        value = visionProvider,
-                        onValueChange = { visionProvider = it },
-                        label = { Text("Vision DNA Provider (gemini / groq / openrouter)") },
-                        singleLine = true,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    OutlinedTextField(
-                        value = newGroqKey,
-                        onValueChange = { newGroqKey = it },
-                        label = { Text(if (hasSavedGroqKey) "Groq API Key (Saved •••• — enter to replace)" else "Groq API Key") },
-                        visualTransformation = PasswordVisualTransformation(),
-                        singleLine = true,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    OutlinedTextField(
-                        value = newGeminiKey,
-                        onValueChange = { newGeminiKey = it },
-                        label = { Text(if (hasSavedGeminiKey) "Gemini API Key (Saved •••• — enter to replace)" else "Gemini API Key") },
-                        visualTransformation = PasswordVisualTransformation(),
-                        singleLine = true,
-                        modifier = Modifier.fillMaxWidth()
-                    )
+                    SectionHeader(title = "AI & Vision Providers", badgeText = if (configuredProviderIds.isEmpty()) "NOT CONFIGURED" else "BYOD")
+                    if (configuredProviderIds.isEmpty()) {
+                        Text(
+                            "No AI provider added yet. Add Groq or Gemini to unlock the model selector.",
+                            fontSize = 13.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        PrimaryButton(
+                            text = "Add AI Provider",
+                            onClick = { showAddProviderDialog = true },
+                            modifier = Modifier.fillMaxWidth().testTag(TestTags.Settings.AI_ADD)
+                        )
+                    } else {
+                        AiDropdown(
+                            label = "Primary AI Provider",
+                            selectedId = primaryProvider,
+                            options = configuredProviderIds.map { DropdownOption(it, providerSpec(it)?.label ?: it) } +
+                                DropdownOption("__add__", "＋ Add more AI provider"),
+                            onSelected = { id ->
+                                if (id == "__add__") {
+                                    showAddProviderDialog = true
+                                } else {
+                                    primaryProvider = id
+                                    primaryModel = modelsFor(id).firstOrNull().orEmpty()
+                                }
+                            },
+                            modifier = Modifier.testTag(TestTags.Settings.AI_PRIMARY)
+                        )
+                        if (primaryProvider.isNotBlank()) {
+                            ModelDropdown(
+                                label = "Primary Model",
+                                selectedId = primaryModel,
+                                providerId = primaryProvider,
+                                onSelected = { primaryModel = it }
+                            )
+                        }
+
+                        AiDropdown(
+                            label = "Fallback AI Provider",
+                            selectedId = fallbackProvider,
+                            options = listOf(DropdownOption("__none__", "No fallback")) +
+                                configuredProviderIds.map { DropdownOption(it, providerSpec(it)?.label ?: it) } +
+                                DropdownOption("__add__", "＋ Add more AI provider"),
+                            onSelected = { id ->
+                                when (id) {
+                                    "__add__" -> showAddProviderDialog = true
+                                    "__none__" -> {
+                                        fallbackProvider = ""
+                                        fallbackModel = ""
+                                    }
+                                    else -> {
+                                        fallbackProvider = id
+                                        fallbackModel = modelsFor(id).firstOrNull().orEmpty()
+                                    }
+                                }
+                            },
+                            modifier = Modifier.testTag(TestTags.Settings.AI_FALLBACK)
+                        )
+                        if (fallbackProvider.isNotBlank()) {
+                            ModelDropdown(
+                                label = "Fallback Model",
+                                selectedId = fallbackModel,
+                                providerId = fallbackProvider,
+                                onSelected = { fallbackModel = it }
+                            )
+                        }
+
+                        AiDropdown(
+                            label = "Vision DNA Provider",
+                            selectedId = visionProvider,
+                            options = configuredProviderIds.map { DropdownOption(it, providerSpec(it)?.label ?: it) },
+                            onSelected = { id ->
+                                visionProvider = id
+                                visionModel = modelsFor(id).firstOrNull().orEmpty()
+                            }
+                        )
+                        if (visionProvider.isNotBlank()) {
+                            ModelDropdown(
+                                label = "Vision Model",
+                                selectedId = visionModel,
+                                providerId = visionProvider,
+                                onSelected = { visionModel = it }
+                            )
+                        }
+
+                        SecondaryButton(
+                            text = "Add Another AI Provider",
+                            onClick = { showAddProviderDialog = true },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
                 }
             }
+
             1 -> {
                 StandardCard {
-                    SectionHeader(title = "GPU & CPU Worker Configuration")
-                    OutlinedTextField(
-                        value = preferredComputeMode,
-                        onValueChange = { preferredComputeMode = it },
-                        label = { Text("Preferred Compute Mode") },
-                        singleLine = true,
-                        modifier = Modifier.fillMaxWidth()
+                    SectionHeader(title = "GPU Worker", badgeText = if (gpuChoice == "PLATFORM_GPU") "COMING SOON" else "BYOD")
+                    Text(
+                        "Choose where image, animation, lip-sync and video rendering runs.",
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    OutlinedTextField(
-                        value = kaggleUsername,
-                        onValueChange = { kaggleUsername = it },
-                        label = { Text("Kaggle Username") },
-                        singleLine = true,
-                        modifier = Modifier.fillMaxWidth()
+                    SelectionCard(
+                        title = "Kaggle Account 1",
+                        subtitle = "Free GPU • primary worker",
+                        selected = gpuChoice == "KAGGLE_PRIMARY",
+                        onClick = { gpuChoice = "KAGGLE_PRIMARY" }
                     )
-                    OutlinedTextField(
-                        value = newKaggleKey,
-                        onValueChange = { newKaggleKey = it },
-                        label = { Text(if (hasSavedKaggleKey) "Kaggle API Key (Saved •••• — enter to replace)" else "Kaggle API Key") },
-                        visualTransformation = PasswordVisualTransformation(),
-                        singleLine = true,
-                        modifier = Modifier.fillMaxWidth()
+                    SelectionCard(
+                        title = "Kaggle Account 2",
+                        subtitle = "Free GPU • secondary worker",
+                        selected = gpuChoice == "KAGGLE_SECONDARY",
+                        onClick = { gpuChoice = "KAGGLE_SECONDARY" }
                     )
-                    OutlinedTextField(
-                        value = cpuWorkerRepo,
-                        onValueChange = { cpuWorkerRepo = it },
-                        label = { Text("GitHub CPU Worker Repository") },
-                        singleLine = true,
-                        modifier = Modifier.fillMaxWidth()
+                    SelectionCard(
+                        title = "Add your own GPU",
+                        subtitle = "Custom worker URL and API key",
+                        selected = gpuChoice == "CUSTOM_GPU",
+                        onClick = { gpuChoice = "CUSTOM_GPU" }
                     )
-                    OutlinedTextField(
-                        value = newGithubToken,
-                        onValueChange = { newGithubToken = it },
-                        label = { Text("GitHub Actions Token (Masked)") },
-                        visualTransformation = PasswordVisualTransformation(),
-                        singleLine = true,
-                        modifier = Modifier.fillMaxWidth()
+                    SelectionCard(
+                        title = "Platform GPU",
+                        subtitle = "Pay per minute • coming soon",
+                        selected = false,
+                        enabled = false,
+                        onClick = {}
                     )
+
+                    when (gpuChoice) {
+                        "KAGGLE_PRIMARY" -> {
+                            OutlinedTextField(
+                                value = kagglePrimaryUsername,
+                                onValueChange = { kagglePrimaryUsername = it },
+                                label = { Text("Kaggle Account 1 Username") },
+                                singleLine = true,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                            OutlinedTextField(
+                                value = newKagglePrimaryKey,
+                                onValueChange = { newKagglePrimaryKey = it },
+                                label = { Text(if (hasSavedKagglePrimaryKey) "Kaggle Account 1 API Key (Saved — enter to replace)" else "Kaggle Account 1 API Key") },
+                                visualTransformation = PasswordVisualTransformation(),
+                                singleLine = true,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
+                        "KAGGLE_SECONDARY" -> {
+                            OutlinedTextField(
+                                value = kaggleSecondaryUsername,
+                                onValueChange = { kaggleSecondaryUsername = it },
+                                label = { Text("Kaggle Account 2 Username") },
+                                singleLine = true,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                            OutlinedTextField(
+                                value = newKaggleSecondaryKey,
+                                onValueChange = { newKaggleSecondaryKey = it },
+                                label = { Text(if (hasSavedKaggleSecondaryKey) "Kaggle Account 2 API Key (Saved — enter to replace)" else "Kaggle Account 2 API Key") },
+                                visualTransformation = PasswordVisualTransformation(),
+                                singleLine = true,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
+                        "CUSTOM_GPU" -> {
+                            OutlinedTextField(
+                                value = customGpuUrl,
+                                onValueChange = { customGpuUrl = it },
+                                label = { Text("Your GPU Worker URL") },
+                                singleLine = true,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                            OutlinedTextField(
+                                value = newCustomGpuKey,
+                                onValueChange = { newCustomGpuKey = it },
+                                label = { Text(if (hasSavedCustomGpuKey) "GPU API Key (Saved — enter to replace)" else "GPU API Key") },
+                                visualTransformation = PasswordVisualTransformation(),
+                                singleLine = true,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
+                    }
+                }
+
+                StandardCard {
+                    SectionHeader(title = "CPU Worker", badgeText = if (cpuChoice == "PLATFORM_CPU") "COMING SOON" else "BYOD")
+                    Text(
+                        "Choose where TTS, FFmpeg and episode assembly run.",
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    SelectionCard(
+                        title = "GitHub CPU Worker",
+                        subtitle = "GitHub Actions repository",
+                        selected = cpuChoice == "GITHUB_CPU",
+                        onClick = { cpuChoice = "GITHUB_CPU" }
+                    )
+                    SelectionCard(
+                        title = "Own CPU Worker",
+                        subtitle = "Your VPS or custom worker URL",
+                        selected = cpuChoice == "OWN_CPU",
+                        onClick = { cpuChoice = "OWN_CPU" }
+                    )
+                    SelectionCard(
+                        title = "Platform CPU Worker",
+                        subtitle = "Pay per minute • coming soon",
+                        selected = false,
+                        enabled = false,
+                        onClick = {}
+                    )
+
+                    when (cpuChoice) {
+                        "GITHUB_CPU" -> {
+                            OutlinedTextField(
+                                value = githubWorkerRepo,
+                                onValueChange = { githubWorkerRepo = it },
+                                label = { Text("GitHub CPU Worker Repository") },
+                                singleLine = true,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                            OutlinedTextField(
+                                value = githubWorkerUrl,
+                                onValueChange = { githubWorkerUrl = it },
+                                label = { Text("GitHub CPU Worker URL (optional)") },
+                                singleLine = true,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                            OutlinedTextField(
+                                value = newGithubToken,
+                                onValueChange = { newGithubToken = it },
+                                label = { Text(if (hasSavedGithubToken) "GitHub Actions Token (Saved — enter to replace)" else "GitHub Actions Token") },
+                                visualTransformation = PasswordVisualTransformation(),
+                                singleLine = true,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
+                        "OWN_CPU" -> {
+                            OutlinedTextField(
+                                value = ownCpuUrl,
+                                onValueChange = { ownCpuUrl = it },
+                                label = { Text("Your CPU Worker URL") },
+                                singleLine = true,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                            OutlinedTextField(
+                                value = newOwnCpuToken,
+                                onValueChange = { newOwnCpuToken = it },
+                                label = { Text(if (hasSavedOwnCpuToken) "CPU Worker Token (Saved — enter to replace)" else "CPU Worker Token") },
+                                visualTransformation = PasswordVisualTransformation(),
+                                singleLine = true,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
+                    }
                 }
             }
+
             2 -> {
                 StandardCard {
-                    SectionHeader(title = "Telegram Storage & Approval Policy")
-                    OutlinedTextField(
-                        value = telegramChatId,
-                        onValueChange = { telegramChatId = it },
-                        label = { Text("Telegram Channel / Chat ID") },
-                        singleLine = true,
-                        modifier = Modifier.fillMaxWidth()
+                    SectionHeader(title = "Storage Provider", badgeText = "BYOD")
+                    Text(
+                        "Current release supports Telegram storage. S3-compatible and custom storage are next.",
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    OutlinedTextField(
-                        value = newTelegramBotToken,
-                        onValueChange = { newTelegramBotToken = it },
-                        label = { Text("Telegram Bot Token (Masked)") },
-                        visualTransformation = PasswordVisualTransformation(),
-                        singleLine = true,
-                        modifier = Modifier.fillMaxWidth()
+                    AiDropdown(
+                        label = "Storage Provider",
+                        selectedId = storageChoice,
+                        options = listOf(
+                            DropdownOption("TELEGRAM", "Telegram Storage"),
+                            DropdownOption("S3_COMPATIBLE", "S3-Compatible (coming soon)", enabled = false),
+                            DropdownOption("CUSTOM_HTTP", "Custom HTTP Storage (coming soon)", enabled = false)
+                        ),
+                        onSelected = { storageChoice = it }
                     )
+                    if (storageChoice == "TELEGRAM") {
+                        OutlinedTextField(
+                            value = telegramChatId,
+                            onValueChange = { telegramChatId = it },
+                            label = { Text("Telegram Channel / Chat ID") },
+                            singleLine = true,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        OutlinedTextField(
+                            value = newTelegramBotToken,
+                            onValueChange = { newTelegramBotToken = it },
+                            label = { Text(if (hasSavedTelegramToken) "Telegram Bot Token (Saved — enter to replace)" else "Telegram Bot Token") },
+                            visualTransformation = PasswordVisualTransformation(),
+                            singleLine = true,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                }
+
+                StandardCard {
+                    SectionHeader(title = "Approval Policy")
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -228,7 +639,83 @@ fun SettingsScreen() {
                     }
                 }
             }
+
             3 -> {
+                StandardCard {
+                    SectionHeader(title = "Database Mode", badgeText = "CENTRAL")
+                    Text(
+                        "Database settings are workspace-level and apply to all projects in this workspace.",
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    SelectionCard(
+                        title = "Central Anime Database",
+                        subtitle = "Managed by the platform • active now",
+                        selected = true,
+                        enabled = false,
+                        onClick = {}
+                    )
+                    SelectionCard(
+                        title = "My Database",
+                        subtitle = "Bring your own Postgres/Supabase • next phase",
+                        selected = false,
+                        enabled = false,
+                        onClick = {}
+                    )
+                    SelectionCard(
+                        title = "Platform-Managed Database",
+                        subtitle = "Paid • coming later",
+                        selected = false,
+                        enabled = false,
+                        onClick = {}
+                    )
+                }
+
+                StandardCard {
+                    SectionHeader(
+                        title = "Central Database Health",
+                        badgeText = if (databaseHealthy) "CONNECTED" else "CHECKING"
+                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text("Backend / DB Gateway", fontWeight = FontWeight.SemiBold)
+                        Text(if (databaseHealthy) "Online" else "Unavailable")
+                    }
+                    Text(
+                        "Schema version: managed • RLS: enforced",
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    connectionStatus?.let { Text(it, fontSize = 12.sp) }
+                    SecondaryButton(
+                        text = if (isCheckingDatabase) "Checking..." else "Test Database Connection",
+                        enabled = !isCheckingDatabase,
+                        onClick = { checkDatabaseConnection() },
+                        modifier = Modifier.fillMaxWidth().testTag(TestTags.Settings.DB_TEST)
+                    )
+                }
+
+                if (isOwner) {
+                    StandardCard {
+                        SectionHeader(title = "Owner Console", badgeText = "OWNER ONLY")
+                        Text(
+                            "View all tenants, database health, migrations, workers, audit and platform controls.",
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        PrimaryButton(
+                            text = "Open Owner Console",
+                            onClick = { onOpenOwnerConsole?.invoke() },
+                            enabled = onOpenOwnerConsole != null,
+                            modifier = Modifier.fillMaxWidth().testTag(TestTags.Settings.OWNER_CONSOLE)
+                        )
+                    }
+                }
+            }
+
+            4 -> {
                 StandardCard {
                     SectionHeader(title = "Backend Connectivity Verification")
                     if (connectionStatus != null) {
@@ -250,66 +737,219 @@ fun SettingsScreen() {
                         },
                         modifier = Modifier.fillMaxWidth()
                     )
+                    Text(
+                        "Session is managed by the auth project. Provider and infrastructure secrets are encrypted per user.",
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
             }
         }
 
         PrimaryButton(
             text = "Save & Verify Configuration",
-            isLoading = isSaving,
+            isLoading = isSaving || isLoading,
             modifier = Modifier.fillMaxWidth().testTag(TestTags.Settings.SAVE),
             onClick = {
                 isSaving = true
                 scope.launch {
-                    val preferredModeRaw = preferredComputeMode.trim()
-                    val preferredMode = if (preferredModeRaw == "KAGGLE_AUTO" || preferredModeRaw == "CUSTOM_GPU") preferredModeRaw else "CUSTOM_GPU"
+                    val preferredMode = if (gpuChoice == "CUSTOM_GPU") "CUSTOM_GPU" else "KAGGLE_AUTO"
                     val infraPayload = mutableMapOf<String, Any?>(
                         "preferred_mode" to preferredMode,
-                        "primary_llm_provider" to primaryProvider.trim(),
-                        "fallback_llm_provider" to fallbackProvider.trim(),
-                        "vision_provider" to visionProvider.trim(),
-                        "kaggle_username" to kaggleUsername.trim(),
-                        "telegram_chat_id" to telegramChatId.trim()
+                        "auto_deploy_kaggle" to gpuChoice.startsWith("KAGGLE"),
+                        "gpu_choice" to gpuChoice,
+                        "cpu_choice" to cpuChoice,
+                        "storage_choice" to storageChoice,
+                        "kaggle_primary" to mapOf(
+                            "username" to kagglePrimaryUsername.trim(),
+                            "api_key" to newKagglePrimaryKey.trim(),
+                            "notebook_slug" to "anime-gpu-worker-primary"
+                        ),
+                        "kaggle_secondary" to mapOf(
+                            "username" to kaggleSecondaryUsername.trim(),
+                            "api_key" to newKaggleSecondaryKey.trim(),
+                            "notebook_slug" to "anime-gpu-worker-secondary"
+                        ),
+                        "custom_gpu" to mapOf(
+                            "enabled" to (gpuChoice == "CUSTOM_GPU"),
+                            "worker_url" to customGpuUrl.trim(),
+                            "api_key" to newCustomGpuKey.trim()
+                        ),
+                        "cpu_worker" to mapOf(
+                            "mode" to cpuChoice,
+                            "worker_url" to if (cpuChoice == "OWN_CPU") ownCpuUrl.trim() else githubWorkerUrl.trim(),
+                            "token" to if (cpuChoice == "OWN_CPU") newOwnCpuToken.trim() else newGithubToken.trim(),
+                            "repository" to githubWorkerRepo.trim()
+                        ),
+                        "telegram_storage" to mapOf(
+                            "bot_token" to newTelegramBotToken.trim(),
+                            "storage_chat_id" to telegramChatId.trim(),
+                            "stream_bridge_base_url" to "https://api.bnai.dpdns.org/v1/media/telegram"
+                        ),
+                        "github_worker" to mapOf(
+                            "worker_url" to githubWorkerUrl.trim(),
+                            "token" to newGithubToken.trim(),
+                            "repository" to githubWorkerRepo.trim()
+                        )
                     )
+                    if (primaryProvider.isNotBlank()) {
+                        infraPayload["primary_llm_provider"] = primaryProvider
+                        infraPayload["primary_llm_model"] = primaryModel
+                    }
+                    if (fallbackProvider.isNotBlank()) {
+                        infraPayload["fallback_llm_provider"] = fallbackProvider
+                        infraPayload["fallback_llm_model"] = fallbackModel
+                    }
+                    if (visionProvider.isNotBlank()) {
+                        infraPayload["vision_provider"] = visionProvider
+                        infraPayload["vision_model"] = visionModel
+                    }
                     if (newGroqKey.isNotBlank()) infraPayload["groq_api_key"] = newGroqKey.trim()
                     if (newGeminiKey.isNotBlank()) infraPayload["gemini_api_key"] = newGeminiKey.trim()
-                    if (newKaggleKey.isNotBlank()) infraPayload["kaggle_key"] = newKaggleKey.trim()
-                    if (newGithubToken.isNotBlank()) infraPayload["github_token"] = newGithubToken.trim()
-                    if (newTelegramBotToken.isNotBlank()) infraPayload["telegram_bot_token"] = newTelegramBotToken.trim()
 
                     val saveInfraRes = repository.saveGpuInfrastructure(infraPayload)
                     val pid = repository.currentProjectId()
-                    if (pid.isNotBlank()) {
+                    if (pid.isNotBlank() && visionProvider.isNotBlank()) {
                         repository.updateProjectSettings(
                             projectId = pid,
                             updates = mapOf(
                                 "auto_approve" to autoApprovePolicy,
-                                "vision_provider" to visionProvider.trim()
+                                "vision_provider" to visionProvider
                             )
                         )
                     }
 
-                    val badge = "${primaryProvider.trim()} • ${fallbackProvider.trim()}"
-                    tokenManager.saveConfiguredProviderLabel(badge)
-
-                    newGroqKey = ""
-                    newGeminiKey = ""
-                    newKaggleKey = ""
-                    newGithubToken = ""
-                    newTelegramBotToken = ""
-
-                    hydrateSettingsFromServer()
-                    isSaving = false
+                    val badge = listOf(primaryProvider, fallbackProvider)
+                        .filter { it.isNotBlank() }
+                        .joinToString(" • ")
+                        .ifBlank { "Not configured" }
+                    tokenManager.saveConfiguredProviderLabel("AI: $badge")
 
                     if (saveInfraRes is Resource.Success) {
+                        newGroqKey = ""
+                        newGeminiKey = ""
+                        newKagglePrimaryKey = ""
+                        newKaggleSecondaryKey = ""
+                        newCustomGpuKey = ""
+                        newGithubToken = ""
+                        newOwnCpuToken = ""
+                        newTelegramBotToken = ""
+                        hydrateSettingsFromServer()
                         Toast.makeText(context, "Configuration persisted & verified via read-after-write", Toast.LENGTH_SHORT).show()
                     } else if (saveInfraRes is Resource.Error) {
                         Toast.makeText(context, saveInfraRes.message, Toast.LENGTH_LONG).show()
                     }
+                    isSaving = false
                 }
             }
         )
 
         Spacer(modifier = Modifier.height(64.dp))
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun AiDropdown(
+    label: String,
+    selectedId: String,
+    options: List<DropdownOption>,
+    onSelected: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    var expanded by remember { mutableStateOf(false) }
+    val selectedLabel = options.firstOrNull { it.id == selectedId }?.label ?: "Select"
+    ExposedDropdownMenuBox(
+        expanded = expanded,
+        onExpandedChange = { expanded = !expanded },
+        modifier = modifier.fillMaxWidth()
+    ) {
+        OutlinedTextField(
+            value = selectedLabel,
+            onValueChange = {},
+            readOnly = true,
+            label = { Text(label) },
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+            singleLine = true,
+            modifier = Modifier.menuAnchor().fillMaxWidth()
+        )
+        ExposedDropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
+        ) {
+            options.forEach { option ->
+                DropdownMenuItem(
+                    text = { Text(option.label) },
+                    enabled = option.enabled,
+                    onClick = {
+                        expanded = false
+                        onSelected(option.id)
+                    }
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ModelDropdown(
+    label: String,
+    selectedId: String,
+    providerId: String,
+    onSelected: (String) -> Unit
+) {
+    val models = modelsFor(providerId)
+    if (models.isEmpty()) return
+    AiDropdown(
+        label = label,
+        selectedId = selectedId,
+        options = models.map { DropdownOption(it, it) },
+        onSelected = onSelected
+    )
+}
+
+@Composable
+private fun SelectionCard(
+    title: String,
+    subtitle: String,
+    selected: Boolean,
+    enabled: Boolean = true,
+    onClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(enabled = enabled, onClick = onClick),
+        colors = CardDefaults.cardColors(
+            containerColor = if (selected) {
+                MaterialTheme.colorScheme.primaryContainer
+            } else {
+                MaterialTheme.colorScheme.surfaceVariant
+            }
+        )
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(12.dp),
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            RadioButton(selected = selected, onClick = null, enabled = enabled)
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    title,
+                    fontWeight = FontWeight.SemiBold,
+                    color = if (enabled) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    subtitle,
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            if (!enabled) {
+                StatusChip(label = "SOON")
+            }
+        }
     }
 }

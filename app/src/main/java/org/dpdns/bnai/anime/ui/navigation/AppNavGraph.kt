@@ -599,7 +599,13 @@ fun AppNavGraph(navController: NavHostController) {
                             composable("quick_tools") {
                                 QuickToolsScreen(onOpenProductionPoll = { cmdId -> navController.navigate("production/$cmdId") })
                             }
-                            composable("settings") { SettingsScreen() }
+                            composable("settings") {
+                                SettingsScreen(
+                                    onOpenOwnerConsole = {
+                                        navController.navigate("owner_overview") { launchSingleTop = true }
+                                    }
+                                )
+                            }
                             composable(
                                 route = "prompt_studio?tab={tab}&genre={genre}&medium={medium}&season={season}",
                                 arguments = listOf(

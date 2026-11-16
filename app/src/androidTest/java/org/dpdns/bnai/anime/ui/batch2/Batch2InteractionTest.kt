@@ -62,7 +62,8 @@ class Batch2InteractionTest {
         composeRule.setBatch2Content { SettingsScreen() }
         composeRule.onNodeWithText("AI & Vision Providers").assertExists()
         composeRule.onNodeWithText("Compute Workers").performClick()
-        composeRule.onNodeWithText("GPU & CPU Worker Configuration").assertExists()
+        composeRule.onNodeWithText("GPU Worker").assertExists()
+        composeRule.onNodeWithText("CPU Worker").assertExists()
     }
 
     @Test

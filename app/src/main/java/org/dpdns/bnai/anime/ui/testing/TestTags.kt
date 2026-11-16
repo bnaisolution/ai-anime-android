@@ -115,6 +115,13 @@ object TestTags {
     object Settings {
         const val LOGOUT = "screen.settings.logout"
         const val SAVE = "screen.settings.save"
+        const val DB_TAB = "screen.settings.db_tab"
+        const val DB_TEST = "screen.settings.db_test"
+        const val OWNER_CONSOLE = "screen.settings.owner_console"
+        const val AI_ADD = "screen.settings.ai_add"
+        const val AI_ADD_KEY = "screen.settings.ai_add_key"
+        const val AI_PRIMARY = "screen.settings.ai_primary"
+        const val AI_FALLBACK = "screen.settings.ai_fallback"
     }
 
     object Character {

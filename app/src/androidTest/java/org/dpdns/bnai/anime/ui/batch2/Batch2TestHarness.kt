@@ -226,6 +226,14 @@ internal fun batch2RecordingRepository(
                             "primary_llm_provider" to "groq",
                             "fallback_llm_provider" to "gemini",
                             "vision_provider" to "gemini",
+                            "primary_llm_model" to "llama-3.3-70b-versatile",
+                            "fallback_llm_model" to "gemini-2.0-flash",
+                            "vision_model" to "gemini-2.0-flash",
+                            "gpu_choice" to "KAGGLE_PRIMARY",
+                            "cpu_choice" to "GITHUB_CPU",
+                            "storage_choice" to "TELEGRAM",
+                            "groq_api_key" to "****",
+                            "gemini_api_key" to "****",
                             "kaggle_username" to "",
                             "telegram_chat_id" to ""
                         )
