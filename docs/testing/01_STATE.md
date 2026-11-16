@@ -50,9 +50,10 @@ Result: Backend `cbdf6be` is committed and Backend Tests are green. Android `a6d
 - App Settings currently supports Groq, Gemini, Kaggle, GitHub CPU worker repo/token, and Telegram. NVIDIA NIM is not supported yet.
 - CPU worker URL field and independent GPU/CPU choices are implemented in Settings.
 - APK baseline: build run `43880136923` success at `d26f989`; SHA-256 `b906a4ecf05b18644440329af00b658cf7fd2aca6f0c2531fb7551b57b3db4e8`.
-- New Settings commit `b5769f6`: Android Tests run `43937558915` success after one Maestro rerun; Build APK run `43937558894` success.
-- Owner tenant card commit `a6d1153`; CI verification in progress.
+- Settings commit `b5769f6`: Android Tests run `43937558915` success after one Maestro rerun; Build APK run `43937558894` success.
+- Owner tenant card commit `a6d1153` and state-doc commit `741b51c`: Android Tests run `43941767938` success; Build APK run `43941767857` success.
 - Backend commit `cbdf6be`: Backend Tests run `43940241680` success.
+- Phase 1 UI gate is satisfied; Phase 1 real-key/generation gate remains pending.
 - Disk: 20G total, 9.2G used, 11G free.
 
 ## Database Topology
