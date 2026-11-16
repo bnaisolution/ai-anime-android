@@ -280,7 +280,7 @@ interface ProductionRepository : RepositoryContext {
 }
 
 interface PromptRepository : RepositoryContext {
-    suspend fun fetchPromptLibraryMeta(): Resource<PromptLibraryMetaDto> =
+    suspend fun fetchPromptLibraryMeta(projectId: String? = null): Resource<PromptLibraryMetaDto> =
         throw UnsupportedOperationException("fetchPromptLibraryMeta is not configured")
 
     suspend fun fetchSystemPrompts(

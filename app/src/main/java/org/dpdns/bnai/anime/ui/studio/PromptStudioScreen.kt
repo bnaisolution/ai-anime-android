@@ -23,6 +23,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
+import org.dpdns.bnai.anime.core.model.SeasonPlan
+import org.dpdns.bnai.anime.core.model.seasonPlansFromBible
+import org.dpdns.bnai.anime.core.model.storyBibleMap
 import org.dpdns.bnai.anime.core.network.JsonMap
 import org.dpdns.bnai.anime.core.network.PromptVersionDto
 import org.dpdns.bnai.anime.core.network.Resource
@@ -31,13 +34,14 @@ import org.dpdns.bnai.anime.ui.components.ProjectSelectorBar
 import org.dpdns.bnai.anime.ui.designsystem.*
 import org.dpdns.bnai.anime.ui.testing.TestTags
 
-private val CATEGORIES = listOf("BIBLE", "EPISODE", "IMAGE", "AI_DIRECTOR", "GENRE", "VISUAL_MEDIUM")
+private val CATEGORIES = listOf("BIBLE", "SEASON", "EPISODE", "IMAGE", "AI_DIRECTOR", "GENRE", "VISUAL_MEDIUM")
 private val CREATIVE_CATEGORIES = setOf("GENRE", "VISUAL_MEDIUM")
 private val MEDIA_OPTIONS = listOf("ANIME", "MANHWA", "3D", "2D_ANIMATION", "REAL_HUMAN", "LIVE_ACTION", "CINEMATIC", "HYBRID")
 private val FALLBACK_GENRES = listOf("Action", "Fantasy", "Dark Fantasy", "Action Fantasy", "Thriller", "Horror", "Romance", "Comedy", "Sci-Fi", "Mystery", "Drama", "Slice of Life", "Mythology", "Music")
 private val FALLBACK_FORMATS = listOf("SERIES", "MOVIE", "SHORT", "MUSIC_VIDEO", "TRAILER")
 private val SYSTEM_DEFAULTS = mapOf(
     "BIBLE" to "You are the WF-01 Master Story Bible Architect. Build cohesive anime world rules, power scaling ceilings, and immutable character anchors.",
+    "SEASON" to "You are the Season Architect. Build a season arc, escalating goals, character turns, and episode-range blueprint that obey the project Story Bible and never contradict locked canon.",
     "EPISODE" to "You are the WF-02 Episode Screenwriter. Write tight, high-retention multi-scene anime scripts strictly obeying locked Canon and character Visual DNA.",
     "IMAGE" to "Masterpiece cinematic anime keyframe, ultra-detailed cel shading, dynamic volumetric lighting, strict adherence to character 11-field Visual DNA.",
     "AI_DIRECTOR" to "You are the AI Anime Studio Director overseeing StoryWF-00..13. Provide actionable production guidance and never mutate state without user confirmation."
@@ -169,7 +173,8 @@ private fun defaultCreativeText(category: String): String = when (category) {
 fun PromptStudioScreen(
     initialTab: String = "BIBLE",
     initialGenre: String? = null,
-    initialMedium: String? = null
+    initialMedium: String? = null,
+    initialSeason: Int? = null
 ) {
     val context = LocalContext.current
     val repository = LocalAppContainer.current.repository
@@ -189,6 +194,10 @@ fun PromptStudioScreen(
     var availableFormats by remember { mutableStateOf(FALLBACK_FORMATS) }
     var projectSelectedGenres by remember { mutableStateOf<List<String>>(emptyList()) }
     var projectMedium by remember { mutableStateOf(initialMedium?.uppercase() ?: "ANIME") }
+    var seasonPlans by remember { mutableStateOf<List<SeasonPlan>>(emptyList()) }
+    var selectedSeasonNo by remember { mutableStateOf(initialSeason) }
+    var showSeasonMenu by remember { mutableStateOf(false) }
+    val selectedSeason = seasonPlans.firstOrNull { it.seasonNo == selectedSeasonNo }
     var activeBiblePromptId by remember { mutableStateOf<String?>(null) }
     var isLoadingLibrary by remember { mutableStateOf(true) }
     var libraryError by remember { mutableStateOf<String?>(null) }
@@ -238,7 +247,7 @@ fun PromptStudioScreen(
                 is Resource.Error -> Unit
                 else -> Unit
             }
-            when (val metaResult = repository.fetchPromptLibraryMeta()) {
+            when (val metaResult = repository.fetchPromptLibraryMeta(projectId)) {
                 is Resource.Success -> {
                     val meta = metaResult.data
                     if (meta.genres.isNotEmpty()) availableGenres = meta.genres
@@ -254,6 +263,19 @@ fun PromptStudioScreen(
                 else -> Unit
             }
             if (projectId.isNotBlank()) {
+                when (val bibleResult = repository.fetchBible(projectId)) {
+                    is Resource.Success -> {
+                        val bible = bibleResult.data.storyBibleMap()
+                        val total = bible.intValue("total_seasons").coerceIn(1, 100)
+                        val perSeason = ((bible["episodes_per_season"] as? Number)?.toInt() ?: 12).coerceIn(1, 500)
+                        seasonPlans = seasonPlansFromBible(bible, total, perSeason)
+                        val wanted = selectedSeasonNo
+                        if (wanted == null || seasonPlans.none { it.seasonNo == wanted }) {
+                            selectedSeasonNo = seasonPlans.firstOrNull()?.seasonNo
+                        }
+                    }
+                    else -> Unit
+                }
                 when (val overviewResult = repository.fetchProjectOverview(projectId)) {
                     is Resource.Success -> activeBiblePromptId = overviewResult.data.project?.active_system_prompt_id
                     is Resource.Empty -> activeBiblePromptId = null
@@ -459,7 +481,7 @@ fun PromptStudioScreen(
             else -> addGenre
         }
         val format = when (category) {
-            "BIBLE", "EPISODE" -> addFormat
+            "BIBLE", "SEASON", "EPISODE" -> addFormat
             else -> null
         }
         val medium = when (category) {
@@ -581,17 +603,7 @@ fun PromptStudioScreen(
     val savedById = savedPrompts.associateBy { it.id }
     val genreEntries = buildDefinitionEntries("GENRE", genreDefinitions, savedById, projectSelectedGenres, projectMedium)
     val mediumEntries = buildDefinitionEntries("VISUAL_MEDIUM", mediumDefinitions, savedById, projectSelectedGenres, projectMedium)
-    val defaultEntries = if (isCreativeCategory) {
-        emptyList()
-    } else {
-        listOf(
-            defaultEntry(
-                currentCategory,
-                projectMedium,
-                isActive = currentCategory == "BIBLE" && activeBiblePromptId.isNullOrBlank()
-            )
-        )
-    }
+    val defaultEntries = emptyList<LibraryPrompt>()
     val savedEntries = if (isCreativeCategory) {
         emptyList()
     } else {
@@ -605,8 +617,8 @@ fun PromptStudioScreen(
         else -> defaultEntries + savedEntries
     }
 
-    val hasGenreFilter = currentCategory in setOf("BIBLE", "EPISODE", "IMAGE")
-    val hasFormatFilter = currentCategory in setOf("BIBLE", "EPISODE")
+    val hasGenreFilter = currentCategory in setOf("BIBLE", "SEASON", "EPISODE", "IMAGE")
+    val hasFormatFilter = currentCategory in setOf("BIBLE", "SEASON", "EPISODE")
     val hasMediumFilter = currentCategory == "IMAGE"
     val hasAdvancedFilters = hasGenreFilter || hasFormatFilter || hasMediumFilter
     val advancedFilterCount = listOfNotNull(
@@ -678,6 +690,61 @@ fun PromptStudioScreen(
                 StatusChip(label = currentCategory)
             }
         )
+
+        if (seasonPlans.isNotEmpty()) {
+            StandardCard {
+                SectionHeader(title = "Project & Season Context", badgeText = "ONE BIBLE")
+                Text(
+                    text = "BIBLE is project-wide. Season prompts and season genres apply only when assigned to a season, and they can never override locked canon.",
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    text = "Project genres (read-only): " +
+                        projectSelectedGenres.ifEmpty { listOf("Not set") }.joinToString(", "),
+                    fontSize = 11.sp,
+                    color = StudioTokens.Primary
+                )
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = selectedSeason?.displayTitle ?: "Project-wide",
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 13.sp
+                        )
+                        Text(
+                            text = selectedSeason?.let {
+                                "Episodes ${it.episodeStart}–${it.episodeEnd}" +
+                                    if (it.genres.isNotEmpty()) " · Extra genres: ${it.genres.joinToString(", ")}" else ""
+                            } ?: "Select a season to inspect its prompt context.",
+                            fontSize = 11.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    Box {
+                        OutlinedButton(onClick = { showSeasonMenu = true }) {
+                            Text(selectedSeason?.let { "S${it.seasonNo}" } ?: "Season")
+                            Icon(Icons.Default.ArrowDropDown, contentDescription = null)
+                        }
+                        DropdownMenu(expanded = showSeasonMenu, onDismissRequest = { showSeasonMenu = false }) {
+                            seasonPlans.forEach { plan ->
+                                DropdownMenuItem(
+                                    text = { Text(plan.displayTitle) },
+                                    onClick = {
+                                        selectedSeasonNo = plan.seasonNo
+                                        showSeasonMenu = false
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
 
         ScrollableTabRow(selectedTabIndex = selectedCatIndex, edgePadding = 0.dp) {
             CATEGORIES.forEachIndexed { index, category ->

@@ -216,7 +216,8 @@ class AnimeRepository(
                 total_seasons = (updates["total_seasons"] as? Number)?.toInt(),
                 episodes_per_season = (updates["episodes_per_season"] as? Number)?.toInt(),
                 episode_duration_min = (updates["episode_duration_min"] as? Number)?.toInt(),
-                script_word_count = (updates["script_word_count"] as? Number)?.toInt()
+                script_word_count = (updates["script_word_count"] as? Number)?.toInt(),
+                project_format = updates["project_format"] as? String
             )
             val response = apiService.updateProjectSettings(projectId, req)
             if (response.isSuccessful) {
@@ -764,9 +765,9 @@ class AnimeRepository(
         Resource.Error(e.localizedMessage ?: "Failed to load character reference history")
     }
 
-    override suspend fun fetchPromptLibraryMeta(): Resource<PromptLibraryMetaDto> = withContext(Dispatchers.IO) {
+    override suspend fun fetchPromptLibraryMeta(projectId: String?): Resource<PromptLibraryMetaDto> = withContext(Dispatchers.IO) {
         try {
-            val response = apiService.getPromptLibraryMeta()
+            val response = apiService.getPromptLibraryMeta(projectId?.takeIf { it.isNotBlank() })
             if (response.isSuccessful && response.body()?.data != null) {
                 Resource.Success(response.body()!!.data!!)
             } else {

@@ -103,6 +103,7 @@ private fun displayValue(value: Any?): String {
 @Composable
 fun BibleScreen(
     onOpenCanon: () -> Unit = {},
+    onOpenSeasons: () -> Unit = {},
     onNavigateBack: () -> Unit = {}
 ) {
     val context = LocalContext.current
@@ -459,6 +460,29 @@ fun BibleScreen(
                 )
                 TextButton(onClick = onOpenCanon) {
                     Text("Open Living Canon")
+                }
+            }
+        }
+
+        StandardCard {
+            SectionHeader(title = "Seasons", badgeText = "ONE BIBLE")
+            Text(
+                text = "${totalSeasons ?: 1} season${if ((totalSeasons ?: 1) == 1) "" else "s"} planned. Season arcs, episode ranges, season genres, and prompt overrides are stored here in the single project Story Bible.",
+                fontSize = 13.sp
+            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Full episode scripts remain inside each episode.",
+                    fontSize = 11.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.weight(1f)
+                )
+                TextButton(onClick = onOpenSeasons) {
+                    Text("Open Seasons")
                 }
             }
         }

@@ -29,6 +29,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.dpdns.bnai.anime.core.model.intValue
+import org.dpdns.bnai.anime.core.model.seasonPlansFromBible
+import org.dpdns.bnai.anime.core.model.storyBibleMap
 import org.dpdns.bnai.anime.core.network.JsonMap
 import org.dpdns.bnai.anime.core.network.Resource
 import org.dpdns.bnai.anime.ui.components.ProjectSelectorBar
@@ -45,6 +48,7 @@ import org.dpdns.bnai.anime.ui.testing.TestTags
 fun ProjectDetailScreen(
     projectId: String = "",
     onOpenBible: () -> Unit = {},
+    onOpenSeasons: () -> Unit = {},
     onOpenCharacters: () -> Unit = {},
     onOpenEpisodes: () -> Unit = {},
     onOpenProduction: () -> Unit = {},
@@ -99,6 +103,8 @@ fun ProjectDetailScreen(
     var editTotalSeasons by remember { mutableStateOf("1") }
     var editEpisodesPerSeason by remember { mutableStateOf("12") }
     var editEpisodeDuration by remember { mutableStateOf("24") }
+    var editProjectFormat by remember { mutableStateOf("SERIES") }
+    val formatOptions = listOf("SERIES", "MOVIE", "SHORT", "MUSIC_VIDEO", "TRAILER")
     var isSavingSettings by remember { mutableStateOf(false) }
     var settingsDirty by remember { mutableStateOf(false) }
     var builtInGenres by remember {
@@ -195,6 +201,7 @@ fun ProjectDetailScreen(
                             ?: 12
                         ).toString()
                     editEpisodeDuration = ((bibleObj["episode_duration_min"] as? Number)?.toInt() ?: 24).toString()
+                    editProjectFormat = (bibleObj["project_format"] ?: projObj["project_format"] ?: "SERIES").toString().uppercase()
 
                     val backendActiveCmd = (res.data["status"] as? Map<*, *>)?.get("active_command_id")?.toString()
                     if (!backendActiveCmd.isNullOrBlank() && backendActiveCmd != "null") {
@@ -218,8 +225,8 @@ fun ProjectDetailScreen(
         loadProjectOverviewData(activePid)
     }
 
-    LaunchedEffect(Unit) {
-        when (val meta = repository.fetchPromptLibraryMeta()) {
+    LaunchedEffect(activePid) {
+        when (val meta = repository.fetchPromptLibraryMeta(activePid)) {
             is Resource.Success -> {
                 if (meta.data.genres.isNotEmpty()) builtInGenres = meta.data.genres
                 if (meta.data.media.isNotEmpty()) mediumOptions = meta.data.media
@@ -459,6 +466,29 @@ fun ProjectDetailScreen(
                             Text("+ Add more medium", fontSize = 11.sp)
                         }
                     }
+                    Text("Project Format", fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        modifier = Modifier.horizontalScroll(rememberScrollState())
+                    ) {
+                        formatOptions.forEach { format ->
+                            if (editProjectFormat == format) {
+                                Button(
+                                    onClick = { editProjectFormat = format; settingsDirty = true },
+                                    shape = RoundedCornerShape(8.dp),
+                                    modifier = Modifier.height(34.dp),
+                                    contentPadding = PaddingValues(horizontal = 10.dp)
+                                ) { Text(format, fontSize = 11.sp) }
+                            } else {
+                                OutlinedButton(
+                                    onClick = { editProjectFormat = format; settingsDirty = true },
+                                    shape = RoundedCornerShape(8.dp),
+                                    modifier = Modifier.height(34.dp),
+                                    contentPadding = PaddingValues(horizontal = 10.dp)
+                                ) { Text(format, fontSize = 11.sp) }
+                            }
+                        }
+                    }
                     Text("Series Configuration", fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         OutlinedTextField(
@@ -534,7 +564,8 @@ fun ProjectDetailScreen(
                                 "genre" to (if (selectedGenres.isNotEmpty()) selectedGenres.joinToString(", ") else editGenre.trim()),
                                 "visual_medium" to editMedium.trim(),
                                 "cover_image_url" to editCoverUrl.trim(),
-                                "auto_approve" to editAutoApprove
+                                "auto_approve" to editAutoApprove,
+                                "project_format" to editProjectFormat
                             )
                             editTargetEpisodeCount?.let { updates["target_episode_count"] = it }
                             seriesSummary?.let {
@@ -549,6 +580,19 @@ fun ProjectDetailScreen(
                             )
                             isSavingSettings = false
                             if (res is Resource.Success) {
+                                when (val bibleResult = repository.fetchBible(pid)) {
+                                    is Resource.Success -> {
+                                        val bible = bibleResult.data.storyBibleMap()
+                                        val total = bible.intValue("total_seasons", 1).coerceIn(1, 100)
+                                        val perSeason = bible.intValue("episodes_per_season", 12).coerceIn(1, 500)
+                                        val plans = seasonPlansFromBible(bible, total, perSeason)
+                                        val rawCount = (bible["seasons"] as? List<*>)?.size ?: 0
+                                        if (rawCount < plans.size) {
+                                            repository.updateProjectBible(pid, mapOf("seasons" to plans.map { it.toJson() }))
+                                        }
+                                    }
+                                    else -> Unit
+                                }
                                 settingsDirty = false
                                 showSettingsDialog = false
                                 loadProjectOverviewData(pid)
@@ -698,6 +742,29 @@ fun ProjectDetailScreen(
                 }
             }
 
+            StandardCard {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text("Seasons", fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
+                        Text(
+                            "$totalSeasonsForLabel season${if (totalSeasonsForLabel == 1) "" else "s"} planned in the Story Bible",
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Text(
+                            "Each season has its own arc, genres, and prompt overrides.",
+                            fontSize = 11.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    TextButton(onClick = onOpenSeasons) { Text("Open") }
+                }
+            }
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -747,6 +814,7 @@ fun ProjectDetailScreen(
             val moduleGroups = listOf(
                 "Story & Planning" to listOf(
                     "Story Bible" to onOpenBible,
+                    "Seasons" to onOpenSeasons,
                     "Episode Planner" to onOpenEpisodes,
                     "Characters" to onOpenCharacters,
                     "Character Deep Dive" to onOpenCharDeepDive,

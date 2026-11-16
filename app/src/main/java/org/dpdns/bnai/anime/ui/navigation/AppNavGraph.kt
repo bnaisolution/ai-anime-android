@@ -49,6 +49,8 @@ import org.dpdns.bnai.anime.ui.production.ProductionScreen
 import org.dpdns.bnai.anime.ui.production.SceneDetailScreen
 import org.dpdns.bnai.anime.ui.project.BibleScreen
 import org.dpdns.bnai.anime.ui.project.ProjectDetailScreen
+import org.dpdns.bnai.anime.ui.project.SeasonDetailScreen
+import org.dpdns.bnai.anime.ui.project.SeasonsScreen
 import org.dpdns.bnai.anime.ui.publish.PublishScreen
 import org.dpdns.bnai.anime.ui.qc.QCScreen
 import org.dpdns.bnai.anime.ui.review.ReviewInboxScreen
@@ -124,6 +126,7 @@ fun AppNavGraph(navController: NavHostController) {
             ))
             add("STORY" to listOf(
                 "bible" to "Story Bible",
+                "seasons" to "Seasons",
                 "characters" to "Characters",
                 "character_deep_dive" to "Character Deep Dive",
                 "lore_explorer" to "World Wiki",
@@ -488,6 +491,7 @@ fun AppNavGraph(navController: NavHostController) {
                             composable("project_detail") {
                                 ProjectDetailScreen(
                                     onOpenBible = { navController.navigate("bible") },
+                                    onOpenSeasons = { navController.navigate("seasons") },
                                     onOpenCharacters = { navController.navigate("characters") },
                                     onOpenEpisodes = { navController.navigate("episodes") },
                                     onOpenProduction = { navController.navigate("production") },
@@ -521,7 +525,28 @@ fun AppNavGraph(navController: NavHostController) {
                                     onGenerated = { navController.popBackStack() }
                                 )
                             }
-                            composable("bible") { BibleScreen(onOpenCanon = { navController.navigate("canon") { launchSingleTop = true } }) }
+                            composable("bible") {
+                                BibleScreen(
+                                    onOpenCanon = { navController.navigate("canon") { launchSingleTop = true } },
+                                    onOpenSeasons = { navController.navigate("seasons") { launchSingleTop = true } }
+                                )
+                            }
+                            composable("seasons") {
+                                SeasonsScreen(
+                                    onOpenSeason = { seasonNo -> navController.navigate("season/$seasonNo") },
+                                    onNavigateBack = { navController.popBackStack() }
+                                )
+                            }
+                            composable("season/{seasonNo}") { entry ->
+                                val seasonNo = entry.arguments?.getString("seasonNo")?.toIntOrNull() ?: 1
+                                SeasonDetailScreen(
+                                    seasonNo = seasonNo,
+                                    onNavigateBack = { navController.popBackStack() },
+                                    onOpenPromptStudio = { no ->
+                                        navController.navigate("prompt_studio?tab=SEASON&season=$no")
+                                    }
+                                )
+                            }
                             composable("characters") {
                                 CharacterListScreen(
                                     onCharacterClick = { ch ->
@@ -576,17 +601,19 @@ fun AppNavGraph(navController: NavHostController) {
                             }
                             composable("settings") { SettingsScreen() }
                             composable(
-                                route = "prompt_studio?tab={tab}&genre={genre}&medium={medium}",
+                                route = "prompt_studio?tab={tab}&genre={genre}&medium={medium}&season={season}",
                                 arguments = listOf(
                                     androidx.navigation.navArgument("tab") { defaultValue = "BIBLE" },
                                     androidx.navigation.navArgument("genre") { defaultValue = "" },
-                                    androidx.navigation.navArgument("medium") { defaultValue = "" }
+                                    androidx.navigation.navArgument("medium") { defaultValue = "" },
+                                    androidx.navigation.navArgument("season") { defaultValue = "" }
                                 )
                             ) { entry ->
                                 PromptStudioScreen(
                                     initialTab = entry.arguments?.getString("tab").orEmpty().ifBlank { "BIBLE" },
                                     initialGenre = entry.arguments?.getString("genre").orEmpty().ifBlank { null },
-                                    initialMedium = entry.arguments?.getString("medium").orEmpty().ifBlank { null }
+                                    initialMedium = entry.arguments?.getString("medium").orEmpty().ifBlank { null },
+                                    initialSeason = entry.arguments?.getString("season")?.toIntOrNull()
                                 )
                             }
                             composable("owner_overview") { OwnerOverviewScreen() }

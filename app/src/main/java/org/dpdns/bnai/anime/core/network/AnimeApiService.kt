@@ -149,7 +149,8 @@ data class UpdateProjectSettingsRequest(
     val total_seasons: Int? = null,
     val episodes_per_season: Int? = null,
     val episode_duration_min: Int? = null,
-    val script_word_count: Int? = null
+    val script_word_count: Int? = null,
+    val project_format: String? = null
 )
 
 data class UpdateBudgetRequest(
@@ -677,7 +678,9 @@ interface AnimeApiService {
     suspend fun reconcileMemory(@Body body: JsonMap): Response<JsonMap>
 
     @GET("v1/anime/prompts/library/meta")
-    suspend fun getPromptLibraryMeta(): Response<ApiEnvelope<PromptLibraryMetaDto>>
+    suspend fun getPromptLibraryMeta(
+        @Query("project_id") projectId: String? = null
+    ): Response<ApiEnvelope<PromptLibraryMetaDto>>
 
     @GET("v1/anime/prompts")
     suspend fun getSystemPrompts(
