@@ -459,6 +459,7 @@ class Batch2FullControlCoverageTest {
     fun ownerOverviewCoversControls() {
         setContent { OwnerOverviewScreen() }
         waitForTag(TestTags.Screen.OWNER_OVERVIEW)
+        assertText("Tenant Memberships")
         assertText("🚨 Emergency Stop All GPU Workers")
         clickText("🚨 Emergency Stop All GPU Workers")
         waitForText("🚨 Emergency Stop All Workers?")

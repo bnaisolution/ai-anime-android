@@ -160,6 +160,7 @@ object TestTags {
         const val EMERGENCY_STOP = "screen.owner.emergency_stop"
         const val PLATFORM_MANAGED = "screen.owner.platform_managed"
         const val REPLICATION_STATUS = "screen.owner.replication_status"
+        const val TENANTS = "screen.owner.tenants"
     }
 
     object Screen {

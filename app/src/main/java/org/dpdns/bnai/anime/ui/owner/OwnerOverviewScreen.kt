@@ -40,6 +40,8 @@ fun OwnerOverviewScreen() {
     var platformManagedReason by remember { mutableStateOf("Disabled by policy. BYOD remains active.") }
     var replicationStatus by remember { mutableStateOf("NOT CONFIGURED") }
     var ownerQuotaSummary by remember { mutableStateOf("No tenant quota configured") }
+    var tenantCount by remember { mutableIntStateOf(0) }
+    var tenantSummary by remember { mutableStateOf("No tenant memberships found") }
     var showEmergencyDialog by remember { mutableStateOf(false) }
 
     fun refreshOwnerHub(pid: String) {
@@ -73,6 +75,13 @@ fun OwnerOverviewScreen() {
             } else {
                 "${formatInt(used.toInt())} units today • no hard limit"
             }
+            val tenants = (repository.fetchOwnerTenants() as? Resource.Success)?.data.orEmpty()
+            tenantCount = tenants.size
+            tenantSummary = tenants.take(3).joinToString(" • ") { tenant ->
+                val name = (tenant["name"] as? String)?.ifBlank { "Unnamed tenant" } ?: "Unnamed tenant"
+                val plan = (tenant["plan"] as? String)?.ifBlank { "byod" } ?: "byod"
+                "$name ($plan)"
+            }.ifBlank { "No tenant memberships found" }
         }
     }
 
@@ -206,6 +215,20 @@ fun OwnerOverviewScreen() {
                 }
                 Text(platformManagedReason, style = MaterialTheme.typography.bodyMedium)
                 Text(ownerQuotaSummary, style = MaterialTheme.typography.bodySmall)
+            }
+        }
+
+        Card(
+            modifier = Modifier.fillMaxWidth().testTag(TestTags.Owner.TENANTS),
+            shape = RoundedCornerShape(12.dp)
+        ) {
+            Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                    Text("Tenant Memberships", style = MaterialTheme.typography.labelLarge)
+                    StatusBadge("READ ONLY")
+                }
+                Text(formatInt(tenantCount), style = MaterialTheme.typography.headlineLarge)
+                Text(tenantSummary, style = MaterialTheme.typography.bodySmall)
             }
         }
 
