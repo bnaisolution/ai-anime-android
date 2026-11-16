@@ -22,6 +22,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.repeatOnLifecycle
 import kotlinx.coroutines.launch
 import org.dpdns.bnai.anime.core.model.SeasonPlan
 import org.dpdns.bnai.anime.core.model.seasonPlansFromBible
@@ -36,6 +39,7 @@ import org.dpdns.bnai.anime.ui.testing.TestTags
 
 private val CATEGORIES = listOf("BIBLE", "SEASON", "EPISODE", "IMAGE", "AI_DIRECTOR", "GENRE", "VISUAL_MEDIUM")
 private val CREATIVE_CATEGORIES = setOf("GENRE", "VISUAL_MEDIUM")
+private val SEASON_OVERRIDE_CATEGORIES = setOf("SEASON", "EPISODE", "IMAGE", "AI_DIRECTOR")
 private val MEDIA_OPTIONS = listOf("ANIME", "MANHWA", "3D", "2D_ANIMATION", "REAL_HUMAN", "LIVE_ACTION", "CINEMATIC", "HYBRID")
 private val FALLBACK_GENRES = listOf("Action", "Fantasy", "Dark Fantasy", "Action Fantasy", "Thriller", "Horror", "Romance", "Comedy", "Sci-Fi", "Mystery", "Drama", "Slice of Life", "Mythology", "Music")
 private val FALLBACK_FORMATS = listOf("SERIES", "MOVIE", "SHORT", "MUSIC_VIDEO", "TRAILER")
@@ -95,6 +99,16 @@ private fun normalizePromptKey(value: String?): String =
 private fun canonicalMediumKey(value: String): String =
     value.trim().uppercase().replace(Regex("[^A-Z0-9]+"), "_").trim('_').ifBlank { "ANIME" }
 
+private fun orderedSelection(options: List<String>, selected: Set<String>): List<String> {
+    val selectedKeys = selected.map { normalizePromptKey(it) }.toSet()
+    return options
+        .distinctBy { normalizePromptKey(it) }
+        .sortedWith(
+            compareByDescending<String> { normalizePromptKey(it) in selectedKeys }
+                .thenBy { it.lowercase() }
+        )
+}
+
 private fun sourceLabel(source: PromptSource): String = when (source) {
     PromptSource.BUILT_IN -> "BUILT-IN"
     PromptSource.CUSTOM -> "CUSTOM"
@@ -133,7 +147,11 @@ private fun buildDefinitionEntries(
     )
 }
 
-private fun savedPromptToEntry(prompt: SystemPromptDto, activeBiblePromptId: String?): LibraryPrompt = LibraryPrompt(
+private fun savedPromptToEntry(
+    prompt: SystemPromptDto,
+    activeBiblePromptId: String?,
+    activeSeasonPromptIds: Set<String> = emptySet()
+): LibraryPrompt = LibraryPrompt(
     id = prompt.id,
     title = prompt.title,
     text = prompt.prompt_text,
@@ -144,7 +162,8 @@ private fun savedPromptToEntry(prompt: SystemPromptDto, activeBiblePromptId: Str
     format = prompt.format,
     visualMedium = prompt.visual_medium,
     isFavorite = prompt.is_favorite,
-    isActive = (prompt.prompt_category ?: "BIBLE").uppercase() == "BIBLE" && prompt.id == activeBiblePromptId
+    isActive = ((prompt.prompt_category ?: "BIBLE").uppercase() == "BIBLE" && prompt.id == activeBiblePromptId) ||
+        prompt.id in activeSeasonPromptIds
 )
 
 private fun defaultEntry(category: String, medium: String, isActive: Boolean = false): LibraryPrompt = LibraryPrompt(
@@ -194,6 +213,7 @@ fun PromptStudioScreen(
     var availableFormats by remember { mutableStateOf(FALLBACK_FORMATS) }
     var projectSelectedGenres by remember { mutableStateOf<List<String>>(emptyList()) }
     var projectMedium by remember { mutableStateOf(initialMedium?.uppercase() ?: "ANIME") }
+    var projectFormat by remember { mutableStateOf("") }
     var seasonPlans by remember { mutableStateOf<List<SeasonPlan>>(emptyList()) }
     var selectedSeasonNo by remember { mutableStateOf(initialSeason) }
     var showSeasonMenu by remember { mutableStateOf(false) }
@@ -205,11 +225,11 @@ fun PromptStudioScreen(
     var searchQuery by remember { mutableStateOf("") }
     var favoritesOnly by remember { mutableStateOf(false) }
     var libraryFilter by remember { mutableStateOf(LibraryFilter.ALL) }
-    var selectedGenreFilter by remember { mutableStateOf<String?>(null) }
-    var selectedFormatFilter by remember { mutableStateOf<String?>(null) }
-    var selectedMediumFilter by remember { mutableStateOf<String?>(null) }
+    var selectedGenreFilters by remember { mutableStateOf<Set<String>>(emptySet()) }
+    var selectedFormatFilters by remember { mutableStateOf<Set<String>>(emptySet()) }
+    var selectedMediumFilters by remember { mutableStateOf<Set<String>>(emptySet()) }
 
-    var showFilters by remember { mutableStateOf(false) }
+    var showBrowseAll by remember { mutableStateOf(false) }
     var showAddSheet by remember { mutableStateOf(false) }
     var showEditor by remember { mutableStateOf(false) }
     var showDiscardDialog by remember { mutableStateOf(false) }
@@ -219,6 +239,7 @@ fun PromptStudioScreen(
     var editorMode by remember { mutableStateOf(false) }
     var isSavingPrompt by remember { mutableStateOf(false) }
     var isActivatingPrompt by remember { mutableStateOf(false) }
+    var isAssigningSeasonPrompt by remember { mutableStateOf(false) }
     var promptVersions by remember { mutableStateOf<List<PromptVersionDto>>(emptyList()) }
     var isLoadingVersions by remember { mutableStateOf(false) }
     var versionsError by remember { mutableStateOf<String?>(null) }
@@ -234,7 +255,7 @@ fun PromptStudioScreen(
 
     val editorSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val addSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    val filtersSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val browseAllSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     fun loadLibrary() {
         val projectId = repository.currentProjectId()
@@ -257,6 +278,7 @@ fun PromptStudioScreen(
                     mediumDefinitions = meta.medium_definitions
                     projectSelectedGenres = meta.project_selected_genres
                     if (meta.project_visual_medium.isNotBlank()) projectMedium = meta.project_visual_medium.uppercase()
+                    projectFormat = meta.project_format.uppercase()
                 }
                 is Resource.Error -> libraryError = metaResult.message
                 is Resource.Empty -> libraryError = "Prompt library metadata is empty."
@@ -568,48 +590,114 @@ fun PromptStudioScreen(
         }
     }
 
+    fun assignSeasonPrompt(category: String, promptId: String?) {
+        val projectId = repository.currentProjectId()
+        val plan = selectedSeason ?: return
+        if (projectId.isBlank() || isAssigningSeasonPrompt) return
+        if (plan.locked) {
+            Toast.makeText(context, "Unlock ${plan.displayTitle} before changing its prompts.", Toast.LENGTH_LONG).show()
+            return
+        }
+        val updatedPlan = plan.copy(
+            promptOverrides = plan.promptOverrides.withValue(category, promptId)
+        )
+        val updatedSeasons = seasonPlans.map { if (it.seasonNo == plan.seasonNo) updatedPlan else it }
+        isAssigningSeasonPrompt = true
+        screenScope.launch {
+            when (val result = repository.updateProjectBible(
+                projectId,
+                mapOf("seasons" to updatedSeasons.map { it.toJson() })
+            )) {
+                is Resource.Success -> {
+                    seasonPlans = updatedSeasons
+                    draft = draft?.copy(isActive = promptId != null)
+                    Toast.makeText(
+                        context,
+                        if (promptId == null) {
+                            "Season prompt reset to project default"
+                        } else {
+                            "Prompt assigned to ${plan.displayTitle}"
+                        },
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+                is Resource.Error -> Toast.makeText(context, result.message, Toast.LENGTH_LONG).show()
+                is Resource.Empty -> Toast.makeText(context, "Season prompt was not saved", Toast.LENGTH_LONG).show()
+                else -> Unit
+            }
+            isAssigningSeasonPrompt = false
+        }
+    }
+
     fun openAddSheet() {
         addName = ""
         addBaseId = null
-        addGenre = selectedGenreFilter
-        addFormat = selectedFormatFilter
-        addMedium = selectedMediumFilter ?: projectMedium
+        addGenre = selectedGenreFilters.firstOrNull()
+        addFormat = selectedFormatFilters.firstOrNull()
+        addMedium = selectedMediumFilters.firstOrNull() ?: projectMedium
         addScope = PromptScope.PROJECT
         addError = null
         addText = defaultCreativeText(currentCategory)
         showAddSheet = true
     }
 
-    LaunchedEffect(Unit) { loadLibrary() }
+    val lifecycleOwner = LocalLifecycleOwner.current
+    LaunchedEffect(lifecycleOwner) {
+        lifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+            loadLibrary()
+        }
+    }
 
     LaunchedEffect(currentCategory) {
         searchQuery = ""
         favoritesOnly = false
         libraryFilter = LibraryFilter.ALL
-        selectedGenreFilter = null
-        selectedFormatFilter = null
-        selectedMediumFilter = null
+        selectedGenreFilters = emptySet()
+        selectedFormatFilters = if (currentCategory in setOf("BIBLE", "SEASON", "EPISODE") && projectFormat.isNotBlank()) {
+            setOf(projectFormat)
+        } else {
+            emptySet()
+        }
+        selectedMediumFilters = emptySet()
     }
 
-    LaunchedEffect(initialGenre, initialMedium) {
+    LaunchedEffect(projectFormat) {
+        if (
+            projectFormat.isNotBlank() &&
+            currentCategory in setOf("BIBLE", "SEASON", "EPISODE") &&
+            selectedFormatFilters.isEmpty()
+        ) {
+            selectedFormatFilters = setOf(projectFormat)
+        }
+    }
+
+    LaunchedEffect(initialGenre, initialMedium, initialSeason) {
         if (!initialGenre.isNullOrBlank()) {
-            selectedGenreFilter = initialGenre
+            selectedGenreFilters = setOf(initialGenre)
         }
         if (!initialMedium.isNullOrBlank()) {
             projectMedium = initialMedium.uppercase()
         }
+        if (initialSeason != null) {
+            selectedSeasonNo = initialSeason
+        }
     }
 
     val savedById = savedPrompts.associateBy { it.id }
-    val genreEntries = buildDefinitionEntries("GENRE", genreDefinitions, savedById, projectSelectedGenres, projectMedium)
-    val mediumEntries = buildDefinitionEntries("VISUAL_MEDIUM", mediumDefinitions, savedById, projectSelectedGenres, projectMedium)
+    val activeSeasonPromptIds = selectedSeason?.promptOverrides?.let { overrides ->
+        SEASON_OVERRIDE_CATEGORIES.mapNotNull { overrides.valueFor(it) }.toSet()
+    }.orEmpty()
+    val effectiveGenres = (projectSelectedGenres + (selectedSeason?.genres ?: emptyList()))
+        .distinctBy { normalizePromptKey(it) }
+    val genreEntries = buildDefinitionEntries("GENRE", genreDefinitions, savedById, effectiveGenres, projectMedium)
+    val mediumEntries = buildDefinitionEntries("VISUAL_MEDIUM", mediumDefinitions, savedById, effectiveGenres, projectMedium)
     val defaultEntries = emptyList<LibraryPrompt>()
     val savedEntries = if (isCreativeCategory) {
         emptyList()
     } else {
         savedPrompts
             .filter { (it.prompt_category ?: "BIBLE").uppercase() == currentCategory }
-            .map { savedPromptToEntry(it, activeBiblePromptId) }
+            .map { savedPromptToEntry(it, activeBiblePromptId, activeSeasonPromptIds) }
     }
     val allEntries = when (currentCategory) {
         "GENRE" -> genreEntries
@@ -621,41 +709,68 @@ fun PromptStudioScreen(
     val hasFormatFilter = currentCategory in setOf("BIBLE", "SEASON", "EPISODE")
     val hasMediumFilter = currentCategory == "IMAGE"
     val hasAdvancedFilters = hasGenreFilter || hasFormatFilter || hasMediumFilter
-    val advancedFilterCount = listOfNotNull(
-        selectedGenreFilter.takeIf { hasGenreFilter },
-        selectedFormatFilter.takeIf { hasFormatFilter },
-        selectedMediumFilter.takeIf { hasMediumFilter }
-    ).size
+    val advancedFilterCount =
+        (if (hasGenreFilter) selectedGenreFilters.size else 0) +
+            (if (hasFormatFilter) selectedFormatFilters.size else 0) +
+            (if (hasMediumFilter) selectedMediumFilters.size else 0)
 
     val builtInFilterCount = allEntries.count {
         if (isCreativeCategory) it.source == PromptSource.BUILT_IN else it.source == PromptSource.APP_DEFAULT
     }
     val savedFilterCount = allEntries.count { it.source == PromptSource.CUSTOM }
 
-    val filteredEntries = allEntries.filter { entry ->
-        val sourceMatches = when (libraryFilter) {
-            LibraryFilter.ALL -> true
-            LibraryFilter.BUILT_IN -> if (isCreativeCategory) {
-                entry.source == PromptSource.BUILT_IN
-            } else {
-                entry.source == PromptSource.APP_DEFAULT
+    val selectedGenreKeys = selectedGenreFilters.map { normalizePromptKey(it) }.toSet()
+    val selectedFormatKeys = selectedFormatFilters.map { it.uppercase() }.toSet()
+    val selectedMediumKeys = selectedMediumFilters.map { normalizePromptKey(it) }.toSet()
+    val filteredEntries = allEntries
+        .filter { entry ->
+            val sourceMatches = when (libraryFilter) {
+                LibraryFilter.ALL -> true
+                LibraryFilter.BUILT_IN -> if (isCreativeCategory) {
+                    entry.source == PromptSource.BUILT_IN
+                } else {
+                    entry.source == PromptSource.APP_DEFAULT
+                }
+                LibraryFilter.CUSTOM -> entry.source == PromptSource.CUSTOM
             }
-            LibraryFilter.CUSTOM -> entry.source == PromptSource.CUSTOM
+            val searchMatches = searchQuery.isBlank() ||
+                entry.title.contains(searchQuery, ignoreCase = true) ||
+                entry.text.contains(searchQuery, ignoreCase = true) ||
+                entry.genre.orEmpty().contains(searchQuery, ignoreCase = true) ||
+                entry.visualMedium.orEmpty().contains(searchQuery, ignoreCase = true) ||
+                entry.format.orEmpty().contains(searchQuery, ignoreCase = true)
+            val favoriteMatches = !favoritesOnly || entry.isFavorite
+            val genreMatches = !hasGenreFilter || selectedGenreKeys.isEmpty() ||
+                normalizePromptKey(entry.genre) in selectedGenreKeys
+            val formatMatches = !hasFormatFilter || selectedFormatKeys.isEmpty() ||
+                entry.format.isNullOrBlank() || entry.format.uppercase() in selectedFormatKeys
+            val mediumMatches = !hasMediumFilter || selectedMediumKeys.isEmpty() ||
+                normalizePromptKey(entry.visualMedium) in selectedMediumKeys
+            sourceMatches && searchMatches && favoriteMatches && genreMatches && formatMatches && mediumMatches
         }
-        val searchMatches = searchQuery.isBlank() ||
-            entry.title.contains(searchQuery, ignoreCase = true) ||
-            entry.text.contains(searchQuery, ignoreCase = true) ||
-            entry.genre.orEmpty().contains(searchQuery, ignoreCase = true) ||
-            entry.visualMedium.orEmpty().contains(searchQuery, ignoreCase = true) ||
-            entry.format.orEmpty().contains(searchQuery, ignoreCase = true)
-        val favoriteMatches = !favoritesOnly || entry.isFavorite
-        val genreMatches = !hasGenreFilter || selectedGenreFilter == null ||
-            normalizePromptKey(entry.genre) == normalizePromptKey(selectedGenreFilter)
-        val formatMatches = !hasFormatFilter || selectedFormatFilter == null ||
-            entry.format.equals(selectedFormatFilter, ignoreCase = true)
-        val mediumMatches = !hasMediumFilter || selectedMediumFilter == null ||
-            normalizePromptKey(entry.visualMedium) == normalizePromptKey(selectedMediumFilter)
-        sourceMatches && searchMatches && favoriteMatches && genreMatches && formatMatches && mediumMatches
+        .sortedWith(
+            compareByDescending<LibraryPrompt> { it.isActive }
+                .thenByDescending { it.isFavorite }
+                .thenBy { it.title.lowercase() }
+        )
+
+    val suggestionPool = when {
+        hasGenreFilter -> availableGenres + effectiveGenres + allEntries.mapNotNull { it.genre }
+        hasFormatFilter -> availableFormats + allEntries.mapNotNull { it.format }
+        hasMediumFilter -> availableMedia + allEntries.mapNotNull { it.visualMedium }
+        else -> allEntries.map { it.title }
+    }
+    val searchSuggestions = if (searchQuery.isBlank()) {
+        emptyList()
+    } else {
+        suggestionPool
+            .filter { it.isNotBlank() && it.contains(searchQuery, ignoreCase = true) }
+            .distinctBy { normalizePromptKey(it) }
+            .sortedWith(
+                compareByDescending<String> { it.startsWith(searchQuery, ignoreCase = true) }
+                    .thenBy { it.lowercase() }
+            )
+            .take(8)
     }
 
     val addLabel = when (currentCategory) {
@@ -705,6 +820,28 @@ fun PromptStudioScreen(
                     fontSize = 11.sp,
                     color = StudioTokens.Primary
                 )
+                Text(
+                    text = "Project format: ${projectFormat.ifBlank { "Not set" }} · Medium: $projectMedium",
+                    fontSize = 11.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                if (selectedSeason != null) {
+                    Text(
+                        text = "Season effective genres: " +
+                            effectiveGenres.ifEmpty { listOf("Project genres only") }.joinToString(", "),
+                        fontSize = 11.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        text = "Season prompt overrides: " + SEASON_OVERRIDE_CATEGORIES.joinToString(" · ") { category ->
+                            val promptId = selectedSeason.promptOverrides.valueFor(category)
+                            val title = savedPrompts.firstOrNull { it.id == promptId }?.title
+                            "$category=${title ?: "Inherited"}"
+                        },
+                        fontSize = 11.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -759,7 +896,8 @@ fun PromptStudioScreen(
 
         if (currentCategory == "GENRE") {
             ActiveGenreSummary(
-                genres = projectSelectedGenres,
+                genres = effectiveGenres,
+                seasonGenres = selectedSeason?.genres.orEmpty(),
                 entries = genreEntries,
                 onOpen = { openEntry(it) }
             )
@@ -786,6 +924,29 @@ fun PromptStudioScreen(
                 modifier = Modifier.testTag(TestTags.PromptStudio.SEARCH)
             )
 
+            if (searchSuggestions.isNotEmpty()) {
+                Text(
+                    text = "Suggestions",
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    searchSuggestions.forEach { suggestion ->
+                        FilterChip(
+                            selected = searchQuery.equals(suggestion, ignoreCase = true),
+                            onClick = { searchQuery = suggestion },
+                            label = { Text(suggestion) }
+                        )
+                    }
+                }
+            }
+
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -798,13 +959,13 @@ fun PromptStudioScreen(
                     onClick = { libraryFilter = LibraryFilter.ALL },
                     label = { Text("All (${allEntries.size})") }
                 )
-                FilterChip(
-                    selected = libraryFilter == LibraryFilter.BUILT_IN,
-                    onClick = { libraryFilter = LibraryFilter.BUILT_IN },
-                    label = {
-                        Text(if (isCreativeCategory) "Built-in ($builtInFilterCount)" else "Default ($builtInFilterCount)")
-                    }
-                )
+                if (isCreativeCategory) {
+                    FilterChip(
+                        selected = libraryFilter == LibraryFilter.BUILT_IN,
+                        onClick = { libraryFilter = LibraryFilter.BUILT_IN },
+                        label = { Text("Built-in ($builtInFilterCount)") }
+                    )
+                }
                 FilterChip(
                     selected = libraryFilter == LibraryFilter.CUSTOM,
                     onClick = { libraryFilter = LibraryFilter.CUSTOM },
@@ -825,17 +986,19 @@ fun PromptStudioScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     SecondaryButton(
-                        text = if (advancedFilterCount > 0) "Filters ($advancedFilterCount)" else "Filters",
-                        onClick = { showFilters = true },
-                        modifier = Modifier.weight(1f)
+                        text = if (advancedFilterCount > 0) "Browse all ($advancedFilterCount)" else "Browse all",
+                        onClick = { showBrowseAll = true },
+                        modifier = Modifier
+                            .weight(1f)
+                            .testTag(TestTags.PromptStudio.BROWSE_ALL)
                     )
                     if (advancedFilterCount > 0) {
                         SecondaryButton(
                             text = "Clear",
                             onClick = {
-                                selectedGenreFilter = null
-                                selectedFormatFilter = null
-                                selectedMediumFilter = null
+                                selectedGenreFilters = emptySet()
+                                selectedFormatFilters = emptySet()
+                                selectedMediumFilters = emptySet()
                             }
                         )
                     }
@@ -895,27 +1058,31 @@ fun PromptStudioScreen(
         Spacer(modifier = Modifier.height(64.dp))
     }
 
-    if (showFilters) {
-        FiltersSheet(
-            sheetState = filtersSheetState,
+    if (showBrowseAll) {
+        BrowseAllSheet(
+            sheetState = browseAllSheetState,
             hasGenreFilter = hasGenreFilter,
             hasFormatFilter = hasFormatFilter,
             hasMediumFilter = hasMediumFilter,
-            selectedGenre = selectedGenreFilter,
-            selectedFormat = selectedFormatFilter,
-            selectedMedium = selectedMediumFilter,
-            genres = availableGenres,
+            selectedGenres = selectedGenreFilters,
+            selectedFormats = selectedFormatFilters,
+            selectedMediums = selectedMediumFilters,
+            genres = availableGenres + effectiveGenres,
             formats = availableFormats,
             media = availableMedia,
-            onGenreSelected = { selectedGenreFilter = it },
-            onFormatSelected = { selectedFormatFilter = it },
-            onMediumSelected = { selectedMediumFilter = it },
-            onClear = {
-                selectedGenreFilter = null
-                selectedFormatFilter = null
-                selectedMediumFilter = null
+            onApply = { genres, formats, mediums ->
+                selectedGenreFilters = genres
+                selectedFormatFilters = formats
+                selectedMediumFilters = mediums
+                showBrowseAll = false
             },
-            onDismiss = { showFilters = false }
+            onClear = {
+                selectedGenreFilters = emptySet()
+                selectedFormatFilters = emptySet()
+                selectedMediumFilters = emptySet()
+                showBrowseAll = false
+            },
+            onDismiss = { showBrowseAll = false }
         )
     }
 
@@ -962,9 +1129,30 @@ fun PromptStudioScreen(
             currentDraft.category == "BIBLE" &&
             currentDraft.source == PromptSource.CUSTOM &&
             currentDraft.id != null &&
-            !currentDraft.isActive
+            currentDraft.id != activeBiblePromptId
         ) {
             { currentDraft.id?.let { activateBiblePrompt(it) } }
+        } else {
+            null
+        }
+        val seasonOverrideId = selectedSeason
+            ?.promptOverrides
+            ?.valueFor(currentDraft.category)
+        val canAssignToSeason = selectedSeason != null &&
+            !selectedSeason.locked &&
+            currentDraft.category in SEASON_OVERRIDE_CATEGORIES &&
+            currentDraft.source == PromptSource.CUSTOM &&
+            currentDraft.id != null
+        val seasonActionLabel = when {
+            !canAssignToSeason -> null
+            seasonOverrideId == currentDraft.id -> "Reset ${selectedSeason?.displayTitle} to inherited"
+            else -> "Use for ${selectedSeason?.displayTitle}"
+        }
+        val seasonAction: (() -> Unit)? = if (canAssignToSeason && seasonActionLabel != null) {
+            {
+                val nextId = if (seasonOverrideId == currentDraft.id) null else currentDraft.id
+                assignSeasonPrompt(currentDraft.category, nextId)
+            }
         } else {
             null
         }
@@ -978,6 +1166,8 @@ fun PromptStudioScreen(
             isLoadingVersions = isLoadingVersions,
             versionsError = versionsError,
             isActivating = isActivatingPrompt,
+            isSeasonAssigning = isAssigningSeasonPrompt,
+            seasonActionLabel = seasonActionLabel,
             onRetryVersions = { currentDraft.id?.let { loadVersions(it) } },
             onUseVersion = { version ->
                 draft = currentDraft.copy(
@@ -987,6 +1177,7 @@ fun PromptStudioScreen(
                 editorMode = true
             },
             onActivate = activateAction,
+            onSeasonAction = seasonAction,
             onDraftChange = { draft = it },
             onEdit = { editorMode = true },
             onUseAsBase = {
@@ -1052,6 +1243,7 @@ fun PromptStudioScreen(
 @Composable
 private fun ActiveGenreSummary(
     genres: List<String>,
+    seasonGenres: List<String>,
     entries: List<LibraryPrompt>,
     onOpen: (LibraryPrompt) -> Unit
 ) {
@@ -1077,7 +1269,15 @@ private fun ActiveGenreSummary(
                     Column(modifier = Modifier.weight(1f)) {
                         Text(genre, fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
                         Text(
-                            text = entry?.let { sourceLabel(it.source) } ?: "NOT FOUND",
+                            text = buildString {
+                                append(entry?.let { sourceLabel(it.source) } ?: "NOT FOUND")
+                                if (seasonGenres.any { seasonGenre ->
+                                        normalizePromptKey(seasonGenre) == normalizePromptKey(genre)
+                                    }
+                                ) {
+                                    append(" · SEASON EXTRA")
+                                }
+                            },
                             fontSize = 11.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -1194,23 +1394,27 @@ private fun PromptLibraryCard(
 }
 
 @Composable
-private fun FiltersSheet(
+private fun BrowseAllSheet(
     sheetState: SheetState,
     hasGenreFilter: Boolean,
     hasFormatFilter: Boolean,
     hasMediumFilter: Boolean,
-    selectedGenre: String?,
-    selectedFormat: String?,
-    selectedMedium: String?,
+    selectedGenres: Set<String>,
+    selectedFormats: Set<String>,
+    selectedMediums: Set<String>,
     genres: List<String>,
     formats: List<String>,
     media: List<String>,
-    onGenreSelected: (String?) -> Unit,
-    onFormatSelected: (String?) -> Unit,
-    onMediumSelected: (String?) -> Unit,
+    onApply: (Set<String>, Set<String>, Set<String>) -> Unit,
     onClear: () -> Unit,
     onDismiss: () -> Unit
 ) {
+    var query by remember { mutableStateOf("") }
+    var genreDraft by remember { mutableStateOf(selectedGenres) }
+    var formatDraft by remember { mutableStateOf(selectedFormats) }
+    var mediumDraft by remember { mutableStateOf(selectedMediums) }
+    val totalSelected = genreDraft.size + formatDraft.size + mediumDraft.size
+
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState
@@ -1223,57 +1427,116 @@ private fun FiltersSheet(
                 .padding(bottom = 32.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Text("Filter prompts", fontWeight = FontWeight.Bold, fontSize = 18.sp)
+            Text("Browse all filters", fontWeight = FontWeight.Bold, fontSize = 18.sp)
             Text(
-                text = "Only filters that matter for this tab are shown here.",
+                text = "Selected items stay on top. Multiple values match any selected value. Apply commits your choice.",
                 fontSize = 12.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
+            OutlinedTextField(
+                value = query,
+                onValueChange = { query = it },
+                label = { Text("Search this filter list") },
+                singleLine = true,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag(TestTags.PromptStudio.BROWSE_SEARCH)
+            )
             if (hasGenreFilter) {
-                DropdownField(
-                    label = "Genre",
-                    value = selectedGenre,
+                MultiSelectGroup(
+                    label = "Genres",
                     options = genres,
-                    emptyLabel = "Any",
-                    onSelect = onGenreSelected,
-                    testTag = TestTags.PromptStudio.GENRE
+                    selected = genreDraft,
+                    query = query,
+                    onToggle = { value ->
+                        genreDraft = if (value in genreDraft) genreDraft - value else genreDraft + value
+                    }
                 )
             }
             if (hasFormatFilter) {
-                DropdownField(
-                    label = "Format",
-                    value = selectedFormat,
+                MultiSelectGroup(
+                    label = "Formats",
                     options = formats,
-                    emptyLabel = "Any",
-                    onSelect = onFormatSelected,
-                    testTag = TestTags.PromptStudio.FORMAT
+                    selected = formatDraft,
+                    query = query,
+                    onToggle = { value ->
+                        formatDraft = if (value in formatDraft) formatDraft - value else formatDraft + value
+                    }
                 )
             }
             if (hasMediumFilter) {
-                DropdownField(
-                    label = "Medium",
-                    value = selectedMedium,
+                MultiSelectGroup(
+                    label = "Visual mediums",
                     options = media,
-                    emptyLabel = "Any",
-                    onSelect = onMediumSelected,
-                    testTag = TestTags.PromptStudio.MEDIUM
+                    selected = mediumDraft,
+                    query = query,
+                    onToggle = { value ->
+                        mediumDraft = if (value in mediumDraft) mediumDraft - value else mediumDraft + value
+                    }
                 )
             }
+            Text(
+                text = "$totalSelected selected",
+                fontSize = 12.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 SecondaryButton(
-                    text = "Clear all",
+                    text = "Clear",
                     onClick = onClear,
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier
+                        .weight(1f)
+                        .testTag(TestTags.PromptStudio.BROWSE_CLEAR)
                 )
                 PrimaryButton(
-                    text = "Done",
-                    onClick = onDismiss,
-                    modifier = Modifier.weight(1f)
+                    text = "Apply",
+                    onClick = {
+                        onApply(
+                            if (hasGenreFilter) genreDraft else emptySet(),
+                            if (hasFormatFilter) formatDraft else emptySet(),
+                            if (hasMediumFilter) mediumDraft else emptySet()
+                        )
+                    },
+                    modifier = Modifier
+                        .weight(1f)
+                        .testTag(TestTags.PromptStudio.BROWSE_APPLY)
                 )
             }
+        }
+    }
+}
+
+@Composable
+private fun MultiSelectGroup(
+    label: String,
+    options: List<String>,
+    selected: Set<String>,
+    query: String,
+    onToggle: (String) -> Unit
+) {
+    val visible = orderedSelection(options, selected)
+        .filter { query.isBlank() || it.contains(query, ignoreCase = true) }
+    if (visible.isEmpty()) return
+    Text(
+        text = "$label · ${selected.size} selected",
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 13.sp
+    )
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .horizontalScroll(rememberScrollState()),
+        horizontalArrangement = Arrangement.spacedBy(6.dp)
+    ) {
+        visible.forEach { option ->
+            FilterChip(
+                selected = option in selected,
+                onClick = { onToggle(option) },
+                label = { Text(option) }
+            )
         }
     }
 }
@@ -1426,9 +1689,12 @@ private fun PromptEditorSheet(
     isLoadingVersions: Boolean,
     versionsError: String?,
     isActivating: Boolean,
+    isSeasonAssigning: Boolean,
+    seasonActionLabel: String?,
     onRetryVersions: () -> Unit,
     onUseVersion: (PromptVersionDto) -> Unit,
     onActivate: (() -> Unit)?,
+    onSeasonAction: (() -> Unit)?,
     onDraftChange: (PromptDraft) -> Unit,
     onEdit: () -> Unit,
     onUseAsBase: () -> Unit,
@@ -1559,6 +1825,17 @@ private fun PromptEditorSheet(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .testTag(TestTags.PromptStudio.ACTIVATE)
+                            )
+                        }
+                        if (seasonActionLabel != null && onSeasonAction != null) {
+                            PrimaryButton(
+                                text = if (isSeasonAssigning) "Saving season prompt..." else seasonActionLabel,
+                                onClick = onSeasonAction,
+                                enabled = !isSeasonAssigning,
+                                isLoading = isSeasonAssigning,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .testTag(TestTags.PromptStudio.SEASON_ASSIGN)
                             )
                         }
                         PrimaryButton(

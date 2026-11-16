@@ -737,8 +737,8 @@ class Batch2FullControlCoverageTest {
         assertText("Prompt Library")
         assertText("Search prompts, genres, media, or text", substring = true)
         assertText("All (1)")
-        assertText("Default (0)")
         assertText("My Saved (1)")
+        assertText("Browse all", substring = true)
 
         scrollToText("Batch Prompt")
         clickTag(TestTags.item(TestTags.PromptStudio.CARD_PREFIX, "prompt-1"))

@@ -325,6 +325,7 @@ data class PromptLibraryMetaDto(
     val medium_definitions: List<JsonMap> = emptyList(),
     val project_selected_genres: List<String> = emptyList(),
     val project_visual_medium: String = "ANIME",
+    val project_format: String = "SERIES",
     val genre_templates: List<GenreTemplateDto> = emptyList()
 )
 
