@@ -111,7 +111,12 @@ class Batch2ControlBehaviorTest {
         val container = Batch2RecordingContainer()
         composeRule.setBatch2Content(container) { PromptStudioScreen() }
         waitForCall(container, "fetchSystemPrompts")
+        waitForTag(TestTags.item(TestTags.PromptStudio.CARD_PREFIX, "prompt-1"))
 
+        composeRule.onNodeWithTag(TestTags.item(TestTags.PromptStudio.CARD_PREFIX, "prompt-1"))
+            .performScrollTo()
+            .performClick()
+        waitForTag(TestTags.PromptStudio.EDIT)
         composeRule.onNodeWithTag(TestTags.PromptStudio.EDIT).performScrollTo().performClick()
         composeRule.waitForIdle()
         composeRule.onNodeWithTag(TestTags.PromptStudio.TEXT_FIELD)
@@ -132,27 +137,28 @@ class Batch2ControlBehaviorTest {
     }
 
     @Test
-    fun promptStudioAppliesGenreTemplateAndPersistsFormat() {
+    fun promptStudioSavesNewPromptWithGenreAndFormat() {
         val container = Batch2RecordingContainer()
         composeRule.setBatch2Content(container) { PromptStudioScreen() }
         waitForCall(container, "fetchPromptLibraryMeta")
         waitForCall(container, "fetchSystemPrompts")
-        waitForTag(TestTags.PromptStudio.APPLY_TEMPLATE)
+        waitForTag(TestTags.PromptStudio.ADD)
 
-        composeRule.onNodeWithTag(TestTags.PromptStudio.APPLY_TEMPLATE)
-            .performScrollTo()
-            .performClick()
-        composeRule.waitForIdle()
-        composeRule.onNodeWithTag(TestTags.PromptStudio.SAVE)
-            .performScrollTo()
-            .assertIsEnabled()
-            .performSemanticsAction(SemanticsActions.OnClick)
+        composeRule.onNodeWithTag(TestTags.PromptStudio.ADD).performScrollTo().performClick()
+        waitForTag(TestTags.PromptStudio.ADD_NAME)
+        composeRule.onNodeWithTag(TestTags.PromptStudio.ADD_NAME).performTextInput("Horror Bible")
+        composeRule.onNodeWithTag(TestTags.PromptStudio.ADD_GENRE).performClick()
+        composeRule.onNodeWithText("Horror").performClick()
+        composeRule.onNodeWithTag(TestTags.PromptStudio.ADD_FORMAT).performClick()
+        composeRule.onNodeWithText("SERIES").performClick()
+        composeRule.onNodeWithTag(TestTags.PromptStudio.ADD_SAVE).performClick()
 
-        waitForCall(container, "updateSystemPrompt")
-        val call = container.recorder.lastCall("updateSystemPrompt")
-        assertEquals("Horror", call?.args?.get(6))
-        assertEquals("SERIES", call?.args?.get(7))
-        assertEquals("CINEMATIC", call?.args?.get(3))
+        waitForCall(container, "saveSystemPrompt")
+        val call = container.recorder.lastCall("saveSystemPrompt")
+        assertEquals("Horror Bible", call?.args?.get(1))
+        assertEquals("BIBLE", call?.args?.get(4))
+        assertEquals("Horror", call?.args?.get(5))
+        assertEquals("SERIES", call?.args?.get(6))
     }
 
     @Test
@@ -372,7 +378,6 @@ class Batch2ControlBehaviorTest {
         composeRule.onNodeWithTag(TestTags.PromptStudio.SEARCH).performTextInput("Beta")
         composeRule.waitForIdle()
 
-        composeRule.onNodeWithText("Saved BIBLE Prompts (1)").assertExists()
         composeRule.onNodeWithTag(TestTags.item(TestTags.PromptStudio.CARD_PREFIX, "prompt-beta")).assertExists()
         composeRule.onNodeWithTag(TestTags.item(TestTags.PromptStudio.CARD_PREFIX, "prompt-alpha")).assertDoesNotExist()
     }
@@ -404,7 +409,6 @@ class Batch2ControlBehaviorTest {
         composeRule.onNodeWithTag(TestTags.PromptStudio.FAVORITES).performClick()
         composeRule.waitForIdle()
 
-        composeRule.onNodeWithText("Saved BIBLE Prompts (1)").assertExists()
         composeRule.onNodeWithTag(TestTags.item(TestTags.PromptStudio.CARD_PREFIX, "prompt-beta")).assertExists()
         composeRule.onNodeWithTag(TestTags.item(TestTags.PromptStudio.CARD_PREFIX, "prompt-alpha")).assertDoesNotExist()
 
@@ -420,25 +424,22 @@ class Batch2ControlBehaviorTest {
     fun promptStudioMediumSelectionIsForwardedOnSave() {
         val container = Batch2RecordingContainer()
         composeRule.setBatch2Content(container) { PromptStudioScreen() }
-        waitForTag(TestTags.item(TestTags.PromptStudio.CARD_PREFIX, "prompt-1"))
+        waitForCall(container, "fetchSystemPrompts")
+        composeRule.onNodeWithTag(TestTags.item(TestTags.PromptStudio.TAB_PREFIX, "IMAGE")).performClick()
+        waitForTag(TestTags.PromptStudio.ADD)
 
-        composeRule.onNodeWithTag(TestTags.PromptStudio.MEDIUM).performClick()
-        composeRule.onNodeWithText("Medium: REAL_HUMAN").assertExists()
+        composeRule.onNodeWithTag(TestTags.PromptStudio.ADD).performScrollTo().performClick()
+        waitForTag(TestTags.PromptStudio.ADD_NAME)
+        composeRule.onNodeWithTag(TestTags.PromptStudio.ADD_NAME).performTextInput("Real Human Keyframe")
+        composeRule.onNodeWithTag(TestTags.PromptStudio.ADD_MEDIUM).performClick()
+        composeRule.onNodeWithText("REAL_HUMAN").performClick()
+        composeRule.onNodeWithTag(TestTags.PromptStudio.ADD_SAVE).performClick()
 
-        composeRule.onNodeWithTag(TestTags.PromptStudio.EDIT).performScrollTo().performClick()
-        composeRule.onNodeWithTag(TestTags.PromptStudio.TEXT_FIELD)
-            .performScrollTo()
-            .performClick()
-            .performTextReplacement("Medium aware prompt")
-        composeRule.onNodeWithTag(TestTags.PromptStudio.SAVE)
-            .performScrollTo()
-            .assertIsEnabled()
-            .performSemanticsAction(SemanticsActions.OnClick)
-
-        waitForCall(container, "updateSystemPrompt")
-        val call = container.recorder.lastCall("updateSystemPrompt")
-        assertEquals("prompt-1", call?.args?.get(0))
+        waitForCall(container, "saveSystemPrompt")
+        val call = container.recorder.lastCall("saveSystemPrompt")
+        assertEquals("Real Human Keyframe", call?.args?.get(1))
         assertEquals("REAL_HUMAN", call?.args?.get(3))
+        assertEquals("IMAGE", call?.args?.get(4))
     }
 
     @Test

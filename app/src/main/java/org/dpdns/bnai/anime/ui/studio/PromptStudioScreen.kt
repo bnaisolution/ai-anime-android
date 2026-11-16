@@ -1334,7 +1334,9 @@ private fun AddPromptSheet(
                 onValueChange = onNameChange,
                 label = { Text(nameLabel) },
                 singleLine = true,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag(TestTags.PromptStudio.ADD_NAME)
             )
             DropdownField(
                 label = "Start from",
@@ -1343,7 +1345,8 @@ private fun AddPromptSheet(
                 emptyLabel = "Blank",
                 onSelect = { selectedTitle ->
                     onBaseSelected(baseOptions.firstOrNull { it.title == selectedTitle }?.id)
-                }
+                },
+                testTag = TestTags.PromptStudio.ADD_BASE
             )
             if (category == "BIBLE" || category == "EPISODE" || category == "IMAGE") {
                 DropdownField(
@@ -1351,7 +1354,8 @@ private fun AddPromptSheet(
                     value = genre,
                     options = genres,
                     emptyLabel = "Any",
-                    onSelect = onGenreChange
+                    onSelect = onGenreChange,
+                    testTag = TestTags.PromptStudio.ADD_GENRE
                 )
             }
             if (category == "BIBLE" || category == "EPISODE") {
@@ -1360,7 +1364,8 @@ private fun AddPromptSheet(
                     value = format,
                     options = formats,
                     emptyLabel = "Any",
-                    onSelect = onFormatChange
+                    onSelect = onFormatChange,
+                    testTag = TestTags.PromptStudio.ADD_FORMAT
                 )
             }
             if (category == "IMAGE") {
@@ -1369,7 +1374,8 @@ private fun AddPromptSheet(
                     value = medium,
                     options = media,
                     emptyLabel = "Any",
-                    onSelect = onMediumChange
+                    onSelect = onMediumChange,
+                    testTag = TestTags.PromptStudio.ADD_MEDIUM
                 )
             }
             OutlinedTextField(
@@ -1377,7 +1383,9 @@ private fun AddPromptSheet(
                 onValueChange = onTextChange,
                 label = { Text("Prompt instructions") },
                 minLines = 6,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag(TestTags.PromptStudio.ADD_TEXT)
             )
             if (error != null) {
                 Text(text = error, color = MaterialTheme.colorScheme.error, fontSize = 12.sp)
@@ -1398,7 +1406,9 @@ private fun AddPromptSheet(
                     onClick = onSave,
                     enabled = !isSaving && name.isNotBlank() && text.isNotBlank(),
                     isLoading = isSaving,
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier
+                        .weight(1f)
+                        .testTag(TestTags.PromptStudio.ADD_SAVE)
                 )
             }
         }

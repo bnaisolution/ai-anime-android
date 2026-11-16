@@ -96,6 +96,13 @@ object TestTags {
         const val CARD_PREFIX = "screen.prompt_studio.card"
         const val FAVORITE_PREFIX = "screen.prompt_studio.favorite"
         const val ADD = "screen.prompt_studio.add"
+        const val ADD_NAME = "screen.prompt_studio.add_name"
+        const val ADD_TEXT = "screen.prompt_studio.add_text"
+        const val ADD_BASE = "screen.prompt_studio.add_base"
+        const val ADD_GENRE = "screen.prompt_studio.add_genre"
+        const val ADD_FORMAT = "screen.prompt_studio.add_format"
+        const val ADD_MEDIUM = "screen.prompt_studio.add_medium"
+        const val ADD_SAVE = "screen.prompt_studio.add_save"
         const val ACTIVATE = "screen.prompt_studio.activate"
         const val VERSIONS = "screen.prompt_studio.versions"
     }

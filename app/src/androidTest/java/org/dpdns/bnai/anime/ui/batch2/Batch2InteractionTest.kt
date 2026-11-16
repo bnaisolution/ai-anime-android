@@ -1,12 +1,14 @@
 package org.dpdns.bnai.anime.ui.batch2
 
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.navigation.compose.rememberNavController
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import org.dpdns.bnai.anime.core.auth.TokenManager
+import org.dpdns.bnai.anime.core.network.SystemPromptDto
 import org.dpdns.bnai.anime.ui.auth.AuthScreen
 import org.dpdns.bnai.anime.ui.character.CharacterListScreen
 import org.dpdns.bnai.anime.ui.owner.OwnerOverviewScreen
@@ -65,9 +67,24 @@ class Batch2InteractionTest {
 
     @Test
     fun promptStudioCategoryTabSwitchesPrompt() {
-        composeRule.setBatch2Content { PromptStudioScreen() }
+        val container = Batch2RecordingContainer(
+            fakeState = Batch2FakeState().apply {
+                systemPrompts = systemPrompts + SystemPromptDto(
+                    id = "prompt-episode",
+                    project_id = BATCH2_PROJECT_ID,
+                    title = "Episode Prompt",
+                    prompt_text = "Episode instructions",
+                    prompt_category = "EPISODE"
+                )
+            }
+        )
+        composeRule.setBatch2Content(container) { PromptStudioScreen() }
         composeRule.onNodeWithTag(TestTags.item(TestTags.PromptStudio.TAB_PREFIX, "EPISODE")).performClick()
-        composeRule.onNodeWithText("Default Episode Screenplay Prompt").assertExists()
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            composeRule.onAllNodesWithTag(TestTags.item(TestTags.PromptStudio.CARD_PREFIX, "prompt-episode"))
+                .fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.onNodeWithText("Episode Prompt").assertExists()
     }
 
     @Test
