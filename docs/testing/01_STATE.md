@@ -4,11 +4,11 @@ Last updated: 2026-11-16
 
 ## Current Phase
 
-Phase 1 - App Settings and Panel Shell. Plan ready; coding not started.
+Phase 1 - App Settings and Panel Shell. UI shell implemented and CI-verified; real worker E2E still pending.
 
 Phase 0 is complete with conditions. Final hybrid implementation plan is in `docs/testing/05_HYBRID_IMPLEMENTATION_PLAN.md`.
 
-Result: Backend `bde3582` is deployed and `project_format` is verified. Real generation is NO-GO until the test account gets worker and storage keys through the app Settings screen.
+Result: Backend `cbdf6be` is committed and Backend Tests are green. Android `a6d1153` implements the Settings tabs, guarded owner navigation, and read-only tenant memberships. Real generation is NO-GO until the test account gets worker and storage keys through the app Settings screen.
 
 ## Locked Decisions
 
@@ -48,8 +48,11 @@ Result: Backend `bde3582` is deployed and `project_format` is verified. Real gen
 - Backend deployment: commit `bde3582` deployed; `project_format` now appears in metadata and Story Bible.
 - Worker: no infrastructure configured for the test account; stale Kaggle session is unreachable.
 - App Settings currently supports Groq, Gemini, Kaggle, GitHub CPU worker repo/token, and Telegram. NVIDIA NIM is not supported yet.
-- CPU worker URL field is missing; app sends an empty `worker_url`.
-- APK baseline: build run `43880136923` success; SHA-256 `b906a4ecf05b18644440329af00b658cf7fd2aca6f0c2531fb7551b57b3db4e8`.
+- CPU worker URL field and independent GPU/CPU choices are implemented in Settings.
+- APK baseline: build run `43880136923` success at `d26f989`; SHA-256 `b906a4ecf05b18644440329af00b658cf7fd2aca6f0c2531fb7551b57b3db4e8`.
+- New Settings commit `b5769f6`: Android Tests run `43937558915` success after one Maestro rerun; Build APK run `43937558894` success.
+- Owner tenant card commit `a6d1153`; CI verification in progress.
+- Backend commit `cbdf6be`: Backend Tests run `43940241680` success.
 - Disk: 20G total, 9.2G used, 11G free.
 
 ## Database Topology
@@ -69,10 +72,13 @@ Result: Backend `bde3582` is deployed and `project_format` is verified. Real gen
 
 ## Next Step
 
-Get approval on the 5 open decisions in `05_HYBRID_IMPLEMENTATION_PLAN.md`, then implement Phase 1:
-- Settings Database tab with central-DB status and BYOD disabled.
-- CPU worker URL field.
-- Role-gated Owner Console shell.
-- Backend tenant registry/resolver interface with central default and feature flags off.
+Finish Phase 1 evidence:
+- Confirm owner-tenant commit GHA is green.
+- Configure the test account through the app Settings screen.
+- Save real free-stack keys and verify masked read-back.
+- Start a controlled real generation E2E.
 
-After Phase 1 passes GHA, configure the test account through the app Settings screen and start real generation E2E.
+Then start Phase 2:
+- Add `tenant_databases` / `tenant_db_audit` with encrypted DSN storage.
+- Add central-default `TenantDbResolver`.
+- Keep `BYOD_ENABLED=false` and `PLATFORM_DB_ENABLED=false`.
