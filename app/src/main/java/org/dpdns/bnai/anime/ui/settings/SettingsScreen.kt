@@ -91,6 +91,19 @@ fun SettingsScreen(onOpenOwnerConsole: (() -> Unit)? = null) {
     var telegramChatId by remember { mutableStateOf("") }
     var autoApprovePolicy by remember { mutableStateOf(false) }
 
+    var tenantDbMode by remember { mutableStateOf("central") }
+    var tenantDbStatus by remember { mutableStateOf("active") }
+    var tenantDbHost by remember { mutableStateOf("") }
+    var tenantDbName by remember { mutableStateOf("") }
+    var tenantDbSchemaVersion by remember { mutableIntStateOf(0) }
+    var tenantDbError by remember { mutableStateOf<String?>(null) }
+    var tenantDbLastChecked by remember { mutableStateOf<String?>(null) }
+    var byodEnabled by remember { mutableStateOf(false) }
+    var platformDbEnabled by remember { mutableStateOf(false) }
+    var databaseDsn by remember { mutableStateOf("") }
+    var isDbBusy by remember { mutableStateOf(false) }
+    var databaseMessage by remember { mutableStateOf<String?>(null) }
+
     var newGroqKey by remember { mutableStateOf("") }
     var newGeminiKey by remember { mutableStateOf("") }
     var newKagglePrimaryKey by remember { mutableStateOf("") }
@@ -134,6 +147,126 @@ fun SettingsScreen(onOpenOwnerConsole: (() -> Unit)? = null) {
                 "Database unreachable • check backend gateway"
             }
             isCheckingDatabase = false
+        }
+    }
+
+    fun applyTenantDatabase(data: Map<String, Any?>) {
+        tenantDbMode = text(data["mode"]).ifBlank { "central" }
+        tenantDbStatus = text(data["status"]).ifBlank { "active" }
+        tenantDbHost = text(data["host"])
+        tenantDbName = text(data["database"])
+        tenantDbSchemaVersion = (data["schema_version"] as? Number)?.toInt() ?: 0
+        tenantDbError = text(data["last_error"]).takeIf { it.isNotBlank() }
+        tenantDbLastChecked = text(data["last_checked_at"]).takeIf { it.isNotBlank() }
+        byodEnabled = data["byod_enabled"] == true
+        platformDbEnabled = data["platform_db_enabled"] == true
+    }
+
+    fun loadTenantDatabase() {
+        scope.launch {
+            when (val res = repository.fetchTenantDatabase()) {
+                is Resource.Success -> applyTenantDatabase(res.data)
+                is Resource.Error -> databaseMessage = res.message
+                else -> Unit
+            }
+        }
+    }
+
+    fun testDatabaseDsn() {
+        val dsn = databaseDsn.trim()
+        if (dsn.isBlank()) {
+            databaseMessage = "Paste a Postgres/Supabase connection string first."
+            return
+        }
+        scope.launch {
+            isDbBusy = true
+            when (val res = repository.testTenantDatabase(dsn)) {
+                is Resource.Success -> {
+                    val ok = res.data["ok"] == true
+                    val latency = (res.data["latency_ms"] as? Number)?.toLong() ?: 0L
+                    databaseMessage = if (ok) {
+                        "Connection OK • ${latency}ms • credentials will be encrypted before save"
+                    } else {
+                        "Connection failed: ${text(res.data["error"]).ifBlank { "unknown error" }}"
+                    }
+                }
+                is Resource.Error -> databaseMessage = res.message
+                else -> Unit
+            }
+            isDbBusy = false
+        }
+    }
+
+    fun connectDatabaseDsn() {
+        val dsn = databaseDsn.trim()
+        if (dsn.isBlank()) {
+            databaseMessage = "Paste a Postgres/Supabase connection string first."
+            return
+        }
+        scope.launch {
+            isDbBusy = true
+            when (val res = repository.connectTenantDatabase(dsn)) {
+                is Resource.Success -> {
+                    applyTenantDatabase(res.data)
+                    databaseDsn = ""
+                    databaseMessage = "User-owned database connected and encrypted."
+                }
+                is Resource.Error -> databaseMessage = res.message
+                else -> Unit
+            }
+            isDbBusy = false
+        }
+    }
+
+    fun checkTenantDatabaseHealth() {
+        scope.launch {
+            isDbBusy = true
+            when (val res = repository.fetchTenantDatabaseHealth()) {
+                is Resource.Success -> {
+                    applyTenantDatabase(res.data)
+                    databaseMessage = if (res.data["reachable"] == true) {
+                        "User database reachable • schema v${(res.data["schema_version"] as? Number)?.toInt() ?: 0}"
+                    } else {
+                        "User database unavailable: ${text(res.data["error"]).ifBlank { "restore required" }}"
+                    }
+                }
+                is Resource.Error -> databaseMessage = res.message
+                else -> Unit
+            }
+            isDbBusy = false
+        }
+    }
+
+    fun disconnectDatabase() {
+        scope.launch {
+            isDbBusy = true
+            when (val res = repository.disconnectTenantDatabase()) {
+                is Resource.Success -> {
+                    applyTenantDatabase(res.data)
+                    databaseDsn = ""
+                    databaseMessage = "User-owned database removed. Workspace is back on the central database."
+                }
+                is Resource.Error -> databaseMessage = res.message
+                else -> Unit
+            }
+            isDbBusy = false
+        }
+    }
+
+    fun migrateCurrentProject() {
+        val pid = repository.currentProjectId()
+        if (pid.isBlank()) {
+            databaseMessage = "Select a project before migrating it."
+            return
+        }
+        scope.launch {
+            isDbBusy = true
+            when (val res = repository.migrateTenantProjects(listOf(pid))) {
+                is Resource.Success -> databaseMessage = "Migrated ${(res.data["migrated"] as? Number)?.toInt() ?: 0} project(s) to your database."
+                is Resource.Error -> databaseMessage = res.message
+                else -> Unit
+            }
+            isDbBusy = false
         }
     }
 
@@ -227,6 +360,7 @@ fun SettingsScreen(onOpenOwnerConsole: (() -> Unit)? = null) {
     LaunchedEffect(Unit) {
         hydrateSettingsFromServer()
         checkDatabaseConnection()
+        loadTenantDatabase()
     }
 
     fun addProvider(id: String, key: String) {
@@ -642,33 +776,110 @@ fun SettingsScreen(onOpenOwnerConsole: (() -> Unit)? = null) {
 
             3 -> {
                 StandardCard {
-                    SectionHeader(title = "Database Mode", badgeText = "CENTRAL")
+                    SectionHeader(
+                        title = "Database Mode",
+                        badgeText = if (tenantDbMode == "byod") "MY DATABASE" else "CENTRAL"
+                    )
                     Text(
-                        "Database settings are workspace-level and apply to all projects in this workspace.",
+                        "Database settings are workspace-level. Each project stays on the central database until you explicitly migrate it.",
                         fontSize = 12.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     SelectionCard(
                         title = "Central Anime Database",
-                        subtitle = "Managed by the platform • active now",
-                        selected = true,
-                        enabled = false,
+                        subtitle = "Managed by the platform • default and rollback-safe",
+                        selected = tenantDbMode == "central",
+                        enabled = true,
                         onClick = {}
                     )
                     SelectionCard(
                         title = "My Database",
-                        subtitle = "Bring your own Postgres/Supabase • next phase",
-                        selected = false,
-                        enabled = false,
+                        subtitle = if (byodEnabled) {
+                            "Bring your own Postgres/Supabase • DSN encrypted at rest"
+                        } else {
+                            "Bring your own Postgres/Supabase • disabled by backend flag"
+                        },
+                        selected = tenantDbMode == "byod",
+                        enabled = byodEnabled,
                         onClick = {}
                     )
                     SelectionCard(
                         title = "Platform-Managed Database",
-                        subtitle = "Paid • coming later",
+                        subtitle = "Paid • requires explicit owner approval",
                         selected = false,
-                        enabled = false,
+                        enabled = platformDbEnabled,
                         onClick = {}
                     )
+                }
+
+                if (byodEnabled) {
+                    StandardCard {
+                        SectionHeader(
+                            title = "My Postgres / Supabase",
+                            badgeText = if (tenantDbMode == "byod") tenantDbStatus.uppercase() else "NOT CONNECTED"
+                        )
+                        if (tenantDbMode == "byod") {
+                            Text(
+                                "Host: ${tenantDbHost.ifBlank { "hidden" }} • DB: ${tenantDbName.ifBlank { "hidden" }} • Schema v$tenantDbSchemaVersion",
+                                fontSize = 12.sp
+                            )
+                            tenantDbLastChecked?.let { Text("Last checked: $it", fontSize = 11.sp) }
+                            tenantDbError?.let {
+                                Text("Last error: $it", fontSize = 12.sp, color = MaterialTheme.colorScheme.error)
+                            }
+                        }
+                        OutlinedTextField(
+                            value = databaseDsn,
+                            onValueChange = { databaseDsn = it },
+                            label = { Text("Postgres DSN (postgresql://user:pass@host:5432/db?sslmode=require)") },
+                            visualTransformation = PasswordVisualTransformation(),
+                            singleLine = true,
+                            modifier = Modifier.fillMaxWidth().testTag(TestTags.Settings.DB_DSN)
+                        )
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            SecondaryButton(
+                                text = if (isDbBusy) "Testing..." else "Test DSN",
+                                enabled = !isDbBusy && databaseDsn.isNotBlank(),
+                                onClick = { testDatabaseDsn() },
+                                modifier = Modifier.weight(1f).testTag(TestTags.Settings.DB_TEST_DSN)
+                            )
+                            PrimaryButton(
+                                text = if (isDbBusy) "Saving..." else "Connect",
+                                enabled = !isDbBusy && databaseDsn.isNotBlank(),
+                                onClick = { connectDatabaseDsn() },
+                                modifier = Modifier.weight(1f).testTag(TestTags.Settings.DB_CONNECT)
+                            )
+                        }
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            SecondaryButton(
+                                text = "Health Check",
+                                enabled = !isDbBusy && tenantDbMode == "byod",
+                                onClick = { checkTenantDatabaseHealth() },
+                                modifier = Modifier.weight(1f).testTag(TestTags.Settings.DB_HEALTH)
+                            )
+                            SecondaryButton(
+                                text = "Migrate Current Project",
+                                enabled = !isDbBusy && tenantDbMode == "byod",
+                                onClick = { migrateCurrentProject() },
+                                modifier = Modifier.weight(1f).testTag(TestTags.Settings.DB_MIGRATE)
+                            )
+                        }
+                        if (tenantDbMode == "byod") {
+                            DangerButton(
+                                text = "Disconnect My Database",
+                                enabled = !isDbBusy,
+                                onClick = { disconnectDatabase() },
+                                modifier = Modifier.fillMaxWidth().testTag(TestTags.Settings.DB_DISCONNECT)
+                            )
+                        }
+                        databaseMessage?.let { Text(it, fontSize = 12.sp) }
+                    }
                 }
 
                 StandardCard {

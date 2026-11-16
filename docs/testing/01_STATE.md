@@ -4,11 +4,24 @@ Last updated: 2026-11-16
 
 ## Current Phase
 
-Phase 1 - App Settings and Panel Shell. UI shell implemented and CI-verified; real worker E2E still pending.
+Phase 2-7 implementation scaffolding is in the working tree; live cutover and real generation remain gated.
 
-Phase 0 is complete with conditions. Final hybrid implementation plan is in `docs/testing/05_HYBRID_IMPLEMENTATION_PLAN.md`.
+Phase 0 is complete with conditions. Phase 1 UI is CI-verified. Final hybrid implementation plan is in `docs/testing/05_HYBRID_IMPLEMENTATION_PLAN.md`.
 
-Result: Backend `cbdf6be` is committed and Backend Tests are green. Android `a6d1153` implements the Settings tabs, guarded owner navigation, and read-only tenant memberships. Real generation is NO-GO until the test account gets worker and storage keys through the app Settings screen.
+Result: Backend `cbdf6be` is committed and Backend Tests are green. Android `a6d1153` implements the Settings tabs, guarded owner navigation, and read-only tenant memberships. The current uncommitted hybrid work adds encrypted tenant database registry, DSN test/connect/health/migrate/disconnect APIs, Settings Database controls, owner registry/wallet visibility, migration `011`, and wallet metering. Migration `011` is not applied to the live database yet; BYOD and platform billing remain disabled. Real generation is NO-GO until the test account gets worker and storage keys through the app Settings screen.
+
+## Phase 2-7 Implementation Status
+
+| Phase | Status | What exists | Remaining gate |
+|---|---|---|---|
+| 2 Tenant registry | IMPLEMENTED / MIGRATION PENDING | `anime_tenant_databases`, audit, encrypted DSN, flags, resolver | Apply migration `011` to live DB |
+| 3 BYOD connect | IMPLEMENTED / LIVE-TEST PENDING | DSN validation, test, connect, disconnect, health, provisioning | Test DSN and pause/unpause access |
+| 4 Optional cutover | PARTIAL / GATED | Per-project migration copy and central rollback index | Full read/write routing and checksum verification |
+| 5 n8n/worker routing | NOT IMPLEMENTED | Existing scoped gateway and tenant-aware tokens | Tenant-aware Postgres gateway + workflow validation |
+| 6 Owner console | PARTIAL | Tenant memberships, tenant DB registry, wallet visibility | Filters, retry migration, audit actions, feature toggles |
+| 7 Platform-managed billing | SCAFFOLDED / DISABLED | Wallet tables, credit/debit RPCs, balance preflight | Pricing/provider decisions, payment funding, explicit owner enablement |
+| 8 Hardening | PARTIAL | DSN private-host rejection, encryption, audit, fail-closed errors | Cross-tenant, DB-down, pause, rotation, restore tests |
+| 9 E2E rollout | BLOCKED | Existing smoke harness and docs | Real keys/worker/Telegram + canary tenant |
 
 ## Locked Decisions
 
@@ -54,6 +67,8 @@ Result: Backend `cbdf6be` is committed and Backend Tests are green. Android `a6d
 - Owner tenant card commit `a6d1153` and state-doc commit `741b51c`: Android Tests run `43941767938` success; Build APK run `43941767857` success.
 - Backend commit `cbdf6be`: Backend Tests run `43940241680` success.
 - Phase 1 UI gate is satisfied; Phase 1 real-key/generation gate remains pending.
+- Hybrid working tree: `npm run build` and full `npm test` pass locally (152 unit, 101 route, 131 static, 22 regression). New tests cover DSN validation, route registration, migration safety, and Android API/UI contracts.
+- Hybrid migration `011_hybrid_byod_wallet.sql` has a paired rollback. It is additive and disabled by default.
 - Disk: 20G total, 9.2G used, 11G free.
 
 ## Database Topology
@@ -73,13 +88,8 @@ Result: Backend `cbdf6be` is committed and Backend Tests are green. Android `a6d
 
 ## Next Step
 
-Finish Phase 1 evidence:
-- Confirm owner-tenant commit GHA is green.
-- Configure the test account through the app Settings screen.
-- Save real free-stack keys and verify masked read-back.
-- Start a controlled real generation E2E.
-
-Then start Phase 2:
-- Add `tenant_databases` / `tenant_db_audit` with encrypted DSN storage.
-- Add central-default `TenantDbResolver`.
-- Keep `BYOD_ENABLED=false` and `PLATFORM_DB_ENABLED=false`.
+1. Commit and push the hybrid working tree, then confirm Android GHA compiles the new Settings/owner UI.
+2. Apply migration `011` to the central anime database using the migration runbook; verify tables, RPCs, and rollback availability.
+3. Keep `ANIME_BYOD_ENABLED=false` and `ANIME_PLATFORM_DB_ENABLED=false` until a BYOD test DSN passes connect/health/provision.
+4. Finish Phase 1 real-key evidence and Phase 3 live BYOD testing.
+5. Implement Phase 5 tenant-aware Postgres gateway before enabling Phase 4 project cutover in production.

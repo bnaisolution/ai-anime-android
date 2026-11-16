@@ -973,6 +973,96 @@ class AnimeRepository(
         }
     }
 
+    override suspend fun fetchOwnerTenantDatabases(): Resource<List<JsonMap>> = withContext(Dispatchers.IO) {
+        try {
+            val response = apiService.getOwnerTenantDatabases()
+            if (response.isSuccessful) Resource.Success(response.body()?.data.orEmpty())
+            else Resource.Error("Failed to fetch tenant databases (${response.code()})", response.code())
+        } catch (e: Exception) {
+            Resource.Error(e.localizedMessage ?: "Failed to fetch tenant databases")
+        }
+    }
+
+    override suspend fun fetchTenantDatabase(): Resource<JsonMap> = withContext(Dispatchers.IO) {
+        try {
+            val response = apiService.getTenantDatabase()
+            if (response.isSuccessful) Resource.Success(response.body()?.data ?: emptyMap())
+            else Resource.Error("Failed to fetch database mode (${response.code()})", response.code())
+        } catch (e: Exception) {
+            Resource.Error(e.localizedMessage ?: "Failed to fetch database mode")
+        }
+    }
+
+    override suspend fun testTenantDatabase(dsn: String): Resource<JsonMap> = withContext(Dispatchers.IO) {
+        try {
+            val response = apiService.testTenantDatabase(mapOf("dsn" to dsn))
+            if (response.isSuccessful) Resource.Success(response.body()?.data ?: emptyMap())
+            else Resource.Error("Database test failed (${response.code()})", response.code())
+        } catch (e: Exception) {
+            Resource.Error(e.localizedMessage ?: "Database test failed")
+        }
+    }
+
+    override suspend fun connectTenantDatabase(dsn: String): Resource<JsonMap> = withContext(Dispatchers.IO) {
+        try {
+            val response = apiService.connectTenantDatabase(mapOf("dsn" to dsn))
+            if (response.isSuccessful) Resource.Success(response.body()?.data ?: emptyMap())
+            else Resource.Error("Database connect failed (${response.code()})", response.code())
+        } catch (e: Exception) {
+            Resource.Error(e.localizedMessage ?: "Database connect failed")
+        }
+    }
+
+    override suspend fun disconnectTenantDatabase(): Resource<JsonMap> = withContext(Dispatchers.IO) {
+        try {
+            val response = apiService.disconnectTenantDatabase()
+            if (response.isSuccessful) Resource.Success(response.body()?.data ?: emptyMap())
+            else Resource.Error("Database disconnect failed (${response.code()})", response.code())
+        } catch (e: Exception) {
+            Resource.Error(e.localizedMessage ?: "Database disconnect failed")
+        }
+    }
+
+    override suspend fun fetchTenantDatabaseHealth(): Resource<JsonMap> = withContext(Dispatchers.IO) {
+        try {
+            val response = apiService.getTenantDatabaseHealth()
+            if (response.isSuccessful) Resource.Success(response.body()?.data ?: emptyMap())
+            else Resource.Error("Database health check failed (${response.code()})", response.code())
+        } catch (e: Exception) {
+            Resource.Error(e.localizedMessage ?: "Database health check failed")
+        }
+    }
+
+    override suspend fun migrateTenantProjects(projectIds: List<String>): Resource<JsonMap> = withContext(Dispatchers.IO) {
+        try {
+            val response = apiService.migrateTenantProjects(mapOf("project_ids" to projectIds))
+            if (response.isSuccessful) Resource.Success(response.body()?.data ?: emptyMap())
+            else Resource.Error("Project migration failed (${response.code()})", response.code())
+        } catch (e: Exception) {
+            Resource.Error(e.localizedMessage ?: "Project migration failed")
+        }
+    }
+
+    override suspend fun fetchTenantWallet(): Resource<JsonMap> = withContext(Dispatchers.IO) {
+        try {
+            val response = apiService.getTenantWallet()
+            if (response.isSuccessful) Resource.Success(response.body()?.data ?: emptyMap())
+            else Resource.Error("Wallet lookup failed (${response.code()})", response.code())
+        } catch (e: Exception) {
+            Resource.Error(e.localizedMessage ?: "Wallet lookup failed")
+        }
+    }
+
+    override suspend fun fetchOwnerTenantWallet(tenantId: String): Resource<JsonMap> = withContext(Dispatchers.IO) {
+        try {
+            val response = apiService.getOwnerTenantWallet(tenantId)
+            if (response.isSuccessful) Resource.Success(response.body()?.data ?: emptyMap())
+            else Resource.Error("Wallet lookup failed (${response.code()})", response.code())
+        } catch (e: Exception) {
+            Resource.Error(e.localizedMessage ?: "Wallet lookup failed")
+        }
+    }
+
     override suspend fun fetchReadiness(): Resource<JsonMap> = withContext(Dispatchers.IO) {
         try {
             val response = apiService.getReadiness()

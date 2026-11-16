@@ -1,7 +1,18 @@
 # Final Hybrid Implementation Plan
 
-Status: architecture approved; implementation not started.
+Status: phases 2-7 scaffolding implemented; live BYOD cutover and real-key E2E remain gated.
 Date: 2026-11-16
+
+## Implementation Progress (2026-11-16)
+
+- Phase 2: encrypted tenant database registry, audit, feature flags, and resolver implemented; migration `011` pending live apply.
+- Phase 3: DSN validation/test/connect/health/disconnect/provision APIs and Android Database-tab controls implemented; live test DSN pending.
+- Phase 4: per-project copy and rollback index implemented; full read/write routing remains gated.
+- Phase 5: not implemented; existing gateway remains central-only.
+- Phase 6: owner tenant database registry and wallet visibility added; filters/retry/actions remain.
+- Phase 7: wallet tables, credit/debit RPCs, and balance preflight added; platform-managed remains disabled.
+- Phase 8: private-host rejection, encryption, audit, and fail-closed errors added; runtime isolation tests remain.
+- Phase 9: blocked on real provider, worker, Telegram, and BYOD test credentials.
 
 ## Goal
 

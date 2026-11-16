@@ -413,6 +413,24 @@ interface AdminRepository : RepositoryContext {
 
     suspend fun fetchOwnerTenants(): Resource<List<JsonMap>> = Resource.Empty
 
+    suspend fun fetchOwnerTenantDatabases(): Resource<List<JsonMap>> = Resource.Empty
+
+    suspend fun fetchTenantDatabase(): Resource<JsonMap> = Resource.Empty
+
+    suspend fun testTenantDatabase(dsn: String): Resource<JsonMap> = Resource.Empty
+
+    suspend fun connectTenantDatabase(dsn: String): Resource<JsonMap> = Resource.Empty
+
+    suspend fun disconnectTenantDatabase(): Resource<JsonMap> = Resource.Empty
+
+    suspend fun fetchTenantDatabaseHealth(): Resource<JsonMap> = Resource.Empty
+
+    suspend fun migrateTenantProjects(projectIds: List<String>): Resource<JsonMap> = Resource.Empty
+
+    suspend fun fetchTenantWallet(): Resource<JsonMap> = Resource.Empty
+
+    suspend fun fetchOwnerTenantWallet(tenantId: String): Resource<JsonMap> = Resource.Empty
+
     suspend fun fetchReadiness(): Resource<JsonMap> =
         throw UnsupportedOperationException("fetchReadiness is not configured")
 

@@ -117,6 +117,12 @@ object TestTags {
         const val SAVE = "screen.settings.save"
         const val DB_TAB = "screen.settings.db_tab"
         const val DB_TEST = "screen.settings.db_test"
+        const val DB_DSN = "screen.settings.db_dsn"
+        const val DB_TEST_DSN = "screen.settings.db_test_dsn"
+        const val DB_CONNECT = "screen.settings.db_connect"
+        const val DB_DISCONNECT = "screen.settings.db_disconnect"
+        const val DB_HEALTH = "screen.settings.db_health"
+        const val DB_MIGRATE = "screen.settings.db_migrate"
         const val OWNER_CONSOLE = "screen.settings.owner_console"
         const val AI_ADD = "screen.settings.ai_add"
         const val AI_ADD_KEY = "screen.settings.ai_add_key"
@@ -161,6 +167,7 @@ object TestTags {
         const val PLATFORM_MANAGED = "screen.owner.platform_managed"
         const val REPLICATION_STATUS = "screen.owner.replication_status"
         const val TENANTS = "screen.owner.tenants"
+        const val TENANT_DATABASES = "screen.owner.tenant_databases"
     }
 
     object Screen {

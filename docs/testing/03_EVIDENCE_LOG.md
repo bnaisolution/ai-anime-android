@@ -21,3 +21,8 @@
 - Never store passwords, tokens, service-role keys, or private keys here.
 - Store only paths, run IDs, checksums, and redacted output.
 - Preserve failed/negative evidence until manual cleanup approval.
+| 2026-11-16 | Phase 2-7 | `npm run build` + `npm test` (backend) | PASS | Local Termux | 152 unit, 101 route, 131 static, 22 regression; no failures. |
+| 2026-11-16 | Phase 2 | Migration `011_hybrid_byod_wallet.sql` static review | PASS | Source | Additive tables/RPCs, RLS, rollback pair, feature flags default false. |
+| 2026-11-16 | Phase 3 | DSN validation unit suite | PASS | `test/unit/tenantDatabase.validation.test.js` | Rejects non-Postgres, private hosts, missing auth, bad SSL; fingerprint stable across password rotation. |
+| 2026-11-16 | Phase 3-7 | Route registration + Android contract static | PASS | New hybrid tests | Tenant DB/wallet routes and Android DSN/owner-registry wiring present. |
+| 2026-11-16 | Phase 2 | Live migration `011` apply | PENDING | No DB DSN available in Termux/EC2 env | Tables absent until applied; feature flags remain off. |

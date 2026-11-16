@@ -731,6 +731,33 @@ interface AnimeApiService {
     @GET("v1/anime/owner/tenants")
     suspend fun getOwnerTenants(): Response<ApiEnvelope<List<JsonMap>>>
 
+    @GET("v1/anime/owner/tenant-databases")
+    suspend fun getOwnerTenantDatabases(): Response<ApiEnvelope<List<JsonMap>>>
+
+    @GET("v1/anime/tenants/me/database")
+    suspend fun getTenantDatabase(): Response<ApiEnvelope<JsonMap>>
+
+    @POST("v1/anime/tenants/me/database/test")
+    suspend fun testTenantDatabase(@Body body: JsonMap): Response<ApiEnvelope<JsonMap>>
+
+    @POST("v1/anime/tenants/me/database/connect")
+    suspend fun connectTenantDatabase(@Body body: JsonMap): Response<ApiEnvelope<JsonMap>>
+
+    @DELETE("v1/anime/tenants/me/database")
+    suspend fun disconnectTenantDatabase(): Response<ApiEnvelope<JsonMap>>
+
+    @GET("v1/anime/tenants/me/database/health")
+    suspend fun getTenantDatabaseHealth(): Response<ApiEnvelope<JsonMap>>
+
+    @POST("v1/anime/tenants/me/database/migrate")
+    suspend fun migrateTenantProjects(@Body body: JsonMap): Response<ApiEnvelope<JsonMap>>
+
+    @GET("v1/anime/tenants/me/wallet")
+    suspend fun getTenantWallet(): Response<ApiEnvelope<JsonMap>>
+
+    @GET("v1/anime/owner/tenants/{tenantId}/wallet")
+    suspend fun getOwnerTenantWallet(@Path("tenantId") tenantId: String): Response<ApiEnvelope<JsonMap>>
+
     @GET("v1/anime/ready")
     suspend fun getReadiness(): Response<JsonMap>
 

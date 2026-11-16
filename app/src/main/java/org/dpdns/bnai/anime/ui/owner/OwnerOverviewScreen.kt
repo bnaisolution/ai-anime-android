@@ -42,6 +42,9 @@ fun OwnerOverviewScreen() {
     var ownerQuotaSummary by remember { mutableStateOf("No tenant quota configured") }
     var tenantCount by remember { mutableIntStateOf(0) }
     var tenantSummary by remember { mutableStateOf("No tenant memberships found") }
+    var tenantDbCount by remember { mutableIntStateOf(0) }
+    var tenantDbSummary by remember { mutableStateOf("No user-owned databases connected") }
+    var ownerWalletSummary by remember { mutableStateOf("Wallet not enabled") }
     var showEmergencyDialog by remember { mutableStateOf(false) }
 
     fun refreshOwnerHub(pid: String) {
@@ -82,6 +85,24 @@ fun OwnerOverviewScreen() {
                 val plan = (tenant["plan"] as? String)?.ifBlank { "byod" } ?: "byod"
                 "$name ($plan)"
             }.ifBlank { "No tenant memberships found" }
+
+            val tenantDbs = (repository.fetchOwnerTenantDatabases() as? Resource.Success)?.data.orEmpty()
+            tenantDbCount = tenantDbs.size
+            tenantDbSummary = tenantDbs.take(3).joinToString(" • ") { db ->
+                val name = ((db["anime_tenants"] as? Map<*, *>)?.get("name") as? String)
+                    ?.ifBlank { "Tenant" } ?: "Tenant"
+                val mode = (db["mode"] as? String)?.uppercase() ?: "CENTRAL"
+                val status = (db["status"] as? String)?.uppercase() ?: "UNKNOWN"
+                "$name ($mode/$status)"
+            }.ifBlank { "No user-owned databases connected" }
+
+            val firstTenantId = (tenants.firstOrNull()?.get("id") as? String).orEmpty()
+            if (firstTenantId.isNotBlank()) {
+                val wallet = (repository.fetchOwnerTenantWallet(firstTenantId) as? Resource.Success)?.data.orEmpty()
+                val balance = (wallet["balance"] as? Number)?.toDouble() ?: 0.0
+                val currency = wallet["currency"] as? String ?: "USD"
+                ownerWalletSummary = "$balance $currency • first tenant"
+            }
         }
     }
 
@@ -215,6 +236,7 @@ fun OwnerOverviewScreen() {
                 }
                 Text(platformManagedReason, style = MaterialTheme.typography.bodyMedium)
                 Text(ownerQuotaSummary, style = MaterialTheme.typography.bodySmall)
+                Text(ownerWalletSummary, style = MaterialTheme.typography.bodySmall)
             }
         }
 
@@ -229,6 +251,20 @@ fun OwnerOverviewScreen() {
                 }
                 Text(formatInt(tenantCount), style = MaterialTheme.typography.headlineLarge)
                 Text(tenantSummary, style = MaterialTheme.typography.bodySmall)
+            }
+        }
+
+        Card(
+            modifier = Modifier.fillMaxWidth().testTag(TestTags.Owner.TENANT_DATABASES),
+            shape = RoundedCornerShape(12.dp)
+        ) {
+            Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                    Text("User Database Registry", style = MaterialTheme.typography.labelLarge)
+                    StatusBadge("READ ONLY")
+                }
+                Text(formatInt(tenantDbCount), style = MaterialTheme.typography.headlineLarge)
+                Text(tenantDbSummary, style = MaterialTheme.typography.bodySmall)
             }
         }
 
