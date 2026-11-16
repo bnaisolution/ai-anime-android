@@ -369,6 +369,20 @@ data class SystemPromptDto(
     val is_default: Boolean? = false
 )
 
+data class PromptVersionDto(
+    val id: String,
+    val prompt_id: String? = null,
+    val version: Int = 1,
+    val title: String = "",
+    val visual_medium: String = "ANIME",
+    val prompt_category: String? = null,
+    val genre: String? = null,
+    val format: String? = null,
+    val model_hint: String? = null,
+    val prompt_text: String = "",
+    val created_at: String? = null
+)
+
 data class CreateSystemPromptRequest(
     val project_id: String? = null,
     val title: String,
@@ -674,6 +688,11 @@ interface AnimeApiService {
         @Query("genre") genre: String? = null,
         @Query("format") format: String? = null
     ): Response<ApiEnvelope<List<SystemPromptDto>>>
+
+    @GET("v1/anime/prompts/{promptId}/versions")
+    suspend fun getPromptVersions(
+        @Path("promptId") promptId: String
+    ): Response<ApiEnvelope<List<PromptVersionDto>>>
 
     @POST("v1/anime/prompts/{promptId}/associate")
     suspend fun associatePromptWithProject(

@@ -96,6 +96,8 @@ object TestTags {
         const val CARD_PREFIX = "screen.prompt_studio.card"
         const val FAVORITE_PREFIX = "screen.prompt_studio.favorite"
         const val ADD = "screen.prompt_studio.add"
+        const val ACTIVATE = "screen.prompt_studio.activate"
+        const val VERSIONS = "screen.prompt_studio.versions"
     }
 
     object Settings {

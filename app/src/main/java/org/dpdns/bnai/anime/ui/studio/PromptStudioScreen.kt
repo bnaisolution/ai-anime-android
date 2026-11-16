@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
 import org.dpdns.bnai.anime.core.network.JsonMap
+import org.dpdns.bnai.anime.core.network.PromptVersionDto
 import org.dpdns.bnai.anime.core.network.Resource
 import org.dpdns.bnai.anime.core.network.SystemPromptDto
 import org.dpdns.bnai.anime.ui.components.ProjectSelectorBar
@@ -71,7 +72,8 @@ private data class PromptDraft(
     val format: String? = null,
     val visualMedium: String = "ANIME",
     val scope: PromptScope = PromptScope.PROJECT,
-    val isNew: Boolean = false
+    val isNew: Boolean = false,
+    val isActive: Boolean = false
 )
 
 private fun JsonMap.stringValue(key: String): String =
@@ -127,7 +129,7 @@ private fun buildDefinitionEntries(
     )
 }
 
-private fun savedPromptToEntry(prompt: SystemPromptDto): LibraryPrompt = LibraryPrompt(
+private fun savedPromptToEntry(prompt: SystemPromptDto, activeBiblePromptId: String?): LibraryPrompt = LibraryPrompt(
     id = prompt.id,
     title = prompt.title,
     text = prompt.prompt_text,
@@ -137,16 +139,18 @@ private fun savedPromptToEntry(prompt: SystemPromptDto): LibraryPrompt = Library
     genre = prompt.genre,
     format = prompt.format,
     visualMedium = prompt.visual_medium,
-    isFavorite = prompt.is_favorite
+    isFavorite = prompt.is_favorite,
+    isActive = (prompt.prompt_category ?: "BIBLE").uppercase() == "BIBLE" && prompt.id == activeBiblePromptId
 )
 
-private fun defaultEntry(category: String, medium: String): LibraryPrompt = LibraryPrompt(
+private fun defaultEntry(category: String, medium: String, isActive: Boolean = false): LibraryPrompt = LibraryPrompt(
     id = "appdefault:$category",
     title = "Application Default",
     text = SYSTEM_DEFAULTS[category].orEmpty(),
     category = category,
     source = PromptSource.APP_DEFAULT,
-    visualMedium = medium
+    visualMedium = medium,
+    isActive = isActive
 )
 
 private fun promptMeta(entry: LibraryPrompt): String = listOfNotNull(
@@ -185,6 +189,7 @@ fun PromptStudioScreen(
     var availableFormats by remember { mutableStateOf(FALLBACK_FORMATS) }
     var projectSelectedGenres by remember { mutableStateOf<List<String>>(emptyList()) }
     var projectMedium by remember { mutableStateOf(initialMedium?.uppercase() ?: "ANIME") }
+    var activeBiblePromptId by remember { mutableStateOf<String?>(null) }
     var isLoadingLibrary by remember { mutableStateOf(true) }
     var libraryError by remember { mutableStateOf<String?>(null) }
 
@@ -204,6 +209,10 @@ fun PromptStudioScreen(
     var originalDraft by remember { mutableStateOf<PromptDraft?>(null) }
     var editorMode by remember { mutableStateOf(false) }
     var isSavingPrompt by remember { mutableStateOf(false) }
+    var isActivatingPrompt by remember { mutableStateOf(false) }
+    var promptVersions by remember { mutableStateOf<List<PromptVersionDto>>(emptyList()) }
+    var isLoadingVersions by remember { mutableStateOf(false) }
+    var versionsError by remember { mutableStateOf<String?>(null) }
 
     var addName by remember { mutableStateOf("") }
     var addText by remember { mutableStateOf("") }
@@ -244,7 +253,34 @@ fun PromptStudioScreen(
                 is Resource.Empty -> libraryError = "Prompt library metadata is empty."
                 else -> Unit
             }
+            if (projectId.isNotBlank()) {
+                when (val overviewResult = repository.fetchProjectOverview(projectId)) {
+                    is Resource.Success -> activeBiblePromptId = overviewResult.data.project?.active_system_prompt_id
+                    is Resource.Empty -> activeBiblePromptId = null
+                    is Resource.Error -> Unit
+                    else -> Unit
+                }
+            }
             isLoadingLibrary = false
+        }
+    }
+
+    fun loadVersions(promptId: String) {
+        promptVersions = emptyList()
+        versionsError = null
+        if (promptId.isBlank()) {
+            isLoadingVersions = false
+            return
+        }
+        isLoadingVersions = true
+        screenScope.launch {
+            when (val result = repository.fetchPromptVersions(promptId)) {
+                is Resource.Success -> promptVersions = result.data
+                is Resource.Empty -> promptVersions = emptyList()
+                is Resource.Error -> versionsError = result.message
+                else -> Unit
+            }
+            isLoadingVersions = false
         }
     }
 
@@ -260,11 +296,19 @@ fun PromptStudioScreen(
             format = entry.format,
             visualMedium = entry.visualMedium ?: projectMedium,
             scope = PromptScope.PROJECT,
-            isNew = false
+            isNew = false,
+            isActive = entry.isActive
         )
         draft = next
         originalDraft = next
         editorMode = false
+        if (entry.source == PromptSource.CUSTOM) {
+            loadVersions(entry.id)
+        } else {
+            promptVersions = emptyList()
+            versionsError = null
+            isLoadingVersions = false
+        }
         showEditor = true
     }
 
@@ -482,6 +526,26 @@ fun PromptStudioScreen(
         }
     }
 
+    fun activateBiblePrompt(promptId: String) {
+        val projectId = repository.currentProjectId()
+        if (projectId.isBlank() || promptId.isBlank() || isActivatingPrompt) return
+        isActivatingPrompt = true
+        screenScope.launch {
+            when (val result = repository.activateSystemPrompt(projectId, promptId, "BIBLE")) {
+                is Resource.Success -> {
+                    activeBiblePromptId = promptId
+                    draft = draft?.copy(isActive = true)
+                    loadLibrary()
+                    Toast.makeText(context, "Story Bible prompt activated", Toast.LENGTH_SHORT).show()
+                }
+                is Resource.Error -> Toast.makeText(context, result.message, Toast.LENGTH_LONG).show()
+                is Resource.Empty -> Toast.makeText(context, "Prompt was not activated", Toast.LENGTH_LONG).show()
+                else -> Unit
+            }
+            isActivatingPrompt = false
+        }
+    }
+
     fun openAddSheet() {
         addName = ""
         addBaseId = null
@@ -517,13 +581,23 @@ fun PromptStudioScreen(
     val savedById = savedPrompts.associateBy { it.id }
     val genreEntries = buildDefinitionEntries("GENRE", genreDefinitions, savedById, projectSelectedGenres, projectMedium)
     val mediumEntries = buildDefinitionEntries("VISUAL_MEDIUM", mediumDefinitions, savedById, projectSelectedGenres, projectMedium)
-    val defaultEntries = if (isCreativeCategory) emptyList() else listOf(defaultEntry(currentCategory, projectMedium))
+    val defaultEntries = if (isCreativeCategory) {
+        emptyList()
+    } else {
+        listOf(
+            defaultEntry(
+                currentCategory,
+                projectMedium,
+                isActive = currentCategory == "BIBLE" && activeBiblePromptId.isNullOrBlank()
+            )
+        )
+    }
     val savedEntries = if (isCreativeCategory) {
         emptyList()
     } else {
         savedPrompts
             .filter { (it.prompt_category ?: "BIBLE").uppercase() == currentCategory }
-            .map { savedPromptToEntry(it) }
+            .map { savedPromptToEntry(it, activeBiblePromptId) }
     }
     val allEntries = when (currentCategory) {
         "GENRE" -> genreEntries
@@ -817,12 +891,35 @@ fun PromptStudioScreen(
         val canSave = currentDraft.title.isNotBlank() &&
             currentDraft.text.isNotBlank() &&
             (currentDraft.isNew || currentOriginal == null || currentDraft != currentOriginal)
+        val activateAction: (() -> Unit)? = if (
+            currentDraft.category == "BIBLE" &&
+            currentDraft.source == PromptSource.CUSTOM &&
+            currentDraft.id != null &&
+            !currentDraft.isActive
+        ) {
+            { currentDraft.id?.let { activateBiblePrompt(it) } }
+        } else {
+            null
+        }
         PromptEditorSheet(
             sheetState = editorSheetState,
             draft = currentDraft,
             editMode = editorMode,
             isSaving = isSavingPrompt,
             canSave = canSave,
+            versions = promptVersions,
+            isLoadingVersions = isLoadingVersions,
+            versionsError = versionsError,
+            isActivating = isActivatingPrompt,
+            onRetryVersions = { currentDraft.id?.let { loadVersions(it) } },
+            onUseVersion = { version ->
+                draft = currentDraft.copy(
+                    title = if (currentDraft.category in CREATIVE_CATEGORIES) currentDraft.title else version.title,
+                    text = version.prompt_text
+                )
+                editorMode = true
+            },
+            onActivate = activateAction,
             onDraftChange = { draft = it },
             onEdit = { editorMode = true },
             onUseAsBase = {
@@ -1248,6 +1345,13 @@ private fun PromptEditorSheet(
     editMode: Boolean,
     isSaving: Boolean,
     canSave: Boolean,
+    versions: List<PromptVersionDto>,
+    isLoadingVersions: Boolean,
+    versionsError: String?,
+    isActivating: Boolean,
+    onRetryVersions: () -> Unit,
+    onUseVersion: (PromptVersionDto) -> Unit,
+    onActivate: (() -> Unit)?,
     onDraftChange: (PromptDraft) -> Unit,
     onEdit: () -> Unit,
     onUseAsBase: () -> Unit,
@@ -1280,6 +1384,7 @@ private fun PromptEditorSheet(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         StatusChip(label = sourceLabel(draft.source))
+                        if (draft.isActive) StatusChip(label = "ACTIVE")
                         Text("v${draft.version}", fontSize = 11.sp)
                     }
                 }
@@ -1348,6 +1453,16 @@ private fun PromptEditorSheet(
                 )
             }
 
+            if (draft.source == PromptSource.CUSTOM && draft.id != null) {
+                VersionHistorySection(
+                    versions = versions,
+                    isLoading = isLoadingVersions,
+                    error = versionsError,
+                    onRetry = onRetryVersions,
+                    onUseVersion = onUseVersion
+                )
+            }
+
             if (!editMode) {
                 when (draft.source) {
                     PromptSource.BUILT_IN, PromptSource.APP_DEFAULT -> {
@@ -1358,6 +1473,17 @@ private fun PromptEditorSheet(
                         )
                     }
                     PromptSource.CUSTOM -> {
+                        if (onActivate != null) {
+                            PrimaryButton(
+                                text = if (isActivating) "Activating..." else "Set as active for Story Bible",
+                                onClick = onActivate,
+                                enabled = !isActivating,
+                                isLoading = isActivating,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .testTag(TestTags.PromptStudio.ACTIVATE)
+                            )
+                        }
                         PrimaryButton(
                             text = "Edit prompt",
                             onClick = onEdit,
@@ -1403,6 +1529,89 @@ private fun PromptEditorSheet(
                             .weight(1f)
                             .testTag(TestTags.PromptStudio.SAVE)
                     )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun VersionHistorySection(
+    versions: List<PromptVersionDto>,
+    isLoading: Boolean,
+    error: String?,
+    onRetry: () -> Unit,
+    onUseVersion: (PromptVersionDto) -> Unit
+) {
+    var expandedVersionId by remember { mutableStateOf<String?>(null) }
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .testTag(TestTags.PromptStudio.VERSIONS),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        HorizontalDivider()
+        Text("Version history", fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
+        when {
+            isLoading -> {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
+                    Text("Loading versions...", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
+            error != null -> {
+                Text(error, fontSize = 12.sp, color = MaterialTheme.colorScheme.error)
+                SecondaryButton(text = "Retry versions", onClick = onRetry)
+            }
+            versions.isEmpty() -> {
+                Text(
+                    text = "No earlier versions yet. A snapshot is created when this prompt is updated.",
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            else -> {
+                versions.take(20).forEach { version ->
+                    val isExpanded = expandedVersionId == version.id
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text("v${version.version}", fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
+                                Text(
+                                    text = version.created_at.orEmpty().replace("T", " ").take(16),
+                                    fontSize = 11.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                            TextButton(onClick = {
+                                expandedVersionId = if (isExpanded) null else version.id
+                            }) {
+                                Text(if (isExpanded) "Hide" else "Preview")
+                            }
+                            TextButton(onClick = { onUseVersion(version) }) {
+                                Text("Use")
+                            }
+                        }
+                        if (isExpanded) {
+                            Text(
+                                text = version.prompt_text,
+                                fontSize = 12.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                maxLines = 8,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
+                    }
                 }
             }
         }

@@ -870,6 +870,20 @@ class AnimeRepository(
         }
     }
 
+    override suspend fun fetchPromptVersions(promptId: String): Resource<List<PromptVersionDto>> = withContext(Dispatchers.IO) {
+        try {
+            val response = apiService.getPromptVersions(promptId)
+            if (response.isSuccessful) {
+                val versions = response.body()?.data.orEmpty()
+                if (versions.isEmpty()) Resource.Empty else Resource.Success(versions)
+            } else {
+                Resource.Error("Failed to load prompt versions (${response.code()})", response.code())
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.localizedMessage ?: "Failed to load prompt versions")
+        }
+    }
+
     override suspend fun activateSystemPrompt(projectId: String, promptId: String, surface: String): Resource<JsonMap> = try {
         mapEnvelope(apiService.activateSystemPrompt(promptId, mapOf("project_id" to projectId, "surface" to surface))) { it }
     } catch (e: Exception) {

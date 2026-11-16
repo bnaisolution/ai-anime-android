@@ -293,6 +293,9 @@ interface PromptRepository : RepositoryContext {
     ): Resource<List<SystemPromptDto>> =
         throw UnsupportedOperationException("fetchSystemPrompts is not configured")
 
+    suspend fun fetchPromptVersions(promptId: String): Resource<List<PromptVersionDto>> =
+        throw UnsupportedOperationException("fetchPromptVersions is not configured")
+
     suspend fun activateSystemPrompt(projectId: String, promptId: String, surface: String = "BIBLE"): Resource<JsonMap> =
         throw UnsupportedOperationException("activateSystemPrompt is not configured")
 
