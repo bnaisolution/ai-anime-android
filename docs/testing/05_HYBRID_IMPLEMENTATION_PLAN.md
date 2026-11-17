@@ -9,7 +9,7 @@ Date: 2026-11-17
 - Phase 3: DSN validation/test/connect/health/disconnect/provision APIs and Android Database-tab controls implemented; provisioning currently creates `projects` only, so live test DSN and full project-table DDL remain pending.
 - Phase 4: per-project copy and rollback index implemented; full table copy/checksum and production routing remain gated.
 - Phase 5: tenant-aware gateway committed in backend `75faa00`; project BYOD routing, central catalog fallback, and system-scope fan-out implemented; live BYOD/workflow validation pending.
-- Phase 6: owner tenant database registry and wallet visibility added; filters/retry/actions remain.
+- Phase 6: owner tenant database registry, filters, audit preview, health recheck, wallet visibility, and read-only environment flag status added; migration retry/actions and runtime toggles remain.
 - Phase 7: wallet tables, credit/debit RPCs, and balance preflight added; platform-managed remains disabled.
 - Phase 8: private-host rejection, encryption, audit, and fail-closed errors added; runtime isolation tests remain.
 - Phase 9: blocked on real provider, worker, Telegram, and BYOD test credentials.
@@ -324,18 +324,20 @@ Gate:
 ### Phase 6 - Full Owner Console (later)
 Goal: platform-wide operations.
 
-Tasks:
-1. Tenant list with filters.
-2. Per-tenant DB health, schema version, last check.
-3. Migration status and retry.
-4. Worker health.
-5. Quotas and usage.
-6. Audit log.
-7. Feature toggles:
-   - BYOD
-   - Platform-managed DB/GPU/CPU
-   - Billing
-8. Encryption key rotation status.
+Done:
+- Tenant database registry with `status`/`mode`/`provider`/host-database filters.
+- Per-tenant mode, status, schema version, host, database, and last error.
+- Audit preview plus owner-triggered health recheck with audit writes.
+- Read-only environment status for BYOD, platform DB, platform-managed, and billing flags.
+- Owner-only access with 403 for normal users.
+
+Remaining:
+1. Migration status and retry/actions with project scope.
+2. Worker health details.
+3. Quota/usage detail views.
+4. Full audit log navigation.
+5. Runtime-mutable feature toggles with owner confirmation and audit.
+6. Encryption key rotation status.
 
 Gate:
 - Owner can see tenant health.

@@ -14,6 +14,8 @@ Status: Phase 0 blockers recorded.
 | GAP-008 | P1 | Phase 4 | Cutover verifies all core project data | Migration copies projects only, not seasons/scenes/episodes/prompts/memory | `migrateProjectsToTenant` copies `anime_data.projects` | Extend copy/checksum per table or keep cutover disabled |
 | GAP-009 | P1 | Phase 7 | Wallet funds and pricing are operational | Wallet tables/RPCs/preflight exist; no payment funding, prices, tax, or payout | `wallet.service.ts`, migration `011` | Provide business decisions and payment provider before enabling billing |
 | GAP-010 | P0 | Phase 3-5 | BYOD schema supports every gateway-allowed project table | `TENANT_SCHEMA_SQL` creates only `anime_data.projects`; gateway allows 31 project tables including `episodes`, `scenes`, `clips`, `episode_states`, characters, and memory | `tenantDatabase.service.ts` schema SQL vs `PROJECT_TABLES` in `workflowGateway.db.ts` | Add tenant DDL/migrations for all project tables before enabling BYOD or cutover |
+| GAP-011 | P1 | Phase 6 | Owner can change feature toggles safely | Owner console shows read-only environment status; changing BYOD/platform/billing requires an env update and restart | `GET /v1/anime/owner/features`; `ownerFeatureSummary` | Add audited DB-backed toggles with explicit confirmation before enabling runtime changes |
+| GAP-012 | P2 | Phase 6 | Owner can retry a failed migration | Owner can recheck database health but cannot retry provisioning/migration from the console | `POST /v1/anime/owner/tenant-databases/:tenantId/health-check` | Add project-scoped retry provisioning/migration actions with audit |
 
 ## Severity Guide
 

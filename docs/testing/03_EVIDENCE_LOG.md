@@ -24,6 +24,9 @@
 | 2026-11-17 | Phase 5 | Tenant gateway implementation | PASS | Backend `75faa00` | Project BYOD routing, tenant SQL translation, central catalog fallback, system fan-out; system write injection fixed. |
 | 2026-11-17 | Phase 5 | `npm run build` + full `npm test` | PASS | Local Termux | 160 unit, 105 route, 135 static, 22 regression; no failures. |
 | 2026-11-17 | Phase 5 | Backend gateway CI | PASS | GHA `43984422766` | All gating jobs green; isolated DB tests skipped. |
+| 2026-11-17 | Phase 6 | Owner tenant DB filters/features backend | PASS | Backend `ec782e2`; GHA `44004718519` | Status/mode/provider/host filters, audit preview, health recheck, read-only env flags, owner-only guard. |
+| 2026-11-17 | Phase 6 | Android owner filters/audit/recheck | PASS | Android `ca02e21`; GHA `44004693568`, `44004693535` | Android Tests and APK green; Maestro passed without rerun. |
+| 2026-11-17 | Phase 6 | Backend local full suite | PASS | Local Termux | 160 unit, 108 route, 136 static, 22 regression; no failures. |
 | 2026-11-17 | Phase 5 | Live BYOD/workflow validation | PENDING | No BYOD DSN; migration `011` not applied | Gateway remains disabled by feature flag; central behavior unchanged until deploy. |
 | 2026-11-17 | Phase 2 | Live migration `011` apply | PENDING | No DB DSN available in Termux/EC2 env | Tables absent until applied; feature flags remain off. |
 
