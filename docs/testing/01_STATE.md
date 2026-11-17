@@ -8,7 +8,7 @@ Phases 2-7 implementation code is committed; live cutover, BYOD validation, and 
 
 Phase 0 is complete with conditions. Phase 1 UI is CI-verified. Final hybrid implementation plan is in `docs/testing/05_HYBRID_IMPLEMENTATION_PLAN.md`.
 
-Result: Backend `71c1e0d` now provisions all 30 gateway project tables, copies every project data table (excluding transient `pending_actions`), verifies copied row counts, and adds owner schema repair; Backend Tests run `44010169513` is green. Android `d0de7cb` adds the owner schema-repair action; Android Tests run `44010191940` and APK run `44010191939` are green. Migration `011` is still not applied; BYOD and platform billing remain disabled. Real generation is NO-GO until the test account gets worker and storage keys through the app Settings screen.
+Result: Backend `71c1e0d` now provisions all 30 gateway project tables, copies every project data table (excluding transient `pending_actions`), verifies copied row counts, and adds owner schema repair; Backend Tests run `44010169513` is green. Backend `71c1e0d` is deployed on EC2 as `anime-backend:71c1e0d`; health, n8n alias, test-account login/projects, and prompt-meta smoke pass. Android `d0de7cb` adds the owner schema-repair action; Android Tests run `44010191940` and APK run `44010191939` are green. Migration `011` is still not applied; BYOD and platform billing remain disabled. Real generation is NO-GO until the test account gets worker and storage keys through the app Settings screen.
 
 ## Phase 2-7 Implementation Status
 
@@ -94,7 +94,7 @@ Result: Backend `71c1e0d` now provisions all 30 gateway project tables, copies e
 
 1. Apply migration `011` to the central anime database using the migration runbook; verify tables, RPCs, and rollback availability.
 2. Keep `ANIME_BYOD_ENABLED=false` and `ANIME_PLATFORM_DB_ENABLED=false` until a BYOD test DSN passes connect/health/provision and pause/unpause.
-3. Deploy backend `71c1e0d` only after migration `011` is applied, then validate all 14 workflows against a BYOD test DSN.
+3. Backend `71c1e0d` is deployed and healthy; after `011` and a BYOD test DSN, validate all 14 workflows.
 4. Finish Phase 1 real-key evidence and Phase 3 live BYOD testing.
 5. Add per-project migration retry and runtime feature toggles to finish Phase 6.
 6. Run live BYOD cutover/rollback and pause/rotation/restore drills before enabling production cutover.
