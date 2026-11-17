@@ -40,7 +40,8 @@
 | 2026-11-17 | Phase 5 | Gateway TLS fix + live read | PASS | Backend `fd64916`; GHA `44047559530`; live gateway read | `tenantClientConnection()` used in gateway; BYOD read returned `200` with the smoke project; deployed as `anime-backend:fd64916`. |
 | 2026-11-17 | Phase 5 | All 14 workflows on BYOD | PENDING | Not yet run | Requires real worker/Telegram/provider configuration and write/callback validation. |
 | 2026-11-17 | Phase 3-4 | BYOD-first project creation | FAIL | Source review | New projects still insert into central and lists read central; GAP-013 opened. |
-| 2026-11-17 | Phase 1 | Android `d1c6ee4` APK + tests | PARTIAL | GHA `44033033460`, `44033033317` | APK green; Android Tests failed twice at `02-auth-validation` after the emulator killed the app immediately following `stopApp` + `launchApp clearState` (blank screen). Redundant `stopApp` removed; fresh CI pending. |
+| 2026-11-17 | Phase 1 | Android `d1c6ee4` APK + tests | PARTIAL | GHA `44033033460`, `44033033317` | APK green; Android Tests failed twice at `02-auth-validation` because the emulator killed the app immediately after `stopApp` + `launchApp clearState` (blank screen). |
+| 2026-11-17 | Phase 1 | Android `ac14492` Maestro hardening | PASS | GHA `44054066519`, `44054066825` | Removed redundant `stopApp`; Android Tests and APK green; launch, auth-validation, and media-playback flows pass. |
 
 ## Evidence Rules
 
