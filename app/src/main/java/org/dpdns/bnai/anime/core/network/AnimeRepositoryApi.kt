@@ -424,6 +424,8 @@ interface AdminRepository : RepositoryContext {
 
     suspend fun recheckOwnerTenantDatabase(tenantId: String): Resource<JsonMap> = Resource.Empty
 
+    suspend fun provisionOwnerTenantDatabase(tenantId: String): Resource<JsonMap> = Resource.Empty
+
     suspend fun fetchOwnerFeatureFlags(): Resource<JsonMap> = Resource.Empty
 
     suspend fun fetchTenantDatabase(): Resource<JsonMap> = Resource.Empty

@@ -353,6 +353,21 @@ fun OwnerOverviewScreen() {
                     enabled = selectedTenantDbId.isNotBlank(),
                     modifier = Modifier.fillMaxWidth().testTag(TestTags.Owner.DB_RECHECK)
                 ) { Text("Recheck Selected Database") }
+                OutlinedButton(
+                    onClick = {
+                        val tenantId = selectedTenantDbId
+                        if (tenantId.isNotBlank()) {
+                            scope.launch {
+                                val result = repository.provisionOwnerTenantDatabase(tenantId)
+                                val message = if (result is Resource.Success<*>) "Tenant schema repaired" else "Schema repair failed"
+                                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                                refreshOwnerHub(activeProjectId, tenantDbFilter)
+                            }
+                        }
+                    },
+                    enabled = selectedTenantDbId.isNotBlank(),
+                    modifier = Modifier.fillMaxWidth().testTag(TestTags.Owner.DB_PROVISION)
+                ) { Text("Repair Tenant Schema") }
                 Text("Audit: $tenantDbAuditSummary", style = MaterialTheme.typography.bodySmall, modifier = Modifier.testTag(TestTags.Owner.DB_AUDIT))
             }
         }

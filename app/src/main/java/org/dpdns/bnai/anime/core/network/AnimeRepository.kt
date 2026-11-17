@@ -1008,6 +1008,16 @@ class AnimeRepository(
         }
     }
 
+    override suspend fun provisionOwnerTenantDatabase(tenantId: String): Resource<JsonMap> = withContext(Dispatchers.IO) {
+        try {
+            val response = apiService.provisionOwnerTenantDatabase(tenantId)
+            if (response.isSuccessful) Resource.Success(response.body()?.data ?: emptyMap())
+            else Resource.Error("Tenant schema repair failed (${response.code()})", response.code())
+        } catch (e: Exception) {
+            Resource.Error(e.localizedMessage ?: "Tenant schema repair failed")
+        }
+    }
+
     override suspend fun fetchOwnerFeatureFlags(): Resource<JsonMap> = withContext(Dispatchers.IO) {
         try {
             val response = apiService.getOwnerFeatureFlags()

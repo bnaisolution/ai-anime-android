@@ -172,6 +172,7 @@ object TestTags {
         const val DB_FILTER_ACTIVE = "screen.owner.tenant_databases.filter_active"
         const val DB_FILTER_ERROR = "screen.owner.tenant_databases.filter_error"
         const val DB_RECHECK = "screen.owner.tenant_databases.recheck"
+        const val DB_PROVISION = "screen.owner.tenant_databases.provision"
         const val DB_AUDIT = "screen.owner.tenant_databases.audit"
         const val FEATURE_FLAGS = "screen.owner.feature_flags"
     }

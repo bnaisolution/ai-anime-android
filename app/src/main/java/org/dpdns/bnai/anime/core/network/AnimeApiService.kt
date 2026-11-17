@@ -748,6 +748,9 @@ interface AnimeApiService {
     @POST("v1/anime/owner/tenant-databases/{tenantId}/health-check")
     suspend fun recheckOwnerTenantDatabase(@Path("tenantId") tenantId: String): Response<ApiEnvelope<JsonMap>>
 
+    @POST("v1/anime/owner/tenant-databases/{tenantId}/provision")
+    suspend fun provisionOwnerTenantDatabase(@Path("tenantId") tenantId: String): Response<ApiEnvelope<JsonMap>>
+
     @GET("v1/anime/owner/features")
     suspend fun getOwnerFeatureFlags(): Response<ApiEnvelope<JsonMap>>
 
