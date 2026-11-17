@@ -15,14 +15,20 @@
 | 2026-11-16 | Phase 0 | Backend deploy `bde3582` | PASS | EC2 `docker compose up -d --build backend` | Backup created; old image tagged `anime-backend:rollback-pre-bde3582`; health 200. |
 | 2026-11-16 | Phase 0 | Post-deploy project format | PASS | API smoke | Meta `project_format=SERIES`; Story Bible `project_format=SERIES`; smoke project deleted. |
 | 2026-11-16 | Phase 0 | GAP-001 closure | CLOSED | Post-deploy smoke | `project_format` verified after redeploy. |
+| 2026-11-16 | Phase 2-7 | `npm run build` + `npm test` (backend `b154413`) | PASS | Local Termux | 152 unit, 101 route, 131 static, 22 regression; no failures. |
+| 2026-11-16 | Phase 2 | Migration `011_hybrid_byod_wallet.sql` static review | PASS | Source | Additive tables/RPCs, RLS, rollback pair, feature flags default false. |
+| 2026-11-16 | Phase 3 | DSN validation unit suite | PASS | `test/unit/tenantDatabase.validation.test.js` | Rejects non-Postgres, private hosts, missing auth, bad SSL; fingerprint stable across password rotation. |
+| 2026-11-16 | Phase 3-7 | Route registration + Android contract static | PASS | New hybrid tests | Tenant DB/wallet routes and Android DSN/owner-registry wiring present. |
+| 2026-11-16 | Phase 1-7 | Backend `b154413` | PASS | GHA `43980517504` | All gating jobs green; isolated DB tests skipped. |
+| 2026-11-16 | Phase 1-7 | Android `27fccff` APK + tests | PASS | GHA `43980517754`, `43980517645` | Build APK green; Android Tests green after Maestro-only rerun. |
+| 2026-11-17 | Phase 5 | Tenant gateway implementation | PASS | Backend `75faa00` | Project BYOD routing, tenant SQL translation, central catalog fallback, system fan-out; system write injection fixed. |
+| 2026-11-17 | Phase 5 | `npm run build` + full `npm test` | PASS | Local Termux | 160 unit, 105 route, 135 static, 22 regression; no failures. |
+| 2026-11-17 | Phase 5 | Backend gateway CI | PASS | GHA `43984422766` | All gating jobs green; isolated DB tests skipped. |
+| 2026-11-17 | Phase 5 | Live BYOD/workflow validation | PENDING | No BYOD DSN; migration `011` not applied | Gateway remains disabled by feature flag; central behavior unchanged until deploy. |
+| 2026-11-17 | Phase 2 | Live migration `011` apply | PENDING | No DB DSN available in Termux/EC2 env | Tables absent until applied; feature flags remain off. |
 
 ## Evidence Rules
 
 - Never store passwords, tokens, service-role keys, or private keys here.
 - Store only paths, run IDs, checksums, and redacted output.
 - Preserve failed/negative evidence until manual cleanup approval.
-| 2026-11-16 | Phase 2-7 | `npm run build` + `npm test` (backend) | PASS | Local Termux | 152 unit, 101 route, 131 static, 22 regression; no failures. |
-| 2026-11-16 | Phase 2 | Migration `011_hybrid_byod_wallet.sql` static review | PASS | Source | Additive tables/RPCs, RLS, rollback pair, feature flags default false. |
-| 2026-11-16 | Phase 3 | DSN validation unit suite | PASS | `test/unit/tenantDatabase.validation.test.js` | Rejects non-Postgres, private hosts, missing auth, bad SSL; fingerprint stable across password rotation. |
-| 2026-11-16 | Phase 3-7 | Route registration + Android contract static | PASS | New hybrid tests | Tenant DB/wallet routes and Android DSN/owner-registry wiring present. |
-| 2026-11-16 | Phase 2 | Live migration `011` apply | PENDING | No DB DSN available in Termux/EC2 env | Tables absent until applied; feature flags remain off. |

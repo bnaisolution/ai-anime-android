@@ -1,14 +1,14 @@
 # Final Hybrid Implementation Plan
 
-Status: phases 2-7 scaffolding implemented; live BYOD cutover and real-key E2E remain gated.
-Date: 2026-11-16
+Status: phases 2-7 implementation committed; live BYOD validation, cutover, and real-key E2E remain gated.
+Date: 2026-11-17
 
-## Implementation Progress (2026-11-16)
+## Implementation Progress (2026-11-17)
 
 - Phase 2: encrypted tenant database registry, audit, feature flags, and resolver implemented; migration `011` pending live apply.
 - Phase 3: DSN validation/test/connect/health/disconnect/provision APIs and Android Database-tab controls implemented; live test DSN pending.
-- Phase 4: per-project copy and rollback index implemented; full read/write routing remains gated.
-- Phase 5: not implemented; existing gateway remains central-only.
+- Phase 4: per-project copy and rollback index implemented; full table copy/checksum and production routing remain gated.
+- Phase 5: tenant-aware gateway committed in backend `75faa00`; project BYOD routing, central catalog fallback, and system-scope fan-out implemented; live BYOD/workflow validation pending.
 - Phase 6: owner tenant database registry and wallet visibility added; filters/retry/actions remain.
 - Phase 7: wallet tables, credit/debit RPCs, and balance preflight added; platform-managed remains disabled.
 - Phase 8: private-host rejection, encryption, audit, and fail-closed errors added; runtime isolation tests remain.
@@ -304,17 +304,22 @@ Gate:
 ### Phase 5 - n8n And Worker Routing (later)
 Goal: keep user DB credentials out of n8n and workers.
 
-Tasks:
-1. Extend backend DB gateway with `tenant_id` routing.
-2. Add scoped tokens containing tenant and project.
-3. n8n workflows call only backend gateway.
-4. CPU/GPU workers call backend APIs or scoped gateway.
-5. Remove hardcoded Supabase assumptions from workflows where needed.
+Done:
+- Backend `75faa00` adds project-to-data-plane resolution, tenant Postgres execution for a safe PostgREST subset, central catalog fallback, and system-scope fan-out across central + active BYOD planes.
+- System writes preserve their scoped body instead of injecting `project_id=system`.
+
+Remaining:
+1. Add scoped tokens containing tenant and project.
+2. Validate n8n workflow reads/writes against a live BYOD database.
+3. Verify CPU/GPU worker gateway calls on both data planes.
+4. Remove remaining hardcoded Supabase assumptions from workflows.
+5. Prove cross-tenant denial and BYOD DB-down fail-closed behavior.
 
 Gate:
 - n8n cannot see BYOD credentials.
 - Generation reads/writes user DB.
 - Cross-tenant access denied.
+- All 14 workflows validated against a live BYOD plane.
 
 ### Phase 6 - Full Owner Console (later)
 Goal: platform-wide operations.
