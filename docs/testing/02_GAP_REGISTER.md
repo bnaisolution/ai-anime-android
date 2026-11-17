@@ -13,6 +13,7 @@ Status: Phase 0 blockers recorded.
 | GAP-007 | P0 | Phase 5 | n8n/workers read/write the selected tenant data plane | Tenant-aware gateway and system fan-out are implemented, but no live BYOD DSN or workflow validation has run | Backend `75faa00`; `workflowGateway.tenantDb.ts`; unit/route/static tests pass | Apply `011`, deploy `75faa00`, connect a test BYOD DB, and validate all 14 workflows |
 | GAP-008 | P1 | Phase 4 | Cutover verifies all core project data | Migration copies projects only, not seasons/scenes/episodes/prompts/memory | `migrateProjectsToTenant` copies `anime_data.projects` | Extend copy/checksum per table or keep cutover disabled |
 | GAP-009 | P1 | Phase 7 | Wallet funds and pricing are operational | Wallet tables/RPCs/preflight exist; no payment funding, prices, tax, or payout | `wallet.service.ts`, migration `011` | Provide business decisions and payment provider before enabling billing |
+| GAP-010 | P0 | Phase 3-5 | BYOD schema supports every gateway-allowed project table | `TENANT_SCHEMA_SQL` creates only `anime_data.projects`; gateway allows 31 project tables including `episodes`, `scenes`, `clips`, `episode_states`, characters, and memory | `tenantDatabase.service.ts` schema SQL vs `PROJECT_TABLES` in `workflowGateway.db.ts` | Add tenant DDL/migrations for all project tables before enabling BYOD or cutover |
 
 ## Severity Guide
 

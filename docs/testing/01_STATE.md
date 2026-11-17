@@ -15,7 +15,7 @@ Result: Backend `75faa00` adds tenant-aware gateway routing, and Backend Tests r
 | Phase | Status | What exists | Remaining gate |
 |---|---|---|---|
 | 2 Tenant registry | IMPLEMENTED / MIGRATION PENDING | `anime_tenant_databases`, audit, encrypted DSN, flags, resolver | Apply migration `011` to live DB |
-| 3 BYOD connect | IMPLEMENTED / LIVE-TEST PENDING | DSN validation, test, connect, disconnect, health, provisioning | Test DSN and pause/unpause access |
+| 3 BYOD connect | PARTIAL / LIVE-TEST PENDING | DSN validation, test, connect, disconnect, health, provisioning | Provision all gateway project tables (currently only `projects`); test DSN and pause/unpause |
 | 4 Optional cutover | PARTIAL / GATED | Per-project migration copy and central rollback index | Full copy of all project tables and checksum verification |
 | 5 n8n/worker routing | IMPLEMENTED / LIVE-TEST PENDING | Project BYOD routing, central catalog fallback, tenant SQL gateway, system-scope fan-out | Apply migration `011`, test with a live BYOD DSN, validate all 14 workflows |
 | 6 Owner console | PARTIAL | Tenant memberships, tenant DB registry, wallet visibility | Filters, retry migration, audit actions, feature toggles |

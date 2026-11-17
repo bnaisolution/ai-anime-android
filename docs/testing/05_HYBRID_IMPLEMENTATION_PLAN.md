@@ -6,7 +6,7 @@ Date: 2026-11-17
 ## Implementation Progress (2026-11-17)
 
 - Phase 2: encrypted tenant database registry, audit, feature flags, and resolver implemented; migration `011` pending live apply.
-- Phase 3: DSN validation/test/connect/health/disconnect/provision APIs and Android Database-tab controls implemented; live test DSN pending.
+- Phase 3: DSN validation/test/connect/health/disconnect/provision APIs and Android Database-tab controls implemented; provisioning currently creates `projects` only, so live test DSN and full project-table DDL remain pending.
 - Phase 4: per-project copy and rollback index implemented; full table copy/checksum and production routing remain gated.
 - Phase 5: tenant-aware gateway committed in backend `75faa00`; project BYOD routing, central catalog fallback, and system-scope fan-out implemented; live BYOD/workflow validation pending.
 - Phase 6: owner tenant database registry and wallet visibility added; filters/retry/actions remain.
