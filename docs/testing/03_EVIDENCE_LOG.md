@@ -32,7 +32,9 @@
 | 2026-11-17 | Phase 6 | Owner schema repair | PASS | Backend `71c1e0d`; Android `d0de7cb` | `POST /v1/anime/owner/tenant-databases/:tenantId/provision`; Android Tests `44010191940`; APK `44010191939`. |
 | 2026-11-17 | Phase 8 | Fail-closed and rollback hardening | PASS | `test/unit/tenantDatabase.runtime.test.js` | Disabled BYOD, paused/DB-down, missing DSN, mismatched tenant index, and expired 7-day rollback all fail closed. |
 | 2026-11-17 | Phase 2-5 | EC2 backend deploy `71c1e0d` | PASS | `anime-backend:71c1e0d` on EC2 | `/health` 200; n8n reaches `http://backend:3000`; test-account login, projects, and prompt-meta pass; hybrid routes return 401 unauthenticated; rollback tag `ec2-user-backend:rollback-pre-71c1e0d`. |
-| 2026-11-17 | Phase 5 | Live BYOD/workflow validation | PENDING | No BYOD DSN; migration `011` not applied | Backend `71c1e0d` is deployed and healthy; gateway remains disabled by feature flag. |
+| 2026-11-17 | Phase 3 | `Test BYOD` pooler connection | PASS | Supabase project `cnooyjoeymbuvfxnlfjs` | Direct host is IPv6-only and unreachable from EC2; pooler `aws-0-ap-northeast-1.pooler.supabase.com` works; backend `testTenantDsn` returns ok. |
+| 2026-11-17 | Phase 3-5 | `Test BYOD` tenant schema v2 | PASS | Backend `ad84103`; PostgreSQL 17.12 | 31 `anime_data` tables incl `schema_migrations`; reapply idempotent; TLS fix `ad84103` deployed; local suite 169 unit, 109 route, 136 static, 22 regression; rollback tag `anime-backend:rollback-pre-ad84103`. |
+| 2026-11-17 | Phase 5 | Live BYOD/workflow validation | PENDING | Central migration `011` not applied | `Test BYOD` schema is ready and backend is deployed; app connect remains blocked until `011`. Gateway remains disabled by feature flag. |
 | 2026-11-17 | Phase 2 | Live migration `011` apply | PENDING | No DB DSN available in Termux/EC2 env | Tables absent until applied; feature flags remain off. |
 
 ## Evidence Rules

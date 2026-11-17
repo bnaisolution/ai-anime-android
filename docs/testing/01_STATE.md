@@ -8,14 +8,14 @@ Phases 2-7 implementation code is committed; live cutover, BYOD validation, and 
 
 Phase 0 is complete with conditions. Phase 1 UI is CI-verified. Final hybrid implementation plan is in `docs/testing/05_HYBRID_IMPLEMENTATION_PLAN.md`.
 
-Result: Backend `71c1e0d` now provisions all 30 gateway project tables, copies every project data table (excluding transient `pending_actions`), verifies copied row counts, and adds owner schema repair; Backend Tests run `44010169513` is green. Backend `71c1e0d` is deployed on EC2 as `anime-backend:71c1e0d`; health, n8n alias, test-account login/projects, and prompt-meta smoke pass. Android `d0de7cb` adds the owner schema-repair action; Android Tests run `44010191940` and APK run `44010191939` are green. Migration `011` is still not applied; BYOD and platform billing remain disabled. Real generation is NO-GO until the test account gets worker and storage keys through the app Settings screen.
+Result: Backend `71c1e0d` now provisions all 30 gateway project tables, copies every project data table (excluding transient `pending_actions`), verifies copied row counts, and adds owner schema repair; Backend Tests run `44010169513` is green. Backend `ad84103` is deployed on EC2 as `anime-backend:ad84103`; health, n8n alias, test-account login/projects, and prompt-meta smoke pass. `Test BYOD` (`cnooyjoeymbuvfxnlfjs`) is reachable via pooler `aws-0-ap-northeast-1.pooler.supabase.com`; tenant schema v2 applied (31 tables incl `schema_migrations`), reapply idempotent, backend `testTenantDsn` ok. Direct Supabase DB host is IPv6-only and unusable from EC2. Android `d0de7cb` adds the owner schema-repair action; Android Tests run `44010191940` and APK run `44010191939` are green. Migration `011` is still not applied; BYOD and platform billing remain disabled. Real generation is NO-GO until the test account gets worker and storage keys through the app Settings screen.
 
 ## Phase 2-7 Implementation Status
 
 | Phase | Status | What exists | Remaining gate |
 |---|---|---|---|
 | 2 Tenant registry | IMPLEMENTED / MIGRATION PENDING | `anime_tenant_databases`, audit, encrypted DSN, flags, resolver | Apply migration `011` to live DB |
-| 3 BYOD connect | IMPLEMENTED / LIVE-TEST PENDING | DSN validation, test, connect, disconnect, health, provisioning of all 30 gateway project tables | Test DSN and pause/unpause |
+| 3 BYOD connect | IMPLEMENTED / TEST DB READY | DSN validation, test, connect, disconnect, health, provisioning of all 30 gateway project tables; `Test BYOD` schema v2 applied | Central migration `011`, app connect, pause/unpause |
 | 4 Optional cutover | IMPLEMENTED / LIVE-TEST PENDING | Per-project copy of all 30 tables, upserts, per-table row-count verification, 7-day rollback window | Live cutover/rollback with a real BYOD DSN |
 | 5 n8n/worker routing | IMPLEMENTED / LIVE-TEST PENDING | Project BYOD routing, central catalog fallback, tenant SQL gateway, system-scope fan-out | Apply migration `011`, test with a live BYOD DSN, validate all 14 workflows |
 | 6 Owner console | PARTIAL | Tenant memberships, tenant DB filters, audit preview, health recheck, schema repair, wallet visibility, read-only environment flag status | Per-project migration retry action and runtime-mutable feature toggles |
@@ -70,7 +70,7 @@ Result: Backend `71c1e0d` now provisions all 30 gateway project tables, copies e
 - Backend hybrid baseline `b154413`, Phase 5 gateway `75faa00`, Phase 6 owner filters `ec782e2`, and full tenant schema/copy `71c1e0d`: Backend Tests run `44010169513` success.
 - Android `d0de7cb` (`feat(owner): repair tenant schema from console`): Android Tests run `44010191940` success; Build APK run `44010191939` success.
 - Local PostgreSQL 18.6 validation: tenant schema creates 30 data tables plus `anime_data.schema_migrations`; reapply is idempotent; a legacy projects-only database upgrades cleanly; synthetic projects, episodes, scenes, clips, and audit rows copy with JSONB preserved; `pending_actions` is intentionally not copied.
-- Backend: `npm run build` and full `npm test` pass locally (168 unit, 108 route, 136 static, 22 regression). New tests cover PostgREST-to-SQL translation, BYOD project routing, system fan-out, owner filters, schema repair, read-only feature status, DSN validation, full-schema contracts, fail-closed routing, rollback expiry, and Android API/UI contracts.
+- Backend: `npm run build` and full `npm test` pass locally (169 unit, 109 route, 136 static, 22 regression). New tests cover PostgREST-to-SQL translation, BYOD project routing, system fan-out, owner filters, schema repair, read-only feature status, DSN validation, explicit TLS options, full-schema contracts, fail-closed routing, rollback expiry, and Android API/UI contracts.
 - Phase 5 system writes no longer inject `project_id=system`; system gateway requests preserve their own scoped body.
 - Hybrid migration `011_hybrid_byod_wallet.sql` has a paired rollback. It is additive and disabled by default.
 - Disk: 20G total, 9.2G used, 11G free.
@@ -93,7 +93,7 @@ Result: Backend `71c1e0d` now provisions all 30 gateway project tables, copies e
 ## Next Step
 
 1. Apply migration `011` to the central anime database using the migration runbook; verify tables, RPCs, and rollback availability.
-2. Keep `ANIME_BYOD_ENABLED=false` and `ANIME_PLATFORM_DB_ENABLED=false` until a BYOD test DSN passes connect/health/provision and pause/unpause.
+2. Keep `ANIME_BYOD_ENABLED=false` and `ANIME_PLATFORM_DB_ENABLED=false` until the validated `Test BYOD` pooler DSN passes app connect/health/provision and pause/unpause.
 3. Backend `71c1e0d` is deployed and healthy; after `011` and a BYOD test DSN, validate all 14 workflows.
 4. Finish Phase 1 real-key evidence and Phase 3 live BYOD testing.
 5. Add per-project migration retry and runtime feature toggles to finish Phase 6.
