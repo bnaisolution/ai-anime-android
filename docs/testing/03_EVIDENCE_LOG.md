@@ -34,8 +34,13 @@
 | 2026-11-17 | Phase 2-5 | EC2 backend deploy `71c1e0d` | PASS | `anime-backend:71c1e0d` on EC2 | `/health` 200; n8n reaches `http://backend:3000`; test-account login, projects, and prompt-meta pass; hybrid routes return 401 unauthenticated; rollback tag `ec2-user-backend:rollback-pre-71c1e0d`. |
 | 2026-11-17 | Phase 3 | `Test BYOD` pooler connection | PASS | Supabase project `cnooyjoeymbuvfxnlfjs` | Direct host is IPv6-only and unreachable from EC2; pooler `aws-0-ap-northeast-1.pooler.supabase.com` works; backend `testTenantDsn` returns ok. |
 | 2026-11-17 | Phase 3-5 | `Test BYOD` tenant schema v2 | PASS | Backend `ad84103`; PostgreSQL 17.12 | 31 `anime_data` tables incl `schema_migrations`; reapply idempotent; TLS fix `ad84103` deployed; local suite 169 unit, 109 route, 136 static, 22 regression; rollback tag `anime-backend:rollback-pre-ad84103`. |
-| 2026-11-17 | Phase 5 | Live BYOD/workflow validation | PENDING | Central migration `011` not applied | `Test BYOD` schema is ready and backend is deployed; app connect remains blocked until `011`. Gateway remains disabled by feature flag. |
-| 2026-11-17 | Phase 2 | Live migration `011` apply | PENDING | No DB DSN available in Termux/EC2 env | Tables absent until applied; feature flags remain off. |
+| 2026-11-17 | Phase 2 | Live migration `011` apply | PASS | Central pooler `aws-0-ap-south-1`; log `migration_011_apply.log` | Registry/audit/project-index/wallet-ledger tables, wallet RPCs, RLS, and flag columns verified; runtime BYOD enabled. |
+| 2026-11-17 | Phase 3 | Live test tenant + BYOD connect | PASS | `POST /v1/anime/tenants`; `GET /v1/anime/tenants/me/database` | Tenant `f91f5074-08c0-4f47-925c-8ad1ae7a5fa1`; `mode=byod`, `status=active`, `dsn_configured=true`, `schema_version=2`; health 1339 ms. |
+| 2026-11-17 | Phase 3-5 | Live cutover/rollback/re-migrate | PASS | Smoke project `d946a6a6-02e3-45b4-9a88-61674a186306` | `rows_copied=1`; index `byod`; BYOD project row present; rollback `rolled_back=1`; re-migrate `migrated=1`. All 14 workflows still pending. |
+| 2026-11-17 | Phase 5 | Gateway TLS fix + live read | PASS | Backend `fd64916`; GHA `44047559530`; live gateway read | `tenantClientConnection()` used in gateway; BYOD read returned `200` with the smoke project; deployed as `anime-backend:fd64916`. |
+| 2026-11-17 | Phase 5 | All 14 workflows on BYOD | PENDING | Not yet run | Requires real worker/Telegram/provider configuration and write/callback validation. |
+| 2026-11-17 | Phase 3-4 | BYOD-first project creation | FAIL | Source review | New projects still insert into central and lists read central; GAP-013 opened. |
+| 2026-11-17 | Phase 1 | Android `d1c6ee4` APK + tests | PARTIAL | GHA `44033033460`, `44033033317` | APK green; Android Tests failed twice at `02-auth-validation` after the emulator killed the app immediately following `stopApp` + `launchApp clearState` (blank screen). Redundant `stopApp` removed; fresh CI pending. |
 
 ## Evidence Rules
 

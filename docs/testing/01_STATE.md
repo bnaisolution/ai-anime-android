@@ -4,20 +4,20 @@ Last updated: 2026-11-17
 
 ## Current Phase
 
-Phases 2-7 implementation code is committed; live cutover, BYOD validation, and real generation remain gated.
+Phases 2-7 implementation code is committed; live BYOD validation passed for the dedicated test tenant. All 14 workflows, pause/rotation/restore drills, and real generation remain gated.
 
 Phase 0 is complete with conditions. Phase 1 UI is CI-verified. Final hybrid implementation plan is in `docs/testing/05_HYBRID_IMPLEMENTATION_PLAN.md`.
 
-Result: Backend `71c1e0d` now provisions all 30 gateway project tables, copies every project data table (excluding transient `pending_actions`), verifies copied row counts, and adds owner schema repair; Backend Tests run `44010169513` is green. Backend `ad84103` is deployed on EC2 as `anime-backend:ad84103`; health, n8n alias, test-account login/projects, and prompt-meta smoke pass. `Test BYOD` (`cnooyjoeymbuvfxnlfjs`) is reachable via pooler `aws-0-ap-northeast-1.pooler.supabase.com`; tenant schema v2 applied (31 tables incl `schema_migrations`), reapply idempotent, backend `testTenantDsn` ok. Direct Supabase DB host is IPv6-only and unusable from EC2. Android `d0de7cb` adds the owner schema-repair action; Android Tests run `44010191940` and APK run `44010191939` are green. Migration `011` is still not applied; BYOD and platform billing remain disabled. Real generation is NO-GO until the test account gets worker and storage keys through the app Settings screen.
+Result: Backend `fd64916` is deployed on EC2 as `anime-backend:fd64916`; Backend Tests run `44047559530` is green. Migration `011` is applied to the central DB, the dedicated test account has tenant `f91f5074-08c0-4f47-925c-8ad1ae7a5fa1`, and `Test BYOD` (`cnooyjoeymbuvfxnlfjs`) is connected through pooler `aws-0-ap-northeast-1.pooler.supabase.com`. Live connect/provision/health passed with schema v2 (31 tables incl `schema_migrations`); smoke project `d946a6a6-02e3-45b4-9a88-61674a186306` passed cutover, rollback, and re-migrate. Backend `fd64916` also fixes the gateway TLS path so BYOD reads no longer fail with `self-signed certificate in certificate chain`; the live gateway read returned the smoke project. Runtime BYOD is enabled; platform DB/billing remain disabled. Android `d1c6ee4` records this evidence; APK run `44033033460` is green. Android Tests `44033033317` failed twice in `02-auth-validation`: the emulator killed the process immediately after `stopApp` + `launchApp clearState`, leaving a blank screen. The flow was hardened by removing the redundant `stopApp`; a fresh CI run is pending. All 14 workflows are still unvalidated on BYOD, and new projects still write to central before migration. Real generation is NO-GO until the test account gets worker and storage keys through the app Settings screen.
 
 ## Phase 2-7 Implementation Status
 
 | Phase | Status | What exists | Remaining gate |
 |---|---|---|---|
-| 2 Tenant registry | IMPLEMENTED / MIGRATION PENDING | `anime_tenant_databases`, audit, encrypted DSN, flags, resolver | Apply migration `011` to live DB |
-| 3 BYOD connect | IMPLEMENTED / TEST DB READY | DSN validation, test, connect, disconnect, health, provisioning of all 30 gateway project tables; `Test BYOD` schema v2 applied | Central migration `011`, app connect, pause/unpause |
-| 4 Optional cutover | IMPLEMENTED / LIVE-TEST PENDING | Per-project copy of all 30 tables, upserts, per-table row-count verification, 7-day rollback window | Live cutover/rollback with a real BYOD DSN |
-| 5 n8n/worker routing | IMPLEMENTED / LIVE-TEST PENDING | Project BYOD routing, central catalog fallback, tenant SQL gateway, system-scope fan-out | Apply migration `011`, test with a live BYOD DSN, validate all 14 workflows |
+| 2 Tenant registry | APPLIED / LIVE | `anime_tenant_databases`, audit, encrypted DSN, flags, resolver; migration `011` applied and verified | Audited runtime feature toggles |
+| 3 BYOD connect | LIVE TEST PASS | DSN validation, test, connect, disconnect, health, full 30-table provisioning; test tenant connected and healthy | Pause/unpause, rotation, restore drills |
+| 4 Optional cutover | LIVE SMOKE PASS | Per-project copy of all 30 tables, upserts, per-table row-count verification, 7-day rollback; smoke project cutover/rollback/re-migrate passed | Checksums, BYOD-first creation, broad rollout |
+| 5 n8n/worker routing | PARTIAL LIVE | Project BYOD routing, central catalog fallback, tenant SQL gateway, system-scope fan-out; live gateway read from BYOD passed | Validate writes/callbacks and all 14 workflows |
 | 6 Owner console | PARTIAL | Tenant memberships, tenant DB filters, audit preview, health recheck, schema repair, wallet visibility, read-only environment flag status | Per-project migration retry action and runtime-mutable feature toggles |
 | 7 Platform-managed billing | SCAFFOLDED / DISABLED | Wallet tables, credit/debit RPCs, balance preflight | Pricing/provider decisions, payment funding, explicit owner enablement |
 | 8 Hardening | PARTIAL | DSN rejection, encryption, audit, fail-closed routing, cross-tenant index checks, paused/DB-down denial, 7-day rollback guard | Live pause/rotation/restore drills and full workflow fault injection |
@@ -68,7 +68,12 @@ Result: Backend `71c1e0d` now provisions all 30 gateway project tables, copies e
 - Backend commit `cbdf6be`: Backend Tests run `43940241680` success.
 - Phase 1 UI gate is satisfied; Phase 1 real-key/generation gate remains pending.
 - Backend hybrid baseline `b154413`, Phase 5 gateway `75faa00`, Phase 6 owner filters `ec782e2`, and full tenant schema/copy `71c1e0d`: Backend Tests run `44010169513` success.
+- Backend `fd64916` (`fix(tenant): apply explicit BYOD TLS options in gateway`): Backend Tests run `44047559530` success; deployed on EC2; live BYOD gateway read returned the smoke project.
+- Migration `011` applied live via `aws-0-ap-south-1.pooler.supabase.com`; registry/audit/project-index/wallet-ledger tables, wallet RPCs, RLS, and flag columns verified.
+- Dedicated test account now has owner tenant `f91f5074-08c0-4f47-925c-8ad1ae7a5fa1`; `GET /v1/anime/tenants/me/database` returns `mode=byod`, `status=active`, `dsn_configured=true`, `schema_version=2`.
+- `Test BYOD` live: connect, provision v2, health (reachable, 1339 ms), smoke-project cutover (`rows_copied=1`), rollback, and re-migrate all passed; BYOD copy contains project `d946a6a6-02e3-45b4-9a88-61674a186306`.
 - Android `d0de7cb` (`feat(owner): repair tenant schema from console`): Android Tests run `44010191940` success; Build APK run `44010191939` success.
+- Android `d1c6ee4` (BYOD evidence docs): APK run `44033033460` success; Android Tests run `44033033317` failed in `02-auth-validation` because the emulator killed the app right after the redundant `stopApp` + `launchApp clearState`. `02-auth-validation.yaml` now relies on `launchApp clearState` alone; fresh CI pending.
 - Local PostgreSQL 18.6 validation: tenant schema creates 30 data tables plus `anime_data.schema_migrations`; reapply is idempotent; a legacy projects-only database upgrades cleanly; synthetic projects, episodes, scenes, clips, and audit rows copy with JSONB preserved; `pending_actions` is intentionally not copied.
 - Backend: `npm run build` and full `npm test` pass locally (169 unit, 109 route, 136 static, 22 regression). New tests cover PostgREST-to-SQL translation, BYOD project routing, system fan-out, owner filters, schema repair, read-only feature status, DSN validation, explicit TLS options, full-schema contracts, fail-closed routing, rollback expiry, and Android API/UI contracts.
 - Phase 5 system writes no longer inject `project_id=system`; system gateway requests preserve their own scoped body.
@@ -92,9 +97,9 @@ Result: Backend `71c1e0d` now provisions all 30 gateway project tables, copies e
 
 ## Next Step
 
-1. Apply migration `011` to the central anime database using the migration runbook; verify tables, RPCs, and rollback availability.
-2. Keep `ANIME_BYOD_ENABLED=false` and `ANIME_PLATFORM_DB_ENABLED=false` until the validated `Test BYOD` pooler DSN passes app connect/health/provision and pause/unpause.
-3. Backend `71c1e0d` is deployed and healthy; after `011` and a BYOD test DSN, validate all 14 workflows.
-4. Finish Phase 1 real-key evidence and Phase 3 live BYOD testing.
-5. Add per-project migration retry and runtime feature toggles to finish Phase 6.
-6. Run live BYOD cutover/rollback and pause/rotation/restore drills before enabling production cutover.
+1. Validate all 14 workflows against the live BYOD test tenant, including gateway writes, system fan-out, `pending_actions` exclusion, and callbacks.
+2. Implement BYOD-first project creation/list routing; new projects currently write central first and need explicit migration.
+3. Run live cross-tenant denial, pause/unpause, DSN rotation, DB-down fail-closed, restore, and 7-day rollback drills.
+4. Finish Phase 1 real-key evidence and the remaining Phase 3 pause/rotation tests.
+5. Add per-project migration retry and audited runtime feature toggles to finish Phase 6.
+6. Rotate the exposed production/BYOD passwords and configure worker/Telegram credentials for a real generation smoke.

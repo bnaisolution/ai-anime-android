@@ -1,18 +1,18 @@
 # Final Hybrid Implementation Plan
 
-Status: phases 2-7 implementation committed; live BYOD validation, cutover, and real-key E2E remain gated.
+Status: phases 2-7 implementation committed; test-tenant BYOD live validation passed; full workflow validation, broad cutover, and real-key E2E remain gated.
 Date: 2026-11-17
 
 ## Implementation Progress (2026-11-17)
 
-- Phase 2: encrypted tenant database registry, audit, feature flags, and resolver implemented; migration `011` pending live apply.
-- Phase 3: DSN validation/test/connect/health/disconnect/provision APIs and Android Database-tab controls implemented; provisioning currently creates `projects` only, so live test DSN and full project-table DDL remain pending.
-- Phase 4: per-project copy and rollback index implemented; full table copy/checksum and production routing remain gated.
-- Phase 5: tenant-aware gateway committed in backend `75faa00`; project BYOD routing, central catalog fallback, and system-scope fan-out implemented; live BYOD/workflow validation pending.
+- Phase 2: migration `011` applied live; encrypted tenant registry, audit, feature flags, and resolver verified; runtime BYOD enabled.
+- Phase 3: DSN validation/test/connect/health/disconnect/provision APIs and Android Database-tab controls implemented; full 30-table schema v2 provisioned; test tenant connected and healthy; pause/rotation drills remain.
+- Phase 4: per-project copy and rollback index implemented; smoke project cutover/rollback/re-migrate passed; checksums, BYOD-first creation, and production routing remain gated.
+- Phase 5: tenant-aware gateway and TLS fix deployed as backend `fd64916`; live BYOD read passed. Gateway writes/callbacks and all 14 workflows remain unvalidated.
 - Phase 6: owner tenant database registry, filters, audit preview, health recheck, wallet visibility, and read-only environment flag status added; migration retry/actions and runtime toggles remain.
 - Phase 7: wallet tables, credit/debit RPCs, and balance preflight added; platform-managed remains disabled.
-- Phase 8: private-host rejection, encryption, audit, and fail-closed errors added; runtime isolation tests remain.
-- Phase 9: blocked on real provider, worker, Telegram, and BYOD test credentials.
+- Phase 8: private-host rejection, encryption, audit, and fail-closed errors added; live pause/rotation/restore and DB-down drills remain.
+- Phase 9: BYOD test credentials now exist; real provider, worker, and Telegram credentials remain blocking.
 
 ## Goal
 
@@ -308,15 +308,16 @@ Goal: keep user DB credentials out of n8n and workers.
 
 Done:
 - Backend `71c1e0d` adds project-to-data-plane resolution, tenant Postgres execution for a safe PostgREST subset, central catalog fallback, full tenant schema, and system-scope fan-out across central + active BYOD planes.
+- Backend `fd64916` routes the gateway through `tenantClientConnection()`, fixing the live `sslmode=require`/self-signed-certificate failure; live BYOD read returned the migrated smoke project.
 - System writes preserve their scoped body instead of injecting `project_id=system`.
 - Cross-tenant project-index mismatch, paused databases, missing DSNs, and DB-down paths fail closed.
 
 Remaining:
-1. Add scoped tokens containing tenant and project.
-2. Validate n8n workflow reads/writes against a live BYOD database.
-3. Verify CPU/GPU worker gateway calls on both data planes.
-4. Remove remaining hardcoded Supabase assumptions from workflows.
-5. Run live cross-tenant and BYOD DB-down fault injection.
+1. Validate n8n workflow reads, writes, and callbacks against the live BYOD database.
+2. Verify CPU/GPU worker gateway calls on both data planes.
+3. Remove remaining hardcoded Supabase assumptions from workflows.
+4. Run live cross-tenant and BYOD DB-down fault injection.
+5. Validate all 14 workflows end to end.
 
 Gate:
 - n8n cannot see BYOD credentials.
@@ -421,18 +422,17 @@ Gate:
 
 ## Immediate Next Work
 
-1. Finish Phase 1:
-   - Database tab.
-   - CPU worker URL.
-   - Owner Console shell.
-2. Run real generation with app-entered keys.
-3. Only after app is stable, start Phase 2/3 BYOD.
+1. Validate all 14 workflows on the live BYOD test tenant, including writes and callbacks.
+2. Implement BYOD-first project creation/list routing (GAP-013); currently new projects go central first.
+3. Run pause/unpause, DSN rotation, restore, cross-tenant denial, and DB-down drills.
+4. Run real generation with app-entered worker/provider/Telegram keys.
+5. Finish Phase 6 per-project migration retry and audited runtime toggles.
 
 ## Resolved Decisions
 
 1. CPU worker URL is entered manually in Settings.
 2. BYOD uses Postgres/Supabase DSN only.
-3. Existing-project migration is optional and opt-in per project. BYOD-first users need no migration.
+3. Existing-project migration is optional and opt-in per project. BYOD-first project creation is not implemented yet; new projects still write central first and need migration (GAP-013).
 4. User DB paused/unreachable: read-only plus guided restore; no automatic central fallback.
 5. Owner Console first release is read-only; actions come later.
 6. No quotas on BYOD usage.
