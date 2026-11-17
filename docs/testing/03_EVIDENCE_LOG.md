@@ -27,6 +27,10 @@
 | 2026-11-17 | Phase 6 | Owner tenant DB filters/features backend | PASS | Backend `ec782e2`; GHA `44004718519` | Status/mode/provider/host filters, audit preview, health recheck, read-only env flags, owner-only guard. |
 | 2026-11-17 | Phase 6 | Android owner filters/audit/recheck | PASS | Android `ca02e21`; GHA `44004693568`, `44004693535` | Android Tests and APK green; Maestro passed without rerun. |
 | 2026-11-17 | Phase 6 | Backend local full suite | PASS | Local Termux | 160 unit, 108 route, 136 static, 22 regression; no failures. |
+| 2026-11-17 | Phase 3-5 | Full tenant schema and data copy | PASS | Backend `71c1e0d`; GHA `44010169513` | 30 project tables plus schema migrations; 168 unit, 108 route, 136 static, 22 regression. |
+| 2026-11-17 | Phase 3-5 | Local PostgreSQL schema/copy validation | PASS | PostgreSQL 18.6 on Termux | 31 `anime_data` tables including `schema_migrations`; reapply idempotent; legacy projects-only upgrade passed; synthetic copy preserved JSONB and excluded `pending_actions`. |
+| 2026-11-17 | Phase 6 | Owner schema repair | PASS | Backend `71c1e0d`; Android `d0de7cb` | `POST /v1/anime/owner/tenant-databases/:tenantId/provision`; Android Tests `44010191940`; APK `44010191939`. |
+| 2026-11-17 | Phase 8 | Fail-closed and rollback hardening | PASS | `test/unit/tenantDatabase.runtime.test.js` | Disabled BYOD, paused/DB-down, missing DSN, mismatched tenant index, and expired 7-day rollback all fail closed. |
 | 2026-11-17 | Phase 5 | Live BYOD/workflow validation | PENDING | No BYOD DSN; migration `011` not applied | Gateway remains disabled by feature flag; central behavior unchanged until deploy. |
 | 2026-11-17 | Phase 2 | Live migration `011` apply | PENDING | No DB DSN available in Termux/EC2 env | Tables absent until applied; feature flags remain off. |
 

@@ -253,8 +253,9 @@ Tasks:
    - Connection timeout and clear errors.
 3. Provisioning:
    - Create `anime_data` schema.
-   - Create tables and `schema_migrations`.
-   - Run migrations with advisory lock.
+   - Create all 30 gateway project tables and `schema_migrations`.
+   - Add season-aware uniqueness and project indexes.
+   - Reapply safely to legacy projects-only databases.
 4. UI:
    - Enable Database tab BYOD fields.
    - Test Connection.
@@ -283,10 +284,11 @@ Tasks:
 1. Route new projects to user DB when BYOD is active.
 2. Keep central DB for workspaces without BYOD.
 3. Optional migration for existing central projects:
-   - Copy projects, bible, seasons, characters, scenes, episodes, prompts, memory.
-   - Verify counts and checksums.
+   - Copy all 30 project data tables, excluding transient `pending_actions`.
+   - Preserve ids, timestamps, and JSONB values with idempotent upserts.
+   - Verify per-table row counts before switching.
    - Switch tenant mapping atomically.
-   - Keep central rollback copy for a defined window.
+   - Keep central rollback copy for 7 days.
 4. UI:
    - "Start fresh" is the default.
    - "Move existing projects" is optional and opt-in per project.
@@ -305,15 +307,16 @@ Gate:
 Goal: keep user DB credentials out of n8n and workers.
 
 Done:
-- Backend `75faa00` adds project-to-data-plane resolution, tenant Postgres execution for a safe PostgREST subset, central catalog fallback, and system-scope fan-out across central + active BYOD planes.
+- Backend `71c1e0d` adds project-to-data-plane resolution, tenant Postgres execution for a safe PostgREST subset, central catalog fallback, full tenant schema, and system-scope fan-out across central + active BYOD planes.
 - System writes preserve their scoped body instead of injecting `project_id=system`.
+- Cross-tenant project-index mismatch, paused databases, missing DSNs, and DB-down paths fail closed.
 
 Remaining:
 1. Add scoped tokens containing tenant and project.
 2. Validate n8n workflow reads/writes against a live BYOD database.
 3. Verify CPU/GPU worker gateway calls on both data planes.
 4. Remove remaining hardcoded Supabase assumptions from workflows.
-5. Prove cross-tenant denial and BYOD DB-down fail-closed behavior.
+5. Run live cross-tenant and BYOD DB-down fault injection.
 
 Gate:
 - n8n cannot see BYOD credentials.
@@ -328,11 +331,12 @@ Done:
 - Tenant database registry with `status`/`mode`/`provider`/host-database filters.
 - Per-tenant mode, status, schema version, host, database, and last error.
 - Audit preview plus owner-triggered health recheck with audit writes.
+- Owner-triggered tenant schema repair with audit writes.
 - Read-only environment status for BYOD, platform DB, platform-managed, and billing flags.
 - Owner-only access with 403 for normal users.
 
 Remaining:
-1. Migration status and retry/actions with project scope.
+1. Project-scoped data-migration retry action.
 2. Worker health details.
 3. Quota/usage detail views.
 4. Full audit log navigation.
@@ -370,6 +374,10 @@ Gate:
 - BYOD users are not limited by platform quota.
 
 ### Phase 8 - Hardening And Isolation (before BYOD rollout)
+Done:
+- Unit coverage for cross-tenant index mismatch, DB-down/paused denial, missing DSN, BYOD-disabled central resolution, and expired rollback.
+- DSN private-host rejection, encryption, audit redaction, and timeouts.
+
 Tasks:
 1. Cross-tenant tests.
 2. DB-down tests.
