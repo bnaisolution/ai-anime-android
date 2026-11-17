@@ -19,6 +19,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import org.dpdns.bnai.anime.core.network.CommandIntent
+import org.dpdns.bnai.anime.core.network.JsonMap
 import org.dpdns.bnai.anime.core.network.Resource
 import org.dpdns.bnai.anime.ui.components.ProjectSelectorBar
 import org.dpdns.bnai.anime.ui.components.StatusBadge
@@ -44,10 +45,15 @@ fun OwnerOverviewScreen() {
     var tenantSummary by remember { mutableStateOf("No tenant memberships found") }
     var tenantDbCount by remember { mutableIntStateOf(0) }
     var tenantDbSummary by remember { mutableStateOf("No user-owned databases connected") }
+    var tenantDbRows by remember { mutableStateOf<List<JsonMap>>(emptyList()) }
+    var tenantDbFilter by remember { mutableStateOf("ALL") }
+    var selectedTenantDbId by remember { mutableStateOf("") }
+    var tenantDbAuditSummary by remember { mutableStateOf("No audit events") }
+    var ownerFeatureSummary by remember { mutableStateOf("BYOD OFF • Platform DB OFF • Billing OFF") }
     var ownerWalletSummary by remember { mutableStateOf("Wallet not enabled") }
     var showEmergencyDialog by remember { mutableStateOf(false) }
 
-    fun refreshOwnerHub(pid: String) {
+    fun refreshOwnerHub(pid: String, dbFilter: String = tenantDbFilter) {
         scope.launch {
             val start = System.currentTimeMillis()
             isHealthy = repository.checkBackendHealth()
@@ -86,7 +92,14 @@ fun OwnerOverviewScreen() {
                 "$name ($plan)"
             }.ifBlank { "No tenant memberships found" }
 
-            val tenantDbs = (repository.fetchOwnerTenantDatabases() as? Resource.Success)?.data.orEmpty()
+            val statusFilter = when (dbFilter) {
+                "ACTIVE" -> "active"
+                "ERROR" -> "error"
+                "PAUSED" -> "paused"
+                else -> null
+            }
+            val tenantDbs = (repository.fetchOwnerTenantDatabases(status = statusFilter) as? Resource.Success)?.data.orEmpty()
+            tenantDbRows = tenantDbs
             tenantDbCount = tenantDbs.size
             tenantDbSummary = tenantDbs.take(3).joinToString(" • ") { db ->
                 val name = ((db["anime_tenants"] as? Map<*, *>)?.get("name") as? String)
@@ -95,6 +108,22 @@ fun OwnerOverviewScreen() {
                 val status = (db["status"] as? String)?.uppercase() ?: "UNKNOWN"
                 "$name ($mode/$status)"
             }.ifBlank { "No user-owned databases connected" }
+
+            selectedTenantDbId = tenantDbs.firstOrNull()?.get("tenant_id") as? String ?: ""
+            tenantDbAuditSummary = if (selectedTenantDbId.isBlank()) {
+                "No audit events"
+            } else {
+                val audits = (repository.fetchOwnerTenantDatabaseAudit(selectedTenantDbId, 5) as? Resource.Success)?.data.orEmpty()
+                audits.take(3).joinToString(" • ") { audit ->
+                    val action = (audit["action"] as? String)?.uppercase() ?: "EVENT"
+                    val status = (audit["status"] as? String)?.uppercase() ?: "UNKNOWN"
+                    "$action/$status"
+                }.ifBlank { "No audit events" }
+            }
+
+            val flags = (repository.fetchOwnerFeatureFlags() as? Resource.Success)?.data.orEmpty()
+            fun flag(value: Any?): String = if (value == true) "ON" else "OFF"
+            ownerFeatureSummary = "BYOD ${flag(flags["byod_enabled"])} • Platform DB ${flag(flags["platform_db_enabled"])} • Platform ${flag(flags["platform_managed_enabled"])} • Billing ${flag(flags["platform_billing_enabled"])}"
 
             val firstTenantId = (tenants.firstOrNull()?.get("id") as? String).orEmpty()
             if (firstTenantId.isNotBlank()) {
@@ -258,13 +287,87 @@ fun OwnerOverviewScreen() {
             modifier = Modifier.fillMaxWidth().testTag(TestTags.Owner.TENANT_DATABASES),
             shape = RoundedCornerShape(12.dp)
         ) {
-            Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                     Text("User Database Registry", style = MaterialTheme.typography.labelLarge)
-                    StatusBadge("READ ONLY")
+                    StatusBadge(if (tenantDbCount == 0) "EMPTY" else "${tenantDbCount} CONNECTED")
+                }
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    FilterChip(
+                        selected = tenantDbFilter == "ALL",
+                        onClick = {
+                            tenantDbFilter = "ALL"
+                            refreshOwnerHub(activeProjectId, "ALL")
+                        },
+                        label = { Text("All") },
+                        modifier = Modifier.testTag(TestTags.Owner.DB_FILTER_ALL)
+                    )
+                    FilterChip(
+                        selected = tenantDbFilter == "ACTIVE",
+                        onClick = {
+                            tenantDbFilter = "ACTIVE"
+                            refreshOwnerHub(activeProjectId, "ACTIVE")
+                        },
+                        label = { Text("Active") },
+                        modifier = Modifier.testTag(TestTags.Owner.DB_FILTER_ACTIVE)
+                    )
+                    FilterChip(
+                        selected = tenantDbFilter == "ERROR",
+                        onClick = {
+                            tenantDbFilter = "ERROR"
+                            refreshOwnerHub(activeProjectId, "ERROR")
+                        },
+                        label = { Text("Errors") },
+                        modifier = Modifier.testTag(TestTags.Owner.DB_FILTER_ERROR)
+                    )
                 }
                 Text(formatInt(tenantDbCount), style = MaterialTheme.typography.headlineLarge)
                 Text(tenantDbSummary, style = MaterialTheme.typography.bodySmall)
+                tenantDbRows.take(5).forEach { db ->
+                    val name = ((db["anime_tenants"] as? Map<*, *>)?.get("name") as? String)
+                        ?.ifBlank { "Tenant" } ?: "Tenant"
+                    val mode = (db["mode"] as? String)?.uppercase() ?: "CENTRAL"
+                    val status = (db["status"] as? String)?.uppercase() ?: "UNKNOWN"
+                    val host = (db["dsn_host"] as? String).orEmpty()
+                    val database = (db["database_name"] as? String).orEmpty()
+                    val schemaVersion = (db["schema_version"] as? Number)?.toInt() ?: 0
+                    val lastError = (db["last_error"] as? String).orEmpty()
+                    Text("$name • $mode/$status", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
+                    Text("$host/$database • schema v$schemaVersion", style = MaterialTheme.typography.bodySmall)
+                    if (lastError.isNotBlank()) {
+                        Text(lastError, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
+                    }
+                }
+                Button(
+                    onClick = {
+                        val tenantId = selectedTenantDbId
+                        if (tenantId.isNotBlank()) {
+                            scope.launch {
+                                val result = repository.recheckOwnerTenantDatabase(tenantId)
+                                val message = if (result is Resource.Success<*>) "Database health rechecked" else "Health check failed"
+                                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                                refreshOwnerHub(activeProjectId, tenantDbFilter)
+                            }
+                        }
+                    },
+                    enabled = selectedTenantDbId.isNotBlank(),
+                    modifier = Modifier.fillMaxWidth().testTag(TestTags.Owner.DB_RECHECK)
+                ) { Text("Recheck Selected Database") }
+                Text("Audit: $tenantDbAuditSummary", style = MaterialTheme.typography.bodySmall, modifier = Modifier.testTag(TestTags.Owner.DB_AUDIT))
+            }
+        }
+
+        Card(
+            modifier = Modifier.fillMaxWidth().testTag(TestTags.Owner.FEATURE_FLAGS),
+            shape = RoundedCornerShape(12.dp)
+        ) {
+            Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                    Text("Feature Flags", style = MaterialTheme.typography.labelLarge)
+                    StatusBadge("ENV CONTROLLED")
+                }
+                Text(ownerFeatureSummary, style = MaterialTheme.typography.bodyMedium)
+                Text("Changes require an owner-approved environment update and backend restart.", style = MaterialTheme.typography.bodySmall)
             }
         }
 

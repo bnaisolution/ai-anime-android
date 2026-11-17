@@ -973,13 +973,48 @@ class AnimeRepository(
         }
     }
 
-    override suspend fun fetchOwnerTenantDatabases(): Resource<List<JsonMap>> = withContext(Dispatchers.IO) {
+    override suspend fun fetchOwnerTenantDatabases(
+        status: String?,
+        mode: String?,
+        provider: String?,
+        query: String?
+    ): Resource<List<JsonMap>> = withContext(Dispatchers.IO) {
         try {
-            val response = apiService.getOwnerTenantDatabases()
+            val response = apiService.getOwnerTenantDatabases(status, mode, provider, query)
             if (response.isSuccessful) Resource.Success(response.body()?.data.orEmpty())
             else Resource.Error("Failed to fetch tenant databases (${response.code()})", response.code())
         } catch (e: Exception) {
             Resource.Error(e.localizedMessage ?: "Failed to fetch tenant databases")
+        }
+    }
+
+    override suspend fun fetchOwnerTenantDatabaseAudit(tenantId: String, limit: Int): Resource<List<JsonMap>> = withContext(Dispatchers.IO) {
+        try {
+            val response = apiService.getOwnerTenantDatabaseAudit(tenantId, limit)
+            if (response.isSuccessful) Resource.Success(response.body()?.data.orEmpty())
+            else Resource.Error("Failed to fetch tenant database audit (${response.code()})", response.code())
+        } catch (e: Exception) {
+            Resource.Error(e.localizedMessage ?: "Failed to fetch tenant database audit")
+        }
+    }
+
+    override suspend fun recheckOwnerTenantDatabase(tenantId: String): Resource<JsonMap> = withContext(Dispatchers.IO) {
+        try {
+            val response = apiService.recheckOwnerTenantDatabase(tenantId)
+            if (response.isSuccessful) Resource.Success(response.body()?.data ?: emptyMap())
+            else Resource.Error("Tenant database health check failed (${response.code()})", response.code())
+        } catch (e: Exception) {
+            Resource.Error(e.localizedMessage ?: "Tenant database health check failed")
+        }
+    }
+
+    override suspend fun fetchOwnerFeatureFlags(): Resource<JsonMap> = withContext(Dispatchers.IO) {
+        try {
+            val response = apiService.getOwnerFeatureFlags()
+            if (response.isSuccessful) Resource.Success(response.body()?.data ?: emptyMap())
+            else Resource.Error("Failed to fetch owner feature flags (${response.code()})", response.code())
+        } catch (e: Exception) {
+            Resource.Error(e.localizedMessage ?: "Failed to fetch owner feature flags")
         }
     }
 

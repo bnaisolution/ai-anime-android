@@ -413,7 +413,18 @@ interface AdminRepository : RepositoryContext {
 
     suspend fun fetchOwnerTenants(): Resource<List<JsonMap>> = Resource.Empty
 
-    suspend fun fetchOwnerTenantDatabases(): Resource<List<JsonMap>> = Resource.Empty
+    suspend fun fetchOwnerTenantDatabases(
+        status: String? = null,
+        mode: String? = null,
+        provider: String? = null,
+        query: String? = null
+    ): Resource<List<JsonMap>> = Resource.Empty
+
+    suspend fun fetchOwnerTenantDatabaseAudit(tenantId: String, limit: Int = 20): Resource<List<JsonMap>> = Resource.Empty
+
+    suspend fun recheckOwnerTenantDatabase(tenantId: String): Resource<JsonMap> = Resource.Empty
+
+    suspend fun fetchOwnerFeatureFlags(): Resource<JsonMap> = Resource.Empty
 
     suspend fun fetchTenantDatabase(): Resource<JsonMap> = Resource.Empty
 
