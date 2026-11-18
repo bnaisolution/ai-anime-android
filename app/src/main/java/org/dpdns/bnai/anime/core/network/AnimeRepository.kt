@@ -526,7 +526,11 @@ class AnimeRepository(
         message: String,
         projectId: String,
         currentScreen: String?,
-        conversationId: String?
+        conversationId: String?,
+        seasonNo: Int?,
+        episodeNo: Int?,
+        targetDurationSec: Int?,
+        requestedAction: RequestedDirectorActionDto?
     ): Resource<AiChatResponse> = try {
         val req = AiChatRequest(
             message = message,
@@ -534,13 +538,21 @@ class AnimeRepository(
             skill_key = "cinematic_director",
             current_screen = currentScreen,
             conversation_id = conversationId,
-            request_id = UUID.randomUUID().toString()
+            request_id = UUID.randomUUID().toString(),
+            season_no = seasonNo,
+            episode_no = episodeNo,
+            target_duration_sec = targetDurationSec,
+            requested_action = requestedAction
         )
-        val response = apiService.chatWithAi(req)
+        val response = apiService.directorChat(req)
         if (response.isSuccessful && response.body() != null) {
             Resource.Success(response.body()!!)
+        } else if (response.code() == 422) {
+            Resource.Error("BYOD AI provider is not configured. Add your Groq, Gemini, or OpenAI-compatible key in Settings.", 422)
         } else if (response.code() == 429) {
             Resource.Error("Rate limit or Quota reached (HTTP 429). Please wait or check BYOD keys.", 429)
+        } else if (response.code() == 409) {
+            Resource.Error("Project target changed or is busy. Refresh AI Director before retrying.", 409)
         } else {
             Resource.Error("AI Director HTTP ${response.code()}", response.code())
         }
@@ -552,14 +564,49 @@ class AnimeRepository(
         message: String,
         currentScreen: String,
         conversationId: String?,
-        projectId: String
+        projectId: String,
+        seasonNo: Int?,
+        episodeNo: Int?,
+        targetDurationSec: Int?,
+        requestedAction: RequestedDirectorActionDto?
     ): Resource<AiChatResponse> {
         return chatWithBrain(
             message = message,
             projectId = projectId,
             currentScreen = currentScreen,
-            conversationId = conversationId
+            conversationId = conversationId,
+            seasonNo = seasonNo,
+            episodeNo = episodeNo,
+            targetDurationSec = targetDurationSec,
+            requestedAction = requestedAction
         )
+    }
+
+    override suspend fun executeDirectorAction(
+        projectId: String,
+        actionId: String,
+        idempotencyKey: String?
+    ): Resource<DirectorActionExecutionDto> = try {
+        if (projectId.isBlank()) {
+            Resource.Error("Please select or create a project first.")
+        } else {
+            val key = idempotencyKey?.takeIf { it.isNotBlank() } ?: "director-${UUID.randomUUID()}"
+            mapEnvelope(apiService.executeDirectorAction(key, DirectorActionExecuteRequest(actionId, projectId))) { it }
+        }
+    } catch (e: Exception) {
+        Resource.Error(e.localizedMessage ?: "Action execution failed")
+    }
+
+    override suspend fun clearDirectorConversation(projectId: String): Resource<Unit> = try {
+        if (projectId.isBlank()) {
+            Resource.Success(Unit)
+        } else {
+            val response = apiService.clearDirectorConversation(DirectorClearRequest(projectId))
+            if (response.isSuccessful) Resource.Success(Unit)
+            else Resource.Error("Could not clear server conversation (HTTP ${response.code()})", response.code())
+        }
+    } catch (e: Exception) {
+        Resource.Error(e.localizedMessage ?: "Could not clear server conversation")
     }
 
     override suspend fun submitStudioCommand(
@@ -658,7 +705,8 @@ class AnimeRepository(
                     media_url = mediaUrl,
                     prompt = prompt,
                     character_code = characterCode,
-                    save_to_character = saveToCharacter
+                    save_to_character = saveToCharacter,
+                    mode = if (saveToCharacter) "SAVE" else "QUICK"
                 )
             )
         ) { it }

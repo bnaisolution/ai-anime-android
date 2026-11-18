@@ -26,14 +26,59 @@ data class LoginResponse(
 )
 data class AuthMeResponse(val status: String? = null, val user: JsonMap? = null)
 
+data class RequestedDirectorActionDto(
+    val intent: String,
+    val payload: JsonMap = emptyMap(),
+    val season_no: Int? = null,
+    val episode_no: Int? = null,
+    val target_duration_sec: Int? = null,
+    val mode: String? = null
+)
+
 data class AiChatRequest(
     val message: String,
     val project_id: String? = null,
-    val skill_key: String = "ai_admin",
+    val skill_key: String = "cinematic_director",
     val current_screen: String? = null,
     val conversation_id: String? = null,
-    val request_id: String? = null
+    val request_id: String? = null,
+    val season_no: Int? = null,
+    val episode_no: Int? = null,
+    val target_duration_sec: Int? = null,
+    val requested_action: RequestedDirectorActionDto? = null
 )
+
+data class DirectorActionPreviewDto(
+    val project_id: String? = null,
+    val intent: String? = null,
+    val season_no: Int? = null,
+    val episode_no: Int? = null,
+    val target_duration_sec: Int? = null,
+    val mode: String? = null,
+    val payload: JsonMap = emptyMap()
+)
+
+data class DirectorActionDto(
+    val action_id: String = "",
+    val intent: String = "",
+    val label: String = "",
+    val description: String = "",
+    val risk: String = "",
+    val requires_confirmation: Boolean = true,
+    val preview: DirectorActionPreviewDto? = null,
+    val context_version: String? = null,
+    val expires_at: String? = null
+)
+
+data class DirectorContextDto(
+    val context_version: String? = null,
+    val project: JsonMap? = null,
+    val target: JsonMap? = null,
+    val episode: JsonMap? = null,
+    val resources: JsonMap? = null,
+    val quota: JsonMap? = null
+)
+
 data class AiChatResponse(
     val request_id: String? = null,
     val status: String? = null,
@@ -41,7 +86,28 @@ data class AiChatResponse(
     val message: String? = null,
     val provider: String? = null,
     val model: String? = null,
-    val action: String? = null
+    val action: String? = null,
+    val conversation_id: String? = null,
+    val key_source: String? = null,
+    val context: DirectorContextDto? = null,
+    val actions: List<DirectorActionDto> = emptyList()
+)
+
+data class DirectorActionExecuteRequest(
+    val action_id: String,
+    val project_id: String
+)
+
+data class DirectorClearRequest(
+    val project_id: String
+)
+
+data class DirectorActionExecutionDto(
+    val action_id: String? = null,
+    val intent: String? = null,
+    val command_id: String? = null,
+    val status: String? = null,
+    val idempotent_replay: Boolean = false
 )
 
 data class HealthResponseDto(
@@ -303,7 +369,8 @@ data class VisionAnalyzeRequest(
     val analysis_type: String = "GENERAL",
     val prompt: String = "Extract 11-field Visual DNA",
     val character_code: String? = null,
-    val save_to_character: Boolean = false
+    val save_to_character: Boolean = false,
+    val mode: String? = null
 )
 
 data class GenreTemplateDto(
@@ -465,6 +532,18 @@ interface AnimeApiService {
 
     @POST("api/v1/ai/chat")
     suspend fun chatWithAi(@Body request: AiChatRequest): Response<AiChatResponse>
+
+    @POST("api/v1/ai/director/chat")
+    suspend fun directorChat(@Body request: AiChatRequest): Response<AiChatResponse>
+
+    @POST("api/v1/ai/director/actions/execute")
+    suspend fun executeDirectorAction(
+        @Header("Idempotency-Key") idempotencyKey: String,
+        @Body request: DirectorActionExecuteRequest
+    ): Response<ApiEnvelope<DirectorActionExecutionDto>>
+
+    @POST("api/v1/ai/director/conversation/clear")
+    suspend fun clearDirectorConversation(@Body request: DirectorClearRequest): Response<JsonMap>
 
     @GET("v1/anime/health")
     suspend fun getAnimeHealth(): Response<HealthResponseDto>

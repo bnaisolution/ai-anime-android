@@ -213,7 +213,11 @@ interface ProductionRepository : RepositoryContext {
         message: String,
         projectId: String = currentProjectId(),
         currentScreen: String? = null,
-        conversationId: String? = null
+        conversationId: String? = null,
+        seasonNo: Int? = null,
+        episodeNo: Int? = null,
+        targetDurationSec: Int? = null,
+        requestedAction: RequestedDirectorActionDto? = null
     ): Resource<AiChatResponse> =
         throw UnsupportedOperationException("chatWithBrain is not configured")
 
@@ -221,9 +225,23 @@ interface ProductionRepository : RepositoryContext {
         message: String,
         currentScreen: String = "STUDIO",
         conversationId: String? = null,
-        projectId: String = currentProjectId()
+        projectId: String = currentProjectId(),
+        seasonNo: Int? = null,
+        episodeNo: Int? = null,
+        targetDurationSec: Int? = null,
+        requestedAction: RequestedDirectorActionDto? = null
     ): Resource<AiChatResponse> =
         throw UnsupportedOperationException("askAiDirector is not configured")
+
+    suspend fun executeDirectorAction(
+        projectId: String,
+        actionId: String,
+        idempotencyKey: String? = null
+    ): Resource<DirectorActionExecutionDto> =
+        throw UnsupportedOperationException("executeDirectorAction is not configured")
+
+    suspend fun clearDirectorConversation(projectId: String): Resource<Unit> =
+        throw UnsupportedOperationException("clearDirectorConversation is not configured")
 
     suspend fun submitStudioCommand(
         projectId: String,

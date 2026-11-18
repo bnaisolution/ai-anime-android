@@ -311,7 +311,7 @@ class Batch2FullControlCoverageTest {
         waitForTag(TestTags.Screen.AI_BRAIN)
         waitForText("Run episode")
         assertDesc("Clear project chat")
-        assertText("Confirm & Execute")
+        assertText("AI Studio Director")
     }
 
     @Test

@@ -32,9 +32,10 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.dpdns.bnai.anime.core.auth.PersistedChatMessage
 import org.dpdns.bnai.anime.core.model.Project
-import org.dpdns.bnai.anime.core.network.CommandIntent
 import org.dpdns.bnai.anime.core.network.JsonMap
 import org.dpdns.bnai.anime.core.network.Resource
+import org.dpdns.bnai.anime.ui.brain.DirectorActionCard
+import org.dpdns.bnai.anime.ui.brain.rememberSharedAIDirectorViewModel
 import org.dpdns.bnai.anime.ui.designsystem.MarkdownText
 import org.dpdns.bnai.anime.ui.designsystem.StatusChip
 import org.dpdns.bnai.anime.ui.designsystem.StudioTokens
@@ -361,17 +362,6 @@ fun ProjectSelectorBar(
     }
 }
 
-fun detectSuggestedIntentFromReply(replyText: String?): CommandIntent? {
-    val upper = replyText?.uppercase().orEmpty()
-    return when {
-        upper.contains("GENERATE_EPISODE") -> CommandIntent.GENERATE_EPISODE
-        upper.contains("CONTINUE_EPISODE") -> CommandIntent.CONTINUE_EPISODE
-        upper.contains("SAVE_BIBLE") -> CommandIntent.SAVE_BIBLE
-        upper.contains("CHECK_CONTINUITY") -> CommandIntent.CHECK_CONTINUITY
-        upper.contains("RUN_QC") -> CommandIntent.RUN_QC
-        else -> null
-    }
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -382,35 +372,14 @@ fun GlobalAiDirectorBottomSheet(
     onNavigateToRoute: (String) -> Unit = {},
     onOpenFullAiBrain: () -> Unit = { onNavigateToRoute("ai_brain") }
 ) {
-    val context = LocalContext.current
-    val tokenManager = LocalAppContainer.current.tokenManager
-    val repository = LocalAppContainer.current.repository
-    val scope = rememberCoroutineScope()
-    val projectId = repository.currentProjectId()
+    val viewModel = rememberSharedAIDirectorViewModel()
+    val state by viewModel.state.collectAsState()
+    val projectId = LocalAppContainer.current.repository.currentProjectId()
     val effectiveScreen = currentScreenName.ifBlank { currentScreen }
-
-    var messages by remember(projectId) { mutableStateOf(tokenManager.getProjectChatHistory(projectId)) }
     var prompt by rememberSaveable(projectId) { mutableStateOf("") }
-    var isSending by remember { mutableStateOf(false) }
-    var trackedCmdId by remember(projectId) { mutableStateOf(tokenManager.getActiveCommandId(projectId, "ai_director_sheet")) }
-    var trackedCmdStatus by remember { mutableStateOf<String?>(null) }
 
-    LaunchedEffect(trackedCmdId, projectId) {
-        val cid = trackedCmdId ?: return@LaunchedEffect
-        while (true) {
-            when (val st = repository.fetchCommandStatus(cid)) {
-                is Resource.Success -> {
-                    val statusUpper = st.data.status?.uppercase() ?: "QUEUED"
-                    trackedCmdStatus = statusUpper
-                    if (statusUpper in listOf("SUCCEEDED", "COMPLETED", "FAILED", "ERROR", "CANCELLED")) {
-                        tokenManager.saveActiveCommandId(projectId, "ai_director_sheet", null)
-                        break
-                    }
-                }
-                else -> break
-            }
-            delay(3000)
-        }
+    LaunchedEffect(projectId) {
+        viewModel.setProject(projectId)
     }
 
     ModalBottomSheet(
@@ -442,11 +411,8 @@ fun GlobalAiDirectorBottomSheet(
                     }
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                    if (messages.isNotEmpty()) {
-                        IconButton(onClick = {
-                            tokenManager.clearProjectChatHistory(projectId)
-                            messages = emptyList()
-                        }) {
+                    if (state.messages.isNotEmpty()) {
+                        IconButton(onClick = viewModel::clearConversation) {
                             Icon(Icons.Default.DeleteSweep, contentDescription = "Clear project conversation")
                         }
                     }
@@ -459,7 +425,7 @@ fun GlobalAiDirectorBottomSheet(
                 }
             }
 
-            if (!trackedCmdId.isNullOrBlank()) {
+            if (!state.activeCommandId.isNullOrBlank()) {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     colors = CardDefaults.cardColors(containerColor = StudioTokens.Primary.copy(alpha = 0.12f))
@@ -472,11 +438,11 @@ fun GlobalAiDirectorBottomSheet(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "Command #${trackedCmdId?.take(8)}: ${friendlyPipelineStatus(trackedCmdStatus ?: "QUEUED")}",
+                            text = "Command #${state.activeCommandId?.take(8)}: ${friendlyPipelineStatus(state.activeCommandStatus ?: "QUEUED")}",
                             fontSize = 12.sp,
                             fontWeight = FontWeight.SemiBold
                         )
-                        StatusBadge(trackedCmdStatus ?: "QUEUED")
+                        StatusBadge(state.activeCommandStatus ?: "QUEUED")
                     }
                 }
             }
@@ -487,17 +453,17 @@ fun GlobalAiDirectorBottomSheet(
                     .heightIn(min = 180.dp, max = 360.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                if (messages.isEmpty()) {
+                if (state.messages.isEmpty()) {
                     item {
                         Text(
-                            text = "Ask the AI Director about your Story Bible, Episode Script, Character DNA, or Continuity. Conversation persists for this project.",
+                            text = "Ask the AI Director about your Story Bible, Episode Script, Character DNA, or Continuity. BYOD AI is required; the Director proposes server-approved actions instead of guessing.",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(vertical = 16.dp)
                         )
                     }
                 }
-                items(messages, key = { it.id }) { msg ->
+                items(state.messages, key = { it.id }) { msg ->
                     val isUser = msg.role == "user"
                     Card(
                         modifier = Modifier.fillMaxWidth(),
@@ -517,47 +483,28 @@ fun GlobalAiDirectorBottomSheet(
                                 color = if (isUser) StudioTokens.Primary else StudioTokens.Secondary
                             )
                             MarkdownText(markdown = msg.content)
-
-                            if (!isUser && !msg.suggestedIntent.isNullOrBlank()) {
-                                val intentEnum = runCatching { CommandIntent.valueOf(msg.suggestedIntent) }.getOrNull()
-                                if (intentEnum != null) {
-                                    HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.SpaceBetween,
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Text(
-                                            text = "Suggested Action: ${intentEnum.name}",
-                                            fontSize = 12.sp,
-                                            fontWeight = FontWeight.SemiBold
-                                        )
-                                        Button(
-                                            onClick = {
-                                                scope.launch {
-                                                    val res = repository.submitStudioCommand(
-                                                        projectId = projectId,
-                                                        intent = intentEnum
-                                                    )
-                                                    if (res is Resource.Success) {
-                                                        val cid = res.data.command_id.orEmpty()
-                                                        if (cid.isNotBlank()) {
-                                                            trackedCmdId = cid
-                                                            trackedCmdStatus = res.data.status ?: "QUEUED"
-                                                            tokenManager.saveActiveCommandId(projectId, "ai_director_sheet", cid)
-                                                        }
-                                                    }
-                                                }
-                                            },
-                                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
-                                        ) {
-                                            Icon(Icons.Default.PlayArrow, contentDescription = null, modifier = Modifier.size(16.dp))
-                                            Spacer(modifier = Modifier.width(4.dp))
-                                            Text("Confirm & Run", fontSize = 12.sp)
-                                        }
-                                    }
-                                }
-                            }
+                        }
+                    }
+                }
+                items(state.actions) { action ->
+                    DirectorActionCard(
+                        action = action,
+                        enabled = !state.isSending,
+                        onConfirm = { viewModel.confirmAction(action) }
+                    )
+                }
+                state.error?.let { errorText ->
+                    item("director_sheet_error") {
+                        Card(
+                            colors = CardDefaults.cardColors(containerColor = StudioTokens.Error.copy(alpha = 0.12f)),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(
+                                errorText,
+                                fontSize = 12.sp,
+                                color = StudioTokens.Error,
+                                modifier = Modifier.padding(12.dp)
+                            )
                         }
                     }
                 }
@@ -580,50 +527,19 @@ fun GlobalAiDirectorBottomSheet(
                 IconButton(
                     onClick = {
                         val cleanPrompt = prompt.trim()
-                        if (cleanPrompt.isEmpty() || isSending) return@IconButton
+                        if (cleanPrompt.isEmpty() || state.isSending) return@IconButton
+                        viewModel.updateInput(cleanPrompt)
+                        viewModel.sendMessage(cleanPrompt, effectiveScreen)
                         prompt = ""
-                        isSending = true
-                        messages = tokenManager.appendProjectChatMessage(
-                            projectId,
-                            PersistedChatMessage(role = "user", content = cleanPrompt)
-                        )
-                        scope.launch {
-                            val convId = tokenManager.getProjectConversationId(projectId)
-                            when (val res = repository.askAiDirector(cleanPrompt, effectiveScreen, convId)) {
-                                is Resource.Success -> {
-                                    val replyText = res.data.reply ?: res.data.message ?: "Done."
-                                    val suggested = detectSuggestedIntentFromReply(replyText)?.name
-                                    messages = tokenManager.appendProjectChatMessage(
-                                        projectId,
-                                        PersistedChatMessage(
-                                            role = "assistant",
-                                            content = replyText,
-                                            suggestedIntent = suggested
-                                        )
-                                    )
-                                }
-                                is Resource.Error -> {
-                                    messages = tokenManager.appendProjectChatMessage(
-                                        projectId,
-                                        PersistedChatMessage(
-                                            role = "assistant",
-                                            content = "**Error:** ${res.message}"
-                                        )
-                                    )
-                                }
-                                else -> {}
-                            }
-                            isSending = false
-                        }
                     },
-                    enabled = prompt.isNotBlank() && !isSending,
+                    enabled = prompt.isNotBlank() && !state.isSending && projectId.isNotBlank(),
                     modifier = Modifier
                         .size(48.dp)
                         .testTag(TestTags.AiDirector.SEND)
                         .clip(CircleShape)
-                        .background(if (prompt.isNotBlank() && !isSending) StudioTokens.Primary else Color.Gray.copy(alpha = 0.3f))
+                        .background(if (prompt.isNotBlank() && !state.isSending) StudioTokens.Primary else Color.Gray.copy(alpha = 0.3f))
                 ) {
-                    if (isSending) {
+                    if (state.isSending) {
                         CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp, color = Color.White)
                     } else {
                         Icon(Icons.Default.Send, contentDescription = "Send message", tint = Color.White)

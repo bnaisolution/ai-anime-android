@@ -252,6 +252,15 @@ class TokenManager(context: Context? = null) {
         return created
     }
 
+    fun saveProjectConversationId(projectId: String, conversationId: String?) {
+        val pid = projectId.ifBlank { "global_studio" }
+        if (conversationId.isNullOrBlank()) {
+            prefs?.edit()?.remove("conv_id_$pid")?.apply()
+        } else {
+            prefs?.edit()?.putString("conv_id_$pid", conversationId)?.apply()
+        }
+    }
+
     private fun createSecurePreferences(context: Context): SharedPreferences? {
         return try {
             openEncryptedPreferences(context)

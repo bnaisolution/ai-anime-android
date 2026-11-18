@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import org.dpdns.bnai.anime.core.di.AppContainer
 import org.dpdns.bnai.anime.ui.auth.AuthViewModel
+import org.dpdns.bnai.anime.ui.brain.AIDirectorViewModel
 import org.dpdns.bnai.anime.ui.character.CharacterViewModel
 import org.dpdns.bnai.anime.ui.preflight.PreflightViewModel
 import org.dpdns.bnai.anime.ui.production.ProductionViewModel
@@ -27,6 +28,8 @@ class AppViewModelFactory(
             StudioViewModel(container.repository, container.tokenManager) as T
         modelClass.isAssignableFrom(PreflightViewModel::class.java) ->
             PreflightViewModel(container.repository) as T
+        modelClass.isAssignableFrom(AIDirectorViewModel::class.java) ->
+            AIDirectorViewModel(container.repository, container.tokenManager) as T
         else -> throw IllegalArgumentException("Unsupported ViewModel: ${modelClass.name}")
     }
 }
