@@ -196,6 +196,7 @@ object TestTags {
         const val LORE_EXPLORER = "screen.lore_explorer"
         const val MEDIA_LIBRARY = "screen.media_library"
         const val NOTIFICATIONS = "screen.notifications"
+        const val OWNER_ACCESS_DENIED = "screen.owner_access_denied"
         const val OWNER_OVERVIEW = "screen.owner_overview"
         const val PREFLIGHT = "screen.preflight"
         const val PRODUCTION = "screen.production"

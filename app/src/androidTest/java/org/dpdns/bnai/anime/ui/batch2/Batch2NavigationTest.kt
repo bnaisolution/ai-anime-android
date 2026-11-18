@@ -151,8 +151,24 @@ class Batch2NavigationTest {
     }
 
     @Test
+    fun ownerRoutesDenyNonOwner() {
+        container.tokenManager.saveToken("batch2-token")
+        launchGraph()
+        for (route in listOf("owner_overview", "workflows", "workers", "admin_queues", "database", "audit_log")) {
+            navigate(route)
+            composeRule.onNodeWithTag(TestTags.Screen.OWNER_ACCESS_DENIED).assertExists()
+        }
+    }
+
+    @Test
     fun everyRegisteredRouteOpensItsExpectedScreen() {
         container.tokenManager.saveToken("batch2-token")
+        container.tokenManager.saveUserMeta(
+            userId = "batch2-owner",
+            workspaceId = "default-workspace",
+            role = "owner_admin",
+            email = "owner@test.invalid"
+        )
         launchGraph()
         val routes = listOf(
             "studio" to TestTags.Screen.STUDIO,

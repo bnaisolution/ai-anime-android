@@ -639,7 +639,7 @@ fun AppNavGraph(navController: NavHostController) {
                             composable("character_deep_dive") {
                                 CharacterDeepDiveScreen(characterId = selectedCharacter?.id.orEmpty())
                             }
-                            composable("admin_queues") { AdminQueuesScreen() }
+                            composable("admin_queues") { if (tokenManager.isOwner()) AdminQueuesScreen() else OwnerAccessDenied() }
                             composable("budget_ledger") { BudgetLedgerScreen() }
                         }
                     }
@@ -653,7 +653,7 @@ fun AppNavGraph(navController: NavHostController) {
 @Composable
 private fun OwnerAccessDenied() {
     Box(
-        modifier = Modifier.fillMaxSize().padding(24.dp),
+        modifier = Modifier.fillMaxSize().padding(24.dp).testTag(TestTags.Screen.OWNER_ACCESS_DENIED),
         contentAlignment = Alignment.Center
     ) {
         Text(
