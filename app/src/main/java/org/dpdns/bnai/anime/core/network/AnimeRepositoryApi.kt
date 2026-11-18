@@ -243,6 +243,12 @@ interface ProductionRepository : RepositoryContext {
     suspend fun clearDirectorConversation(projectId: String): Resource<Unit> =
         throw UnsupportedOperationException("clearDirectorConversation is not configured")
 
+    suspend fun loadDirectorReadiness(projectId: String): Resource<DirectorReadinessDto> =
+        throw UnsupportedOperationException("loadDirectorReadiness is not configured")
+
+    suspend fun loadDirectorCapabilities(): Resource<DirectorCapabilitiesPayload> =
+        throw UnsupportedOperationException("loadDirectorCapabilities is not configured")
+
     suspend fun submitStudioCommand(
         projectId: String,
         intent: CommandIntent,

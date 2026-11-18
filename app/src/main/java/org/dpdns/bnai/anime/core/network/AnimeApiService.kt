@@ -110,6 +110,57 @@ data class DirectorActionExecutionDto(
     val idempotent_replay: Boolean = false
 )
 
+data class DirectorCapabilityDto(
+    val key: String = "",
+    val intent: String = "",
+    val label: String = "",
+    val description: String = "",
+    val risk: String = "",
+    val required_role: String = "",
+    val required_resources: List<String> = emptyList(),
+    val requires_confirmation: Boolean = true,
+    val deep_link: String? = null,
+    val workflow: String? = null,
+    val mode: String? = null,
+    val enabled: Boolean = true,
+    val version: Int = 1
+)
+
+data class DirectorCapabilitiesPayload(
+    val version: String? = null,
+    val capabilities: List<DirectorCapabilityDto> = emptyList()
+)
+
+data class ReadinessResourceDto(
+    val status: String = "missing",
+    val mode: String? = null,
+    val reason: String? = null,
+    val provider: String? = null,
+    val model: String? = null
+)
+
+data class ReadinessBlockDto(
+    val capability: String = "",
+    val label: String = "",
+    val missing: List<String> = emptyList(),
+    val deep_links: List<String> = emptyList()
+)
+
+data class SetupHintDto(
+    val resource: String = "",
+    val message: String = "",
+    val deep_link: String = ""
+)
+
+data class DirectorReadinessDto(
+    val project_id: String? = null,
+    val overall: String = "blocked",
+    val checked_at: String? = null,
+    val resources: Map<String, ReadinessResourceDto> = emptyMap(),
+    val blocking: List<ReadinessBlockDto> = emptyList(),
+    val setup_hints: List<SetupHintDto> = emptyList()
+)
+
 data class HealthResponseDto(
     val ok: Boolean = false,
     val status: String? = null,
@@ -544,6 +595,12 @@ interface AnimeApiService {
 
     @POST("api/v1/ai/director/conversation/clear")
     suspend fun clearDirectorConversation(@Body request: DirectorClearRequest): Response<JsonMap>
+
+    @GET("api/v1/ai/director/capabilities")
+    suspend fun directorCapabilities(): Response<ApiEnvelope<DirectorCapabilitiesPayload>>
+
+    @GET("api/v1/ai/director/readiness")
+    suspend fun directorReadiness(@Query("project_id") projectId: String): Response<ApiEnvelope<DirectorReadinessDto>>
 
     @GET("v1/anime/health")
     suspend fun getAnimeHealth(): Response<HealthResponseDto>

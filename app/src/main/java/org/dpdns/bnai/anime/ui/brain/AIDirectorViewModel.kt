@@ -13,7 +13,9 @@ import org.dpdns.bnai.anime.core.auth.PersistedChatMessage
 import org.dpdns.bnai.anime.core.auth.TokenManager
 import org.dpdns.bnai.anime.core.network.AnimeRepositoryApi
 import org.dpdns.bnai.anime.core.network.DirectorActionDto
+import org.dpdns.bnai.anime.core.network.DirectorCapabilityDto
 import org.dpdns.bnai.anime.core.network.DirectorContextDto
+import org.dpdns.bnai.anime.core.network.DirectorReadinessDto
 import org.dpdns.bnai.anime.core.network.RequestedDirectorActionDto
 import org.dpdns.bnai.anime.core.network.Resource
 
@@ -27,6 +29,8 @@ data class AIDirectorUiState(
     val activeCommandStatus: String? = null,
     val actions: List<DirectorActionDto> = emptyList(),
     val context: DirectorContextDto? = null,
+    val capabilities: List<DirectorCapabilityDto> = emptyList(),
+    val readiness: DirectorReadinessDto? = null,
     val error: String? = null
 )
 
@@ -55,12 +59,29 @@ class AIDirectorViewModel(
                 activeCommandStatus = null,
                 actions = emptyList(),
                 context = null,
+                capabilities = emptyList(),
+                readiness = null,
                 error = null
             )
         }
         viewModelScope.launch {
             val badge = repository.resolveConfiguredAiProviderBadge()
             _state.update { it.copy(providerBadge = badge) }
+        }
+        if (projectId.isNotBlank()) {
+            viewModelScope.launch {
+                when (val res = repository.loadDirectorReadiness(projectId)) {
+                    is Resource.Success -> _state.update { it.copy(readiness = res.data) }
+                    is Resource.Error -> _state.update { it.copy(readiness = null) }
+                    else -> Unit
+                }
+            }
+        }
+        viewModelScope.launch {
+            when (val res = repository.loadDirectorCapabilities()) {
+                is Resource.Success -> _state.update { it.copy(capabilities = res.data.capabilities) }
+                else -> Unit
+            }
         }
         tokenManager.getActiveCommandId(pid, "ai_director")?.let(::pollCommand)
     }

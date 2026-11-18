@@ -75,6 +75,8 @@ fun AIBrainScreen(
 
         state.context?.let { DirectorContextBar(it) }
 
+        DirectorReadinessStrip(readiness = state.readiness)
+
         if (!state.activeCommandId.isNullOrBlank()) {
             StandardCard {
                 Row(

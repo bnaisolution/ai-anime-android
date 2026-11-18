@@ -609,6 +609,22 @@ class AnimeRepository(
         Resource.Error(e.localizedMessage ?: "Could not clear server conversation")
     }
 
+    override suspend fun loadDirectorReadiness(projectId: String): Resource<DirectorReadinessDto> = try {
+        if (projectId.isBlank()) {
+            Resource.Error("Select a project first.")
+        } else {
+            mapEnvelope(apiService.directorReadiness(projectId)) { it }
+        }
+    } catch (e: Exception) {
+        Resource.Error(e.localizedMessage ?: "Resource readiness unavailable")
+    }
+
+    override suspend fun loadDirectorCapabilities(): Resource<DirectorCapabilitiesPayload> = try {
+        mapEnvelope(apiService.directorCapabilities()) { it }
+    } catch (e: Exception) {
+        Resource.Error(e.localizedMessage ?: "Director capabilities unavailable")
+    }
+
     override suspend fun submitStudioCommand(
         projectId: String,
         intent: CommandIntent,
