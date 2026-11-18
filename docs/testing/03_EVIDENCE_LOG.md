@@ -51,6 +51,7 @@
 | 2026-11-18 | Phase 8 | Read-only hardening drills | PASS 12/12 | `scripts/e2e/script3_hardening_drills.py` | Health, login, identity, tenant binding/health, media read (14 clips), 14 signed URLs, signed fetch 200, unsigned 401, tampered token 401, non-owner owner-route 403. |
 | 2026-11-18 | Phase 6 | Owner console contract polish | PASS (source) | `OwnerOverviewScreen.kt`, `AdminQueuesScreen.kt`, `AppNavGraph.kt` | Nested queue counts, data-driven usage/routing/replication, and client owner guard; device verification pending GHA. |
 | 2026-11-18 | Release | Signed CI workflow | READY | `.github/workflows/android-release.yml`; `app/build.gradle.kts` | Manual workflow builds signed APK/AAB from four repository secrets and uploads checksums; blocked only on keystore/Play credentials. |
+| 2026-11-18 | CI | Final green backend and Android runs | PASS | Backend `bccd2c9`; Android `ae0ca2e` | Backend Tests `44238670159` success; Android Tests `44240077819` success (unit, lint, Maestro, instrumentation); Build APK `44240077838` success. |
 
 ## Evidence Rules
 
