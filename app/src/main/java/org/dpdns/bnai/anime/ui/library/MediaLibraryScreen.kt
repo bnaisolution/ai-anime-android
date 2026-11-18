@@ -97,7 +97,7 @@ fun MediaLibraryScreen() {
                 val clipsList = (payload["clips"] as? List<*>).orEmpty()
                 clipsList.forEachIndexed { idx, raw ->
                     val m = raw as? Map<*, *> ?: return@forEachIndexed
-                    val url = (m["clip_url"] ?: m["media_url"] ?: "").toString()
+                    val url = (m["playback_url"] ?: m["clip_url"] ?: m["media_url"] ?: "").toString()
                     list.add(
                         StudioMediaItem(
                             id = (m["id"] ?: "clip_$idx").toString(),

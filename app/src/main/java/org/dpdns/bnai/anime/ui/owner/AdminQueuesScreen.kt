@@ -111,9 +111,19 @@ fun AdminQueuesScreen() {
             emptyMessage = "All queues are clear (0 pending items).",
             onRetry = { loadQueues(activeProjectId) }
         ) { data ->
-            val outboxCount = (data["outbox_pending"] as? Number)?.toInt() ?: (data["pending_count"] as? Number)?.toInt() ?: 0
-            val activeCmds = (data["commands_running"] as? Number)?.toInt() ?: (data["running_count"] as? Number)?.toInt() ?: 0
-            val failedCount = (data["dead_letter_count"] as? Number)?.toInt() ?: (data["failed_count"] as? Number)?.toInt() ?: 0
+            val outbox = data["outbox"] as? Map<*, *>
+            val commands = data["commands"] as? Map<*, *>
+            val outboxCount = (outbox?.get("pending") as? Number)?.toInt()
+                ?: (data["outbox_pending"] as? Number)?.toInt()
+                ?: 0
+            val activeCmds = listOf("queued", "dispatched", "reconciling")
+                .sumOf { (commands?.get(it) as? Number)?.toInt() ?: 0 }
+                .takeIf { it > 0 }
+                ?: (data["commands_running"] as? Number)?.toInt()
+                ?: 0
+            val failedCount = ((outbox?.get("failed") as? Number)?.toInt() ?: 0) +
+                ((outbox?.get("dead_letter") as? Number)?.toInt() ?: 0) +
+                ((commands?.get("manual_review") as? Number)?.toInt() ?: 0)
 
             Column(
                 modifier = Modifier

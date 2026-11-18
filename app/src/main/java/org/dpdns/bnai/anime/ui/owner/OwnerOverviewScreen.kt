@@ -33,8 +33,8 @@ fun OwnerOverviewScreen() {
     val scope = rememberCoroutineScope()
 
     var activeProjectId by remember { mutableStateOf(repository.currentProjectId()) }
-    var isHealthy by remember { mutableStateOf(true) }
-    var latencyMs by remember { mutableLongStateOf(22L) }
+    var isHealthy by remember { mutableStateOf(false) }
+    var latencyMs by remember { mutableLongStateOf(0L) }
     var activeWorkersCount by remember { mutableIntStateOf(1) }
     var pendingQueuesCount by remember { mutableIntStateOf(0) }
     var platformManagedEnabled by remember { mutableStateOf(false) }
@@ -63,7 +63,10 @@ fun OwnerOverviewScreen() {
                 activeWorkersCount = (workers as? Resource.Success)?.data?.size ?: 1
                 val queues = repository.fetchAdminQueues(pid)
                 val qData = (queues as? Resource.Success)?.data.orEmpty()
-                pendingQueuesCount = (qData["pending_count"] as? Number)?.toInt() ?: 0
+                val outbox = qData["outbox"] as? Map<*, *>
+                pendingQueuesCount = (outbox?.get("pending") as? Number)?.toInt()
+                    ?: (qData["pending_actions_count"] as? Number)?.toInt()
+                    ?: 0
             }
             val platform = (repository.fetchPlatformManagedStatus() as? Resource.Success)?.data.orEmpty()
             platformManagedEnabled = platform["enabled"] == true
@@ -223,16 +226,16 @@ fun OwnerOverviewScreen() {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             Card(modifier = Modifier.weight(1f), shape = RoundedCornerShape(12.dp)) {
                 Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    Text("API Providers", style = MaterialTheme.typography.labelLarge)
-                    Text("Groq • Gemini", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
-                    StatusBadge("UP")
+                    Text("Compute Routing", style = MaterialTheme.typography.labelLarge)
+                    Text(if (platformManagedEnabled) "Managed • BYOD" else "BYOD only", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
+                    StatusBadge(if (isHealthy) "UP" else "DOWN")
                 }
             }
             Card(modifier = Modifier.weight(1f), shape = RoundedCornerShape(12.dp)) {
                 Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    Text("Platform Cost", style = MaterialTheme.typography.labelLarge)
-                    Text("$0.00 (BYOD)", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
-                    StatusBadge("GUARDED")
+                    Text("Tenant Usage", style = MaterialTheme.typography.labelLarge)
+                    Text(ownerQuotaSummary, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
+                    StatusBadge(if (platformManagedEnabled) "ENABLED" else "GUARDED")
                 }
             }
         }
@@ -240,8 +243,9 @@ fun OwnerOverviewScreen() {
         // Fix #330: DB Visuals & Latency Indicator Card
         Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp)) {
             Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                Text("Supabase PostgreSQL & Outbox Dispatcher", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
-                Text("Round-Trip Ping: ${latencyMs}ms • Connection Pool: Healthy", style = MaterialTheme.typography.bodyLarge)
+                Text("PostgreSQL & Outbox Dispatcher", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
+                Text("Round-Trip Ping: ${latencyMs}ms • Replication: $replicationStatus", style = MaterialTheme.typography.bodyLarge)
+                Text(tenantDbSummary, style = MaterialTheme.typography.bodyMedium)
             }
         }
 

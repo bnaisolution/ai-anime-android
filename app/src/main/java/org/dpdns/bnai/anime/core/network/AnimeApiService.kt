@@ -216,6 +216,8 @@ data class ClipDto(
     val scene_order: Int? = null,
     val scene_no: Int? = null,
     val clip_url: String? = null,
+    @com.google.gson.annotations.SerializedName("playback_url")
+    val playback_url: String? = null,
     val provider: String? = null,
     val duration_sec: Double? = null,
     val status: String? = null

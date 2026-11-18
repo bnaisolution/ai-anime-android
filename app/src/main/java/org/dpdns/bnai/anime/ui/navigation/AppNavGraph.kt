@@ -622,11 +622,11 @@ fun AppNavGraph(navController: NavHostController) {
                                     initialSeason = entry.arguments?.getString("season")?.toIntOrNull()
                                 )
                             }
-                            composable("owner_overview") { OwnerOverviewScreen() }
-                            composable("workflows") { WorkflowManagerScreen() }
-                            composable("workers") { WorkerManagerScreen() }
-                            composable("database") { DatabaseScreen() }
-                            composable("audit_log") { AuditLogScreen() }
+                            composable("owner_overview") { if (tokenManager.isOwner()) OwnerOverviewScreen() else OwnerAccessDenied() }
+                            composable("workflows") { if (tokenManager.isOwner()) WorkflowManagerScreen() else OwnerAccessDenied() }
+                            composable("workers") { if (tokenManager.isOwner()) WorkerManagerScreen() else OwnerAccessDenied() }
+                            composable("database") { if (tokenManager.isOwner()) DatabaseScreen() else OwnerAccessDenied() }
+                            composable("audit_log") { if (tokenManager.isOwner()) AuditLogScreen() else OwnerAccessDenied() }
                             composable("analytics") { AnalyticsScreen() }
                             composable("media_library") { MediaLibraryScreen() }
                             composable("notifications") { NotificationScreen() }
@@ -646,5 +646,20 @@ fun AppNavGraph(navController: NavHostController) {
                 }
             }
         }
+    }
+}
+
+
+@Composable
+private fun OwnerAccessDenied() {
+    Box(
+        modifier = Modifier.fillMaxSize().padding(24.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = "Owner access required",
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.SemiBold
+        )
     }
 }

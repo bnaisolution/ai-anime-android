@@ -1,14 +1,14 @@
 # Hybrid E2E State
 
-Last updated: 2026-11-17
+Last updated: 2026-11-18
 
 ## Current Phase
 
-Phases 2-7 implementation code is committed; live BYOD validation passed for the dedicated test tenant. All 14 workflows, pause/rotation/restore drills, and real generation remain gated.
+Phases 2-7 implementation code is committed; live BYOD validation passed for the dedicated test tenant. WF-03 is validated end-to-end on BYOD with Telegram-backed image, TTS, GPU video, and CPU FFmpeg output. Workflow validation is 13/14 on BYOD; WF-08 is blocked only by a missing YouTube OAuth refresh token. BYOD-first project creation and signed Telegram playback are live; read-only hardening drills pass 12/12. Pause/rotation/restore drills and real generation remain gated.
 
 Phase 0 is complete with conditions. Phase 1 UI is CI-verified. Final hybrid implementation plan is in `docs/testing/05_HYBRID_IMPLEMENTATION_PLAN.md`.
 
-Result: Backend `fd64916` is deployed on EC2 as `anime-backend:fd64916`; Backend Tests run `44047559530` is green. Migration `011` is applied to the central DB, the dedicated test account has tenant `f91f5074-08c0-4f47-925c-8ad1ae7a5fa1`, and `Test BYOD` (`cnooyjoeymbuvfxnlfjs`) is connected through pooler `aws-0-ap-northeast-1.pooler.supabase.com`. Live connect/provision/health passed with schema v2 (31 tables incl `schema_migrations`); smoke project `d946a6a6-02e3-45b4-9a88-61674a186306` passed cutover, rollback, and re-migrate. Backend `fd64916` also fixes the gateway TLS path so BYOD reads no longer fail with `self-signed certificate in certificate chain`; the live gateway read returned the smoke project. Runtime BYOD is enabled; platform DB/billing remain disabled. Android `ac14492` records this evidence; Android Tests `44054066519` and APK `44054066825` are green. The earlier `d1c6ee4` Android Tests failure was a Maestro launch race: the emulator killed the app immediately after `stopApp` + `launchApp clearState`. Removing the redundant `stopApp` fixed it. All 14 workflows are still unvalidated on BYOD, and new projects still write to central before migration. Real generation is NO-GO until the test account gets worker and storage keys through the app Settings screen.
+Result: Backend `fd64916` is deployed on EC2 as `anime-backend:fd64916`; Backend Tests run `44047559530` is green. Migration `011` is applied to the central DB, the dedicated test account has tenant `f91f5074-08c0-4f47-925c-8ad1ae7a5fa1`, and `Test BYOD` (`cnooyjoeymbuvfxnlfjs`) is connected through pooler `aws-0-ap-northeast-1.pooler.supabase.com`. Live connect/provision/health passed with schema v2 (31 tables incl `schema_migrations`); smoke project `d946a6a6-02e3-45b4-9a88-61674a186306` passed cutover, rollback, and re-migrate. Backend `fd64916` also fixes the gateway TLS path so BYOD reads no longer fail with `self-signed certificate in certificate chain`; the live gateway read returned the smoke project. Runtime BYOD is enabled; platform DB/billing remain disabled. Android `ac14492` records this evidence; Android Tests `44054066519` and APK `44054066825` are green. The earlier `d1c6ee4` Android Tests failure was a Maestro launch race: the emulator killed the app immediately after `stopApp` + `launchApp clearState`. Removing the redundant `stopApp` fixed it. BYOD validation passes 13/14 workflows, and flagged project creation now writes tenant-first with a central shadow and project index. WF-08 remains blocked by the missing YouTube OAuth refresh token. Real generation is NO-GO until the test account gets worker and storage keys through the app Settings screen.
 
 ## Phase 2-7 Implementation Status
 
@@ -16,11 +16,11 @@ Result: Backend `fd64916` is deployed on EC2 as `anime-backend:fd64916`; Backend
 |---|---|---|---|
 | 2 Tenant registry | APPLIED / LIVE | `anime_tenant_databases`, audit, encrypted DSN, flags, resolver; migration `011` applied and verified | Audited runtime feature toggles |
 | 3 BYOD connect | LIVE TEST PASS | DSN validation, test, connect, disconnect, health, full 30-table provisioning; test tenant connected and healthy | Pause/unpause, rotation, restore drills |
-| 4 Optional cutover | LIVE SMOKE PASS | Per-project copy of all 30 tables, upserts, per-table row-count verification, 7-day rollback; smoke project cutover/rollback/re-migrate passed | Checksums, BYOD-first creation, broad rollout |
-| 5 n8n/worker routing | PARTIAL LIVE | Project BYOD routing, central catalog fallback, tenant SQL gateway, system-scope fan-out; live gateway read from BYOD passed | Validate writes/callbacks and all 14 workflows |
-| 6 Owner console | PARTIAL | Tenant memberships, tenant DB filters, audit preview, health recheck, schema repair, wallet visibility, read-only environment flag status | Per-project migration retry action and runtime-mutable feature toggles |
+| 4 Optional cutover | LIVE PASS | Per-project copy, row-count verification, 7-day rollback; smoke cutover/rollback/re-migrate passed; **BYOD-first project creation now writes tenant DB + central shadow + project index** behind `ANIME_BYOD_FIRST_ENABLED` | Broad rollout and checksums |
+| 5 n8n/worker routing | LIVE PASS 13/14 | Project BYOD routing, central catalog fallback, tenant SQL gateway, system-scope fan-out; 13 of 14 workflows pass on BYOD; signed Telegram playback works for private BYOD media; WF-08 blocked only by missing YouTube OAuth refresh token | WF-08 credential; error-callback drills |
+| 6 Owner console | PARTIAL | Tenant memberships, tenant DB filters, audit preview, health recheck, schema repair, wallet visibility, read-only environment flags; queue cards use the live nested contract; usage/routing/replication are data-driven; owner routes are client-guarded | Per-project migration retry action and runtime-mutable feature toggles; device verification |
 | 7 Platform-managed billing | SCAFFOLDED / DISABLED | Wallet tables, credit/debit RPCs, balance preflight | Pricing/provider decisions, payment funding, explicit owner enablement |
-| 8 Hardening | PARTIAL | DSN rejection, encryption, audit, fail-closed routing, cross-tenant index checks, paused/DB-down denial, 7-day rollback guard | Live pause/rotation/restore drills and full workflow fault injection |
+| 8 Hardening | PARTIAL | DSN rejection, encryption, audit, fail-closed routing, cross-tenant index checks, paused/DB-down denial, 7-day rollback guard; read-only drills pass 12/12 (signed playback tamper/unsigned rejection, owner 403, tenant binding/health) | Live pause/rotation/restore drills and full workflow fault injection |
 | 9 E2E rollout | BLOCKED | Existing smoke harness and docs | Real keys/worker/Telegram + canary tenant |
 
 ## Locked Decisions
@@ -98,7 +98,7 @@ Result: Backend `fd64916` is deployed on EC2 as `anime-backend:fd64916`; Backend
 
 ## Next Step
 
-1. Validate all 14 workflows against the live BYOD test tenant, including gateway writes, system fan-out, `pending_actions` exclusion, and callbacks.
+1. Validate the remaining 13 workflows against the live BYOD test tenant, including gateway writes, system fan-out, `pending_actions` exclusion, and callbacks; WF-03 passed on 2026-11-17.
 2. Implement BYOD-first project creation/list routing; new projects currently write central first and need explicit migration.
 3. Run live cross-tenant denial, pause/unpause, DSN rotation, DB-down fail-closed, restore, and 7-day rollback drills.
 4. Finish Phase 1 real-key evidence and the remaining Phase 3 pause/rotation tests.

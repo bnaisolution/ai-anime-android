@@ -54,9 +54,9 @@ fun VideoPlayerDialog(
     var playbackLabel by remember(mediaUrl) { mutableStateOf("Preparing") }
     var playbackError by remember(mediaUrl) { mutableStateOf<String?>(null) }
 
-    val httpDataSourceFactory = remember(accessToken) {
+    val httpDataSourceFactory = remember(accessToken, mediaUrl) {
         DefaultHttpDataSource.Factory().apply {
-            if (!accessToken.isNullOrBlank()) {
+            if (!accessToken.isNullOrBlank() && !mediaUrl.contains("token=")) {
                 setDefaultRequestProperties(
                     mapOf("Authorization" to "Bearer $accessToken")
                 )
