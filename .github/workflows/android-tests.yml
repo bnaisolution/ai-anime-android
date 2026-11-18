@@ -251,14 +251,7 @@ jobs:
           script: |
             adb shell settings put global hide_error_dialogs 1
             ./gradlew installDebug --no-daemon --stacktrace
-            set +e
-            for attempt in 1 2; do
-              "$HOME/.maestro/bin/maestro" test .maestro && exit 0
-              echo "Maestro attempt $attempt failed; retrying after emulator settle"
-              adb shell am force-stop org.dpdns.bnai.anime || true
-              sleep 10
-            done
-            exit 1
+            sh scripts/run-maestro.sh
       - name: Upload Maestro artifacts
         if: always()
         uses: actions/upload-artifact@v4
