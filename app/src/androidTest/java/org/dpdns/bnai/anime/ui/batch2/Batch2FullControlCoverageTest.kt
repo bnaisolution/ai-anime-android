@@ -359,10 +359,10 @@ class Batch2FullControlCoverageTest {
         assertText("Add Character")
 
         clickClickableText("Add Character")
-        waitForText("➕ Add Character & Auto-Portrait")
+        waitForText("➕ Add Character")
         assertText("Character Name")
         assertText("Role (Protagonist / Antagonist / Support)")
-        assertText("Create & Gen Image")
+        assertText("Create Character")
         assertText("Cancel")
     }
 
