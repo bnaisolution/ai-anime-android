@@ -595,7 +595,13 @@ fun AppNavGraph(navController: NavHostController) {
                             composable("qc") { QCScreen(onProceedToPublish = { navController.navigate("publish") }) }
                             composable("publish") { PublishScreen() }
                             composable("review_inbox") { ReviewInboxScreen() }
-                            composable("ai_brain") { AIBrainScreen() }
+                            composable("ai_brain") {
+                                AIBrainScreen(
+                                    onNavigate = { route ->
+                                        AppNavigationGuard.runOrProceed { navController.navigate(route) { launchSingleTop = true } }
+                                    }
+                                )
+                            }
                             composable("quick_tools") {
                                 QuickToolsScreen(onOpenProductionPoll = { cmdId -> navController.navigate("production/$cmdId") })
                             }

@@ -161,6 +161,151 @@ data class DirectorReadinessDto(
     val setup_hints: List<SetupHintDto> = emptyList()
 )
 
+data class DirectorTimelineStageDto(
+    val key: String = "",
+    val label: String = "",
+    val status: String = "pending"
+)
+
+data class DirectorTimelineEpisodeDto(
+    val season_no: Int = 1,
+    val episode_no: Int = 1,
+    val state: String = "UNKNOWN",
+    val qc_status: String = "PENDING",
+    val approval_status: String = "PENDING",
+    val scene_count: Int = 0,
+    val clip_count: Int = 0
+)
+
+data class DirectorTimelineDto(
+    val command_id: String? = null,
+    val intent: String? = null,
+    val command_status: String? = null,
+    val stage_index: Int = 0,
+    val stages: List<DirectorTimelineStageDto> = emptyList(),
+    val episode: DirectorTimelineEpisodeDto? = null,
+    val updated_at: String? = null
+)
+
+data class DirectorPlanStepRequest(
+    val intent: String,
+    val season_no: Int? = null,
+    val episode_no: Int? = null,
+    val payload: JsonMap? = null
+)
+
+data class DirectorPlanRequest(
+    val project_id: String,
+    val goal: String? = null,
+    val steps: List<DirectorPlanStepRequest>? = null
+)
+
+data class DirectorPlanStepDto(
+    val order: Int = 0,
+    val capability: String = "",
+    val label: String = "",
+    val risk: String = "",
+    val required_role: String = "",
+    val required_resources: List<String> = emptyList(),
+    val missing_resources: List<String> = emptyList(),
+    val ready: Boolean = false,
+    val blocked_reason: String? = null,
+    val action: DirectorActionDto? = null
+)
+
+data class DirectorPlanDto(
+    val plan_id: String = "",
+    val project_id: String = "",
+    val goal: String? = null,
+    val overall: String = "blocked",
+    val steps: List<DirectorPlanStepDto> = emptyList(),
+    val created_at: String? = null
+)
+
+data class PublishChannelDto(
+    val id: String = "",
+    val platform: String = "",
+    val account_ref: String? = null,
+    val channel_name: String? = null,
+    val scopes: List<String> = emptyList(),
+    val status: String = "active",
+    val expires_at: String? = null,
+    val last_verified_at: String? = null,
+    val created_at: String? = null
+)
+
+data class PublishChannelsPayload(
+    val channels: List<PublishChannelDto> = emptyList(),
+    val configured: Map<String, Boolean> = emptyMap()
+)
+
+data class PublishOAuthStartPayload(
+    val configured: Boolean = false,
+    val authorization_url: String? = null,
+    val state: String? = null
+)
+
+data class PublishChannelTestPayload(
+    val ok: Boolean = false,
+    val channel: PublishChannelDto? = null,
+    val reason: String? = null
+)
+
+data class CpuTargetDto(
+    val kind: String = "none",
+    val badge: String = "",
+    val worker_url: String? = null,
+    val repository: String? = null,
+    val workflow: String? = null,
+    val ref: String = "main",
+    val has_token: Boolean = false
+)
+
+data class CpuTestDto(
+    val ok: Boolean = false,
+    val kind: String = "none",
+    val latencyMs: Long? = null,
+    val status: Int? = null,
+    val error: String? = null
+)
+
+data class SaasPlanDto(
+    val key: String = "",
+    val name: String = "",
+    val description: String? = null,
+    val price_inr: Double = 0.0,
+    val price_usd: Double = 0.0,
+    val byod_required: Boolean = true,
+    val limits: Map<String, Double> = emptyMap(),
+    val sort_order: Int = 0
+)
+
+data class SaasPlansPayload(
+    val plans: List<SaasPlanDto> = emptyList(),
+    val billing_enabled: Boolean = false
+)
+
+data class SaasSubscriptionDto(
+    val plan_key: String = "free",
+    val plan_name: String = "Free",
+    val status: String = "active",
+    val provider: String? = null,
+    val current_period_end: String? = null,
+    val cancel_at_period_end: Boolean = false,
+    val limits: Map<String, Double> = emptyMap(),
+    val byod_required: Boolean = true
+)
+
+data class SaasUsageDto(
+    val window_days: Int = 30,
+    val renders: Int = 0,
+    val commands: Int = 0,
+    val ai_tokens: Int = 0,
+    val estimated_cost_usd: Double = 0.0,
+    val limit: Int? = null,
+    val remaining: Int? = null
+)
+
 data class HealthResponseDto(
     val ok: Boolean = false,
     val status: String? = null,
@@ -601,6 +746,47 @@ interface AnimeApiService {
 
     @GET("api/v1/ai/director/readiness")
     suspend fun directorReadiness(@Query("project_id") projectId: String): Response<ApiEnvelope<DirectorReadinessDto>>
+
+    @GET("api/v1/ai/director/timeline")
+    suspend fun directorTimeline(
+        @Query("project_id") projectId: String,
+        @Query("command_id") commandId: String? = null,
+        @Query("season_no") seasonNo: Int? = null,
+        @Query("episode_no") episodeNo: Int? = null
+    ): Response<ApiEnvelope<DirectorTimelineDto>>
+
+    @POST("api/v1/ai/director/plan")
+    suspend fun directorPlan(@Body request: DirectorPlanRequest): Response<ApiEnvelope<DirectorPlanDto>>
+
+    @GET("v1/anime/publish/channels")
+    suspend fun publishChannels(): Response<ApiEnvelope<PublishChannelsPayload>>
+
+    @POST("v1/anime/publish/oauth/{platform}/start")
+    suspend fun startPublishOAuth(
+        @Path("platform") platform: String,
+        @Body body: JsonMap
+    ): Response<ApiEnvelope<PublishOAuthStartPayload>>
+
+    @POST("v1/anime/publish/channels/{id}/test")
+    suspend fun testPublishChannel(@Path("id") channelId: String): Response<ApiEnvelope<PublishChannelTestPayload>>
+
+    @POST("v1/anime/publish/channels/{id}/disconnect")
+    suspend fun disconnectPublishChannel(@Path("id") channelId: String): Response<ApiEnvelope<JsonMap>>
+
+    @GET("v1/anime/infrastructure/cpu/target")
+    suspend fun cpuTarget(): Response<ApiEnvelope<CpuTargetDto>>
+
+    @POST("v1/anime/infrastructure/cpu/test")
+    suspend fun testCpuTarget(): Response<ApiEnvelope<CpuTestDto>>
+
+    @GET("v1/anime/saas/plans")
+    suspend fun saasPlans(): Response<ApiEnvelope<SaasPlansPayload>>
+
+    @GET("v1/anime/saas/subscription")
+    suspend fun saasSubscription(): Response<ApiEnvelope<SaasSubscriptionDto>>
+
+    @GET("v1/anime/saas/usage")
+    suspend fun saasUsage(@Query("days") days: Int = 30): Response<ApiEnvelope<SaasUsageDto>>
 
     @GET("v1/anime/health")
     suspend fun getAnimeHealth(): Response<HealthResponseDto>

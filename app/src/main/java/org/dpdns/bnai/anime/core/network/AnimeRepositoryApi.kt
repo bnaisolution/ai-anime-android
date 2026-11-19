@@ -249,6 +249,44 @@ interface ProductionRepository : RepositoryContext {
     suspend fun loadDirectorCapabilities(): Resource<DirectorCapabilitiesPayload> =
         throw UnsupportedOperationException("loadDirectorCapabilities is not configured")
 
+    suspend fun loadDirectorTimeline(
+        projectId: String,
+        commandId: String? = null,
+        seasonNo: Int? = null,
+        episodeNo: Int? = null
+    ): Resource<DirectorTimelineDto> =
+        throw UnsupportedOperationException("loadDirectorTimeline is not configured")
+
+    suspend fun buildDirectorPlan(projectId: String, goal: String? = null): Resource<DirectorPlanDto> =
+        throw UnsupportedOperationException("buildDirectorPlan is not configured")
+
+    suspend fun loadPublishChannels(): Resource<PublishChannelsPayload> =
+        throw UnsupportedOperationException("loadPublishChannels is not configured")
+
+    suspend fun startPublishOAuth(platform: String, projectId: String? = null): Resource<PublishOAuthStartPayload> =
+        throw UnsupportedOperationException("startPublishOAuth is not configured")
+
+    suspend fun testPublishChannel(channelId: String): Resource<PublishChannelTestPayload> =
+        throw UnsupportedOperationException("testPublishChannel is not configured")
+
+    suspend fun disconnectPublishChannel(channelId: String): Resource<JsonMap> =
+        throw UnsupportedOperationException("disconnectPublishChannel is not configured")
+
+    suspend fun loadCpuTarget(): Resource<CpuTargetDto> =
+        throw UnsupportedOperationException("loadCpuTarget is not configured")
+
+    suspend fun testCpuTarget(): Resource<CpuTestDto> =
+        throw UnsupportedOperationException("testCpuTarget is not configured")
+
+    suspend fun loadSaasPlans(): Resource<SaasPlansPayload> =
+        throw UnsupportedOperationException("loadSaasPlans is not configured")
+
+    suspend fun loadSaasSubscription(): Resource<SaasSubscriptionDto> =
+        throw UnsupportedOperationException("loadSaasSubscription is not configured")
+
+    suspend fun loadSaasUsage(days: Int = 30): Resource<SaasUsageDto> =
+        throw UnsupportedOperationException("loadSaasUsage is not configured")
+
     suspend fun submitStudioCommand(
         projectId: String,
         intent: CommandIntent,

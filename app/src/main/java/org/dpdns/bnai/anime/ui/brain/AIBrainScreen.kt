@@ -21,10 +21,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.dpdns.bnai.anime.core.network.DirectorActionDto
 import org.dpdns.bnai.anime.core.network.DirectorContextDto
+import org.dpdns.bnai.anime.core.network.DirectorPlanDto
+import org.dpdns.bnai.anime.core.network.DirectorTimelineDto
 import org.dpdns.bnai.anime.ui.LocalAppContainer
 import org.dpdns.bnai.anime.ui.components.ProjectSelectorBar
 import org.dpdns.bnai.anime.ui.components.friendlyPipelineStatus
@@ -33,6 +36,7 @@ import org.dpdns.bnai.anime.ui.testing.TestTags
 
 @Composable
 fun AIBrainScreen(
+    onNavigate: ((String) -> Unit)? = null,
     viewModel: AIDirectorViewModel = rememberSharedAIDirectorViewModel()
 ) {
     val state by viewModel.state.collectAsState()
@@ -77,6 +81,14 @@ fun AIBrainScreen(
 
         DirectorReadinessStrip(readiness = state.readiness)
 
+        state.timeline?.let { timeline ->
+            DirectorTimelineCard(timeline = timeline, onRefresh = { viewModel.refreshTimeline() })
+        }
+
+        state.plan?.let { plan ->
+            DirectorPlanCard(plan = plan, onDismiss = viewModel::clearPlan)
+        }
+
         if (!state.activeCommandId.isNullOrBlank()) {
             StandardCard {
                 Row(
@@ -112,6 +124,10 @@ fun AIBrainScreen(
                 SuggestionChip(
                     onClick = { viewModel.proposeAction("CONTINUE_EPISODE") },
                     label = { Text("Plan Next Episode", fontSize = 12.sp) }
+                )
+                SuggestionChip(
+                    onClick = { viewModel.requestPlan() },
+                    label = { Text("Build Episode Plan", fontSize = 12.sp) }
                 )
             }
         }
@@ -149,10 +165,18 @@ fun AIBrainScreen(
 
             if (state.actions.isNotEmpty()) {
                 items(state.actions) { action ->
+                    val capabilityRoute = directorDeepLinkRoute(
+                        state.capabilities
+                            .firstOrNull { it.intent == action.intent || it.key == action.intent }
+                            ?.deep_link
+                    )
                     DirectorActionCard(
                         action = action,
                         enabled = !state.isSending,
-                        onConfirm = { viewModel.confirmAction(action) }
+                        onConfirm = { viewModel.confirmAction(action) },
+                        onOpenScreen = if (capabilityRoute != null && onNavigate != null) {
+                            { onNavigate?.invoke(capabilityRoute) }
+                        } else null
                     )
                 }
             }
@@ -248,7 +272,8 @@ fun DirectorContextBar(context: DirectorContextDto) {
 fun DirectorActionCard(
     action: DirectorActionDto,
     enabled: Boolean,
-    onConfirm: () -> Unit
+    onConfirm: () -> Unit,
+    onOpenScreen: (() -> Unit)? = null
 ) {
     val preview = action.preview
     val targetMinutes = preview?.target_duration_sec?.let { (it / 60.0).toInt() }
@@ -283,13 +308,148 @@ fun DirectorActionCard(
                 StatusChip(label = action.risk.replace('_', ' '))
             }
             Text(action.description, fontSize = 12.sp)
-            Button(
-                onClick = onConfirm,
-                enabled = enabled,
-                modifier = Modifier.fillMaxWidth()
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Text(if (action.requires_confirmation) "Confirm & Execute" else "Execute")
+                Button(
+                    onClick = onConfirm,
+                    enabled = enabled,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(if (action.requires_confirmation) "Confirm & Execute" else "Execute")
+                }
+                if (onOpenScreen != null) {
+                    OutlinedButton(onClick = onOpenScreen, enabled = enabled) {
+                        Text("Open Screen")
+                    }
+                }
             }
         }
     }
+}
+
+@Composable
+fun DirectorTimelineCard(timeline: DirectorTimelineDto, onRefresh: () -> Unit) {
+    StandardCard {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text("Production Timeline", fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                Text(
+                    text = timeline.command_status?.let { status ->
+                        if (timeline.stages.isEmpty()) {
+                            friendlyPipelineStatus(status)
+                        } else {
+                            "Stage ${timeline.stage_index + 1}/${timeline.stages.size} • ${friendlyPipelineStatus(status)}"
+                        }
+                    } ?: "No active production command",
+                    fontSize = 11.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            TextButton(onClick = onRefresh) { Text("Refresh", fontSize = 11.sp) }
+        }
+        if (timeline.stages.isNotEmpty()) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                timeline.stages.forEach { stage ->
+                    Column(
+                        modifier = Modifier.weight(1f),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(10.dp)
+                                .clip(CircleShape)
+                                .background(timelineStageColor(stage.status))
+                        )
+                        Text(
+                            text = stage.label,
+                            fontSize = 9.sp,
+                            maxLines = 1,
+                            textAlign = TextAlign.Center,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+        }
+        timeline.episode?.let { episode ->
+            Text(
+                text = "S${episode.season_no}E${episode.episode_no} • ${episode.state.replace('_', ' ')} • QC ${episode.qc_status} • ${episode.clip_count}/${episode.scene_count} clips",
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Medium
+            )
+        }
+    }
+}
+
+@Composable
+fun DirectorPlanCard(plan: DirectorPlanDto, onDismiss: () -> Unit) {
+    val ready = plan.steps.count { it.ready }
+    StandardCard {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text("Director Plan", fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                Text(
+                    "$ready/${plan.steps.size} steps ready • ${plan.overall}",
+                    fontSize = 11.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            TextButton(onClick = onDismiss) { Text("Dismiss", fontSize = 11.sp) }
+        }
+        plan.steps.forEach { step ->
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp),
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                Text("${step.order}.", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(step.label, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+                    Text(
+                        text = if (step.ready) "Ready" else (step.blocked_reason ?: "Blocked"),
+                        fontSize = 10.sp,
+                        color = if (step.ready) StudioTokens.Success else StudioTokens.Warning
+                    )
+                }
+                StatusChip(label = step.risk.replace('_', ' '))
+            }
+        }
+    }
+}
+
+private fun timelineStageColor(status: String): Color = when (status.lowercase()) {
+    "done" -> StudioTokens.Success
+    "active" -> StudioTokens.Primary
+    "failed" -> StudioTokens.Error
+    "skipped" -> StudioTokens.Neutral.copy(alpha = 0.5f)
+    else -> StudioTokens.Neutral.copy(alpha = 0.35f)
+}
+
+private fun directorDeepLinkRoute(deepLink: String?): String? = when (deepLink?.lowercase()) {
+    "bible" -> "bible"
+    "production" -> "production"
+    "quick_tools" -> "quick_tools"
+    "library" -> "media_library"
+    "vision" -> "vision_analysis"
+    "characters" -> "characters"
+    "qc" -> "qc"
+    "publish" -> "publish"
+    "continuity" -> "continuity"
+    "canon" -> "canon"
+    "review_inbox" -> "review_inbox"
+    "jobs" -> "jobs_monitor"
+    else -> null
 }

@@ -625,6 +625,92 @@ class AnimeRepository(
         Resource.Error(e.localizedMessage ?: "Director capabilities unavailable")
     }
 
+    override suspend fun loadDirectorTimeline(
+        projectId: String,
+        commandId: String?,
+        seasonNo: Int?,
+        episodeNo: Int?
+    ): Resource<DirectorTimelineDto> = try {
+        if (projectId.isBlank()) {
+            Resource.Error("Select a project first.")
+        } else {
+            mapEnvelope(
+                apiService.directorTimeline(projectId, commandId, seasonNo, episodeNo)
+            ) { it }
+        }
+    } catch (e: Exception) {
+        Resource.Error(e.localizedMessage ?: "Director timeline unavailable")
+    }
+
+    override suspend fun buildDirectorPlan(projectId: String, goal: String?): Resource<DirectorPlanDto> = try {
+        if (projectId.isBlank()) {
+            Resource.Error("Select a project first.")
+        } else {
+            mapEnvelope(
+                apiService.directorPlan(DirectorPlanRequest(project_id = projectId, goal = goal))
+            ) { it }
+        }
+    } catch (e: Exception) {
+        Resource.Error(e.localizedMessage ?: "Director plan unavailable")
+    }
+
+    override suspend fun loadPublishChannels(): Resource<PublishChannelsPayload> = try {
+        mapEnvelope(apiService.publishChannels()) { it }
+    } catch (e: Exception) {
+        Resource.Error(e.localizedMessage ?: "Publishing channels unavailable")
+    }
+
+    override suspend fun startPublishOAuth(platform: String, projectId: String?): Resource<PublishOAuthStartPayload> = try {
+        val body = buildMap<String, Any> {
+            if (!projectId.isNullOrBlank()) put("project_id", projectId)
+        }
+        mapEnvelope(apiService.startPublishOAuth(platform, body)) { it }
+    } catch (e: Exception) {
+        Resource.Error(e.localizedMessage ?: "Could not start OAuth")
+    }
+
+    override suspend fun testPublishChannel(channelId: String): Resource<PublishChannelTestPayload> = try {
+        mapEnvelope(apiService.testPublishChannel(channelId)) { it }
+    } catch (e: Exception) {
+        Resource.Error(e.localizedMessage ?: "Channel test failed")
+    }
+
+    override suspend fun disconnectPublishChannel(channelId: String): Resource<JsonMap> = try {
+        mapEnvelope(apiService.disconnectPublishChannel(channelId)) { it }
+    } catch (e: Exception) {
+        Resource.Error(e.localizedMessage ?: "Could not disconnect channel")
+    }
+
+    override suspend fun loadCpuTarget(): Resource<CpuTargetDto> = try {
+        mapEnvelope(apiService.cpuTarget()) { it }
+    } catch (e: Exception) {
+        Resource.Error(e.localizedMessage ?: "CPU target unavailable")
+    }
+
+    override suspend fun testCpuTarget(): Resource<CpuTestDto> = try {
+        mapEnvelope(apiService.testCpuTarget()) { it }
+    } catch (e: Exception) {
+        Resource.Error(e.localizedMessage ?: "CPU test failed")
+    }
+
+    override suspend fun loadSaasPlans(): Resource<SaasPlansPayload> = try {
+        mapEnvelope(apiService.saasPlans()) { it }
+    } catch (e: Exception) {
+        Resource.Error(e.localizedMessage ?: "Plans unavailable")
+    }
+
+    override suspend fun loadSaasSubscription(): Resource<SaasSubscriptionDto> = try {
+        mapEnvelope(apiService.saasSubscription()) { it }
+    } catch (e: Exception) {
+        Resource.Error(e.localizedMessage ?: "Subscription unavailable")
+    }
+
+    override suspend fun loadSaasUsage(days: Int): Resource<SaasUsageDto> = try {
+        mapEnvelope(apiService.saasUsage(days)) { it }
+    } catch (e: Exception) {
+        Resource.Error(e.localizedMessage ?: "Usage unavailable")
+    }
+
     override suspend fun submitStudioCommand(
         projectId: String,
         intent: CommandIntent,

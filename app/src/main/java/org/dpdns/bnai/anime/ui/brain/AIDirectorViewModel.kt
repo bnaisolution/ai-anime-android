@@ -16,6 +16,8 @@ import org.dpdns.bnai.anime.core.network.DirectorActionDto
 import org.dpdns.bnai.anime.core.network.DirectorCapabilityDto
 import org.dpdns.bnai.anime.core.network.DirectorContextDto
 import org.dpdns.bnai.anime.core.network.DirectorReadinessDto
+import org.dpdns.bnai.anime.core.network.DirectorTimelineDto
+import org.dpdns.bnai.anime.core.network.DirectorPlanDto
 import org.dpdns.bnai.anime.core.network.RequestedDirectorActionDto
 import org.dpdns.bnai.anime.core.network.Resource
 
@@ -31,6 +33,9 @@ data class AIDirectorUiState(
     val context: DirectorContextDto? = null,
     val capabilities: List<DirectorCapabilityDto> = emptyList(),
     val readiness: DirectorReadinessDto? = null,
+    val timeline: DirectorTimelineDto? = null,
+    val plan: DirectorPlanDto? = null,
+    val isPlanning: Boolean = false,
     val error: String? = null
 )
 
@@ -42,6 +47,7 @@ class AIDirectorViewModel(
     val state: StateFlow<AIDirectorUiState> = _state.asStateFlow()
 
     private var pollJob: Job? = null
+    private var timelineJob: Job? = null
 
     init {
         setProject(repository.currentProjectId())
@@ -61,6 +67,9 @@ class AIDirectorViewModel(
                 context = null,
                 capabilities = emptyList(),
                 readiness = null,
+                timeline = null,
+                plan = null,
+                isPlanning = false,
                 error = null
             )
         }
@@ -84,6 +93,46 @@ class AIDirectorViewModel(
             }
         }
         tokenManager.getActiveCommandId(pid, "ai_director")?.let(::pollCommand)
+        if (projectId.isNotBlank()) refreshTimeline()
+    }
+
+    fun refreshTimeline(commandId: String? = _state.value.activeCommandId) {
+        val pid = _state.value.projectId
+        if (pid.isBlank()) return
+        timelineJob?.cancel()
+        timelineJob = viewModelScope.launch {
+            when (val res = repository.loadDirectorTimeline(pid, commandId)) {
+                is Resource.Success -> _state.update { it.copy(timeline = res.data) }
+                else -> Unit
+            }
+        }
+    }
+
+    fun requestPlan(goal: String? = null) {
+        val current = _state.value
+        if (current.projectId.isBlank() || current.isPlanning) return
+        _state.update { it.copy(isPlanning = true, error = null) }
+        viewModelScope.launch {
+            when (val res = repository.buildDirectorPlan(current.projectId, goal)) {
+                is Resource.Success -> {
+                    val readyActions = res.data.steps.mapNotNull { it.action }
+                    _state.update {
+                        it.copy(
+                            isPlanning = false,
+                            plan = res.data,
+                            actions = if (readyActions.isEmpty()) it.actions else readyActions,
+                            readiness = it.readiness?.copy(overall = res.data.overall)
+                        )
+                    }
+                }
+                is Resource.Error -> _state.update { it.copy(isPlanning = false, error = res.message) }
+                else -> _state.update { it.copy(isPlanning = false) }
+            }
+        }
+    }
+
+    fun clearPlan() {
+        _state.update { it.copy(plan = null) }
     }
 
     fun updateInput(value: String) {
@@ -235,6 +284,7 @@ class AIDirectorViewModel(
                             )
                         }
                         pollCommand(commandId)
+                        refreshTimeline(commandId)
                     } else {
                         _state.update { it.copy(isSending = false, error = "Action accepted without a command id.") }
                     }
@@ -257,6 +307,8 @@ class AIDirectorViewModel(
                 actions = emptyList(),
                 activeCommandId = null,
                 activeCommandStatus = null,
+                timeline = null,
+                plan = null,
                 error = null
             )
         }
@@ -273,6 +325,7 @@ class AIDirectorViewModel(
                     is Resource.Success -> {
                         val status = res.data.status?.uppercase() ?: "QUEUED"
                         _state.update { it.copy(activeCommandStatus = status) }
+                        refreshTimeline(commandId)
                         if (status in terminal) {
                             tokenManager.saveActiveCommandId(_state.value.projectId, "ai_director", null)
                             _state.update { it.copy(activeCommandId = null) }

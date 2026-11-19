@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
 import org.dpdns.bnai.anime.core.network.Resource
+import org.dpdns.bnai.anime.core.network.SaasPlanDto
 import org.dpdns.bnai.anime.ui.LocalAppContainer
 import org.dpdns.bnai.anime.ui.components.ProjectSelectorBar
 import org.dpdns.bnai.anime.ui.designsystem.*
@@ -69,7 +70,7 @@ fun SettingsScreen(onOpenOwnerConsole: (() -> Unit)? = null) {
     val isOwner = tokenManager.isOwner()
 
     var selectedTab by remember { mutableIntStateOf(0) }
-    val tabs = listOf("AI & Vision", "Compute Workers", "Storage & Policy", "Database", "Session")
+    val tabs = listOf("AI & Vision", "Compute Workers", "Storage & Policy", "Database", "Plan & Usage", "Session")
 
     var primaryProvider by remember { mutableStateOf("") }
     var fallbackProvider by remember { mutableStateOf("") }
@@ -131,6 +132,20 @@ fun SettingsScreen(onOpenOwnerConsole: (() -> Unit)? = null) {
     var isCheckingDatabase by remember { mutableStateOf(false) }
     var databaseHealthy by remember { mutableStateOf(false) }
     var connectionStatus by remember { mutableStateOf<String?>(null) }
+
+    var cpuTargetBadge by remember { mutableStateOf<String?>(null) }
+    var cpuTestMessage by remember { mutableStateOf<String?>(null) }
+    var isTestingCpu by remember { mutableStateOf(false) }
+
+    var saasPlans by remember { mutableStateOf<List<SaasPlanDto>>(emptyList()) }
+    var saasPlanName by remember { mutableStateOf("") }
+    var saasPlanStatus by remember { mutableStateOf("") }
+    var saasRenders by remember { mutableIntStateOf(0) }
+    var saasRenderLimit by remember { mutableIntStateOf(0) }
+    var saasEstimatedCost by remember { mutableStateOf(0.0) }
+    var saasBillingEnabled by remember { mutableStateOf(false) }
+    var saasError by remember { mutableStateOf<String?>(null) }
+    var isLoadingSaas by remember { mutableStateOf(false) }
 
     val configuredProviderIds = buildList {
         if (hasSavedGroqKey || newGroqKey.isNotBlank()) add("groq")
@@ -357,10 +372,74 @@ fun SettingsScreen(onOpenOwnerConsole: (() -> Unit)? = null) {
         }
     }
 
+    fun runCpuTest() {
+        if (isTestingCpu) return
+        isTestingCpu = true
+        cpuTestMessage = null
+        scope.launch {
+            when (val target = repository.loadCpuTarget()) {
+                is Resource.Success -> cpuTargetBadge = target.data.badge
+                else -> Unit
+            }
+            when (val res = repository.testCpuTarget()) {
+                is Resource.Success -> {
+                    cpuTestMessage = if (res.data.ok) {
+                        "CPU target OK${res.data.latencyMs?.let { " • ${it}ms" } ?: ""}"
+                    } else {
+                        "CPU target failed: ${res.data.error ?: "unreachable"}"
+                    }
+                }
+                is Resource.Error -> cpuTestMessage = res.message
+                else -> Unit
+            }
+            isTestingCpu = false
+        }
+    }
+
+    fun loadSaas() {
+        isLoadingSaas = true
+        saasError = null
+        scope.launch {
+            when (val plans = repository.loadSaasPlans()) {
+                is Resource.Success -> {
+                    saasPlans = plans.data.plans
+                    saasBillingEnabled = plans.data.billing_enabled
+                }
+                is Resource.Error -> saasError = plans.message
+                else -> Unit
+            }
+            when (val sub = repository.loadSaasSubscription()) {
+                is Resource.Success -> {
+                    saasPlanName = sub.data.plan_name
+                    saasPlanStatus = sub.data.status
+                    saasRenderLimit = sub.data.limits["renders_per_month"]?.toInt() ?: 0
+                }
+                is Resource.Error -> if (saasError == null) saasError = sub.message
+                else -> Unit
+            }
+            when (val usage = repository.loadSaasUsage(30)) {
+                is Resource.Success -> {
+                    saasRenders = usage.data.renders
+                    saasEstimatedCost = usage.data.estimated_cost_usd
+                    usage.data.limit?.let { saasRenderLimit = it }
+                }
+                else -> Unit
+            }
+            isLoadingSaas = false
+        }
+    }
+
     LaunchedEffect(Unit) {
         hydrateSettingsFromServer()
         checkDatabaseConnection()
         loadTenantDatabase()
+        loadSaas()
+        scope.launch {
+            when (val target = repository.loadCpuTarget()) {
+                is Resource.Success -> cpuTargetBadge = target.data.badge
+                else -> Unit
+            }
+        }
     }
 
     fun addProvider(id: String, key: String) {
@@ -718,6 +797,23 @@ fun SettingsScreen(onOpenOwnerConsole: (() -> Unit)? = null) {
                             )
                         }
                     }
+
+                    cpuTargetBadge?.let {
+                        Text("Resolved target: $it", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                    SecondaryButton(
+                        text = if (isTestingCpu) "Testing CPU Target..." else "Test CPU Target",
+                        onClick = { runCpuTest() },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    cpuTestMessage?.let {
+                        Text(
+                            it,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
             }
 
@@ -927,6 +1023,87 @@ fun SettingsScreen(onOpenOwnerConsole: (() -> Unit)? = null) {
             }
 
             4 -> {
+                StandardCard {
+                    SectionHeader(
+                        title = "Plan & Usage",
+                        badgeText = if (isLoadingSaas) "LOADING" else (saasPlanName.ifBlank { "FREE" }).uppercase()
+                    )
+                    if (saasError != null) {
+                        Text(saasError ?: "", fontSize = 12.sp, color = StudioTokens.Error)
+                        SecondaryButton(
+                            text = "Retry",
+                            onClick = { loadSaas() },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    } else {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                                Text(saasPlanName.ifBlank { "Free" }, fontSize = 15.sp, fontWeight = FontWeight.Bold)
+                                Text(
+                                    "Status: ${saasPlanStatus.ifBlank { "active" }} • BYOD-first workspace",
+                                    fontSize = 12.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                            StatusChip(label = if (saasBillingEnabled) "BILLING ON" else "BILLING OFF")
+                        }
+                        Text(
+                            "Renders this month: $saasRenders${if (saasRenderLimit > 0) " / $saasRenderLimit" else ""}",
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                        Text(
+                            "Estimated provider cost: \$${"%.2f".format(saasEstimatedCost)} (BYOD keys, billed by your provider)",
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        SecondaryButton(
+                            text = "Refresh Usage",
+                            onClick = { loadSaas() },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                }
+
+                if (saasPlans.isNotEmpty()) {
+                    StandardCard {
+                        SectionHeader(title = "Available Plans", badgeText = "BYOD")
+                        saasPlans.forEach { plan ->
+                            Column(
+                                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                                verticalArrangement = Arrangement.spacedBy(2.dp)
+                            ) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(plan.name, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+                                    Text(
+                                        if (plan.price_inr <= 0.0) "Free" else "₹${plan.price_inr.toInt()}/mo",
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Medium
+                                    )
+                                }
+                                plan.description?.let {
+                                    Text(it, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                }
+                                Text(
+                                    if (plan.byod_required) "Bring your own AI, GPU, CPU and storage" else "Platform-managed AI and GPU",
+                                    fontSize = 10.sp,
+                                    color = StudioTokens.Secondary
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
+            5 -> {
                 StandardCard {
                     SectionHeader(title = "Backend Connectivity Verification")
                     if (connectionStatus != null) {
