@@ -229,7 +229,7 @@ class Batch2ControlBehaviorTest {
     }
 
     @Test
-    fun characterAddDispatchesBibleCommandWithName() {
+    fun characterAddCreatesCharacterWithoutBibleCommand() {
         val container = Batch2RecordingContainer()
         composeRule.setBatch2Content(container) { CharacterListScreen() }
         waitForCall(container, "fetchCharacters")
@@ -238,11 +238,13 @@ class Batch2ControlBehaviorTest {
         composeRule.onNodeWithTag(TestTags.Character.NAME_FIELD).performTextInput("Ren")
         composeRule.onNodeWithTag(TestTags.Character.ADD_CONFIRM).performClick()
 
-        waitForCall(container, "submitStudioCommand")
-        val call = container.recorder.lastCall("submitStudioCommand")
-        assertEquals(CommandIntent.SAVE_BIBLE, call?.args?.get(1))
-        val payload = call?.args?.get(4) as? Map<*, *>
-        assertTrue(payload?.get("user_prompt").toString().contains("Ren"))
+        waitForCall(container, "createCharacterSync")
+        val call = container.recorder.lastCall("createCharacterSync")
+        assertEquals("Ren", call?.args?.get(1))
+        assertEquals("Protagonist", call?.args?.get(2))
+        assertTrue(container.recorder.calls.none {
+            it.method == "submitStudioCommand" && it.args.getOrNull(1) == CommandIntent.SAVE_BIBLE
+        })
     }
 
     @Test
