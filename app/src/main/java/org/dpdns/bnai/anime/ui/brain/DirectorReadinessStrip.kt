@@ -37,7 +37,8 @@ private fun resourceLabel(key: String, entry: org.dpdns.bnai.anime.core.network.
 fun DirectorReadinessStrip(
     readiness: DirectorReadinessDto?,
     modifier: Modifier = Modifier,
-    onOpenSetup: (String) -> Unit = {}
+    onOpenSetup: (String) -> Unit = {},
+    onCreateProject: (() -> Unit)? = null
 ) {
     if (readiness == null) return
     Card(modifier = modifier.fillMaxWidth()) {
@@ -78,6 +79,14 @@ fun DirectorReadinessStrip(
                         fontSize = 11.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
+                }
+                if (setup.project == null && onCreateProject != null) {
+                    Button(
+                        onClick = onCreateProject,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Create project with Director")
+                    }
                 }
                 if (setup.next_step != "production") {
                     Button(

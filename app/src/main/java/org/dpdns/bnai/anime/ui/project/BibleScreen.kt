@@ -693,6 +693,19 @@ fun BibleScreen(
                             StatusChip(label = status)
                         }
                         Text("${patch.fields.size} proposed field(s)", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        val entityCount = patch.entities.values.sumOf { value ->
+                            (value as? List<*>)?.size ?: 0
+                        }
+                        if (entityCount > 0) {
+                            Text(
+                                text = "$entityCount proposed canon record(s): " +
+                                    patch.entities.entries
+                                        .filter { (it.value as? List<*>)?.isNotEmpty() == true }
+                                        .joinToString { (key, value) -> "$key=${(value as List<*>).size}" },
+                                fontSize = 11.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
                         patch.fields.forEach { (field, newValue) ->
                             val oldValue = bibleSnapshot[field]
                             Text(

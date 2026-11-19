@@ -198,6 +198,11 @@ data class DirectorReadinessDto(
     val setup: DirectorSetupDto? = null
 )
 
+data class DirectorProjectCreatePayload(
+    val project: ProjectDto? = null,
+    val readiness: DirectorReadinessDto? = null
+)
+
 data class DirectorTimelineStageDto(
     val key: String = "",
     val label: String = "",
@@ -518,10 +523,12 @@ data class StorageUploadRequest(
 
 data class BiblePatchDto(
     val id: String,
+    val draft_id: String? = null,
     val status: String? = null,
     val base_hash: String? = null,
     val base_version: Int? = null,
     val fields: JsonMap = emptyMap(),
+    val entities: JsonMap = emptyMap(),
     val summary: String? = null,
     val created_at: String? = null,
     val expires_at: String? = null,
@@ -833,6 +840,9 @@ interface AnimeApiService {
 
     @GET("api/v1/ai/director/capabilities")
     suspend fun directorCapabilities(): Response<ApiEnvelope<DirectorCapabilitiesPayload>>
+
+    @POST("api/v1/ai/director/setup/project")
+    suspend fun directorCreateProject(@Body body: JsonMap): Response<ApiEnvelope<DirectorProjectCreatePayload>>
 
     @GET("api/v1/ai/director/readiness")
     suspend fun directorReadiness(@Query("project_id") projectId: String? = null): Response<ApiEnvelope<DirectorReadinessDto>>

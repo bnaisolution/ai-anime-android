@@ -2,6 +2,7 @@ package org.dpdns.bnai.anime.ui.brain
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -42,6 +43,93 @@ fun AIBrainScreen(
     val state by viewModel.state.collectAsState()
     val listState = rememberLazyListState()
     var draft by rememberSaveable { mutableStateOf("") }
+    var showCreateProject by rememberSaveable { mutableStateOf(false) }
+    var createName by rememberSaveable { mutableStateOf("") }
+    var createPremise by rememberSaveable { mutableStateOf("") }
+    var createGenre by rememberSaveable { mutableStateOf("Dark Fantasy") }
+    var createSeasons by rememberSaveable { mutableStateOf("1") }
+    var createEpisodes by rememberSaveable { mutableStateOf("12") }
+    var createDuration by rememberSaveable { mutableStateOf("24") }
+
+    if (showCreateProject) {
+        AlertDialog(
+            onDismissRequest = { showCreateProject = false },
+            title = { Text("Create project with Director") },
+            text = {
+                Column(
+                    modifier = Modifier.verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    OutlinedTextField(
+                        value = createName,
+                        onValueChange = { createName = it },
+                        label = { Text("Project title") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    OutlinedTextField(
+                        value = createPremise,
+                        onValueChange = { createPremise = it },
+                        label = { Text("Premise (optional)") },
+                        maxLines = 3,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    OutlinedTextField(
+                        value = createGenre,
+                        onValueChange = { createGenre = it },
+                        label = { Text("Genre") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        OutlinedTextField(
+                            value = createSeasons,
+                            onValueChange = { createSeasons = it.filter(Char::isDigit) },
+                            label = { Text("Seasons") },
+                            singleLine = true,
+                            modifier = Modifier.weight(1f)
+                        )
+                        OutlinedTextField(
+                            value = createEpisodes,
+                            onValueChange = { createEpisodes = it.filter(Char::isDigit) },
+                            label = { Text("Episodes/season") },
+                            singleLine = true,
+                            modifier = Modifier.weight(1f)
+                        )
+                        OutlinedTextField(
+                            value = createDuration,
+                            onValueChange = { createDuration = it.filter(Char::isDigit) },
+                            label = { Text("Minutes") },
+                            singleLine = true,
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                }
+            },
+            confirmButton = {
+                Button(
+                    enabled = createName.isNotBlank() && !state.isSending,
+                    onClick = {
+                        viewModel.createProjectWithDirector(
+                            name = createName,
+                            premise = createPremise,
+                            genre = createGenre,
+                            totalSeasons = createSeasons.toIntOrNull(),
+                            episodesPerSeason = createEpisodes.toIntOrNull(),
+                            episodeDurationMin = createDuration.toIntOrNull(),
+                            targetEpisodeCount = createEpisodes.toIntOrNull()
+                        ) { projectId ->
+                            showCreateProject = false
+                            if (projectId.isNotBlank()) onNavigate?.invoke("studio")
+                        }
+                    }
+                ) { Text("Create") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showCreateProject = false }) { Text("Cancel") }
+            }
+        )
+    }
 
     LaunchedEffect(state.projectId, state.messages.size) {
         if (state.messages.isNotEmpty()) {
@@ -81,7 +169,10 @@ fun AIBrainScreen(
 
         DirectorReadinessStrip(
             readiness = state.readiness,
-            onOpenSetup = { route -> onNavigate?.invoke(route) }
+            onOpenSetup = { route -> onNavigate?.invoke(route) },
+            onCreateProject = if (state.projectId.isBlank()) {
+                { showCreateProject = true }
+            } else null
         )
 
         state.timeline?.let { timeline ->
@@ -454,5 +545,7 @@ private fun directorDeepLinkRoute(deepLink: String?): String? = when (deepLink?.
     "canon" -> "canon"
     "review_inbox" -> "review_inbox"
     "jobs" -> "jobs_monitor"
+    "project_detail" -> "project_detail"
+    "projects" -> "projects"
     else -> null
 }

@@ -246,6 +246,18 @@ interface ProductionRepository : RepositoryContext {
     suspend fun loadDirectorReadiness(projectId: String? = null): Resource<DirectorReadinessDto> =
         throw UnsupportedOperationException("loadDirectorReadiness is not configured")
 
+    suspend fun createDirectorProject(
+        name: String,
+        premise: String? = null,
+        genre: String? = null,
+        projectFormat: String? = null,
+        targetEpisodeCount: Int? = null,
+        episodeDurationMin: Int? = null,
+        totalSeasons: Int? = null,
+        episodesPerSeason: Int? = null
+    ): Resource<DirectorProjectCreatePayload> =
+        throw UnsupportedOperationException("createDirectorProject is not configured")
+
     suspend fun loadDirectorCapabilities(): Resource<DirectorCapabilitiesPayload> =
         throw UnsupportedOperationException("loadDirectorCapabilities is not configured")
 

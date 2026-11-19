@@ -615,6 +615,31 @@ class AnimeRepository(
         Resource.Error(e.localizedMessage ?: "Resource readiness unavailable")
     }
 
+    override suspend fun createDirectorProject(
+        name: String,
+        premise: String?,
+        genre: String?,
+        projectFormat: String?,
+        targetEpisodeCount: Int?,
+        episodeDurationMin: Int?,
+        totalSeasons: Int?,
+        episodesPerSeason: Int?
+    ): Resource<DirectorProjectCreatePayload> = try {
+        val body = buildMap<String, Any?> {
+            put("name", name)
+            premise?.takeIf { it.isNotBlank() }?.let { put("premise", it) }
+            genre?.takeIf { it.isNotBlank() }?.let { put("genre", it) }
+            projectFormat?.takeIf { it.isNotBlank() }?.let { put("project_format", it) }
+            targetEpisodeCount?.let { put("target_episode_count", it) }
+            episodeDurationMin?.let { put("episode_duration_min", it) }
+            totalSeasons?.let { put("total_seasons", it) }
+            episodesPerSeason?.let { put("episodes_per_season", it) }
+        }
+        mapEnvelope(apiService.directorCreateProject(body)) { it }
+    } catch (e: Exception) {
+        Resource.Error(e.localizedMessage ?: "Could not create project")
+    }
+
     override suspend fun loadDirectorCapabilities(): Resource<DirectorCapabilitiesPayload> = try {
         mapEnvelope(apiService.directorCapabilities()) { it }
     } catch (e: Exception) {

@@ -94,6 +94,46 @@ class AIDirectorViewModel(
         if (projectId.isNotBlank()) refreshTimeline()
     }
 
+    fun createProjectWithDirector(
+        name: String,
+        premise: String? = null,
+        genre: String? = null,
+        projectFormat: String? = "SERIES",
+        targetEpisodeCount: Int? = null,
+        episodeDurationMin: Int? = null,
+        totalSeasons: Int? = null,
+        episodesPerSeason: Int? = null,
+        onCreated: (String) -> Unit = {}
+    ) {
+        val clean = name.trim()
+        if (clean.isEmpty() || _state.value.isSending) return
+        _state.update { it.copy(isSending = true, error = null) }
+        viewModelScope.launch {
+            when (val res = repository.createDirectorProject(
+                name = clean,
+                premise = premise,
+                genre = genre,
+                projectFormat = projectFormat,
+                targetEpisodeCount = targetEpisodeCount,
+                episodeDurationMin = episodeDurationMin,
+                totalSeasons = totalSeasons,
+                episodesPerSeason = episodesPerSeason
+            )) {
+                is Resource.Success -> {
+                    val projectId = res.data.project?.id.orEmpty()
+                    if (projectId.isNotBlank()) {
+                        tokenManager.saveActiveProjectId(projectId)
+                        setProject(projectId)
+                    }
+                    _state.update { it.copy(isSending = false, readiness = res.data.readiness ?: it.readiness) }
+                    if (projectId.isNotBlank()) onCreated(projectId)
+                }
+                is Resource.Error -> _state.update { it.copy(isSending = false, error = res.message) }
+                else -> _state.update { it.copy(isSending = false) }
+            }
+        }
+    }
+
     fun refreshTimeline(commandId: String? = _state.value.activeCommandId) {
         val pid = _state.value.projectId
         if (pid.isBlank()) return
