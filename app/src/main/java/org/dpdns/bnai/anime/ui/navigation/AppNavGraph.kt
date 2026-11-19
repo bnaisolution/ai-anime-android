@@ -479,6 +479,7 @@ fun AppNavGraph(navController: NavHostController) {
                     Box(modifier = Modifier.weight(1f).fillMaxSize()) {
                         NavHost(navController = navController, startDestination = startDest) {
                             composable("auth") { AuthScreen(navController = navController) }
+                            composable("projects") { StudioDashboardScreen() }
                             composable("studio") {
                                 StudioDashboardScreen(
                                     onProjectClick = { navController.navigate("project_detail") },

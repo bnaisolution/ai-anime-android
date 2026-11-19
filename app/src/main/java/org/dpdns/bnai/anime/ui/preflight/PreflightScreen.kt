@@ -30,13 +30,14 @@ data class ReadinessCheck(
     val ready: Boolean,
     val detail: String,
     val fixRoute: String? = null,
-    val aiFix: AiFixKind = AiFixKind.None
+    val aiFix: AiFixKind = AiFixKind.None,
+    val blocking: Boolean = true
 )
 
-enum class AiFixKind { None, StoryBible, EpisodeScenes }
+enum class AiFixKind { None, StoryBible }
 
 data class ReadinessReport(val checks: List<ReadinessCheck>) {
-    val allReady: Boolean get() = checks.isNotEmpty() && checks.all { it.ready }
+    val allReady: Boolean get() = checks.isNotEmpty() && checks.filter { it.blocking }.all { it.ready }
     val readyCount: Int get() = checks.count { it.ready }
     val pending: List<ReadinessCheck> get() = checks.filter { !it.ready }
 }
@@ -150,7 +151,7 @@ suspend fun loadReadiness(
             "$sceneCount scene(s) ready in episode $sceneEpisodeNo."
         },
         fixRoute = "episodes",
-        aiFix = AiFixKind.EpisodeScenes
+        blocking = false
     )
 
     val jobsRes = safeResource { repository.fetchJobs(projectId) }
@@ -307,15 +308,6 @@ fun PreflightScreen(
                                                         "user_prompt" to "Generate a complete, production-ready story bible for this project."
                                                     )
                                                 )
-                                                AiFixKind.EpisodeScenes -> repository.submitStudioCommand(
-                                                    projectId = projectId,
-                                                    intent = CommandIntent.GENERATE_EPISODE,
-                                                    episodeNo = nextEpisode,
-                                                    seasonNo = nextSeason,
-                                                    payload = mapOf(
-                                                        "idempotency_key" to "preflight_${projectId.take(8)}_${nextEpisode}"
-                                                    )
-                                                )
                                                 AiFixKind.None -> null
                                             }
                                             isGenerating = false
@@ -373,7 +365,7 @@ fun PreflightScreen(
             )
             if (!report.allReady) {
                 Text(
-                    "Resolve all pending checks to enable episode generation.",
+                    "Resolve all blocking checks to enable episode generation.",
                     fontSize = 12.sp,
                     color = StudioTokens.Warning
                 )

@@ -77,13 +77,11 @@ class AIDirectorViewModel(
             val badge = repository.resolveConfiguredAiProviderBadge()
             _state.update { it.copy(providerBadge = badge) }
         }
-        if (projectId.isNotBlank()) {
-            viewModelScope.launch {
-                when (val res = repository.loadDirectorReadiness(projectId)) {
-                    is Resource.Success -> _state.update { it.copy(readiness = res.data) }
-                    is Resource.Error -> _state.update { it.copy(readiness = null) }
-                    else -> Unit
-                }
+        viewModelScope.launch {
+            when (val res = repository.loadDirectorReadiness(projectId.ifBlank { null })) {
+                is Resource.Success -> _state.update { it.copy(readiness = res.data) }
+                is Resource.Error -> _state.update { it.copy(readiness = null) }
+                else -> Unit
             }
         }
         viewModelScope.launch {

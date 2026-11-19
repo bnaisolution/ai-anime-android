@@ -609,12 +609,8 @@ class AnimeRepository(
         Resource.Error(e.localizedMessage ?: "Could not clear server conversation")
     }
 
-    override suspend fun loadDirectorReadiness(projectId: String): Resource<DirectorReadinessDto> = try {
-        if (projectId.isBlank()) {
-            Resource.Error("Select a project first.")
-        } else {
-            mapEnvelope(apiService.directorReadiness(projectId)) { it }
-        }
+    override suspend fun loadDirectorReadiness(projectId: String?): Resource<DirectorReadinessDto> = try {
+        mapEnvelope(apiService.directorReadiness(projectId?.takeIf { it.isNotBlank() })) { it }
     } catch (e: Exception) {
         Resource.Error(e.localizedMessage ?: "Resource readiness unavailable")
     }

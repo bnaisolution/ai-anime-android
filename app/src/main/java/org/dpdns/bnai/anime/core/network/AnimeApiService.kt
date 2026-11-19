@@ -73,6 +73,8 @@ data class DirectorActionDto(
 data class DirectorContextDto(
     val context_version: String? = null,
     val project: JsonMap? = null,
+    val setup: DirectorSetupDto? = null,
+    val access: JsonMap? = null,
     val target: JsonMap? = null,
     val episode: JsonMap? = null,
     val resources: JsonMap? = null,
@@ -152,13 +154,48 @@ data class SetupHintDto(
     val deep_link: String = ""
 )
 
+data class DirectorProjectSetupDto(
+    val exists: Boolean = false,
+    val settings_complete: Boolean = false,
+    val missing_settings: List<String> = emptyList(),
+    val bible_draft_ready: Boolean = false,
+    val bible_approved: Boolean = false,
+    val cast_ready: Boolean = false,
+    val ready_for_production: Boolean = false,
+    val next_step: String = "project_settings",
+    val deep_link: String = "project_detail"
+)
+
+data class DirectorSetupTrackDto(
+    val complete: Boolean = false,
+    val missing: List<String> = emptyList(),
+    val configured: Map<String, Boolean> = emptyMap()
+)
+
+data class DirectorSaasSetupDto(
+    val enabled: Boolean = false,
+    val tenant_configured: Boolean = false,
+    val complete: Boolean = false
+)
+
+data class DirectorSetupDto(
+    val complete: Boolean = false,
+    val active_track: String? = null,
+    val byod: DirectorSetupTrackDto = DirectorSetupTrackDto(),
+    val saas: DirectorSaasSetupDto = DirectorSaasSetupDto(),
+    val project: DirectorProjectSetupDto? = null,
+    val next_step: String = "byod_setup",
+    val deep_link: String = "settings"
+)
+
 data class DirectorReadinessDto(
     val project_id: String? = null,
     val overall: String = "blocked",
     val checked_at: String? = null,
     val resources: Map<String, ReadinessResourceDto> = emptyMap(),
     val blocking: List<ReadinessBlockDto> = emptyList(),
-    val setup_hints: List<SetupHintDto> = emptyList()
+    val setup_hints: List<SetupHintDto> = emptyList(),
+    val setup: DirectorSetupDto? = null
 )
 
 data class DirectorTimelineStageDto(
@@ -798,7 +835,7 @@ interface AnimeApiService {
     suspend fun directorCapabilities(): Response<ApiEnvelope<DirectorCapabilitiesPayload>>
 
     @GET("api/v1/ai/director/readiness")
-    suspend fun directorReadiness(@Query("project_id") projectId: String): Response<ApiEnvelope<DirectorReadinessDto>>
+    suspend fun directorReadiness(@Query("project_id") projectId: String? = null): Response<ApiEnvelope<DirectorReadinessDto>>
 
     @GET("api/v1/ai/director/timeline")
     suspend fun directorTimeline(

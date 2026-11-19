@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.AssistChip
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -35,7 +36,8 @@ private fun resourceLabel(key: String, entry: org.dpdns.bnai.anime.core.network.
 @Composable
 fun DirectorReadinessStrip(
     readiness: DirectorReadinessDto?,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onOpenSetup: (String) -> Unit = {}
 ) {
     if (readiness == null) return
     Card(modifier = modifier.fillMaxWidth()) {
@@ -50,6 +52,42 @@ fun DirectorReadinessStrip(
                 fontSize = 12.sp,
                 fontWeight = FontWeight.SemiBold
             )
+            readiness.setup?.let { setup ->
+                val step = setup.next_step.replace('_', ' ')
+                val track = setup.active_track?.replace('_', ' ') ?: "not selected"
+                Text(
+                    text = if (setup.complete) {
+                        "Onboarding: $track ready • next: $step"
+                    } else {
+                        "Onboarding: $track • next: $step"
+                    },
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Medium
+                )
+                val missing = if (setup.complete) emptyList() else setup.byod.missing
+                if (missing.isNotEmpty()) {
+                    Text(
+                        text = "Missing: ${missing.joinToString { it.replace('_', ' ') }}",
+                        fontSize = 11.sp,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+                setup.project?.missing_settings?.take(4)?.takeIf { it.isNotEmpty() }?.let { fields ->
+                    Text(
+                        text = "Project settings: ${fields.joinToString { it.replace('_', ' ') }}",
+                        fontSize = 11.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                if (setup.next_step != "production") {
+                    Button(
+                        onClick = { onOpenSetup(setup.deep_link) },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Continue: $step")
+                    }
+                }
+            }
             Row(
                 modifier = Modifier
                     .fillMaxWidth()

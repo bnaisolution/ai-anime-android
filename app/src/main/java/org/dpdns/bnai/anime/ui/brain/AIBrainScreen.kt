@@ -79,7 +79,10 @@ fun AIBrainScreen(
 
         state.context?.let { DirectorContextBar(it) }
 
-        DirectorReadinessStrip(readiness = state.readiness)
+        DirectorReadinessStrip(
+            readiness = state.readiness,
+            onOpenSetup = { route -> onNavigate?.invoke(route) }
+        )
 
         state.timeline?.let { timeline ->
             DirectorTimelineCard(timeline = timeline, onRefresh = { viewModel.refreshTimeline() })
