@@ -66,12 +66,30 @@ class CharacterViewModel(private val repository: AnimeRepositoryApi) : ViewModel
 
     fun createOrGenerateCharacter(name: String, role: String, autoGenerateAi: Boolean, onResult: (String) -> Unit) {
         val projectId = repository.currentProjectId()
+        if (projectId.isBlank()) {
+            onResult("Please select an active project first.")
+            return
+        }
         viewModelScope.launch {
-            val prompt = if (autoGenerateAi) {
-                "Auto-generate anime character cast and visual DNA for project"
-            } else {
-                "Add character $name with role $role and trigger reference portrait"
+            if (!autoGenerateAi) {
+                when (val res = repository.createCharacterSync(
+                    projectId = projectId,
+                    name = name,
+                    role = role,
+                    status = "ACTIVE",
+                    voiceId = "",
+                    visualDnaSummary = ""
+                )) {
+                    is Resource.Success -> {
+                        onResult("Character saved.")
+                        loadCharacters(projectId)
+                    }
+                    is Resource.Error -> onResult("Failed: ${res.message}")
+                    else -> Unit
+                }
+                return@launch
             }
+            val prompt = "Auto-generate anime character cast and visual DNA for project"
             when (val res = repository.submitStudioCommand(projectId, CommandIntent.SAVE_BIBLE, "SAVE", payload = mapOf("user_prompt" to prompt))) {
                 is Resource.Success -> {
                     onResult("Character generation dispatched!")
