@@ -712,6 +712,7 @@ class Batch2FullControlCoverageTest {
         assertText("Fallback AI Provider")
         assertText("Vision DNA Provider")
         assertText("Primary Model")
+        assertText("Render Profile")
         assertText("Add Another AI Provider")
         assertText("Save & Verify Configuration")
 

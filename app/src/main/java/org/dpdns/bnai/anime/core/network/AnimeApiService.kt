@@ -306,6 +306,59 @@ data class SaasUsageDto(
     val remaining: Int? = null
 )
 
+data class ModelCatalogEntryDto(
+    val provider: String = "",
+    val model_id: String = "",
+    val display_name: String = "",
+    val capabilities: List<String> = emptyList(),
+    val context_window: Int = 0,
+    val input_cost: Double = 0.0,
+    val output_cost: Double = 0.0,
+    val status: String = "active",
+    val validated: Boolean = false,
+    val min_plan: String = "free",
+    val notes: String? = null
+)
+
+data class RenderProfileDto(
+    val key: String = "",
+    val label: String = "",
+    val description: String = "",
+    val gpu_bundle: List<String> = emptyList(),
+    val cpu_preset: String = "",
+    val enabled: Boolean = true
+)
+
+data class ModelCatalogPayload(
+    val models: List<ModelCatalogEntryDto> = emptyList(),
+    val render_profiles: List<RenderProfileDto> = emptyList()
+)
+
+data class ModelSelectRequest(
+    val purpose: String,
+    val provider: String,
+    val model_id: String,
+    val render_profile: String? = null
+)
+
+data class ModelPreferenceDto(
+    val purpose: String = "",
+    val provider: String = "",
+    val model_id: String = "",
+    val render_profile: String? = null,
+    val updated_at: String? = null
+)
+
+data class ModelPreferencesPayload(
+    val preferences: List<ModelPreferenceDto> = emptyList()
+)
+
+data class ModelSelectionPayload(
+    val stored: Boolean = false,
+    val selection: JsonMap? = null,
+    val model: ModelCatalogEntryDto? = null
+)
+
 data class HealthResponseDto(
     val ok: Boolean = false,
     val status: String? = null,
@@ -787,6 +840,15 @@ interface AnimeApiService {
 
     @GET("v1/anime/saas/usage")
     suspend fun saasUsage(@Query("days") days: Int = 30): Response<ApiEnvelope<SaasUsageDto>>
+
+    @GET("api/v1/ai/models/catalog")
+    suspend fun modelCatalog(): Response<ApiEnvelope<ModelCatalogPayload>>
+
+    @GET("api/v1/ai/models/preferences")
+    suspend fun modelPreferences(): Response<ApiEnvelope<ModelPreferencesPayload>>
+
+    @POST("api/v1/ai/models/select")
+    suspend fun selectModel(@Body request: ModelSelectRequest): Response<ApiEnvelope<ModelSelectionPayload>>
 
     @GET("v1/anime/health")
     suspend fun getAnimeHealth(): Response<HealthResponseDto>

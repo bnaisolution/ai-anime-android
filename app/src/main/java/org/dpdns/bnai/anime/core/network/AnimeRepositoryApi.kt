@@ -287,6 +287,20 @@ interface ProductionRepository : RepositoryContext {
     suspend fun loadSaasUsage(days: Int = 30): Resource<SaasUsageDto> =
         throw UnsupportedOperationException("loadSaasUsage is not configured")
 
+    suspend fun loadModelCatalog(): Resource<ModelCatalogPayload> =
+        throw UnsupportedOperationException("loadModelCatalog is not configured")
+
+    suspend fun loadModelPreferences(): Resource<ModelPreferencesPayload> =
+        throw UnsupportedOperationException("loadModelPreferences is not configured")
+
+    suspend fun saveModelSelection(
+        purpose: String,
+        provider: String,
+        modelId: String,
+        renderProfile: String? = null
+    ): Resource<ModelSelectionPayload> =
+        throw UnsupportedOperationException("saveModelSelection is not configured")
+
     suspend fun submitStudioCommand(
         projectId: String,
         intent: CommandIntent,

@@ -16,6 +16,8 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
+import org.dpdns.bnai.anime.core.network.ModelCatalogEntryDto
+import org.dpdns.bnai.anime.core.network.RenderProfileDto
 import org.dpdns.bnai.anime.core.network.Resource
 import org.dpdns.bnai.anime.core.network.SaasPlanDto
 import org.dpdns.bnai.anime.ui.LocalAppContainer
@@ -27,6 +29,7 @@ private data class AiProviderSpec(
     val id: String,
     val label: String,
     val models: List<String>,
+    val visionModels: List<String> = models,
     val available: Boolean = true
 )
 
@@ -40,7 +43,8 @@ private val AI_PROVIDERS = listOf(
     AiProviderSpec(
         id = "groq",
         label = "Groq",
-        models = listOf("llama-3.3-70b-versatile", "llama-3.1-8b-instant", "mixtral-8x7b-32768")
+        models = listOf("llama-3.3-70b-versatile", "llama-3.1-8b-instant", "mixtral-8x7b-32768"),
+        visionModels = emptyList()
     ),
     AiProviderSpec(
         id = "gemini",
@@ -51,9 +55,54 @@ private val AI_PROVIDERS = listOf(
     AiProviderSpec("nvidia_nim", "NVIDIA NIM", emptyList(), available = false)
 )
 
-private fun providerSpec(id: String): AiProviderSpec? = AI_PROVIDERS.firstOrNull { it.id == id }
+private val PROVIDER_LABELS = mapOf(
+    "groq" to "Groq",
+    "gemini" to "Google Gemini",
+    "openai" to "OpenAI-Compatible",
+    "nvidia_nim" to "NVIDIA NIM",
+    "custom" to "Custom / OpenRouter"
+)
 
-private fun modelsFor(providerId: String): List<String> = providerSpec(providerId)?.models.orEmpty()
+private fun buildProviderSpecs(catalog: List<ModelCatalogEntryDto>): List<AiProviderSpec> {
+    if (catalog.isEmpty()) return AI_PROVIDERS
+    val grouped = catalog.filter { it.status != "deprecated" }.groupBy { it.provider }
+    val known = AI_PROVIDERS.map { base ->
+        val entries = grouped[base.id].orEmpty()
+        if (entries.isEmpty()) {
+            base
+        } else {
+            base.copy(
+                models = entries.filter { "text" in it.capabilities }.map { it.model_id }.distinct(),
+                visionModels = entries.filter { "vision" in it.capabilities }.map { it.model_id }.distinct(),
+                available = true
+            )
+        }
+    }
+    val extras = grouped.keys
+        .filter { id -> AI_PROVIDERS.none { it.id == id } }
+        .map { id ->
+            val entries = grouped[id].orEmpty()
+            AiProviderSpec(
+                id = id,
+                label = PROVIDER_LABELS[id] ?: id.replaceFirstChar { it.uppercase() },
+                models = entries.filter { "text" in it.capabilities }.map { it.model_id }.distinct(),
+                visionModels = entries.filter { "vision" in it.capabilities }.map { it.model_id }.distinct(),
+                available = true
+            )
+        }
+    return known + extras
+}
+
+private fun providerSpec(id: String, specs: List<AiProviderSpec>): AiProviderSpec? =
+    specs.firstOrNull { it.id == id }
+
+private fun modelsFor(
+    providerId: String,
+    specs: List<AiProviderSpec>,
+    capability: String = "text"
+): List<String> = providerSpec(providerId, specs)?.let { spec ->
+    if (capability == "vision") spec.visionModels else spec.models
+}.orEmpty()
 
 private fun text(value: Any?): String =
     value?.toString()?.takeUnless { it.isBlank() || it == "null" }.orEmpty()
@@ -78,6 +127,10 @@ fun SettingsScreen(onOpenOwnerConsole: (() -> Unit)? = null) {
     var primaryModel by remember { mutableStateOf("") }
     var fallbackModel by remember { mutableStateOf("") }
     var visionModel by remember { mutableStateOf("") }
+
+    var catalogModels by remember { mutableStateOf<List<ModelCatalogEntryDto>>(emptyList()) }
+    var renderProfiles by remember { mutableStateOf<List<RenderProfileDto>>(emptyList()) }
+    var renderProfileKey by remember { mutableStateOf("STANDARD") }
 
     var gpuChoice by remember { mutableStateOf("KAGGLE_PRIMARY") }
     var cpuChoice by remember { mutableStateOf("GITHUB_CPU") }
@@ -146,6 +199,15 @@ fun SettingsScreen(onOpenOwnerConsole: (() -> Unit)? = null) {
     var saasBillingEnabled by remember { mutableStateOf(false) }
     var saasError by remember { mutableStateOf<String?>(null) }
     var isLoadingSaas by remember { mutableStateOf(false) }
+
+    val providerSpecs = remember(catalogModels) { buildProviderSpecs(catalogModels) }
+    val renderProfileOptions = renderProfiles.ifEmpty {
+        listOf(
+            RenderProfileDto("FAST", "Fast", "Quick drafts, lowest GPU cost"),
+            RenderProfileDto("STANDARD", "Standard", "Balanced quality and render time"),
+            RenderProfileDto("HIGH", "High", "Best quality, highest GPU cost")
+        )
+    }
 
     val configuredProviderIds = buildList {
         if (hasSavedGroqKey || newGroqKey.isNotBlank()) add("groq")
@@ -318,13 +380,13 @@ fun SettingsScreen(onOpenOwnerConsole: (() -> Unit)? = null) {
                 visionProvider = serverVision.takeIf { loadedProviders.contains(it) }.orEmpty()
 
                 primaryModel = text(d["primary_llm_model"]).ifBlank {
-                    modelsFor(primaryProvider).firstOrNull().orEmpty()
+                    modelsFor(primaryProvider, providerSpecs).firstOrNull().orEmpty()
                 }
                 fallbackModel = text(d["fallback_llm_model"]).ifBlank {
-                    modelsFor(fallbackProvider).firstOrNull().orEmpty()
+                    modelsFor(fallbackProvider, providerSpecs).firstOrNull().orEmpty()
                 }
                 visionModel = text(d["vision_model"]).ifBlank {
-                    modelsFor(visionProvider).firstOrNull().orEmpty()
+                    modelsFor(visionProvider, providerSpecs, "vision").firstOrNull().orEmpty()
                 }
 
                 kagglePrimaryUsername = text(kagglePrimary?.get("username"))
@@ -367,6 +429,14 @@ fun SettingsScreen(onOpenOwnerConsole: (() -> Unit)? = null) {
                 if (overview is Resource.Success) {
                     autoApprovePolicy = overview.data["auto_approve"] == true
                 }
+            }
+            when (val prefs = repository.loadModelPreferences()) {
+                is Resource.Success -> {
+                    prefs.data.preferences.firstOrNull { it.purpose == "primary" }?.render_profile
+                        ?.takeIf { it.isNotBlank() }
+                        ?.let { renderProfileKey = it }
+                }
+                else -> Unit
             }
             isLoading = false
         }
@@ -440,6 +510,28 @@ fun SettingsScreen(onOpenOwnerConsole: (() -> Unit)? = null) {
                 else -> Unit
             }
         }
+        scope.launch {
+            when (val catalog = repository.loadModelCatalog()) {
+                is Resource.Success -> {
+                    catalogModels = catalog.data.models
+                    renderProfiles = catalog.data.render_profiles
+                    val activeSpecs = buildProviderSpecs(catalog.data.models)
+                    if (primaryProvider.isNotBlank() && modelsFor(primaryProvider, activeSpecs).isEmpty()) {
+                        primaryProvider = ""
+                        primaryModel = ""
+                    }
+                    if (fallbackProvider.isNotBlank() && modelsFor(fallbackProvider, activeSpecs).isEmpty()) {
+                        fallbackProvider = ""
+                        fallbackModel = ""
+                    }
+                    if (visionProvider.isNotBlank() && modelsFor(visionProvider, activeSpecs, "vision").isEmpty()) {
+                        visionProvider = ""
+                        visionModel = ""
+                    }
+                }
+                else -> Unit
+            }
+        }
     }
 
     fun addProvider(id: String, key: String) {
@@ -455,14 +547,15 @@ fun SettingsScreen(onOpenOwnerConsole: (() -> Unit)? = null) {
         }
         if (primaryProvider.isBlank()) {
             primaryProvider = id
-            primaryModel = modelsFor(id).firstOrNull().orEmpty()
+            primaryModel = modelsFor(id, providerSpecs).firstOrNull().orEmpty()
         } else if (fallbackProvider.isBlank() && fallbackProvider != primaryProvider) {
             fallbackProvider = id
-            fallbackModel = modelsFor(id).firstOrNull().orEmpty()
+            fallbackModel = modelsFor(id, providerSpecs).firstOrNull().orEmpty()
         }
-        if (visionProvider.isBlank()) {
+        val visionOptions = modelsFor(id, providerSpecs, "vision")
+        if (visionProvider.isBlank() && visionOptions.isNotEmpty()) {
             visionProvider = id
-            visionModel = modelsFor(id).firstOrNull().orEmpty()
+            visionModel = visionOptions.firstOrNull().orEmpty()
         }
     }
 
@@ -486,7 +579,7 @@ fun SettingsScreen(onOpenOwnerConsole: (() -> Unit)? = null) {
                     OutlinedTextField(
                         value = newProviderKey,
                         onValueChange = { newProviderKey = it },
-                        label = { Text("${providerSpec(newProviderId)?.label ?: "Provider"} API Key") },
+                        label = { Text("${providerSpec(newProviderId, providerSpecs)?.label ?: "Provider"} API Key") },
                         visualTransformation = PasswordVisualTransformation(),
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth().testTag(TestTags.Settings.AI_ADD_KEY)
@@ -495,7 +588,7 @@ fun SettingsScreen(onOpenOwnerConsole: (() -> Unit)? = null) {
             },
             confirmButton = {
                 TextButton(
-                    enabled = newProviderKey.isNotBlank() && providerSpec(newProviderId)?.available == true,
+                    enabled = newProviderKey.isNotBlank() && providerSpec(newProviderId, providerSpecs)?.available == true,
                     onClick = {
                         addProvider(newProviderId, newProviderKey.trim())
                         newProviderKey = ""
@@ -560,14 +653,14 @@ fun SettingsScreen(onOpenOwnerConsole: (() -> Unit)? = null) {
                         AiDropdown(
                             label = "Primary AI Provider",
                             selectedId = primaryProvider,
-                            options = configuredProviderIds.map { DropdownOption(it, providerSpec(it)?.label ?: it) } +
+                            options = configuredProviderIds.map { DropdownOption(it, providerSpec(it, providerSpecs)?.label ?: it) } +
                                 DropdownOption("__add__", "＋ Add more AI provider"),
                             onSelected = { id ->
                                 if (id == "__add__") {
                                     showAddProviderDialog = true
                                 } else {
                                     primaryProvider = id
-                                    primaryModel = modelsFor(id).firstOrNull().orEmpty()
+                                    primaryModel = modelsFor(id, providerSpecs).firstOrNull().orEmpty()
                                 }
                             },
                             modifier = Modifier.testTag(TestTags.Settings.AI_PRIMARY)
@@ -576,7 +669,7 @@ fun SettingsScreen(onOpenOwnerConsole: (() -> Unit)? = null) {
                             ModelDropdown(
                                 label = "Primary Model",
                                 selectedId = primaryModel,
-                                providerId = primaryProvider,
+                                models = modelsFor(primaryProvider, providerSpecs),
                                 onSelected = { primaryModel = it }
                             )
                         }
@@ -585,7 +678,7 @@ fun SettingsScreen(onOpenOwnerConsole: (() -> Unit)? = null) {
                             label = "Fallback AI Provider",
                             selectedId = fallbackProvider,
                             options = listOf(DropdownOption("__none__", "No fallback")) +
-                                configuredProviderIds.map { DropdownOption(it, providerSpec(it)?.label ?: it) } +
+                                configuredProviderIds.map { DropdownOption(it, providerSpec(it, providerSpecs)?.label ?: it) } +
                                 DropdownOption("__add__", "＋ Add more AI provider"),
                             onSelected = { id ->
                                 when (id) {
@@ -596,7 +689,7 @@ fun SettingsScreen(onOpenOwnerConsole: (() -> Unit)? = null) {
                                     }
                                     else -> {
                                         fallbackProvider = id
-                                        fallbackModel = modelsFor(id).firstOrNull().orEmpty()
+                                        fallbackModel = modelsFor(id, providerSpecs).firstOrNull().orEmpty()
                                     }
                                 }
                             },
@@ -606,7 +699,7 @@ fun SettingsScreen(onOpenOwnerConsole: (() -> Unit)? = null) {
                             ModelDropdown(
                                 label = "Fallback Model",
                                 selectedId = fallbackModel,
-                                providerId = fallbackProvider,
+                                models = modelsFor(fallbackProvider, providerSpecs),
                                 onSelected = { fallbackModel = it }
                             )
                         }
@@ -614,17 +707,19 @@ fun SettingsScreen(onOpenOwnerConsole: (() -> Unit)? = null) {
                         AiDropdown(
                             label = "Vision DNA Provider",
                             selectedId = visionProvider,
-                            options = configuredProviderIds.map { DropdownOption(it, providerSpec(it)?.label ?: it) },
+                            options = configuredProviderIds
+                                .filter { modelsFor(it, providerSpecs, "vision").isNotEmpty() }
+                                .map { DropdownOption(it, providerSpec(it, providerSpecs)?.label ?: it) },
                             onSelected = { id ->
                                 visionProvider = id
-                                visionModel = modelsFor(id).firstOrNull().orEmpty()
+                                visionModel = modelsFor(id, providerSpecs, "vision").firstOrNull().orEmpty()
                             }
                         )
                         if (visionProvider.isNotBlank()) {
                             ModelDropdown(
                                 label = "Vision Model",
                                 selectedId = visionModel,
-                                providerId = visionProvider,
+                                models = modelsFor(visionProvider, providerSpecs, "vision"),
                                 onSelected = { visionModel = it }
                             )
                         }
@@ -635,6 +730,26 @@ fun SettingsScreen(onOpenOwnerConsole: (() -> Unit)? = null) {
                             modifier = Modifier.fillMaxWidth()
                         )
                     }
+                }
+                StandardCard {
+                    SectionHeader(title = "Render Profile", badgeText = renderProfileKey)
+                    Text(
+                        "Controls the GPU/CPU bundle used for image, animation and video rendering. Catalog values come from the server.",
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    AiDropdown(
+                        label = "Render Profile",
+                        selectedId = renderProfileKey,
+                        options = renderProfileOptions.map { DropdownOption(it.key, it.label, it.enabled) },
+                        onSelected = { renderProfileKey = it }
+                    )
+                    Text(
+                        renderProfileOptions.firstOrNull { it.key == renderProfileKey }?.description
+                            ?: "Balanced quality and render time",
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
             }
 
@@ -1196,6 +1311,15 @@ fun SettingsScreen(onOpenOwnerConsole: (() -> Unit)? = null) {
                     if (newGeminiKey.isNotBlank()) infraPayload["gemini_api_key"] = newGeminiKey.trim()
 
                     val saveInfraRes = repository.saveGpuInfrastructure(infraPayload)
+                    if (primaryProvider.isNotBlank() && primaryModel.isNotBlank()) {
+                        repository.saveModelSelection("primary", primaryProvider, primaryModel, renderProfileKey)
+                    }
+                    if (fallbackProvider.isNotBlank() && fallbackModel.isNotBlank()) {
+                        repository.saveModelSelection("fallback", fallbackProvider, fallbackModel, null)
+                    }
+                    if (visionProvider.isNotBlank() && visionModel.isNotBlank()) {
+                        repository.saveModelSelection("vision", visionProvider, visionModel, null)
+                    }
                     val pid = repository.currentProjectId()
                     if (pid.isNotBlank() && visionProvider.isNotBlank()) {
                         repository.updateProjectSettings(
@@ -1284,10 +1408,9 @@ private fun AiDropdown(
 private fun ModelDropdown(
     label: String,
     selectedId: String,
-    providerId: String,
+    models: List<String>,
     onSelected: (String) -> Unit
 ) {
-    val models = modelsFor(providerId)
     if (models.isEmpty()) return
     AiDropdown(
         label = label,

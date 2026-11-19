@@ -711,6 +711,38 @@ class AnimeRepository(
         Resource.Error(e.localizedMessage ?: "Usage unavailable")
     }
 
+    override suspend fun loadModelCatalog(): Resource<ModelCatalogPayload> = try {
+        mapEnvelope(apiService.modelCatalog()) { it }
+    } catch (e: Exception) {
+        Resource.Error(e.localizedMessage ?: "Model catalog unavailable")
+    }
+
+    override suspend fun loadModelPreferences(): Resource<ModelPreferencesPayload> = try {
+        mapEnvelope(apiService.modelPreferences()) { it }
+    } catch (e: Exception) {
+        Resource.Error(e.localizedMessage ?: "Model preferences unavailable")
+    }
+
+    override suspend fun saveModelSelection(
+        purpose: String,
+        provider: String,
+        modelId: String,
+        renderProfile: String?
+    ): Resource<ModelSelectionPayload> = try {
+        mapEnvelope(
+            apiService.selectModel(
+                ModelSelectRequest(
+                    purpose = purpose,
+                    provider = provider,
+                    model_id = modelId,
+                    render_profile = renderProfile
+                )
+            )
+        ) { it }
+    } catch (e: Exception) {
+        Resource.Error(e.localizedMessage ?: "Model selection failed")
+    }
+
     override suspend fun submitStudioCommand(
         projectId: String,
         intent: CommandIntent,
