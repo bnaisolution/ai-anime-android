@@ -120,6 +120,11 @@ class Batch2FullControlCoverageTest {
         composeRule.waitForIdle()
     }
 
+    private fun scrollAndClickText(label: String) {
+        composeRule.onAllNodes(hasText(label) and hasClickAction())[0].performScrollTo().performClick()
+        composeRule.waitForIdle()
+    }
+
     private fun clickDesc(description: String) {
         composeRule.onAllNodesWithContentDescription(description, useUnmergedTree = true)[0].performClick()
         composeRule.waitForIdle()
@@ -656,7 +661,7 @@ class Batch2FullControlCoverageTest {
         assertText("Public")
         assertText("Publish to Selected Platforms")
 
-        clickClickableText("Public")
+        scrollAndClickText("Public")
         waitForText("Unlisted")
         assertText("Unlisted")
         assertText("Private")
