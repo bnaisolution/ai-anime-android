@@ -404,7 +404,11 @@ fun GlobalAiDirectorBottomSheet(
                     Column {
                         Text("AI Studio Director", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                         Text(
-                            text = "Context: $effectiveScreen • Project #${projectId.take(6).ifBlank { "Global" }}",
+                            text = if (projectId.isBlank()) {
+                                "Context: $effectiveScreen • Project onboarding"
+                            } else {
+                                "Context: $effectiveScreen • Project #${projectId.take(6)}"
+                            },
                             fontSize = 11.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -455,12 +459,29 @@ fun GlobalAiDirectorBottomSheet(
             ) {
                 if (state.messages.isEmpty()) {
                     item {
-                        Text(
-                            text = "Ask the AI Director about your Story Bible, Episode Script, Character DNA, or Continuity. BYOD AI is required; the Director proposes server-approved actions instead of guessing.",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(vertical = 16.dp)
-                        )
+                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Text(
+                                text = if (projectId.isBlank()) {
+                                    "No project yet. Tell the Director what you want to create and it will collect the project brief before you create it."
+                                } else {
+                                    "Ask the AI Director about your Story Bible, Episode Script, Character DNA, or Continuity. BYOD AI is required; the Director proposes server-approved actions instead of guessing."
+                                },
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.padding(top = 16.dp)
+                            )
+                            if (projectId.isBlank()) {
+                                Button(
+                                    onClick = {
+                                        onDismiss()
+                                        onOpenFullAiBrain()
+                                    },
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Text("Create project in Director")
+                                }
+                            }
+                        }
                     }
                 }
                 items(state.messages, key = { it.id }) { msg ->
@@ -532,7 +553,7 @@ fun GlobalAiDirectorBottomSheet(
                         viewModel.sendMessage(cleanPrompt, effectiveScreen)
                         prompt = ""
                     },
-                    enabled = prompt.isNotBlank() && !state.isSending && projectId.isNotBlank(),
+                    enabled = prompt.isNotBlank() && !state.isSending,
                     modifier = Modifier
                         .size(48.dp)
                         .testTag(TestTags.AiDirector.SEND)

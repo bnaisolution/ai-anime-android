@@ -110,17 +110,18 @@ fun AIBrainScreen(
                 Button(
                     enabled = createName.isNotBlank() && !state.isSending,
                     onClick = {
+                        val seasons = createSeasons.toIntOrNull()?.coerceAtLeast(1) ?: 1
+                        val episodesPerSeason = createEpisodes.toIntOrNull()?.coerceAtLeast(1) ?: 12
                         viewModel.createProjectWithDirector(
                             name = createName,
                             premise = createPremise,
                             genre = createGenre,
-                            totalSeasons = createSeasons.toIntOrNull(),
-                            episodesPerSeason = createEpisodes.toIntOrNull(),
+                            totalSeasons = seasons,
+                            episodesPerSeason = episodesPerSeason,
                             episodeDurationMin = createDuration.toIntOrNull(),
-                            targetEpisodeCount = createEpisodes.toIntOrNull()
-                        ) { projectId ->
+                            targetEpisodeCount = seasons * episodesPerSeason
+                        ) {
                             showCreateProject = false
-                            if (projectId.isNotBlank()) onNavigate?.invoke("studio")
                         }
                     }
                 ) { Text("Create") }
@@ -201,28 +202,44 @@ fun AIBrainScreen(
         }
 
         if (state.messages.isEmpty()) {
+            val hasProject = state.projectId.isNotBlank()
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .horizontalScroll(rememberScrollState()),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                SuggestionChip(
-                    onClick = { viewModel.sendMessage("Audit this project's Story Bible and tell me what is missing.") },
-                    label = { Text("Audit Story Bible", fontSize = 12.sp) }
-                )
-                SuggestionChip(
-                    onClick = { viewModel.proposeAction("CHECK_CONTINUITY") },
-                    label = { Text("Check Continuity", fontSize = 12.sp) }
-                )
-                SuggestionChip(
-                    onClick = { viewModel.proposeAction("CONTINUE_EPISODE") },
-                    label = { Text("Plan Next Episode", fontSize = 12.sp) }
-                )
-                SuggestionChip(
-                    onClick = { viewModel.requestPlan() },
-                    label = { Text("Build Episode Plan", fontSize = 12.sp) }
-                )
+                if (hasProject) {
+                    SuggestionChip(
+                        onClick = { viewModel.sendMessage("Audit this project's Story Bible and tell me what is missing.") },
+                        label = { Text("Audit Story Bible", fontSize = 12.sp) }
+                    )
+                    SuggestionChip(
+                        onClick = { viewModel.proposeAction("CHECK_CONTINUITY") },
+                        label = { Text("Check Continuity", fontSize = 12.sp) }
+                    )
+                    SuggestionChip(
+                        onClick = { viewModel.proposeAction("CONTINUE_EPISODE") },
+                        label = { Text("Plan Next Episode", fontSize = 12.sp) }
+                    )
+                    SuggestionChip(
+                        onClick = { viewModel.requestPlan() },
+                        label = { Text("Build Episode Plan", fontSize = 12.sp) }
+                    )
+                } else {
+                    SuggestionChip(
+                        onClick = { viewModel.sendMessage("Help me create a new anime project. Ask me for the essential details.") },
+                        label = { Text("Start a new project", fontSize = 12.sp) }
+                    )
+                    SuggestionChip(
+                        onClick = { viewModel.sendMessage("What setup do I need before creating a project?") },
+                        label = { Text("Check setup", fontSize = 12.sp) }
+                    )
+                    SuggestionChip(
+                        onClick = { viewModel.sendMessage("Suggest a strong first anime project brief.") },
+                        label = { Text("Suggest a brief", fontSize = 12.sp) }
+                    )
+                }
             }
         }
 
@@ -305,7 +322,12 @@ fun AIBrainScreen(
                     draft = it
                     viewModel.updateInput(it)
                 },
-                placeholder = { Text("Ask AI Director about this project...") },
+                placeholder = {
+                    Text(
+                        if (state.projectId.isBlank()) "Tell the Director what you want to make..."
+                        else "Ask AI Director about this project..."
+                    )
+                },
                 modifier = Modifier.weight(1f),
                 maxLines = 4
             )
@@ -314,7 +336,7 @@ fun AIBrainScreen(
                     viewModel.sendMessage(draft)
                     draft = ""
                 },
-                enabled = draft.isNotBlank() && !state.isSending && state.projectId.isNotBlank(),
+                enabled = draft.isNotBlank() && !state.isSending,
                 modifier = Modifier
                     .size(48.dp)
                     .clip(CircleShape)

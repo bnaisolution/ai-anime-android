@@ -124,9 +124,24 @@ class AIDirectorViewModel(
                     if (projectId.isNotBlank()) {
                         tokenManager.saveActiveProjectId(projectId)
                         setProject(projectId)
+                        tokenManager.appendProjectChatMessage(
+                            projectId,
+                            PersistedChatMessage(
+                                role = "assistant",
+                                content = "Project **$clean** created. Next, complete project settings and approve the Story Bible before production."
+                            )
+                        )
+                        _state.update {
+                            it.copy(
+                                isSending = false,
+                                readiness = res.data.readiness ?: it.readiness,
+                                messages = tokenManager.getProjectChatHistory(projectId)
+                            )
+                        }
+                        onCreated(projectId)
+                    } else {
+                        _state.update { it.copy(isSending = false, readiness = res.data.readiness ?: it.readiness) }
                     }
-                    _state.update { it.copy(isSending = false, readiness = res.data.readiness ?: it.readiness) }
-                    if (projectId.isNotBlank()) onCreated(projectId)
                 }
                 is Resource.Error -> _state.update { it.copy(isSending = false, error = res.message) }
                 else -> _state.update { it.copy(isSending = false) }
@@ -184,8 +199,8 @@ class AIDirectorViewModel(
     fun sendMessage(text: String = _state.value.input, currentScreen: String = "AI_BRAIN") {
         val clean = text.trim()
         val current = _state.value
-        if (clean.isEmpty() || current.isSending || current.projectId.isBlank()) return
-        val pid = current.projectId
+        if (clean.isEmpty() || current.isSending) return
+        val pid = current.projectId.ifBlank { "global_studio" }
         val history = tokenManager.appendProjectChatMessage(
             pid,
             PersistedChatMessage(role = "user", content = clean)
@@ -210,7 +225,7 @@ class AIDirectorViewModel(
                 message = clean,
                 currentScreen = currentScreen,
                 conversationId = conversationId,
-                projectId = pid,
+                projectId = current.projectId,
                 seasonNo = seasonNo,
                 episodeNo = episodeNo,
                 targetDurationSec = targetSec
@@ -251,6 +266,10 @@ class AIDirectorViewModel(
     fun proposeAction(intent: String, currentScreen: String = "AI_BRAIN") {
         val current = _state.value
         if (current.isSending) return
+        if (current.projectId.isBlank()) {
+            _state.update { it.copy(error = "Create or select a project before preparing production actions.") }
+            return
+        }
         val prompt = "Prepare this production action for my confirmation: ${intent.replace('_', ' ').lowercase()}."
         val pid = current.projectId
         val history = tokenManager.appendProjectChatMessage(
@@ -334,7 +353,8 @@ class AIDirectorViewModel(
     }
 
     fun clearConversation() {
-        val pid = _state.value.projectId
+        val activeProjectId = _state.value.projectId
+        val pid = activeProjectId.ifBlank { "global_studio" }
         pollJob?.cancel()
         tokenManager.clearProjectChatHistory(pid)
         tokenManager.saveActiveCommandId(pid, "ai_director", null)
@@ -350,7 +370,7 @@ class AIDirectorViewModel(
                 error = null
             )
         }
-        viewModelScope.launch { repository.clearDirectorConversation(pid) }
+        viewModelScope.launch { repository.clearDirectorConversation(activeProjectId) }
     }
 
     private fun pollCommand(commandId: String) {
