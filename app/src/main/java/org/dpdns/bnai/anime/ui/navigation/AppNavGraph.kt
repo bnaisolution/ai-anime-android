@@ -529,7 +529,9 @@ fun AppNavGraph(navController: NavHostController) {
                             composable("bible") {
                                 BibleScreen(
                                     onOpenCanon = { navController.navigate("canon") { launchSingleTop = true } },
-                                    onOpenSeasons = { navController.navigate("seasons") { launchSingleTop = true } }
+                                    onOpenSeasons = { navController.navigate("seasons") { launchSingleTop = true } },
+                                    onOpenCharacters = { navController.navigate("characters") { launchSingleTop = true } },
+                                    onOpenPreflight = { pid -> navController.navigate("preflight/$pid") }
                                 )
                             }
                             composable("seasons") {

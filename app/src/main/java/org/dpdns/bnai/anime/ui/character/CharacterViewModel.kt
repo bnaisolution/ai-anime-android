@@ -39,10 +39,16 @@ class CharacterViewModel(private val repository: AnimeRepositoryApi) : ViewModel
 
     fun previewVoice(characterId: String, voiceId: String, onResult: (String) -> Unit) {
         val projectId = repository.currentProjectId()
+        val resolvedVoiceId = voiceId.takeIf { it.isNotBlank() && !it.equals("UNSET", ignoreCase = true) }
+            ?: _voiceCatalog.value.firstOrNull().orEmpty()
+        if (resolvedVoiceId.isBlank()) {
+            onResult("Select a voice profile first.")
+            return
+        }
         viewModelScope.launch {
-            val payload = mapOf("character_code" to characterId, "voice_id" to voiceId, "sample_text" to "This is my studio voice preview.")
+            val payload = mapOf("character_code" to characterId, "voice_id" to resolvedVoiceId, "sample_text" to "This is my studio voice preview.")
             when (val res = repository.submitStudioCommand(projectId, CommandIntent.PREVIEW_VOICE, "PREVIEW", payload = payload)) {
-                is Resource.Success -> onResult("Voice preview queued for $voiceId")
+                is Resource.Success -> onResult("Voice preview queued for $resolvedVoiceId")
                 is Resource.Error -> onResult("Voice preview failed: ${res.message}")
                 else -> Unit
             }

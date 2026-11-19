@@ -104,6 +104,8 @@ private fun displayValue(value: Any?): String {
 fun BibleScreen(
     onOpenCanon: () -> Unit = {},
     onOpenSeasons: () -> Unit = {},
+    onOpenCharacters: () -> Unit = {},
+    onOpenPreflight: (String) -> Unit = {},
     onNavigateBack: () -> Unit = {}
 ) {
     val context = LocalContext.current
@@ -138,6 +140,7 @@ fun BibleScreen(
     var bibleHash by remember { mutableStateOf("") }
     var bibleSnapshot by remember { mutableStateOf<JsonMap>(emptyMap()) }
     var livingCanonCount by remember { mutableStateOf<Int?>(null) }
+    var castCount by remember { mutableStateOf<Int?>(null) }
     var savedSnapshot by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(true) }
     var isSavingDraft by remember { mutableStateOf(false) }
@@ -271,6 +274,20 @@ fun BibleScreen(
         }
     }
 
+    fun loadCastCount(targetPid: String) {
+        if (targetPid.isBlank()) {
+            castCount = null
+            return
+        }
+        scope.launch {
+            castCount = when (val res = repository.fetchCharacters(targetPid)) {
+                is Resource.Success -> res.data.size
+                is Resource.Empty -> 0
+                else -> null
+            }
+        }
+    }
+
     fun loadPatches(targetPid: String) {
         if (targetPid.isBlank()) {
             patches = emptyList()
@@ -292,6 +309,7 @@ fun BibleScreen(
         loadBibleFromServer(projectId)
         loadBiblePrompts(projectId)
         loadLivingCanonCount(projectId)
+        loadCastCount(projectId)
         loadPatches(projectId)
     }
 
@@ -331,6 +349,8 @@ fun BibleScreen(
     val pendingPatches = patches.filter {
         it.status?.uppercase() in setOf("PATCH_READY", "PENDING_APPROVAL", "CONFLICT", "APPLYING")
     }
+    val bibleApproved = bibleSnapshot["bible_approved_at"]?.toString()?.isNotBlank() == true
+    val studioReady = bibleApproved || (castCount ?: 0) > 0
 
     if (showDiscardDialog) {
         UnsavedChangesDialog(
@@ -733,6 +753,8 @@ fun BibleScreen(
                                             is Resource.Success -> {
                                                 Toast.makeText(context, "Story Bible patch applied", Toast.LENGTH_SHORT).show()
                                                 loadBibleFromServer(projectId)
+                                                loadCastCount(projectId)
+                                                loadLivingCanonCount(projectId)
                                                 loadPatches(projectId)
                                             }
                                             is Resource.Error -> {
@@ -768,6 +790,40 @@ fun BibleScreen(
                         HorizontalDivider()
                     }
                 }
+            }
+        }
+
+        StandardCard {
+            SectionHeader(
+                title = "Studio Handoff",
+                badgeText = if (studioReady) "READY" else "APPROVAL REQUIRED"
+            )
+            Text(
+                text = when {
+                    studioReady -> "${castCount ?: 0} cast member(s) from the approved Bible are ready in Studio. Review voices, visual DNA, locations and artifacts before planning the first episode."
+                    bibleApproved -> "The Bible is approved, but no cast records were persisted. Review the applied patch entities before planning the first episode."
+                    else -> "Approve a Bible patch to persist cast, voices, visual DNA, locations and artifacts into Studio."
+                },
+                fontSize = 13.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                OutlinedButton(
+                    onClick = onOpenCharacters,
+                    enabled = studioReady,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("Review Cast")
+                }
+                PrimaryButton(
+                    text = "Plan First Episode",
+                    enabled = studioReady && projectId.isNotBlank(),
+                    onClick = { if (projectId.isNotBlank()) onOpenPreflight(projectId) },
+                    modifier = Modifier.weight(1f)
+                )
             }
         }
 

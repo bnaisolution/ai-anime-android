@@ -61,7 +61,7 @@ fun CharacterListScreen(
     if (showAddDialog) {
         AlertDialog(
             onDismissRequest = { showAddDialog = false },
-            title = { Text("➕ Add Character & Auto-Portrait") },
+            title = { Text("➕ Add Character") },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     OutlinedTextField(
@@ -91,7 +91,7 @@ fun CharacterListScreen(
                     },
                     enabled = newCharName.isNotBlank(),
                     modifier = Modifier.testTag(TestTags.Character.ADD_CONFIRM)
-                ) { Text("Create & Gen Image") }
+                ) { Text("Create Character") }
             },
             dismissButton = {
                 TextButton(onClick = { showAddDialog = false }) { Text("Cancel") }

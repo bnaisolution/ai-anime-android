@@ -30,7 +30,11 @@ fun CharacterDetailScreen(
     val context = LocalContext.current
     val voices by viewModel.voiceCatalog.collectAsState()
     var selectedProvider by remember { mutableStateOf("Svara TTS") }
-    var selectedVoice by remember { mutableStateOf(initialCharacter?.voiceId ?: voices.firstOrNull().orEmpty()) }
+    val initialVoiceId = initialCharacter?.voiceId
+        ?.takeIf { it.isNotBlank() && !it.equals("UNSET", ignoreCase = true) }
+    var selectedVoice by remember(initialVoiceId, voices) {
+        mutableStateOf(initialVoiceId ?: voices.firstOrNull().orEmpty())
+    }
     var providerExpanded by remember { mutableStateOf(false) }
     var voiceExpanded by remember { mutableStateOf(false) }
 
