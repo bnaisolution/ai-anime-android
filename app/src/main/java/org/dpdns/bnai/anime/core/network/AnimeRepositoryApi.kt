@@ -269,6 +269,12 @@ interface ProductionRepository : RepositoryContext {
     ): Resource<DirectorTimelineDto> =
         throw UnsupportedOperationException("loadDirectorTimeline is not configured")
 
+    suspend fun retryDirectorTimeline(
+        projectId: String,
+        commandId: String
+    ): Resource<DirectorActionExecutionDto> =
+        throw UnsupportedOperationException("retryDirectorTimeline is not configured")
+
     suspend fun buildDirectorPlan(projectId: String, goal: String? = null): Resource<DirectorPlanDto> =
         throw UnsupportedOperationException("buildDirectorPlan is not configured")
 

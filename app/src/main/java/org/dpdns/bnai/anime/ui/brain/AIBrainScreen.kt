@@ -177,7 +177,12 @@ fun AIBrainScreen(
         )
 
         state.timeline?.let { timeline ->
-            DirectorTimelineCard(timeline = timeline, onRefresh = { viewModel.refreshTimeline() })
+            DirectorTimelineCard(
+                timeline = timeline,
+                isRetrying = state.isSending,
+                onRefresh = { viewModel.refreshTimeline() },
+                onRetry = viewModel::retryTimeline
+            )
         }
 
         state.plan?.let { plan ->
@@ -446,7 +451,12 @@ fun DirectorActionCard(
 }
 
 @Composable
-fun DirectorTimelineCard(timeline: DirectorTimelineDto, onRefresh: () -> Unit) {
+fun DirectorTimelineCard(
+    timeline: DirectorTimelineDto,
+    isRetrying: Boolean = false,
+    onRefresh: () -> Unit,
+    onRetry: () -> Unit
+) {
     StandardCard {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -467,7 +477,21 @@ fun DirectorTimelineCard(timeline: DirectorTimelineDto, onRefresh: () -> Unit) {
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-            TextButton(onClick = onRefresh) { Text("Refresh", fontSize = 11.sp) }
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                TextButton(onClick = onRefresh) { Text("Refresh", fontSize = 11.sp) }
+                if (timeline.job?.retryable == true) {
+                    TextButton(onClick = onRetry, enabled = !isRetrying) {
+                        Text(if (isRetrying) "Retrying..." else "Retry", fontSize = 11.sp)
+                    }
+                }
+            }
+        }
+        timeline.job?.failure_reason?.takeIf { it.isNotBlank() }?.let { reason ->
+            Text(
+                text = "Last failure: $reason",
+                fontSize = 11.sp,
+                color = MaterialTheme.colorScheme.error
+            )
         }
         if (timeline.stages.isNotEmpty()) {
             Row(

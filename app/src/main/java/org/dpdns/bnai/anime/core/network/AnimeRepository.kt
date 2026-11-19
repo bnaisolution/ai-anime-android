@@ -663,6 +663,25 @@ class AnimeRepository(
         Resource.Error(e.localizedMessage ?: "Director timeline unavailable")
     }
 
+    override suspend fun retryDirectorTimeline(
+        projectId: String,
+        commandId: String
+    ): Resource<DirectorActionExecutionDto> = try {
+        if (projectId.isBlank() || commandId.isBlank()) {
+            Resource.Error("Select a project and a failed command first.")
+        } else {
+            mapEnvelope(
+                apiService.retryDirectorTimeline(
+                    commandId,
+                    "retry-${UUID.randomUUID()}",
+                    DirectorTimelineRetryRequest(projectId)
+                )
+            ) { it }
+        }
+    } catch (e: Exception) {
+        Resource.Error(e.localizedMessage ?: "Director retry failed")
+    }
+
     override suspend fun buildDirectorPlan(projectId: String, goal: String?): Resource<DirectorPlanDto> = try {
         if (projectId.isBlank()) {
             Resource.Error("Select a project first.")

@@ -161,6 +161,36 @@ class AIDirectorViewModel(
         }
     }
 
+    fun retryTimeline() {
+        val current = _state.value
+        val commandId = current.timeline?.command_id
+        if (current.projectId.isBlank() || commandId.isNullOrBlank() || current.isSending) return
+        _state.update { it.copy(isSending = true, error = null) }
+        viewModelScope.launch {
+            when (val res = repository.retryDirectorTimeline(current.projectId, commandId)) {
+                is Resource.Success -> {
+                    val newCommandId = res.data.command_id.orEmpty()
+                    if (newCommandId.isNotBlank()) {
+                        tokenManager.saveActiveCommandId(current.projectId, "ai_director", newCommandId)
+                        _state.update {
+                            it.copy(
+                                isSending = false,
+                                activeCommandId = newCommandId,
+                                activeCommandStatus = res.data.status ?: "QUEUED"
+                            )
+                        }
+                        pollCommand(newCommandId)
+                        refreshTimeline(newCommandId)
+                    } else {
+                        _state.update { it.copy(isSending = false, error = "Retry accepted without a command id.") }
+                    }
+                }
+                is Resource.Error -> _state.update { it.copy(isSending = false, error = res.message) }
+                else -> _state.update { it.copy(isSending = false) }
+            }
+        }
+    }
+
     fun requestPlan(goal: String? = null) {
         val current = _state.value
         if (current.projectId.isBlank() || current.isPlanning) return

@@ -104,6 +104,10 @@ data class DirectorClearRequest(
     val project_id: String
 )
 
+data class DirectorTimelineRetryRequest(
+    val project_id: String
+)
+
 data class DirectorActionExecutionDto(
     val action_id: String? = null,
     val intent: String? = null,
@@ -219,6 +223,13 @@ data class DirectorTimelineEpisodeDto(
     val clip_count: Int = 0
 )
 
+data class DirectorTimelineJobDto(
+    val status: String = "",
+    val failure_reason: String? = null,
+    val retry_count: Int = 0,
+    val retryable: Boolean = false
+)
+
 data class DirectorTimelineDto(
     val command_id: String? = null,
     val intent: String? = null,
@@ -226,6 +237,7 @@ data class DirectorTimelineDto(
     val stage_index: Int = 0,
     val stages: List<DirectorTimelineStageDto> = emptyList(),
     val episode: DirectorTimelineEpisodeDto? = null,
+    val job: DirectorTimelineJobDto? = null,
     val updated_at: String? = null
 )
 
@@ -854,6 +866,13 @@ interface AnimeApiService {
         @Query("season_no") seasonNo: Int? = null,
         @Query("episode_no") episodeNo: Int? = null
     ): Response<ApiEnvelope<DirectorTimelineDto>>
+
+    @POST("api/v1/ai/director/timeline/{command_id}/retry")
+    suspend fun retryDirectorTimeline(
+        @Path("command_id") commandId: String,
+        @Header("Idempotency-Key") idempotencyKey: String,
+        @Body request: DirectorTimelineRetryRequest
+    ): Response<ApiEnvelope<DirectorActionExecutionDto>>
 
     @POST("api/v1/ai/director/plan")
     suspend fun directorPlan(@Body request: DirectorPlanRequest): Response<ApiEnvelope<DirectorPlanDto>>
