@@ -34,6 +34,7 @@ import org.dpdns.bnai.anime.core.model.seasonPlansFromBible
 import org.dpdns.bnai.anime.core.model.storyBibleMap
 import org.dpdns.bnai.anime.core.network.JsonMap
 import org.dpdns.bnai.anime.core.network.Resource
+import org.dpdns.bnai.anime.core.runtime.RuntimeContractCalculator
 import org.dpdns.bnai.anime.ui.components.ProjectSelectorBar
 import org.dpdns.bnai.anime.ui.components.StatusBadge
 import org.dpdns.bnai.anime.ui.components.formatInt
@@ -99,7 +100,6 @@ fun ProjectDetailScreen(
     var editAutoApprove by remember { mutableStateOf(false) }
     var editTargetEpisodeCount by remember { mutableStateOf<Int?>(null) }
     var editEpisodeDurationMin by remember { mutableStateOf<Int?>(null) }
-    var editScriptWordCount by remember { mutableStateOf<Int?>(null) }
     var editTotalSeasons by remember { mutableStateOf("1") }
     var editEpisodesPerSeason by remember { mutableStateOf("12") }
     var editEpisodeDuration by remember { mutableStateOf("24") }
@@ -193,7 +193,6 @@ fun ProjectDetailScreen(
                     editAutoApprove = (res.data["auto_approve"] ?: projObj["auto_approve"] ?: bibleObj["auto_approve"]) == true
                     editTargetEpisodeCount = (bibleObj["target_episode_count"] as? Number)?.toInt()
                     editEpisodeDurationMin = (bibleObj["episode_duration_min"] as? Number)?.toInt()
-                    editScriptWordCount = (bibleObj["script_word_count"] as? Number)?.toInt()
                     editTotalSeasons = ((bibleObj["total_seasons"] as? Number)?.toInt() ?: 1).toString()
                     editEpisodesPerSeason = (
                         (bibleObj["episodes_per_season"] as? Number)?.toInt()
@@ -325,7 +324,7 @@ fun ProjectDetailScreen(
             "Series values must be whole numbers."
         (totalSeasonsInput ?: 0) !in 1..100 -> "Total Seasons must be between 1 and 100."
         (episodesPerSeasonInput ?: 0) !in 1..500 -> "Episodes per Season must be between 1 and 500."
-        (durationInput ?: 0) !in 1..120 -> "Episode Duration must be between 1 and 120 minutes."
+        (durationInput ?: 0) !in RuntimeContractCalculator.MIN_EPISODE_MINUTES..RuntimeContractCalculator.MAX_EPISODE_MINUTES -> "Episode Duration must be between 1 and 30 minutes."
         (totalSeasonsInput ?: 0).toLong() * (episodesPerSeasonInput ?: 0).toLong() > 50_000L ->
             "Total planned episodes cannot exceed 50,000."
         else -> null
@@ -520,15 +519,21 @@ fun ProjectDetailScreen(
                             editEpisodeDuration = it.filter(Char::isDigit)
                             settingsDirty = true
                         },
-                        label = { Text("Episode Duration (minutes)") },
+                        label = { Text("Episode Duration (1–30 minutes)") },
                         singleLine = true,
-                        isError = seriesError != null && (durationInput ?: 0) !in 1..120,
+                        isError = seriesError != null && (durationInput ?: 0) !in RuntimeContractCalculator.MIN_EPISODE_MINUTES..RuntimeContractCalculator.MAX_EPISODE_MINUTES,
                         modifier = Modifier.fillMaxWidth().testTag(TestTags.ProjectDetail.EPISODE_DURATION)
                     )
                     if (seriesError != null) {
                         Text(seriesError, color = StudioTokens.Error, fontSize = 12.sp)
                     } else if (seriesSummary != null) {
                         Text("Summary: $seriesSummary", fontSize = 12.sp, color = StudioTokens.Success)
+                        val runtimeContract = RuntimeContractCalculator.build(durationInput)
+                        Text(
+                            "Auto-derived: ${runtimeContract.summary}",
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
 
                     Row(
@@ -573,7 +578,6 @@ fun ProjectDetailScreen(
                                 updates["episodes_per_season"] = episodesPerSeasonInput!!
                                 updates["episode_duration_min"] = durationInput!!
                             }
-                            editScriptWordCount?.let { updates["script_word_count"] = it }
                             val res = repository.updateProjectSettings(
                                 projectId = pid,
                                 updates = updates

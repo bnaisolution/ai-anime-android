@@ -110,7 +110,7 @@ suspend fun loadReadiness(
     val episodeDuration = (bibleRoot["episode_duration_min"] as? Number)?.toInt()
     val seriesReady = (totalSeasons ?: 0) >= 1 &&
         (episodesPerSeason ?: 0) >= 1 &&
-        (episodeDuration ?: 0) >= 1
+        (episodeDuration ?: 0) in 1..30
     checks += ReadinessCheck(
         key = "series_config",
         label = "Series Configuration",

@@ -49,6 +49,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import org.dpdns.bnai.anime.core.runtime.RuntimeContractCalculator
 import org.dpdns.bnai.anime.core.network.BiblePatchDto
 import org.dpdns.bnai.anime.core.network.CommandIntent
 import org.dpdns.bnai.anime.core.network.JsonMap
@@ -469,6 +470,10 @@ fun BibleScreen(
             ReadOnlyContextRow("Total Seasons", displayValue(totalSeasons))
             ReadOnlyContextRow("Episodes per Season", displayValue(episodesPerSeason))
             ReadOnlyContextRow("Episode Duration", episodeDurationMin?.let { "$it minutes" } ?: "—")
+            ReadOnlyContextRow(
+                "Derived Runtime",
+                RuntimeContractCalculator.build(episodeDurationMin).summary
+            )
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,

@@ -627,7 +627,7 @@ class Batch2FullControlCoverageTest {
         assertText("Series Configuration")
         assertText("Total Seasons")
         assertText("Episodes / Season")
-        assertText("Episode Duration (minutes)")
+        assertText("Episode Duration (1–30 minutes)")
         assertText("Save Settings")
         assertText("Cancel")
     }

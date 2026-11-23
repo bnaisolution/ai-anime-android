@@ -48,7 +48,6 @@ interface ProjectRepository : RepositoryContext {
         activeSystemPromptId: String? = null,
         targetEpisodeCount: Int? = null,
         episodeDurationMin: Int? = null,
-        scriptWordCount: Int? = null
     ): Resource<ProjectDto> =
         throw UnsupportedOperationException("updateProjectSettings is not configured")
 
