@@ -159,7 +159,6 @@ class AnimeRepository(
         activeSystemPromptId: String?,
         targetEpisodeCount: Int?,
         episodeDurationMin: Int?,
-        scriptWordCount: Int?
     ): Resource<ProjectDto> = try {
         mapEnvelope(
             apiService.updateProjectSettings(
@@ -173,7 +172,6 @@ class AnimeRepository(
                     active_system_prompt_id = activeSystemPromptId,
                     target_episode_count = targetEpisodeCount,
                     episode_duration_min = episodeDurationMin,
-                    script_word_count = scriptWordCount
                 )
             )
         ) { it }
@@ -216,7 +214,6 @@ class AnimeRepository(
                 total_seasons = (updates["total_seasons"] as? Number)?.toInt(),
                 episodes_per_season = (updates["episodes_per_season"] as? Number)?.toInt(),
                 episode_duration_min = (updates["episode_duration_min"] as? Number)?.toInt(),
-                script_word_count = (updates["script_word_count"] as? Number)?.toInt(),
                 project_format = updates["project_format"] as? String
             )
             val response = apiService.updateProjectSettings(projectId, req)

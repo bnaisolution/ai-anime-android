@@ -518,7 +518,6 @@ data class UpdateProjectSettingsRequest(
     val total_seasons: Int? = null,
     val episodes_per_season: Int? = null,
     val episode_duration_min: Int? = null,
-    val script_word_count: Int? = null,
     val project_format: String? = null
 )
 

@@ -29,6 +29,7 @@ import org.dpdns.bnai.anime.core.network.DirectorActionDto
 import org.dpdns.bnai.anime.core.network.DirectorContextDto
 import org.dpdns.bnai.anime.core.network.DirectorPlanDto
 import org.dpdns.bnai.anime.core.network.DirectorTimelineDto
+import org.dpdns.bnai.anime.core.runtime.RuntimeContractCalculator
 import org.dpdns.bnai.anime.ui.LocalAppContainer
 import org.dpdns.bnai.anime.ui.components.ProjectSelectorBar
 import org.dpdns.bnai.anime.ui.components.friendlyPipelineStatus
@@ -99,7 +100,7 @@ fun AIBrainScreen(
                         OutlinedTextField(
                             value = createDuration,
                             onValueChange = { createDuration = it.filter(Char::isDigit) },
-                            label = { Text("Minutes") },
+                            label = { Text("Minutes (1–30)") },
                             singleLine = true,
                             modifier = Modifier.weight(1f)
                         )
@@ -118,7 +119,7 @@ fun AIBrainScreen(
                             genre = createGenre,
                             totalSeasons = seasons,
                             episodesPerSeason = episodesPerSeason,
-                            episodeDurationMin = createDuration.toIntOrNull(),
+                            episodeDurationMin = (createDuration.toIntOrNull() ?: 24).coerceIn(RuntimeContractCalculator.MIN_EPISODE_MINUTES, RuntimeContractCalculator.MAX_EPISODE_MINUTES),
                             targetEpisodeCount = seasons * episodesPerSeason
                         ) {
                             showCreateProject = false
