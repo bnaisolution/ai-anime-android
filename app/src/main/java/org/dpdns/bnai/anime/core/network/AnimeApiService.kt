@@ -574,6 +574,7 @@ data class EpisodeDto(
     val current_state: String? = null,
     val status: String? = null,
     val qc_status: String? = null,
+    val approval_status: String? = null,
     val script_json: Any? = null,
     val master_video_url: String? = null,
     val thumbnail_url: String? = null,
@@ -991,6 +992,13 @@ interface AnimeApiService {
 
     @PATCH("v1/anime/projects/{id}/episodes/{episodeNo}")
     suspend fun updateEpisode(
+        @Path("id") projectId: String,
+        @Path("episodeNo") episodeNo: Int,
+        @Body body: JsonMap
+    ): Response<ApiEnvelope<EpisodeDto>>
+
+    @POST("v1/anime/projects/{id}/episodes/{episodeNo}/approval")
+    suspend fun decideEpisodeApproval(
         @Path("id") projectId: String,
         @Path("episodeNo") episodeNo: Int,
         @Body body: JsonMap

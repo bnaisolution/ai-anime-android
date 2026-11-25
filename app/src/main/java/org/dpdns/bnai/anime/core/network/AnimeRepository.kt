@@ -424,8 +424,29 @@ class AnimeRepository(
         }
     }
 
-    override suspend fun fetchEpisodePlan(projectId: String, episodeNo: Int, seasonNo: Int): Resource<JsonMap> = try {
-        mapEnvelope(apiService.getEpisodePlan(projectId, episodeNo, seasonNo)) { it }
+    override suspend fun submitEpisodeApproval(
+        projectId: String,
+        episodeNo: Int,
+        seasonNo: Int,
+        decision: String
+    ): Resource<EpisodeDto> = withContext(Dispatchers.IO) {
+        try {
+            val response = apiService.decideEpisodeApproval(
+                projectId,
+                episodeNo,
+                mapOf("season_no" to seasonNo, "decision" to decision)
+            )
+            if (response.isSuccessful && response.body()?.data != null) {
+                Resource.Success(response.body()!!.data!!)
+            } else {
+                Resource.Error("Episode approval failed (${response.code()})", response.code())
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.localizedMessage ?: "Episode approval error")
+        }
+    }
+
+    override suspend fun fetchEpisodePlan(projectId: String, episodeNo: Int, seasonNo: Int): Resource<JsonMap> = try {        mapEnvelope(apiService.getEpisodePlan(projectId, episodeNo, seasonNo)) { it }
     } catch (e: Exception) {
         Resource.Error(e.localizedMessage ?: "Failed to load episode plan")
     }

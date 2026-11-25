@@ -180,6 +180,7 @@ internal fun batch2RecordingRepository(
                                 current_state = "READY",
                                 status = "READY",
                                 qc_status = "APPROVED",
+                                approval_status = "APPROVED",
                                 script_json = mapOf("raw_script" to "INT. STUDIO - DAY"),
                                 master_video_url = BATCH2_MEDIA_URL
                             )

@@ -154,6 +154,14 @@ interface EpisodeRepository : RepositoryContext {
     ): Resource<EpisodeDto> =
         throw UnsupportedOperationException("updateEpisodeSync is not configured")
 
+    suspend fun submitEpisodeApproval(
+        projectId: String = currentProjectId(),
+        episodeNo: Int,
+        seasonNo: Int = 1,
+        decision: String = "APPROVED"
+    ): Resource<EpisodeDto> =
+        throw UnsupportedOperationException("submitEpisodeApproval is not configured")
+
     suspend fun fetchEpisodePlan(projectId: String, episodeNo: Int, seasonNo: Int = 1): Resource<JsonMap> =
         throw UnsupportedOperationException("fetchEpisodePlan is not configured")
 
