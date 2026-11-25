@@ -76,6 +76,22 @@ class AnimeRepositoryBehaviorTest {
     }
 
     @Test
+    fun fetchEpisodesRawParsesApprovalStatusForPublishGate() = runBlocking {
+        server.enqueue(
+            MockResponse()
+                .setResponseCode(200)
+                .setBody("""{"data":[{"id":"ep-1","episode_no":2,"season_no":3,"qc_status":"PASSED","approval_status":"PENDING"}]}""")
+        )
+
+        val result = repository.fetchEpisodesRaw("project-1", 3)
+
+        assertTrue(result is Resource.Success<*>)
+        val items = (result as Resource.Success<List<EpisodeDto>>).data
+        assertEquals("PENDING", items.single().approval_status)
+        assertEquals("PASSED", items.single().qc_status)
+    }
+
+    @Test
     fun emptySystemPromptListMapsToEmptyResource() = runBlocking {
         server.enqueue(
             MockResponse()

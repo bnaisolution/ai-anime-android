@@ -149,7 +149,8 @@ fun EpisodePlannerScreen(
                 projectId = pid,
                 intent = if (isRegeneration) CommandIntent.CONTINUE_EPISODE else CommandIntent.GENERATE_EPISODE,
                 episodeNo = selectedEpNo,
-                payload = payload
+                payload = payload,
+                seasonNo = selectedSeason
             )
             isGenerating = false
             if (res is Resource.Success) {
