@@ -206,6 +206,9 @@ class AnimeRepository(
             val req = UpdateProjectSettingsRequest(
                 name = updates["name"] as? String,
                 visual_medium = updates["visual_medium"] as? String,
+                visual_style = updates["visual_style"] as? String,
+                language = updates["language"] as? String,
+                script_word_count = (updates["script_word_count"] as? Number)?.toInt(),
                 genre = updates["genre"] as? String,
                 auto_approve = updates["auto_approve"] as? Boolean,
                 cover_image_url = updates["cover_image_url"] as? String,

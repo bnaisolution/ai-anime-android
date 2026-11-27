@@ -104,7 +104,10 @@ fun ProjectDetailScreen(
     var editEpisodesPerSeason by remember { mutableStateOf("12") }
     var editEpisodeDuration by remember { mutableStateOf("24") }
     var editProjectFormat by remember { mutableStateOf("SERIES") }
-    val formatOptions = listOf("SERIES", "MOVIE", "SHORT", "MUSIC_VIDEO", "TRAILER")
+    var editLanguage by remember { mutableStateOf("hi") }
+    var editScriptWordCount by remember { mutableStateOf("") }
+    val formatOptions = listOf("SERIES", "MOVIE", "SHORT", "REEL", "MUSIC_VIDEO", "TRAILER")
+    val languageOptions = listOf("hi" to "Hindi", "en" to "English")
     var isSavingSettings by remember { mutableStateOf(false) }
     var settingsDirty by remember { mutableStateOf(false) }
     var builtInGenres by remember {
@@ -201,6 +204,9 @@ fun ProjectDetailScreen(
                         ).toString()
                     editEpisodeDuration = ((bibleObj["episode_duration_min"] as? Number)?.toInt() ?: 24).toString()
                     editProjectFormat = (bibleObj["project_format"] ?: projObj["project_format"] ?: "SERIES").toString().uppercase()
+                    editLanguage = (projObj["language"] ?: bibleObj["language"] ?: "hi").toString().lowercase()
+                    editScriptWordCount = ((bibleObj["script_word_count"] as? Number)?.toInt() ?: 0)
+                        .takeIf { it > 0 }?.toString() ?: ""
 
                     val backendActiveCmd = (res.data["status"] as? Map<*, *>)?.get("active_command_id")?.toString()
                     if (!backendActiveCmd.isNullOrBlank() && backendActiveCmd != "null") {
@@ -488,6 +494,29 @@ fun ProjectDetailScreen(
                             }
                         }
                     }
+                    Text("Dialogue Language", fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        modifier = Modifier.horizontalScroll(rememberScrollState())
+                    ) {
+                        languageOptions.forEach { (code, label) ->
+                            if (editLanguage == code) {
+                                Button(
+                                    onClick = { editLanguage = code; settingsDirty = true },
+                                    shape = RoundedCornerShape(8.dp),
+                                    modifier = Modifier.height(34.dp),
+                                    contentPadding = PaddingValues(horizontal = 10.dp)
+                                ) { Text(label, fontSize = 11.sp) }
+                            } else {
+                                OutlinedButton(
+                                    onClick = { editLanguage = code; settingsDirty = true },
+                                    shape = RoundedCornerShape(8.dp),
+                                    modifier = Modifier.height(34.dp),
+                                    contentPadding = PaddingValues(horizontal = 10.dp)
+                                ) { Text(label, fontSize = 11.sp) }
+                            }
+                        }
+                    }
                     Text("Series Configuration", fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         OutlinedTextField(
@@ -523,6 +552,16 @@ fun ProjectDetailScreen(
                         singleLine = true,
                         isError = seriesError != null && (durationInput ?: 0) !in RuntimeContractCalculator.MIN_EPISODE_MINUTES..RuntimeContractCalculator.MAX_EPISODE_MINUTES,
                         modifier = Modifier.fillMaxWidth().testTag(TestTags.ProjectDetail.EPISODE_DURATION)
+                    )
+                    OutlinedTextField(
+                        value = editScriptWordCount,
+                        onValueChange = {
+                            editScriptWordCount = it.filter(Char::isDigit)
+                            settingsDirty = true
+                        },
+                        label = { Text("Script Word Count (optional)") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
                     )
                     if (seriesError != null) {
                         Text(seriesError, color = StudioTokens.Error, fontSize = 12.sp)
@@ -570,8 +609,10 @@ fun ProjectDetailScreen(
                                 "visual_medium" to editMedium.trim(),
                                 "cover_image_url" to editCoverUrl.trim(),
                                 "auto_approve" to editAutoApprove,
-                                "project_format" to editProjectFormat
+                                "project_format" to editProjectFormat,
+                                "language" to editLanguage
                             )
+                            editScriptWordCount.toIntOrNull()?.takeIf { it > 0 }?.let { updates["script_word_count"] = it }
                             editTargetEpisodeCount?.let { updates["target_episode_count"] = it }
                             seriesSummary?.let {
                                 updates["total_seasons"] = totalSeasonsInput!!

@@ -496,6 +496,8 @@ data class ProjectDto(
     val story_bible: JsonMap? = null,
     val genre: String? = null,
     val visual_medium: String? = null,
+    val visual_style: String? = null,
+    val language: String? = null,
     val current_season: Int? = 1,
     val current_episode: Int? = 1,
     val budget_ceiling: Double? = null,
@@ -509,6 +511,9 @@ data class ProjectDto(
 data class UpdateProjectSettingsRequest(
     val name: String? = null,
     val visual_medium: String? = null,
+    val visual_style: String? = null,
+    val language: String? = null,
+    val script_word_count: Int? = null,
     val genre: String? = null,
     val auto_approve: Boolean? = null,
     val cover_image_url: String? = null,
