@@ -200,6 +200,19 @@ fun SceneDetailScreen(episodeNo: Int = 1) {
                             )
                         }
 
+                        val shotCount = scene.shot_manifest?.size ?: 0
+                        if (shotCount > 0) {
+                            Text("Shots: $shotCount", fontSize = 12.sp, fontWeight = FontWeight.Medium)
+                        }
+                        val cameraMove = scene.camera_json?.get("movement")?.toString()?.takeIf { it.isNotBlank() }
+                        if (cameraMove != null) {
+                            Text(
+                                text = "Camera: $cameraMove",
+                                fontSize = 12.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+
                         Text(
                             text = scene.description?.ifBlank { "No scene description" } ?: "No scene description",
                             fontSize = 14.sp

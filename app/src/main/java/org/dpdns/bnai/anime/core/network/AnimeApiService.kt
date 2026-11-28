@@ -610,6 +610,10 @@ data class SceneDto(
     val bgm_hint: String? = null,
     val sfx_hint: String? = null,
     val status: String? = null,
+    val shot_manifest: List<JsonMap>? = null,
+    val camera_json: JsonMap? = null,
+    val continuity_json: JsonMap? = null,
+    val keyframe_url: String? = null,
     val clips: List<ClipDto>? = null
 )
 
