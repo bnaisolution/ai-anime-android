@@ -108,6 +108,25 @@ fun QCScreen(
 
         StandardCard {
             SectionHeader(title = "Episode $selectedEpNo QC Summary", badgeText = rawQcStatus)
+            val continuity = activeEp?.continuity_status?.uppercase().orEmpty()
+            val approval = activeEp?.approval_status?.uppercase().orEmpty()
+            val mediaUrl = activeEp?.output_media?.get("final_video_url")?.toString()?.takeIf { it.isNotBlank() }
+            val artifactCount = (activeEp?.artifact_manifest?.get("shots") as? List<*>)?.size
+                ?: (activeEp?.artifact_manifest?.get("artifact_manifest") as? List<*>)?.size
+                ?: 0
+            if (continuity.isNotBlank()) {
+                Text("Continuity: $continuity", fontSize = 12.sp)
+            }
+            if (approval.isNotBlank()) {
+                Text("Approval: $approval", fontSize = 12.sp)
+            }
+            Text(
+                text = if (mediaUrl != null) "Master media: available" else "Master media: missing",
+                fontSize = 12.sp
+            )
+            if (artifactCount > 0) {
+                Text("Rendered artifacts: $artifactCount", fontSize = 12.sp)
+            }
             Text(
                 text = when (rawQcStatus) {
                     "APPROVED", "PASSED" -> "All mandatory QC gates passed. Publishing is unlocked."

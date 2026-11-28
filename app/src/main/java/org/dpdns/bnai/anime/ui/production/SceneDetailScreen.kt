@@ -212,6 +212,17 @@ fun SceneDetailScreen(episodeNo: Int = 1) {
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
+                        val sceneLocation = scene.continuity_json?.get("location")?.toString()?.takeIf { it.isNotBlank() }
+                        if (sceneLocation != null) {
+                            Text(
+                                text = "Location: $sceneLocation",
+                                fontSize = 12.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        if (!scene.keyframe_url.isNullOrBlank()) {
+                            Text("Keyframe: available", fontSize = 12.sp)
+                        }
 
                         Text(
                             text = scene.description?.ifBlank { "No scene description" } ?: "No scene description",
